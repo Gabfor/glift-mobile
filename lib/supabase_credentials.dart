@@ -9,12 +9,13 @@
 /// ```
 const String supabaseUrl = String.fromEnvironment(
   'SUPABASE_URL',
-  defaultValue: 'https://YOUR-PROJECT-NAME.supabase.co',
+  defaultValue: 'https://wzdkuqxjcqrwrouobpxo.supabase.co',
 );
 
 const String supabaseAnonKey = String.fromEnvironment(
   'SUPABASE_ANON_KEY',
-  defaultValue: 'YOUR-SUPABASE-ANON-KEY',
+  defaultValue:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6ZGt1cXhqY3Fyd3JvdW9icHhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyODY4MzQsImV4cCI6MjA2MTg2MjgzNH0.kDZU5XO-WICwQuLfmY9UsYp2aYmfikNLam-5_j5RIJw',
 );
 
 /// Whether real credentials have been configured.
