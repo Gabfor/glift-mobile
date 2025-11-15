@@ -6,10 +6,7 @@ import 'supabase_credentials.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final supabase = SupabaseClient(
-    supabaseUrl,
-    supabaseAnonKey,
-  );
+  final supabase = SupabaseClient(supabaseUrl, supabaseAnonKey);
 
   runApp(MyApp(supabase: supabase));
 }
@@ -42,15 +39,13 @@ class MyHomePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Supabase connection'),
-      ),
+      appBar: AppBar(title: const Text('Supabase connection')),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          _ConnectionDetailsCard(supabase: supabase),
+          _ConnectionDetailsCard(),
           const SizedBox(height: 24),
-          _CredentialsStatusBanner(),
+          const _CredentialsStatusBanner(),
           const SizedBox(height: 24),
           _UsageExamples(theme: theme),
         ],
@@ -60,9 +55,7 @@ class MyHomePage extends StatelessWidget {
 }
 
 class _ConnectionDetailsCard extends StatelessWidget {
-  const _ConnectionDetailsCard({required this.supabase});
-
-  final SupabaseClient supabase;
+  const _ConnectionDetailsCard();
 
   @override
   Widget build(BuildContext context) {
@@ -76,17 +69,11 @@ class _ConnectionDetailsCard extends StatelessWidget {
           children: [
             Text('Connected project', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            SelectableText(
-              supabase.supabaseUrl,
-              style: theme.textTheme.bodyLarge,
-            ),
+            SelectableText(supabaseUrl, style: theme.textTheme.bodyLarge),
             const SizedBox(height: 16),
             Text('Anon key in use', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            SelectableText(
-              supabaseAnonKey,
-              style: theme.textTheme.bodySmall,
-            ),
+            SelectableText(supabaseAnonKey, style: theme.textTheme.bodySmall),
           ],
         ),
       ),
@@ -124,11 +111,11 @@ class _CredentialsStatusBanner extends StatelessWidget {
             child: Text(
               isConfigured
                   ? 'Your Supabase credentials are configured. You can now query '
-                      'your tables, invoke Functions, and listen to real-time '
-                      'channels.'
+                        'your tables, invoke Functions, and listen to real-time '
+                        'channels.'
                   : 'Update lib/supabase_credentials.dart or provide '
-                      '`--dart-define` values for SUPABASE_URL and '
-                      'SUPABASE_ANON_KEY to connect to your own project.',
+                        '`--dart-define` values for SUPABASE_URL and '
+                        'SUPABASE_ANON_KEY to connect to your own project.',
               style: TextStyle(
                 color: isConfigured
                     ? colorScheme.onPrimaryContainer
