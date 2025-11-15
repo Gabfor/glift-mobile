@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase/supabase.dart';
 
 import 'supabase_credentials.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+  final supabase = SupabaseClient(
+    supabaseUrl,
+    supabaseAnonKey,
   );
 
-  runApp(const MyApp());
+  runApp(MyApp(supabase: supabase));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.supabase});
+
+  final SupabaseClient supabase;
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +27,18 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: MyHomePage(supabase: supabase),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({super.key, required this.supabase});
+
+  final SupabaseClient supabase;
 
   @override
   Widget build(BuildContext context) {
-    final supabase = Supabase.instance.client;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -145,7 +148,7 @@ class _UsageExamples extends StatelessWidget {
   final ThemeData theme;
 
   static const _codeSample = '''
-final supabase = Supabase.instance.client;
+final supabase = SupabaseClient('your-supabase-url', 'your-anon-key');
 final profiles = await supabase.from('profiles').select();
 ''';
 
@@ -157,9 +160,10 @@ final profiles = await supabase.from('profiles').select();
         Text('Using the client in widgets', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Text(
-          'Access the Supabase client anywhere in the widget tree with '
-          '`Supabase.instance.client`. From there you can query PostgREST, '
-          'invoke Functions, or listen for Auth changes.',
+          'Pass the Supabase client through your widget tree (for example '
+          'with an inherited widget or a provider) so any widget can access '
+          'it. From there you can query PostgREST, invoke Functions, or listen '
+          'for Auth changes.',
           style: theme.textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),
@@ -167,7 +171,7 @@ final profiles = await supabase.from('profiles').select();
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant,
+            color: theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
