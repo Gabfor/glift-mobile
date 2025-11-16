@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:glift_mobile/widgets/embedded_raster_image.dart';
+
 import 'supabase_credentials.dart';
 
 const _gliftBackgroundColor = Color(0xFFF9FAFB);
@@ -288,8 +290,8 @@ class OnboardingSlide extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: SvgPicture.asset(
-                    data.imageAsset,
+                  child: EmbeddedRasterImage(
+                    svgAsset: data.imageAsset,
                     width: 300,
                     height: 300,
                   ),
