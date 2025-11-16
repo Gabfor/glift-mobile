@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -102,7 +104,9 @@ class _SplashLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final logoSize = constraints.maxWidth * 0.62;
+        const targetSize = 220.0;
+        final availableSize = math.min(constraints.maxWidth, constraints.maxHeight);
+        final logoSize = math.min(targetSize, availableSize);
         return Center(child: _Logo(size: logoSize));
       },
     );
