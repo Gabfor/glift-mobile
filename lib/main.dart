@@ -104,9 +104,13 @@ class _SplashLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const targetSize = 220.0;
-        final availableSize = math.min(constraints.maxWidth, constraints.maxHeight);
-        final logoSize = math.min(targetSize, availableSize);
+        const maxLogoSize = 220.0;
+        final availableWidth = constraints.maxWidth * 0.6;
+        final availableHeight = constraints.maxHeight;
+        final logoSize = math.min(
+          maxLogoSize,
+          math.min(availableWidth, availableHeight),
+        );
         return Center(child: _Logo(size: logoSize));
       },
     );
