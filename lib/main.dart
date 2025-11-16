@@ -1,170 +1,380 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'supabase_credentials.dart';
+
+const _gliftBackgroundColor = Color(0xFFF9FAFB);
+const _gliftAccentColor = Color(0xFF7069FA);
+const _gliftTitleColor = Color(0xFF3A416F);
+const _gliftBodyColor = Color(0xFF5D6494);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final supabase = SupabaseClient(supabaseUrl, supabaseAnonKey);
 
-  runApp(MyApp(supabase: supabase));
+  runApp(GliftApp(supabase: supabase));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.supabase});
+class GliftApp extends StatelessWidget {
+  const GliftApp({super.key, required this.supabase});
 
   final SupabaseClient supabase;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Glift + Supabase',
+      title: 'Glift',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _gliftAccentColor,
+          background: _gliftBackgroundColor,
+        ),
+        scaffoldBackgroundColor: _gliftBackgroundColor,
         useMaterial3: true,
       ),
-      home: MyHomePage(supabase: supabase),
+      home: SplashToOnboarding(supabase: supabase),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.supabase});
+class SplashToOnboarding extends StatefulWidget {
+  const SplashToOnboarding({super.key, required this.supabase});
 
   final SupabaseClient supabase;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  State<SplashToOnboarding> createState() => _SplashToOnboardingState();
+}
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Supabase connection')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          _ConnectionDetailsCard(),
-          const SizedBox(height: 24),
-          const _CredentialsStatusBanner(),
-          const SizedBox(height: 24),
-          _UsageExamples(theme: theme),
-        ],
+class _SplashToOnboardingState extends State<SplashToOnboarding> {
+  bool _showSplash = true;
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('Supabase client ready: ${widget.supabase.restUrl}');
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _showSplash = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return const SplashScreen();
+    }
+
+    return const OnboardingFlow();
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: _gliftBackgroundColor,
+      body: Center(
+        child: _Logo(size: 160),
       ),
     );
   }
 }
 
-class _ConnectionDetailsCard extends StatelessWidget {
-  const _ConnectionDetailsCard();
+class OnboardingFlow extends StatefulWidget {
+  const OnboardingFlow({super.key});
+
+  @override
+  State<OnboardingFlow> createState() => _OnboardingFlowState();
+}
+
+class _OnboardingFlowState extends State<OnboardingFlow> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  static final List<OnboardingPageData> _pages = [
+    const OnboardingPageData(
+      tagline: 'OUTIL DE SUIVI',
+      title: 'Entraînez-vous efficacement et tirer profits de chaque minute d’entraînement',
+      description:
+          'Nous avons créé une expérience simple et intuitive pour vous permettre d’optimiser votre temps d’entraînement.',
+      imageAsset: 'assets/images/onboarding_tracking.svg',
+    ),
+    const OnboardingPageData(
+      tagline: 'OUTIL DE NOTATION',
+      title: 'Notez facilement vos performances et assurez-vous de toujours progresser',
+      description:
+          'Notez vos performances et vos sensations. Ajustez vos entraînements en temps réel ou plus tard afin de toujours progresser.',
+      imageAsset: 'assets/images/onboarding_rating.svg',
+    ),
+    const OnboardingPageData(
+      tagline: 'OUTIL DE VISUALISATION',
+      title: 'Visualisez votre progression séance après séance et restez motivé pour longtemps',
+      description:
+          'Visualisez vos progrès dans votre tableau de bord, fixez-vous des objectifs toujours plus ambitieux et sortez de votre zone de confort.',
+      imageAsset: 'assets/images/onboarding_visualization.svg',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _handlePageChanged(int index) {
+    setState(() {
+      _currentPage = index;
+    });
+  }
+
+  void _handleConnect(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Connexion prochainement disponible.'),
+      ),
+    );
+  }
+
+  Future<void> _openSignup() async {
+    final uri = Uri.parse('https://glift.io/tarifs/');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Impossible d’ouvrir la page d’inscription.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Connected project', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SelectableText(supabaseUrl, style: theme.textTheme.bodyLarge),
-            const SizedBox(height: 16),
-            Text('Anon key in use', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SelectableText(supabaseAnonKey, style: theme.textTheme.bodySmall),
-          ],
+    return Scaffold(
+      backgroundColor: _gliftBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _pages.length,
+            onPageChanged: _handlePageChanged,
+            itemBuilder: (context, index) {
+              final data = _pages[index];
+              return OnboardingPage(
+                data: data,
+                currentPage: _currentPage,
+                totalPages: _pages.length,
+                onConnectTap: () => _handleConnect(context),
+                onSignupTap: _openSignup,
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
 
-class _CredentialsStatusBanner extends StatelessWidget {
-  const _CredentialsStatusBanner();
+class OnboardingPageData {
+  const OnboardingPageData({
+    required this.tagline,
+    required this.title,
+    required this.description,
+    required this.imageAsset,
+  });
+
+  final String tagline;
+  final String title;
+  final String description;
+  final String imageAsset;
+}
+
+class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({
+    super.key,
+    required this.data,
+    required this.currentPage,
+    required this.totalPages,
+    required this.onConnectTap,
+    required this.onSignupTap,
+  });
+
+  final OnboardingPageData data;
+  final int currentPage;
+  final int totalPages;
+  final VoidCallback onConnectTap;
+  final Future<void> Function() onSignupTap;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isConfigured = hasSupabaseCredentials;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isConfigured
-            ? colorScheme.primaryContainer
-            : colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            isConfigured ? Icons.check_circle : Icons.error_outline,
-            color: isConfigured
-                ? colorScheme.onPrimaryContainer
-                : colorScheme.onErrorContainer,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              isConfigured
-                  ? 'Your Supabase credentials are configured. You can now query '
-                        'your tables, invoke Functions, and listen to real-time '
-                        'channels.'
-                  : 'Update lib/supabase_credentials.dart or provide '
-                        '`--dart-define` values for SUPABASE_URL and '
-                        'SUPABASE_ANON_KEY to connect to your own project.',
-              style: TextStyle(
-                color: isConfigured
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onErrorContainer,
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Column(
+                  children: [
+                    _PageIndicator(
+                      currentPage: currentPage,
+                      totalPages: totalPages,
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: SvgPicture.asset(
+                        data.imageAsset,
+                        width: 300,
+                        height: 300,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      data.tagline,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                        color: _gliftAccentColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      data.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: _gliftTitleColor,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      data.description,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _gliftBodyColor,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: onConnectTap,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _gliftAccentColor,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        child: const Text('Se connecter'),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: [
+                          const Text(
+                            'Pas encore inscrit ? ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: _gliftBodyColor,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              onSignupTap();
+                            },
+                            child: const Text(
+                              'Créer un compte',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: _gliftAccentColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class _UsageExamples extends StatelessWidget {
-  const _UsageExamples({required this.theme});
+class _PageIndicator extends StatelessWidget {
+  const _PageIndicator({required this.currentPage, required this.totalPages});
 
-  final ThemeData theme;
-
-  static const _codeSample = '''
-final supabase = SupabaseClient('your-supabase-url', 'your-anon-key');
-final profiles = await supabase.from('profiles').select();
-''';
+  final int currentPage;
+  final int totalPages;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Using the client in widgets', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(
-          'Pass the Supabase client through your widget tree (for example '
-          'with an inherited widget or a provider) so any widget can access '
-          'it. From there you can query PostgREST, invoke Functions, or listen '
-          'for Auth changes.',
-          style: theme.textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(totalPages, (index) {
+        final bool isActive = index == currentPage;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          width: isActive ? 14 : 8,
+          height: 8,
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.colorScheme.outlineVariant),
+            color: isActive ? _gliftAccentColor : _gliftAccentColor.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(4),
           ),
-          child: const SelectableText(_codeSample),
-        ),
-      ],
+        );
+      }),
+    );
+  }
+}
+
+class _Logo extends StatelessWidget {
+  const _Logo({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      'assets/images/logo_app.svg',
+      width: size,
+      height: size,
     );
   }
 }
