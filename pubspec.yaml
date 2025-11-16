@@ -63,9 +63,9 @@ flutter:
 
   assets:
     - assets/images/logo_app.svg
-    - assets/images/onboarding_tracking.svg
-    - assets/images/onboarding_rating.svg
-    - assets/images/onboarding_visualization.svg
+    - assets/images/onboarding_suivre.svg
+    - assets/images/onboarding_noter.svg
+    - assets/images/onboarding_visualiser.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
