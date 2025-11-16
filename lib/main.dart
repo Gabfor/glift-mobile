@@ -88,9 +88,23 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: _gliftBackgroundColor,
-      body: Center(
-        child: _Logo(size: 160),
-      ),
+      body: _SplashLogo(),
+    );
+  }
+}
+
+class _SplashLogo extends StatelessWidget {
+  const _SplashLogo();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final logoSize = constraints.maxWidth * 0.56;
+        return Center(
+          child: _Logo(size: logoSize),
+        );
+      },
     );
   }
 }
