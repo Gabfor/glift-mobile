@@ -40,7 +40,6 @@ class GliftApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: baseTheme.copyWith(
         textTheme: GoogleFonts.quicksandTextTheme(baseTheme.textTheme),
-        fontFamily: GoogleFonts.quicksand().fontFamily,
       ),
       home: SplashToOnboarding(supabase: supabase),
     );
