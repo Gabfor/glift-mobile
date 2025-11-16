@@ -21,8 +21,10 @@ class EmbeddedRasterImage extends StatelessWidget {
   final BoxFit fit;
 
   static final _cache = <String, Future<Uint8List>>{};
-  static final _dataUriPattern =
-      RegExp(r'data:image/(?:png|jpeg);base64,([^"\']+)', dotAll: true);
+  static final _dataUriPattern = RegExp(
+    r'''data:image/(?:png|jpeg);base64,([^"']+)''',
+    dotAll: true,
+  );
 
   static Future<Uint8List> _bytesFor(String asset) {
     return _cache.putIfAbsent(asset, () async {
