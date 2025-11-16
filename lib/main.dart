@@ -103,9 +103,7 @@ class _SplashLogo extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final logoSize = constraints.maxWidth * 0.62;
-        return Center(
-          child: _Logo(size: logoSize),
-        );
+        return Center(child: _Logo(size: logoSize));
       },
     );
   }
@@ -125,24 +123,27 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   static final List<OnboardingPageData> _pages = [
     const OnboardingPageData(
       tagline: 'OUTIL DE SUIVI',
-      title: 'Entraînez-vous efficacement et tirer profits de chaque minute d’entraînement',
+      title:
+          'Entraînez-vous efficacement et tirer profits de chaque minute d’entraînement',
       description:
           'Nous avons créé une expérience simple et intuitive pour vous permettre d’optimiser votre temps d’entraînement.',
-      imageAsset: 'assets/images/onboarding_tracking.svg',
+      imageAsset: 'assets/images/onboarding_suivre.svg',
     ),
     const OnboardingPageData(
       tagline: 'OUTIL DE NOTATION',
-      title: 'Notez facilement vos performances et assurez-vous de toujours progresser',
+      title:
+          'Notez facilement vos performances et assurez-vous de toujours progresser',
       description:
           'Notez vos performances et vos sensations. Ajustez vos entraînements en temps réel ou plus tard afin de toujours progresser.',
-      imageAsset: 'assets/images/onboarding_rating.svg',
+      imageAsset: 'assets/images/onboarding_noter.svg',
     ),
     const OnboardingPageData(
       tagline: 'OUTIL DE VISUALISATION',
-      title: 'Visualisez votre progression séance après séance et restez motivé pour longtemps',
+      title:
+          'Visualisez votre progression séance après séance et restez motivé pour longtemps',
       description:
           'Visualisez vos progrès dans votre tableau de bord, fixez-vous des objectifs toujours plus ambitieux et sortez de votre zone de confort.',
-      imageAsset: 'assets/images/onboarding_visualization.svg',
+      imageAsset: 'assets/images/onboarding_visualiser.svg',
     ),
   ];
 
@@ -160,9 +161,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   void _handleConnect(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Connexion prochainement disponible.'),
-      ),
+      const SnackBar(content: Text('Connexion prochainement disponible.')),
     );
   }
 
@@ -171,7 +170,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Impossible d’ouvrir la page d’inscription.')),
+          const SnackBar(
+            content: Text('Impossible d’ouvrir la page d’inscription.'),
+          ),
         );
       }
     }
