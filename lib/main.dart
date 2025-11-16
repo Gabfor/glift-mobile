@@ -31,7 +31,7 @@ class GliftApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: _gliftAccentColor,
-          background: _gliftBackgroundColor,
+          surface: _gliftBackgroundColor,
         ),
         scaffoldBackgroundColor: _gliftBackgroundColor,
         useMaterial3: true,
@@ -56,7 +56,7 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
   @override
   void initState() {
     super.initState();
-    debugPrint('Supabase client ready: ${widget.supabase.restUrl}');
+    debugPrint('Supabase client ready: $supabaseUrl');
     Future<void>.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -355,7 +355,9 @@ class _PageIndicator extends StatelessWidget {
           width: isActive ? 14 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive ? _gliftAccentColor : _gliftAccentColor.withOpacity(0.3),
+            color: isActive
+                ? _gliftAccentColor
+                : _gliftAccentColor.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         );
