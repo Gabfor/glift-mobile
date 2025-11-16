@@ -182,20 +182,74 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: _pages.length,
-            onPageChanged: _handlePageChanged,
-            itemBuilder: (context, index) {
-              final data = _pages[index];
-              return OnboardingPage(
-                data: data,
+          child: Column(
+            children: [
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: _pages.length,
+                  onPageChanged: _handlePageChanged,
+                  itemBuilder: (context, index) {
+                    final data = _pages[index];
+                    return OnboardingSlide(data: data);
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+              _PageIndicator(
                 currentPage: _currentPage,
                 totalPages: _pages.length,
-                onConnectTap: () => _handleConnect(context),
-                onSignupTap: _openSignup,
-              );
-            },
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _handleConnect(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _gliftAccentColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  child: const Text('Se connecter'),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    const Text(
+                      'Pas encore inscrit ? ',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _gliftBodyColor,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _openSignup,
+                      child: const Text(
+                        'Créer un compte',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: _gliftAccentColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -217,21 +271,10 @@ class OnboardingPageData {
   final String imageAsset;
 }
 
-class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({
-    super.key,
-    required this.data,
-    required this.currentPage,
-    required this.totalPages,
-    required this.onConnectTap,
-    required this.onSignupTap,
-  });
+class OnboardingSlide extends StatelessWidget {
+  const OnboardingSlide({super.key, required this.data});
 
   final OnboardingPageData data;
-  final int currentPage;
-  final int totalPages;
-  final VoidCallback onConnectTap;
-  final Future<void> Function() onSignupTap;
 
   @override
   Widget build(BuildContext context) {
@@ -241,111 +284,48 @@ class OnboardingPage extends StatelessWidget {
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Column(
-                  children: [
-                    _PageIndicator(
-                      currentPage: currentPage,
-                      totalPages: totalPages,
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: SvgPicture.asset(
-                        data.imageAsset,
-                        width: 300,
-                        height: 300,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      data.tagline,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                        color: _gliftAccentColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      data.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: _gliftTitleColor,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      data.description,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _gliftBodyColor,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
+                Center(
+                  child: SvgPicture.asset(
+                    data.imageAsset,
+                    width: 300,
+                    height: 300,
+                  ),
                 ),
-                Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: onConnectTap,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _gliftAccentColor,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(56),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        child: const Text('Se connecter'),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: [
-                          const Text(
-                            'Pas encore inscrit ? ',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: _gliftBodyColor,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              onSignupTap();
-                            },
-                            child: const Text(
-                              'Créer un compte',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: _gliftAccentColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 32),
+                Text(
+                  data.tagline,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                    color: _gliftAccentColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  data.title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: _gliftTitleColor,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  data.description,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _gliftBodyColor,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
