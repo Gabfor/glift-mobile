@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,16 +26,21 @@ class GliftApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: _gliftAccentColor,
+        surface: _gliftBackgroundColor,
+      ),
+      scaffoldBackgroundColor: _gliftBackgroundColor,
+      useMaterial3: true,
+    );
+
     return MaterialApp(
       title: 'Glift',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _gliftAccentColor,
-          surface: _gliftBackgroundColor,
-        ),
-        scaffoldBackgroundColor: _gliftBackgroundColor,
-        useMaterial3: true,
+      theme: baseTheme.copyWith(
+        textTheme: GoogleFonts.quicksandTextTheme(baseTheme.textTheme),
+        fontFamily: GoogleFonts.quicksand().fontFamily,
       ),
       home: SplashToOnboarding(supabase: supabase),
     );
