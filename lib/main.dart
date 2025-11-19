@@ -2,18 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
+import 'package:glift_mobile/theme/glift_theme.dart';
 
 import 'supabase_credentials.dart';
-
-const _gliftBackgroundColor = Color(0xFFF9FAFB);
-const _gliftAccentColor = Color(0xFF7069FA);
-const _gliftTitleColor = Color(0xFF3A416F);
-const _gliftBodyColor = Color(0xFF5D6494);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,21 +25,10 @@ class GliftApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _gliftAccentColor,
-        surface: _gliftBackgroundColor,
-      ),
-      scaffoldBackgroundColor: _gliftBackgroundColor,
-      useMaterial3: true,
-    );
-
     return MaterialApp(
       title: 'Glift',
       debugShowCheckedModeBanner: false,
-      theme: baseTheme.copyWith(
-        textTheme: GoogleFonts.quicksandTextTheme(baseTheme.textTheme),
-      ),
+      theme: GliftTheme.buildTheme(),
       home: SplashToOnboarding(supabase: supabase),
     );
   }
@@ -91,7 +75,6 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: _gliftBackgroundColor,
       body: _SplashLogo(),
     );
   }
@@ -189,7 +172,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _gliftBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -217,17 +199,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () => _handleConnect(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _gliftAccentColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
                   child: const Text('Se connecter'),
                 ),
               ),
@@ -238,23 +209,17 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   spacing: 4,
                   runSpacing: 4,
                   children: [
-                    const Text(
+                    Text(
                       'Pas encore inscrit ? ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _gliftBodyColor,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     GestureDetector(
                       onTap: _openSignup,
-                      child: const Text(
+                      child: Text(
                         'Créer un compte',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _gliftAccentColor,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: GliftTheme.accent,
+                            ),
                       ),
                     ),
                   ],
@@ -310,34 +275,19 @@ class OnboardingSlide extends StatelessWidget {
                 Text(
                   data.tagline,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: _gliftAccentColor,
-                  ),
+                  style: Theme.of(context).textTheme.labelSmall,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   data.title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: _gliftTitleColor,
-                    height: 1.3,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   data.description,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: _gliftBodyColor,
-                    height: 1.5,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ],
             ),
@@ -366,8 +316,9 @@ class _PageIndicator extends StatelessWidget {
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-            color:
-                isActive ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1),
+            color: isActive
+                ? GliftTheme.pageIndicatorActive
+                : GliftTheme.pageIndicatorInactive,
             borderRadius: BorderRadius.circular(5),
           ),
         );
