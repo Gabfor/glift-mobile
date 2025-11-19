@@ -223,10 +223,15 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    textStyle:
+                        Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ) ??
+                            const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                   ),
                   child: const Text('Se connecter'),
                 ),
@@ -238,23 +243,34 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   spacing: 4,
                   runSpacing: 4,
                   children: [
-                    const Text(
+                    Text(
                       'Pas encore inscrit ? ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _gliftBodyColor,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: _gliftBodyColor,
+                          ) ??
+                          const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: _gliftBodyColor,
+                          ),
                     ),
                     GestureDetector(
                       onTap: _openSignup,
-                      child: const Text(
+                      child: Text(
                         'Créer un compte',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _gliftAccentColor,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _gliftAccentColor,
+                                ) ??
+                                const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _gliftAccentColor,
+                                ),
                       ),
                     ),
                   ],
@@ -290,6 +306,7 @@ class OnboardingSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -310,34 +327,52 @@ class OnboardingSlide extends StatelessWidget {
                 Text(
                   data.tagline,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: _gliftAccentColor,
-                  ),
+                  style: textTheme.labelSmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                        color: _gliftAccentColor,
+                      ) ??
+                      const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                        color: _gliftAccentColor,
+                      ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   data.title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: _gliftTitleColor,
-                    height: 1.3,
-                  ),
+                  style: textTheme.headlineSmall?.copyWith(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: _gliftTitleColor,
+                        height: 1.3,
+                      ) ??
+                      const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: _gliftTitleColor,
+                        height: 1.3,
+                      ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   data.description,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: _gliftBodyColor,
-                    height: 1.5,
-                  ),
+                  style: textTheme.bodyLarge?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _gliftBodyColor,
+                        height: 1.5,
+                      ) ??
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _gliftBodyColor,
+                        height: 1.5,
+                      ),
                 ),
               ],
             ),
