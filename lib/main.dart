@@ -211,7 +211,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 currentPage: _currentPage,
                 totalPages: _pages.length,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -260,6 +260,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   ],
                 ),
               ),
+              const SizedBox(height: 70),
             ],
           ),
         ),
@@ -365,9 +366,8 @@ class _PageIndicator extends StatelessWidget {
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-            color: isActive
-                ? const Color(0xFFA1A5FD)
-                : _gliftAccentColor.withValues(alpha: 0.3),
+            color:
+                isActive ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1),
             borderRadius: BorderRadius.circular(5),
           ),
         );
