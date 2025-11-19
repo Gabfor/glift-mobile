@@ -214,12 +214,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: () => _handleConnect(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _gliftAccentColor,
                     foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -260,7 +260,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   ],
                 ),
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 40),
             ],
           ),
         ),
