@@ -12,6 +12,8 @@ class GliftTheme {
   static const Color pageIndicatorInactive = Color(0xFFECE9F1);
 
   static ThemeData buildTheme() {
+    final quicksandFontFamily = GoogleFonts.quicksand().fontFamily;
+
     final baseTheme = ThemeData(
       colorScheme: ColorScheme.fromSeed(
         seedColor: accent,
@@ -20,6 +22,7 @@ class GliftTheme {
       ),
       scaffoldBackgroundColor: background,
       useMaterial3: true,
+      fontFamily: quicksandFontFamily,
     );
 
     final textTheme = GoogleFonts.quicksandTextTheme(baseTheme.textTheme).copyWith(
@@ -57,7 +60,7 @@ class GliftTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.quicksand(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
