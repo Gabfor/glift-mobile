@@ -219,12 +219,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _gliftAccentColor,
                     foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(56),
+                    minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
                     textStyle: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -260,7 +260,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   ],
                 ),
               ),
-              const SizedBox(height: 70),
+              const SizedBox(height: 60),
             ],
           ),
         ),
@@ -296,9 +296,9 @@ class OnboardingSlide extends StatelessWidget {
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const SizedBox(height: 100),
                 Center(
                   child: EmbeddedRasterImage(
                     svgAsset: data.imageAsset,
