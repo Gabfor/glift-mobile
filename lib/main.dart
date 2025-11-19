@@ -361,14 +361,14 @@ class _PageIndicator extends StatelessWidget {
         final bool isActive = index == currentPage;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          width: 8,
-          height: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 2.5),
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             color: isActive
-                ? _gliftAccentColor
+                ? const Color(0xFFA1A5FD)
                 : _gliftAccentColor.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(5),
           ),
         );
       }),
