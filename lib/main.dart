@@ -383,10 +383,13 @@ class _Logo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      'assets/images/logo_app.svg',
+    return SizedBox(
       width: size,
       height: size,
+      child: SvgPicture.asset(
+        'assets/images/logo_app.svg',
+        fit: BoxFit.contain,
+      ),
     );
   }
 }
