@@ -18,7 +18,6 @@ class GliftTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: accent,
         surface: background,
-        background: background,
       ),
       scaffoldBackgroundColor: background,
       useMaterial3: true,
