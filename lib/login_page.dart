@@ -1,31 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase/supabase.dart';
 
-import 'package:glift_mobile/theme/glift_theme.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'auth/auth_repository.dart';
+import 'forgot_password_page.dart';
+import 'home_page.dart';
+import 'signup_page.dart';
+import 'theme/glift_theme.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, required this.authRepository});
+
+  final AuthRepository authRepository;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
 
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  bool get _isFormValid =>
+      _validateEmail(_emailController.text) == null &&
+      _validatePassword(_passwordController.text) == null;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
-
-  bool get _isFormValid =>
-      _emailController.text.trim().isNotEmpty &&
-      _passwordController.text.trim().isNotEmpty;
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -33,253 +47,394 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _handleConnect() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Connexion prochainement disponible.')),
-    );
+  String? _validateEmail(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return 'Veuillez saisir un email valide.';
+    }
+
+    final emailRegex = RegExp(r"^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}\\$");
+    if (!emailRegex.hasMatch(trimmed)) {
+      return 'Format d’email invalide.';
+    }
+
+    return null;
   }
 
-  void _handleFieldChanged() {
-    setState(() {});
+  String? _validatePassword(String value) {
+    if (value.trim().isEmpty) {
+      return 'Veuillez saisir votre mot de passe.';
+    }
+
+    if (value.trim().length < 6) {
+      return 'Votre mot de passe doit contenir au moins 6 caractères.';
+    }
+
+    return null;
   }
 
-  Future<void> _openSignup() async {
-    final uri = Uri.parse('https://glift.io/tarifs/');
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+  void _focusFirstError({String? emailError, String? passwordError}) {
+    if (emailError != null) {
+      _emailFocusNode.requestFocus();
+      return;
+    }
+
+    if (passwordError != null) {
+      _passwordFocusNode.requestFocus();
+    }
+  }
+
+  Future<void> _submit() async {
+    final emailError = _validateEmail(_emailController.text);
+    final passwordError = _validatePassword(_passwordController.text);
+
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) {
+      _focusFirstError(emailError: emailError, passwordError: passwordError);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await widget.authRepository.signInWithPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } on AuthException catch (error) {
+      setState(() {
+        _errorMessage = error.message.isNotEmpty
+            ? error.message
+            : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
+      });
+      _focusFirstError(
+        emailError: emailError ?? _validateEmail(_emailController.text),
+        passwordError:
+            passwordError ?? _validatePassword(_passwordController.text),
+      );
+    } catch (_) {
+      setState(() {
+        _errorMessage =
+            'Service temporairement indisponible. Réessayez plus tard.';
+      });
+    } finally {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossible d’ouvrir la page d’inscription.'),
-          ),
-        );
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
+  void _openForgotPassword() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ForgotPasswordPage(authRepository: widget.authRepository),
+      ),
+    );
+  }
+
+  void _openSignup() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SignupPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final textTheme = GoogleFonts.interTextTheme(Theme.of(context).textTheme);
+
     return Scaffold(
-      backgroundColor: GliftTheme.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF6C5CE7), Color(0xFF7B6CFC)],
+              stops: [0, 0.8],
+            ),
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _Header(),
-                    Transform.translate(
-                      offset: const Offset(0, -40),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bonjour,',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Bienvenue sur Glift',
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 26,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1A000000),
+                            blurRadius: 18,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _LoginCard(
-                          emailController: _emailController,
-                          passwordController: _passwordController,
-                          obscurePassword: _obscurePassword,
-                          onTogglePassword: _togglePasswordVisibility,
-                          onFieldChanged: _handleFieldChanged,
-                          onConnect: _isFormValid ? _handleConnect : null,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 28,
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Connexion',
+                                style: textTheme.titleLarge?.copyWith(
+                                  color: GliftTheme.title,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 22,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              _LabeledTextField(
+                                key: const Key('emailField'),
+                                inputKey: const Key('emailInput'),
+                                label: 'Email',
+                                controller: _emailController,
+                                focusNode: _emailFocusNode,
+                                hintText: 'john.doe@email.com',
+                                keyboardType: TextInputType.emailAddress,
+                                validator: _validateEmail,
+                                onChanged: (_) {
+                                  setState(() {
+                                    _errorMessage = null;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              _LabeledTextField(
+                                key: const Key('passwordField'),
+                                inputKey: const Key('passwordInput'),
+                                label: 'Mot de passe',
+                                controller: _passwordController,
+                                focusNode: _passwordFocusNode,
+                                hintText: '••••••••',
+                                obscureText: _obscurePassword,
+                                validator: _validatePassword,
+                                onChanged: (_) {
+                                  setState(() {
+                                    _errorMessage = null;
+                                  });
+                                },
+                                suffixIcon: Semantics(
+                                  button: true,
+                                  toggled: !_obscurePassword,
+                                  label: _obscurePassword
+                                      ? 'Afficher le mot de passe'
+                                      : 'Masquer le mot de passe',
+                                  child: IconButton(
+                                    key: const Key('passwordToggle'),
+                                    onPressed: _togglePasswordVisibility,
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: GliftTheme.body,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Center(
+                                child: TextButton(
+                                  onPressed: _openForgotPassword,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: const Color(0xFF6C5CE7),
+                                    textStyle: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  child: const Text('Mot de passe oublié'),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (_errorMessage != null) ...[
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: const Color(0xFFE74C3C),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                  key: const Key('loginButton'),
+                                  onPressed:
+                                      _isFormValid && !_isLoading ? _submit : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF6C5CE7),
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor:
+                                        const Color(0xFFEAEAEA),
+                                    disabledForegroundColor: GliftTheme.body,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    textStyle: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  child: _isLoading
+                                      ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation(
+                                                  Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 12),
+                                            Text('Chargement…'),
+                                          ],
+                                        )
+                                      : const Text('Se connecter'),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Transform.translate(
-                      offset: const Offset(0, -40),
-                      child: _SignupPrompt(onTap: _openSignup),
-                    ),
+                    const SizedBox(height: 20),
+                    _SignupPrompt(onTap: _openSignup, textTheme: textTheme),
                   ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _Header extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 220,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFA87CF0),
-            GliftTheme.accent,
-          ],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text(
-            'Bonjour,',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Bienvenue sur Glift',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoginCard extends StatelessWidget {
-  const _LoginCard({
-    required this.emailController,
-    required this.passwordController,
-    required this.obscurePassword,
-    required this.onTogglePassword,
-    required this.onFieldChanged,
-    required this.onConnect,
-  });
-
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final bool obscurePassword;
-  final VoidCallback onTogglePassword;
-  final VoidCallback onFieldChanged;
-  final VoidCallback? onConnect;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 14,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Connexion',
-            style: textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 24),
-          _LabeledField(
-            label: 'Email',
-            controller: emailController,
-            hintText: 'john.doe@email.com',
-            keyboardType: TextInputType.emailAddress,
-            onChanged: (_) => onFieldChanged(),
-          ),
-          const SizedBox(height: 20),
-          _LabeledField(
-            label: 'Mot de passe',
-            controller: passwordController,
-            obscureText: obscurePassword,
-            hintText: '••••••••',
-            suffixIcon: IconButton(
-              onPressed: onTogglePassword,
-              icon: Icon(
-                obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                color: GliftTheme.body,
-              ),
-            ),
-            onChanged: (_) => onFieldChanged(),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: onConnect,
-              style: ElevatedButton.styleFrom(
-                disabledBackgroundColor: const Color(0xFFEAEAEA),
-                disabledForegroundColor: GliftTheme.body,
-              ),
-              child: const Text('Se connecter'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: Text(
-              'Mot de passe oublié',
-              style: textTheme.bodyMedium?.copyWith(color: GliftTheme.accent),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LabeledField extends StatelessWidget {
-  const _LabeledField({
+class _LabeledTextField extends StatelessWidget {
+  const _LabeledTextField({
+    super.key,
     required this.label,
     required this.controller,
+    required this.focusNode,
     this.hintText,
     this.obscureText = false,
     this.suffixIcon,
     this.keyboardType,
+    this.validator,
     this.onChanged,
+    this.inputKey,
   });
 
   final String label;
   final TextEditingController controller;
+  final FocusNode focusNode;
   final String? hintText;
   final bool obscureText;
   final Widget? suffixIcon;
   final TextInputType? keyboardType;
+  final String? Function(String value)? validator;
   final ValueChanged<String>? onChanged;
+  final Key? inputKey;
 
   @override
   Widget build(BuildContext context) {
+    final labelStyle = GoogleFonts.inter(
+      fontWeight: FontWeight.w500,
+      color: GliftTheme.title,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: GliftTheme.title,
-                fontWeight: FontWeight.w700,
-              ),
-        ),
+        Text(label, style: labelStyle),
         const SizedBox(height: 12),
-        TextField(
+        TextFormField(
+          key: inputKey,
           controller: controller,
+          focusNode: focusNode,
           keyboardType: keyboardType,
           obscureText: obscureText,
+          validator: validator,
           decoration: InputDecoration(
             hintText: hintText,
             filled: true,
-            fillColor: const Color(0xFFF7F7F7),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(
+            fillColor: Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
+              borderSide: const BorderSide(color: Color(0xFFE5E5E5)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF6C5CE7)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFFE74C3C)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFFE74C3C)),
             ),
             suffixIcon: suffixIcon,
           ),
@@ -291,34 +446,36 @@ class _LabeledField extends StatelessWidget {
 }
 
 class _SignupPrompt extends StatelessWidget {
-  const _SignupPrompt({required this.onTap});
+  const _SignupPrompt({
+    required this.onTap,
+    required this.textTheme,
+  });
 
   final VoidCallback onTap;
+  final TextTheme textTheme;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 4,
-        runSpacing: 4,
-        children: [
-          Text(
-            'Pas encore inscrit ? ',
-            style: Theme.of(context).textTheme.bodyMedium,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 4,
+      children: [
+        Text(
+          'Pas encore inscrit ? ',
+          style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+        ),
+        TextButton(
+          onPressed: onTap,
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF6C5CE7),
+            textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
           ),
-          GestureDetector(
-            onTap: onTap,
-            child: Text(
-              'Créer un compte',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: GliftTheme.accent,
-                  ),
-            ),
-          ),
-        ],
-      ),
+          child: const Text('Créer un compte'),
+        ),
+      ],
     );
   }
 }
