@@ -27,12 +27,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     super.dispose();
   }
 
-  String? _validateEmail(String value) {
-    final trimmed = value.trim();
+  String? _validateEmail(String? value) {
+    final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
       return 'Veuillez saisir un email valide.';
     }
-    final emailRegex = RegExp(r"^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}\\$");
+    final emailRegex = RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(trimmed)) {
       return 'Format d’email invalide.';
     }

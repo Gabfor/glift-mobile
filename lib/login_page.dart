@@ -47,13 +47,13 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  String? _validateEmail(String value) {
-    final trimmed = value.trim();
+  String? _validateEmail(String? value) {
+    final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
       return 'Veuillez saisir un email valide.';
     }
 
-    final emailRegex = RegExp(r"^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}\\$");
+    final emailRegex = RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(trimmed)) {
       return 'Format d’email invalide.';
     }
@@ -61,12 +61,13 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
-  String? _validatePassword(String value) {
-    if (value.trim().isEmpty) {
+  String? _validatePassword(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
       return 'Veuillez saisir votre mot de passe.';
     }
 
-    if (value.trim().length < 6) {
+    if (trimmed.length < 6) {
       return 'Votre mot de passe doit contenir au moins 6 caractères.';
     }
 
@@ -391,7 +392,7 @@ class _LabeledTextField extends StatelessWidget {
   final bool obscureText;
   final Widget? suffixIcon;
   final TextInputType? keyboardType;
-  final String? Function(String value)? validator;
+  final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
   final Key? inputKey;
 
