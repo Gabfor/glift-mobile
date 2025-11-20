@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:glift_mobile/login_page.dart';
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
 
@@ -151,8 +152,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _handleConnect(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Connexion prochainement disponible.')),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
     );
   }
 
