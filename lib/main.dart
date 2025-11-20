@@ -2,27 +2,37 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:glift_mobile/login_page.dart';
+import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
 
 import 'supabase_credentials.dart';
+import 'package:supabase/supabase.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final supabase = SupabaseClient(supabaseUrl, supabaseAnonKey);
+  final authRepository = SupabaseAuthRepository(supabase);
 
-  runApp(GliftApp(supabase: supabase));
+  runApp(GliftApp(
+    supabase: supabase,
+    authRepository: authRepository,
+  ));
 }
 
 class GliftApp extends StatelessWidget {
-  const GliftApp({super.key, required this.supabase});
+  const GliftApp({
+    super.key,
+    required this.supabase,
+    required this.authRepository,
+  });
 
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +40,23 @@ class GliftApp extends StatelessWidget {
       title: 'Glift',
       debugShowCheckedModeBanner: false,
       theme: GliftTheme.buildTheme(),
-      home: SplashToOnboarding(supabase: supabase),
+      home: SplashToOnboarding(
+        supabase: supabase,
+        authRepository: authRepository,
+      ),
     );
   }
 }
 
 class SplashToOnboarding extends StatefulWidget {
-  const SplashToOnboarding({super.key, required this.supabase});
+  const SplashToOnboarding({
+    super.key,
+    required this.supabase,
+    required this.authRepository,
+  });
 
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
 
   @override
   State<SplashToOnboarding> createState() => _SplashToOnboardingState();
@@ -66,7 +84,7 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
       return const SplashScreen();
     }
 
-    return const OnboardingFlow();
+    return OnboardingFlow(authRepository: widget.authRepository);
   }
 }
 
@@ -102,7 +120,9 @@ class _SplashLogo extends StatelessWidget {
 }
 
 class OnboardingFlow extends StatefulWidget {
-  const OnboardingFlow({super.key});
+  const OnboardingFlow({super.key, required this.authRepository});
+
+  final AuthRepository authRepository;
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
@@ -153,7 +173,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   void _handleConnect(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
+      MaterialPageRoute(
+        builder: (_) => LoginPage(authRepository: widget.authRepository),
+      ),
     );
   }
 
