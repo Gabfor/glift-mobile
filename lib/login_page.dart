@@ -748,7 +748,7 @@ class _PasswordFieldState extends State<_PasswordField> {
                       obscureText: widget.obscureText,
                       style: inputStyle,
                       onChanged: widget.onChanged,
-                      onFieldSubmitted: widget.onSubmitted,
+                      onSubmitted: widget.onSubmitted,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '••••••••',
