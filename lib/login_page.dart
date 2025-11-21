@@ -194,173 +194,154 @@ class _LoginPageState extends State<LoginPage> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  color: const Color(0xFFF9FAFB),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
+                    ),
+                  ),
                   child: Stack(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 28, 24, 140),
+                        padding: const EdgeInsets.fromLTRB(24, 50, 24, 140),
                         child: SingleChildScrollView(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 420),
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(28),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x1A000000),
-                                    blurRadius: 18,
-                                    offset: Offset(0, 8),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Connexion',
+                                    style: GoogleFonts.quicksand(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      color: GliftTheme.title,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _LabeledTextField(
+                                    key: const Key('emailField'),
+                                    inputKey: const Key('emailInput'),
+                                    label: 'Email',
+                                    controller: _emailController,
+                                    focusNode: _emailFocusNode,
+                                    hintText: 'john.doe@email.com',
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: _validateEmail,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        _errorMessage = null;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 20),
+                                  _LabeledTextField(
+                                    key: const Key('passwordField'),
+                                    inputKey: const Key('passwordInput'),
+                                    label: 'Mot de passe',
+                                    controller: _passwordController,
+                                    focusNode: _passwordFocusNode,
+                                    hintText: '••••••••',
+                                    obscureText: _obscurePassword,
+                                    validator: _validatePassword,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        _errorMessage = null;
+                                      });
+                                    },
+                                    suffixIcon: Semantics(
+                                      button: true,
+                                      toggled: !_obscurePassword,
+                                      label: _obscurePassword
+                                          ? 'Afficher le mot de passe'
+                                          : 'Masquer le mot de passe',
+                                      child: IconButton(
+                                        key: const Key('passwordToggle'),
+                                        onPressed: _togglePasswordVisibility,
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                          color: GliftTheme.body,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  if (_errorMessage != null) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: Text(
+                                        _errorMessage!,
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          color: const Color(0xFFE74C3C),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 52,
+                                    child: ElevatedButton(
+                                      key: const Key('loginButton'),
+                                      onPressed: _isFormValid && !_isLoading
+                                          ? _submit
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF6C5CE7),
+                                        foregroundColor: Colors.white,
+                                        disabledBackgroundColor:
+                                            const Color(0xFFEAEAEA),
+                                        disabledForegroundColor: GliftTheme.body,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        textStyle: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      child: _isLoading
+                                          ? Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: const [
+                                                SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation(
+                                                      Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 12),
+                                                Text('Chargement…'),
+                                              ],
+                                            )
+                                          : const Text('Se connecter'),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Center(
+                                    child: TextButton(
+                                      onPressed: _openForgotPassword,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color(0xFF6C5CE7),
+                                        textStyle: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      child: const Text('Mot de passe oublié'),
+                                    ),
                                   ),
                                 ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 28,
-                                ),
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Connexion',
-                                        style: textTheme.titleLarge?.copyWith(
-                                          color: GliftTheme.title,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 22,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      _LabeledTextField(
-                                        key: const Key('emailField'),
-                                        inputKey: const Key('emailInput'),
-                                        label: 'Email',
-                                        controller: _emailController,
-                                        focusNode: _emailFocusNode,
-                                        hintText: 'john.doe@email.com',
-                                        keyboardType: TextInputType.emailAddress,
-                                        validator: _validateEmail,
-                                        onChanged: (_) {
-                                          setState(() {
-                                            _errorMessage = null;
-                                          });
-                                        },
-                                      ),
-                                      const SizedBox(height: 20),
-                                      _LabeledTextField(
-                                        key: const Key('passwordField'),
-                                        inputKey: const Key('passwordInput'),
-                                        label: 'Mot de passe',
-                                        controller: _passwordController,
-                                        focusNode: _passwordFocusNode,
-                                        hintText: '••••••••',
-                                        obscureText: _obscurePassword,
-                                        validator: _validatePassword,
-                                        onChanged: (_) {
-                                          setState(() {
-                                            _errorMessage = null;
-                                          });
-                                        },
-                                        suffixIcon: Semantics(
-                                          button: true,
-                                          toggled: !_obscurePassword,
-                                          label: _obscurePassword
-                                              ? 'Afficher le mot de passe'
-                                              : 'Masquer le mot de passe',
-                                          child: IconButton(
-                                            key: const Key('passwordToggle'),
-                                            onPressed: _togglePasswordVisibility,
-                                            icon: Icon(
-                                              _obscurePassword
-                                                  ? Icons.visibility_outlined
-                                                  : Icons.visibility_off_outlined,
-                                              color: GliftTheme.body,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Center(
-                                        child: TextButton(
-                                          onPressed: _openForgotPassword,
-                                          style: TextButton.styleFrom(
-                                            foregroundColor:
-                                                const Color(0xFF6C5CE7),
-                                            textStyle: GoogleFonts.inter(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          child: const Text('Mot de passe oublié'),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      if (_errorMessage != null) ...[
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 12),
-                                          child: Text(
-                                            _errorMessage!,
-                                            style: textTheme.bodyMedium?.copyWith(
-                                              color: const Color(0xFFE74C3C),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 52,
-                                        child: ElevatedButton(
-                                          key: const Key('loginButton'),
-                                          onPressed: _isFormValid && !_isLoading
-                                              ? _submit
-                                              : null,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                const Color(0xFF6C5CE7),
-                                            foregroundColor: Colors.white,
-                                            disabledBackgroundColor:
-                                                const Color(0xFFEAEAEA),
-                                            disabledForegroundColor: GliftTheme.body,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            textStyle: GoogleFonts.inter(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          child: _isLoading
-                                              ? Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: const [
-                                                    SizedBox(
-                                                      width: 16,
-                                                      height: 16,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation(
-                                                          Colors.white,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 12),
-                                                    Text('Chargement…'),
-                                                  ],
-                                                )
-                                              : const Text('Se connecter'),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ),
                             ),
                           ),
@@ -480,7 +461,7 @@ class _SignupPrompt extends StatelessWidget {
     final promptTextStyle = GoogleFonts.quicksand(
       fontWeight: FontWeight.w600,
       fontSize: 16,
-      color: GliftTheme.title,
+      color: const Color(0xFF5D6494),
     );
 
     return Wrap(
