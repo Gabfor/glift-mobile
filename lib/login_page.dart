@@ -45,6 +45,14 @@ class _LoginPageState extends State<LoginPage> {
 
   bool get _isPasswordValid => _passwordController.text.trim().isNotEmpty;
 
+  String get _emailMessage => _isEmailValid
+      ? 'Merci, cet email sera ton identifiant de connexion'
+      : 'Veuillez saisir un email valide.';
+
+  String get _passwordMessage => _isPasswordValid
+      ? 'Mot de passe valide'
+      : 'Veuillez saisir votre mot de passe.';
+
   bool get _showEmailSuccess =>
       _isEmailValid && (_hasSubmitted || (_emailTouched && !_emailFocused));
 
@@ -287,9 +295,7 @@ class _LoginPageState extends State<LoginPage> {
                                               },
                                               isSuccess: _showEmailSuccess,
                                               isError: _showEmailError,
-                                              message: _isEmailValid
-                                                  ? 'Merci, cet email sera ton identifiant de connexion'
-                                                  : 'Format d’adresse invalide',
+                                              message: _emailMessage,
                                             ),
                                             const SizedBox(height: 16),
                                             _PasswordField(
@@ -308,6 +314,7 @@ class _LoginPageState extends State<LoginPage> {
                                               isError: _showPasswordError,
                                               onSubmitted: (_) => _submit(),
                                               onForgotPassword: _openForgotPassword,
+                                              message: _passwordMessage,
                                             ),
                                           ],
                                         ),
@@ -330,91 +337,104 @@ class _LoginPageState extends State<LoginPage> {
                                       child: SizedBox(
                                         width: 160,
                                         height: 44,
-                                        child: ElevatedButton(
-                                          key: const Key('loginButton'),
-                                          onPressed:
-                                              _isFormValid && !_isLoading ? _submit : null,
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                WidgetStateProperty.resolveWith(
-                                              (states) {
-                                                if (states
-                                                    .contains(WidgetState.disabled)) {
-                                                  return const Color(0xFFF2F1F6);
-                                                }
-                                                if (states
-                                                    .contains(WidgetState.pressed)) {
-                                                  return const Color(0xFF6660E4);
-                                                }
-                                                if (states
-                                                    .contains(WidgetState.hovered)) {
-                                                  return const Color(0xFF6660E4);
-                                                }
-                                                return const Color(0xFF7069FA);
-                                              },
-                                            ),
-                                            foregroundColor:
-                                                WidgetStateProperty.resolveWith(
-                                              (states) {
-                                                if (states
-                                                    .contains(WidgetState.disabled)) {
-                                                  return const Color(0xFFD7D4DC);
-                                                }
-                                                return Colors.white;
-                                              },
-                                            ),
-                                            overlayColor:
-                                                WidgetStateProperty.resolveWith(
-                                              (states) {
-                                                if (states
-                                                    .contains(WidgetState.pressed)) {
-                                                  return const Color(0x1A13027B);
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            elevation:
-                                                WidgetStateProperty.all<double>(0),
-                                            shape:
-                                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(14),
+                                        child: Stack(
+                                          children: [
+                                            if (!_isFormValid && !_isLoading)
+                                              Positioned.fill(
+                                                child: GestureDetector(
+                                                  behavior: HitTestBehavior.translucent,
+                                                  onTap: _submit,
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          child: _isLoading
-                                              ? const SizedBox(
-                                                  height: 20,
-                                                  width: 20,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<Color>(
-                                                            Colors.white),
+                                            ElevatedButton(
+                                              key: const Key('loginButton'),
+                                              onPressed: _isFormValid && !_isLoading
+                                                  ? _submit
+                                                  : null,
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    WidgetStateProperty.resolveWith(
+                                                  (states) {
+                                                    if (states.contains(
+                                                        WidgetState.disabled)) {
+                                                      return const Color(0xFFF2F1F6);
+                                                    }
+                                                    if (states.contains(
+                                                        WidgetState.pressed)) {
+                                                      return const Color(0xFF6660E4);
+                                                    }
+                                                    if (states.contains(
+                                                        WidgetState.hovered)) {
+                                                      return const Color(0xFF6660E4);
+                                                    }
+                                                    return const Color(0xFF7069FA);
+                                                  },
+                                                ),
+                                                foregroundColor:
+                                                    WidgetStateProperty.resolveWith(
+                                                  (states) {
+                                                    if (states.contains(
+                                                        WidgetState.disabled)) {
+                                                      return const Color(0xFFD7D4DC);
+                                                    }
+                                                    return Colors.white;
+                                                  },
+                                                ),
+                                                overlayColor:
+                                                    WidgetStateProperty.resolveWith(
+                                                  (states) {
+                                                    if (states.contains(
+                                                        WidgetState.pressed)) {
+                                                      return const Color(0x1A13027B);
+                                                    }
+                                                    return null;
+                                                  },
+                                                ),
+                                                elevation:
+                                                    WidgetStateProperty.all<double>(0),
+                                                shape: WidgetStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(14),
                                                   ),
-                                                )
-                                              : Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      'assets/icons/login-button.svg',
+                                                ),
+                                              ),
+                                              child: _isLoading
+                                                  ? const SizedBox(
                                                       height: 20,
                                                       width: 20,
-                                                      colorFilter:
-                                                          ColorFilter.mode(
-                                                        _isFormValid &&
-                                                                !_isLoading
-                                                            ? Colors.white
-                                                            : const Color(
-                                                                0xFFD7D4DC),
-                                                        BlendMode.srcIn,
+                                                      child: CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                Color>(Colors.white),
                                                       ),
+                                                    )
+                                                  : Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.center,
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          'assets/icons/login-button.svg',
+                                                          height: 20,
+                                                          width: 20,
+                                                          colorFilter:
+                                                              ColorFilter.mode(
+                                                            _isFormValid &&
+                                                                    !_isLoading
+                                                                ? Colors.white
+                                                                : const Color(
+                                                                    0xFFD7D4DC),
+                                                            BlendMode.srcIn,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        const Text('Se connecter'),
+                                                      ],
                                                     ),
-                                                    const SizedBox(width: 8),
-                                                    const Text('Se connecter'),
-                                                  ],
-                                                ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -612,6 +632,7 @@ class _PasswordField extends StatefulWidget {
     required this.isError,
     required this.onSubmitted,
     required this.onForgotPassword,
+    required this.message,
   });
 
   final TextEditingController controller;
@@ -623,6 +644,7 @@ class _PasswordField extends StatefulWidget {
   final bool isError;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onForgotPassword;
+  final String message;
 
   @override
   State<_PasswordField> createState() => _PasswordFieldState();
@@ -719,7 +741,7 @@ class _PasswordFieldState extends State<_PasswordField> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: TextFormField(
+                    child: TextField(
                       key: const Key('passwordInput'),
                       controller: widget.controller,
                       focusNode: widget.focusNode,
@@ -753,6 +775,7 @@ class _PasswordFieldState extends State<_PasswordField> {
                           ? 'Afficher le mot de passe'
                           : 'Masquer le mot de passe',
                       child: GestureDetector(
+                        key: const Key('passwordToggle'),
                         behavior: HitTestBehavior.translucent,
                         onTapDown: (_) => widget.focusNode.requestFocus(),
                         onTap: widget.onToggleVisibility,
@@ -777,11 +800,7 @@ class _PasswordFieldState extends State<_PasswordField> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              widget.isError || widget.isSuccess
-                  ? (widget.isSuccess
-                      ? 'Mot de passe valide'
-                      : 'Mot de passe invalide')
-                  : '',
+              widget.isError || widget.isSuccess ? widget.message : '',
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
