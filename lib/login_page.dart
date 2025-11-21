@@ -401,11 +401,15 @@ class _LoginPageState extends State<LoginPage> {
                                                       'assets/icons/login-button.svg',
                                                       height: 20,
                                                       width: 20,
-                                                      color: _isFormValid &&
-                                                              !_isLoading
-                                                          ? Colors.white
-                                                          : const Color(
-                                                              0xFFD7D4DC),
+                                                      colorFilter:
+                                                          ColorFilter.mode(
+                                                        _isFormValid &&
+                                                                !_isLoading
+                                                            ? Colors.white
+                                                            : const Color(
+                                                                0xFFD7D4DC),
+                                                        BlendMode.srcIn,
+                                                      ),
                                                     ),
                                                     const SizedBox(width: 8),
                                                     const Text('Se connecter'),
