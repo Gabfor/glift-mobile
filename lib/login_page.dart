@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
@@ -27,10 +28,56 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _emailTouched = false;
+  bool _passwordTouched = false;
+  bool _emailFocused = false;
+  bool _passwordFocused = false;
+  bool _hasSubmitted = false;
 
   bool get _isFormValid =>
-      _validateEmail(_emailController.text) == null &&
-      _validatePassword(_passwordController.text) == null;
+      _isEmailValid && _passwordController.text.trim().isNotEmpty;
+
+  bool get _isEmailValid {
+    final trimmed = _emailController.text.trim();
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    return emailRegex.hasMatch(trimmed);
+  }
+
+  bool get _isPasswordValid => _passwordController.text.trim().isNotEmpty;
+
+  bool get _showEmailSuccess =>
+      _isEmailValid && (_hasSubmitted || (_emailTouched && !_emailFocused));
+
+  bool get _showEmailError =>
+      (_hasSubmitted && !_isEmailValid) ||
+      (_emailTouched &&
+          !_emailFocused &&
+          !_isEmailValid &&
+          _emailController.text.trim().isNotEmpty);
+
+  bool get _showPasswordSuccess =>
+      _isPasswordValid && (_hasSubmitted || (_passwordTouched && !_passwordFocused));
+
+  bool get _showPasswordError =>
+      (_hasSubmitted && !_isPasswordValid) ||
+      (_passwordTouched && !_passwordFocused && !_isPasswordValid);
+
+  @override
+  void initState() {
+    super.initState();
+    _emailFocusNode.addListener(() {
+      setState(() {
+        _emailFocused = _emailFocusNode.hasFocus;
+        _emailTouched = _emailTouched || _emailFocused;
+      });
+    });
+    _passwordFocusNode.addListener(() {
+      setState(() {
+        _passwordFocused = _passwordFocusNode.hasFocus;
+        _passwordTouched = _passwordTouched || _passwordFocused;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -47,33 +94,6 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  String? _validateEmail(String? value) {
-    final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) {
-      return 'Veuillez saisir un email valide.';
-    }
-
-    final emailRegex = RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(trimmed)) {
-      return 'Format d’email invalide.';
-    }
-
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) {
-      return 'Veuillez saisir votre mot de passe.';
-    }
-
-    if (trimmed.length < 6) {
-      return 'Votre mot de passe doit contenir au moins 6 caractères.';
-    }
-
-    return null;
-  }
-
   void _focusFirstError({String? emailError, String? passwordError}) {
     if (emailError != null) {
       _emailFocusNode.requestFocus();
@@ -86,12 +106,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
-    final emailError = _validateEmail(_emailController.text);
-    final passwordError = _validatePassword(_passwordController.text);
+    setState(() {
+      _hasSubmitted = true;
+      _emailTouched = true;
+      _passwordTouched = true;
+      _errorMessage = null;
+    });
 
-    final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid) {
-      _focusFirstError(emailError: emailError, passwordError: passwordError);
+    if (!_isFormValid) {
+      _focusFirstError(
+        emailError: _isEmailValid ? null : 'Format d’adresse invalide',
+        passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
+      );
       return;
     }
 
@@ -117,21 +143,18 @@ class _LoginPageState extends State<LoginPage> {
             : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
       });
       _focusFirstError(
-        emailError: emailError ?? _validateEmail(_emailController.text),
-        passwordError:
-            passwordError ?? _validatePassword(_passwordController.text),
+        emailError: _isEmailValid ? null : 'Format d’adresse invalide',
+        passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
       );
-    } catch (_) {
+    } catch (error) {
       setState(() {
         _errorMessage =
-            'Service temporairement indisponible. Réessayez plus tard.';
+            'Une erreur est survenue. Veuillez réessayer plus tard.';
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -184,7 +207,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Bonjour', style: bonjourStyle),
+                    Text('Bonjour,', style: bonjourStyle),
                     const SizedBox(height: 4),
                     Text('Bienvenue sur Glift', style: bienvenueStyle),
                   ],
@@ -222,55 +245,59 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 24),
-                                  _LabeledTextField(
-                                    key: const Key('emailField'),
-                                    inputKey: const Key('emailInput'),
-                                    label: 'Email',
-                                    controller: _emailController,
-                                    focusNode: _emailFocusNode,
-                                    hintText: 'john.doe@email.com',
-                                    keyboardType: TextInputType.emailAddress,
-                                    validator: _validateEmail,
-                                    onChanged: (_) {
-                                      setState(() {
-                                        _errorMessage = null;
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  _LabeledTextField(
-                                    key: const Key('passwordField'),
-                                    inputKey: const Key('passwordInput'),
-                                    label: 'Mot de passe',
-                                    controller: _passwordController,
-                                    focusNode: _passwordFocusNode,
-                                    hintText: '••••••••',
-                                    obscureText: _obscurePassword,
-                                    validator: _validatePassword,
-                                    onChanged: (_) {
-                                      setState(() {
-                                        _errorMessage = null;
-                                      });
-                                    },
-                                    suffixIcon: Semantics(
-                                      button: true,
-                                      toggled: !_obscurePassword,
-                                      label: _obscurePassword
-                                          ? 'Afficher le mot de passe'
-                                          : 'Masquer le mot de passe',
-                                      child: IconButton(
-                                        key: const Key('passwordToggle'),
-                                        onPressed: _togglePasswordVisibility,
-                                        icon: Icon(
-                                          _obscurePassword
-                                              ? Icons.visibility_outlined
-                                              : Icons.visibility_off_outlined,
-                                          color: GliftTheme.body,
-                                        ),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 368),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _InputField(
+                                            key: const Key('emailField'),
+                                            inputKey: const Key('emailInput'),
+                                            label: 'Email',
+                                            focusNode: _emailFocusNode,
+                                            controller: _emailController,
+                                            hintText: 'john.doe@email.com',
+                                            keyboardType:
+                                                TextInputType.emailAddress,
+                                            onChanged: (_) {
+                                              setState(() {
+                                                _emailTouched = true;
+                                                _errorMessage = null;
+                                              });
+                                            },
+                                            isSuccess: _showEmailSuccess,
+                                            isError: _showEmailError,
+                                            message: _isEmailValid
+                                                ? 'Merci, cet email sera ton identifiant de connexion'
+                                                : 'Format d’adresse invalide',
+                                          ),
+                                          const SizedBox(height: 16),
+                                          _PasswordField(
+                                            controller: _passwordController,
+                                            focusNode: _passwordFocusNode,
+                                            obscureText: _obscurePassword,
+                                            onChanged: (_) {
+                                              setState(() {
+                                                _passwordTouched = true;
+                                                _errorMessage = null;
+                                              });
+                                            },
+                                            onToggleVisibility:
+                                                _togglePasswordVisibility,
+                                            isSuccess: _showPasswordSuccess,
+                                            isError: _showPasswordError,
+                                            onSubmitted: (_) => _submit(),
+                                            onForgotPassword: _openForgotPassword,
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
                                   if (_errorMessage != null) ...[
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
@@ -283,49 +310,106 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ),
                                   ],
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 52,
-                                    child: ElevatedButton(
-                                      key: const Key('loginButton'),
-                                      onPressed: _isFormValid && !_isLoading
-                                          ? _submit
-                                          : null,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF6C5CE7),
-                                        foregroundColor: Colors.white,
-                                        disabledBackgroundColor:
-                                            const Color(0xFFEAEAEA),
-                                        disabledForegroundColor: GliftTheme.body,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                  Center(
+                                    child: SizedBox(
+                                      width: 160,
+                                      height: 44,
+                                      child: ElevatedButton(
+                                        key: const Key('loginButton'),
+                                        onPressed:
+                                            _isFormValid && !_isLoading ? _submit : null,
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              MaterialStateProperty.resolveWith(
+                                            (states) {
+                                              if (states
+                                                  .contains(MaterialState.disabled)) {
+                                                return const Color(0xFFF2F1F6);
+                                              }
+                                              if (states
+                                                  .contains(MaterialState.pressed)) {
+                                                return const Color(0xFF6660E4);
+                                              }
+                                              if (states
+                                                  .contains(MaterialState.hovered)) {
+                                                return const Color(0xFF6660E4);
+                                              }
+                                              return const Color(0xFF7069FA);
+                                            },
+                                          ),
+                                          foregroundColor:
+                                              MaterialStateProperty.resolveWith(
+                                            (states) {
+                                              if (states
+                                                  .contains(MaterialState.disabled)) {
+                                                return const Color(0xFFD7D4DC);
+                                              }
+                                              return Colors.white;
+                                            },
+                                          ),
+                                          overlayColor:
+                                              MaterialStateProperty.all(
+                                                  Colors.transparent),
+                                          shape:
+                                              MaterialStateProperty.all(
+                                            const StadiumBorder(),
+                                          ),
+                                          padding:
+                                              MaterialStateProperty.all(
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 15),
+                                          ),
+                                          textStyle:
+                                              MaterialStateProperty.all(
+                                            GoogleFonts.inter(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          elevation:
+                                              MaterialStateProperty.all(0),
                                         ),
-                                        textStyle: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      child: _isLoading
-                                          ? Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: const [
-                                                SizedBox(
-                                                  width: 16,
-                                                  height: 16,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation(
-                                                      Colors.white,
+                                        child: _isLoading
+                                            ? Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  SizedBox(
+                                                    width: 16,
+                                                    height: 16,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation(
+                                                        Colors.white,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                                SizedBox(width: 12),
-                                                Text('Chargement…'),
-                                              ],
-                                            )
-                                          : const Text('Se connecter'),
+                                                  SizedBox(width: 8),
+                                                  Text('En cours…'),
+                                                ],
+                                              )
+                                            : Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.lock_outline,
+                                                    size: 20,
+                                                    color: _isFormValid &&
+                                                            !_isLoading
+                                                        ? Colors.white
+                                                        : const Color(
+                                                            0xFFD7D4DC),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  const Text('Se connecter'),
+                                                ],
+                                              ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -333,9 +417,15 @@ class _LoginPageState extends State<LoginPage> {
                                     child: TextButton(
                                       onPressed: _openForgotPassword,
                                       style: TextButton.styleFrom(
-                                        foregroundColor: const Color(0xFF6C5CE7),
+                                        foregroundColor:
+                                            const Color(0xFF7069FA),
                                         textStyle: GoogleFonts.inter(
                                           fontWeight: FontWeight.w500,
+                                        ),
+                                      ).copyWith(
+                                        overlayColor:
+                                            MaterialStateProperty.all(
+                                          const Color(0x1A7069FA),
                                         ),
                                       ),
                                       child: const Text('Mot de passe oublié'),
@@ -371,17 +461,17 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class _LabeledTextField extends StatelessWidget {
-  const _LabeledTextField({
+class _InputField extends StatefulWidget {
+  const _InputField({
     super.key,
     required this.label,
     required this.controller,
     required this.focusNode,
+    required this.isSuccess,
+    required this.isError,
+    required this.message,
     this.hintText,
-    this.obscureText = false,
-    this.suffixIcon,
     this.keyboardType,
-    this.validator,
     this.onChanged,
     this.inputKey,
   });
@@ -389,58 +479,314 @@ class _LabeledTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final FocusNode focusNode;
+  final bool isSuccess;
+  final bool isError;
+  final String message;
   final String? hintText;
-  final bool obscureText;
-  final Widget? suffixIcon;
   final TextInputType? keyboardType;
-  final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
   final Key? inputKey;
 
   @override
+  State<_InputField> createState() => _InputFieldState();
+}
+
+class _InputFieldState extends State<_InputField> {
+  bool _isHovered = false;
+
+  Color _borderColor() {
+    if (widget.isError) {
+      return const Color(0xFFEF4444);
+    }
+    if (widget.isSuccess) {
+      return const Color(0xFF00D591);
+    }
+    return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
+  }
+
+  Color _messageColor() {
+    if (widget.isError) {
+      return const Color(0xFFEF4444);
+    }
+    if (widget.isSuccess) {
+      return const Color(0xFF00D591);
+    }
+    return const Color(0xFF5D6494);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final labelStyle = GoogleFonts.inter(
-      fontWeight: FontWeight.w500,
-      color: GliftTheme.title,
+      fontWeight: FontWeight.w700,
+      fontSize: 16,
+      color: const Color(0xFF3A416F),
+    );
+
+    final inputStyle = GoogleFonts.inter(
+      fontWeight: FontWeight.w700,
+      fontSize: 16,
+      color: const Color(0xFF5D6494),
     );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: labelStyle),
-        const SizedBox(height: 12),
-        TextFormField(
-          key: inputKey,
-          controller: controller,
-          focusNode: focusNode,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          validator: validator,
-          decoration: InputDecoration(
-            hintText: hintText,
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE5E5E5)),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Text(widget.label, style: labelStyle),
+        ),
+        MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: _borderColor()),
+              boxShadow: widget.focusNode.hasFocus
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFA1A5FD).withOpacity(0.45),
+                        blurRadius: 0,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : null,
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF6C5CE7)),
+            child: SizedBox(
+              height: 45,
+              child: TextFormField(
+                key: widget.inputKey,
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                keyboardType: widget.keyboardType,
+                style: inputStyle,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: widget.hintText,
+                  hintStyle: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: const Color(0xFFD7D4DC),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                ),
+                onChanged: widget.onChanged,
+              ),
             ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE74C3C)),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE74C3C)),
-            ),
-            suffixIcon: suffixIcon,
           ),
-          onChanged: onChanged,
+        ),
+        const SizedBox(height: 5),
+        SizedBox(
+          height: 20,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.isError || widget.isSuccess ? widget.message : '',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: _messageColor(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PasswordField extends StatefulWidget {
+  const _PasswordField({
+    required this.controller,
+    required this.focusNode,
+    required this.obscureText,
+    required this.onChanged,
+    required this.onToggleVisibility,
+    required this.isSuccess,
+    required this.isError,
+    required this.onSubmitted,
+    required this.onForgotPassword,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool obscureText;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onToggleVisibility;
+  final bool isSuccess;
+  final bool isError;
+  final ValueChanged<String> onSubmitted;
+  final VoidCallback onForgotPassword;
+
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _isHovered = false;
+
+  Color _borderColor() {
+    if (widget.isError) {
+      return const Color(0xFFEF4444);
+    }
+    if (widget.isSuccess) {
+      return const Color(0xFF00D591);
+    }
+    return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
+  }
+
+  Color _messageColor() {
+    if (widget.isError) {
+      return const Color(0xFFEF4444);
+    }
+    if (widget.isSuccess) {
+      return const Color(0xFF00D591);
+    }
+    return const Color(0xFF5D6494);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final labelStyle = GoogleFonts.inter(
+      fontWeight: FontWeight.w700,
+      fontSize: 16,
+      color: const Color(0xFF3A416F),
+    );
+
+    final inputStyle = GoogleFonts.inter(
+      fontWeight: FontWeight.w700,
+      fontSize: 16,
+      color: const Color(0xFF5D6494),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Mot de passe', style: labelStyle),
+              TextButton(
+                onPressed: widget.onForgotPassword,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF7069FA),
+                  textStyle: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
+                  ),
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ).copyWith(
+                  overlayColor: MaterialStateProperty.all(
+                    const Color(0xFF6660E4).withOpacity(0.12),
+                  ),
+                ),
+                child: const Text('Mot de passe oublié ?'),
+              ),
+            ],
+          ),
+        ),
+        MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: _borderColor()),
+              boxShadow: widget.focusNode.hasFocus
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFA1A5FD).withOpacity(0.45),
+                        blurRadius: 0,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: SizedBox(
+              height: 45,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: TextFormField(
+                      key: const Key('passwordInput'),
+                      controller: widget.controller,
+                      focusNode: widget.focusNode,
+                      obscureText: widget.obscureText,
+                      style: inputStyle,
+                      onChanged: widget.onChanged,
+                      onFieldSubmitted: widget.onSubmitted,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '••••••••',
+                        hintStyle: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: const Color(0xFFD7D4DC),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 10,
+                    top: 10,
+                    bottom: 10,
+                    child: Semantics(
+                      button: true,
+                      toggled: !widget.obscureText,
+                      label: widget.obscureText
+                          ? 'Afficher le mot de passe'
+                          : 'Masquer le mot de passe',
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTapDown: (_) => widget.focusNode.requestFocus(),
+                        onTap: widget.onToggleVisibility,
+                        child: SvgPicture.asset(
+                          widget.obscureText
+                              ? 'assets/icons/visible_defaut.svg'
+                              : 'assets/icons/masque_defaut.svg',
+                          width: 25,
+                          height: 25,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 5),
+        SizedBox(
+          height: 20,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.isError || widget.isSuccess
+                  ? (widget.isSuccess
+                      ? 'Mot de passe valide'
+                      : 'Mot de passe invalide')
+                  : '',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: _messageColor(),
+              ),
+            ),
+          ),
         ),
       ],
     );
