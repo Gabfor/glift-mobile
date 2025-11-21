@@ -88,14 +88,18 @@ void main() {
     final passwordField = find.byKey(const Key('passwordInput'));
     final toggleButton = find.byKey(const Key('passwordToggle'));
 
-    TextFormField formField = tester.widget(passwordField);
-    expect(formField.obscureText, isTrue);
+    TextField textField = tester.widget(
+      find.descendant(of: passwordField, matching: find.byType(TextField)),
+    );
+    expect(textField.obscureText, isTrue);
 
     await tester.tap(toggleButton);
     await tester.pump();
 
-    formField = tester.widget(passwordField);
-    expect(formField.obscureText, isFalse);
+    textField = tester.widget(
+      find.descendant(of: passwordField, matching: find.byType(TextField)),
+    );
+    expect(textField.obscureText, isFalse);
   });
 
   testWidgets('Validation errors appear on submit when fields empty',
