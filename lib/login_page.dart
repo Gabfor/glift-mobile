@@ -33,6 +33,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _emailFocused = false;
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
+  String? _emailErrorMessage;
+  String? _passwordErrorMessage;
 
   bool get _isFormValid =>
       _isEmailValid && _passwordController.text.trim().isNotEmpty;
@@ -49,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
       _isEmailValid && (_hasSubmitted || (_emailTouched && !_emailFocused));
 
   bool get _showEmailError =>
+      _emailErrorMessage != null ||
       (_hasSubmitted && !_isEmailValid) ||
       (_emailTouched &&
           !_emailFocused &&
@@ -59,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
       _isPasswordValid && (_hasSubmitted || (_passwordTouched && !_passwordFocused));
 
   bool get _showPasswordError =>
+      _passwordErrorMessage != null ||
       (_hasSubmitted && !_isPasswordValid) ||
       (_passwordTouched && !_passwordFocused && !_isPasswordValid);
 
@@ -111,12 +115,30 @@ class _LoginPageState extends State<LoginPage> {
       _emailTouched = true;
       _passwordTouched = true;
       _errorMessage = null;
+      _emailErrorMessage = null;
+      _passwordErrorMessage = null;
     });
 
-    if (!_isFormValid) {
+    String? emailError;
+    String? passwordError;
+
+    if (!_isEmailValid) {
+      emailError = 'Veuillez saisir un email valide.';
+    }
+
+    if (!_isPasswordValid) {
+      passwordError = 'Veuillez saisir votre mot de passe.';
+    }
+
+    setState(() {
+      _emailErrorMessage = emailError;
+      _passwordErrorMessage = passwordError;
+    });
+
+    if (emailError != null || passwordError != null) {
       _focusFirstError(
-        emailError: _isEmailValid ? null : 'Format d’adresse invalide',
-        passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
+        emailError: emailError,
+        passwordError: passwordError,
       );
       return;
     }
@@ -143,8 +165,9 @@ class _LoginPageState extends State<LoginPage> {
             : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
       });
       _focusFirstError(
-        emailError: _isEmailValid ? null : 'Format d’adresse invalide',
-        passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
+        emailError: _isEmailValid ? null : 'Veuillez saisir un email valide.',
+        passwordError:
+            _isPasswordValid ? null : 'Veuillez saisir votre mot de passe.',
       );
     } catch (error) {
       setState(() {
@@ -169,6 +192,31 @@ class _LoginPageState extends State<LoginPage> {
   void _openSignup() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const SignupPage()),
+    );
+  }
+
+  void _handleLoginTap() {
+    if (_isLoading) return;
+
+    if (_isFormValid) {
+      _submit();
+      return;
+    }
+
+    setState(() {
+      _hasSubmitted = true;
+      _emailTouched = true;
+      _passwordTouched = true;
+      _errorMessage = null;
+      _emailErrorMessage =
+          _isEmailValid ? null : 'Veuillez saisir un email valide.';
+      _passwordErrorMessage =
+          _isPasswordValid ? null : 'Veuillez saisir votre mot de passe.';
+    });
+
+    _focusFirstError(
+      emailError: _emailErrorMessage,
+      passwordError: _passwordErrorMessage,
     );
   }
 
@@ -273,42 +321,49 @@ class _LoginPageState extends State<LoginPage> {
                                             _InputField(
                                               key: const Key('emailField'),
                                               inputKey: const Key('emailInput'),
-                                              label: 'Email',
-                                              focusNode: _emailFocusNode,
-                                              controller: _emailController,
-                                              hintText: 'john.doe@email.com',
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              onChanged: (_) {
-                                                setState(() {
-                                                  _emailTouched = true;
-                                                  _errorMessage = null;
-                                                });
-                                              },
-                                              isSuccess: _showEmailSuccess,
-                                              isError: _showEmailError,
-                                              message: _isEmailValid
-                                                  ? 'Merci, cet email sera ton identifiant de connexion'
-                                                  : 'Format d’adresse invalide',
-                                            ),
-                                            const SizedBox(height: 16),
-                                            _PasswordField(
-                                              controller: _passwordController,
-                                              focusNode: _passwordFocusNode,
-                                              obscureText: _obscurePassword,
-                                              onChanged: (_) {
-                                                setState(() {
-                                                  _passwordTouched = true;
-                                                  _errorMessage = null;
-                                                });
-                                              },
-                                              onToggleVisibility:
-                                                  _togglePasswordVisibility,
-                                              isSuccess: _showPasswordSuccess,
-                                              isError: _showPasswordError,
-                                              onSubmitted: (_) => _submit(),
-                                              onForgotPassword: _openForgotPassword,
-                                            ),
+                                            label: 'Email',
+                                            focusNode: _emailFocusNode,
+                                            controller: _emailController,
+                                            hintText: 'john.doe@email.com',
+                                            keyboardType:
+                                                TextInputType.emailAddress,
+                                            onChanged: (_) {
+                                              setState(() {
+                                                _emailTouched = true;
+                                                _errorMessage = null;
+                                                _emailErrorMessage = null;
+                                              });
+                                            },
+                                            isSuccess: _showEmailSuccess,
+                                            isError: _showEmailError,
+                                            message: _showEmailError
+                                                ? (_emailErrorMessage ??
+                                                    'Veuillez saisir un email valide.')
+                                                : 'Merci, cet email sera ton identifiant de connexion',
+                                          ),
+                                          const SizedBox(height: 16),
+                                          _PasswordField(
+                                            controller: _passwordController,
+                                            focusNode: _passwordFocusNode,
+                                            obscureText: _obscurePassword,
+                                            onChanged: (_) {
+                                              setState(() {
+                                                _passwordTouched = true;
+                                                _errorMessage = null;
+                                                _passwordErrorMessage = null;
+                                              });
+                                            },
+                                            onToggleVisibility:
+                                                _togglePasswordVisibility,
+                                            isSuccess: _showPasswordSuccess,
+                                            isError: _showPasswordError,
+                                            errorMessage: _showPasswordError
+                                                ? (_passwordErrorMessage ??
+                                                    'Veuillez saisir votre mot de passe.')
+                                                : null,
+                                            onSubmitted: (_) => _submit(),
+                                            onForgotPassword: _openForgotPassword,
+                                          ),
                                           ],
                                         ),
                                       ),
@@ -327,94 +382,97 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ],
                                     Center(
-                                      child: SizedBox(
-                                        width: 160,
-                                        height: 44,
-                                        child: ElevatedButton(
-                                          key: const Key('loginButton'),
-                                          onPressed:
-                                              _isFormValid && !_isLoading ? _submit : null,
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                WidgetStateProperty.resolveWith(
-                                              (states) {
-                                                if (states
-                                                    .contains(WidgetState.disabled)) {
-                                                  return const Color(0xFFF2F1F6);
-                                                }
-                                                if (states
-                                                    .contains(WidgetState.pressed)) {
-                                                  return const Color(0xFF6660E4);
-                                                }
-                                                if (states
-                                                    .contains(WidgetState.hovered)) {
-                                                  return const Color(0xFF6660E4);
-                                                }
-                                                return const Color(0xFF7069FA);
-                                              },
-                                            ),
-                                            foregroundColor:
-                                                WidgetStateProperty.resolveWith(
-                                              (states) {
-                                                if (states
-                                                    .contains(WidgetState.disabled)) {
-                                                  return const Color(0xFFD7D4DC);
-                                                }
-                                                return Colors.white;
-                                              },
-                                            ),
-                                            overlayColor:
-                                                WidgetStateProperty.resolveWith(
-                                              (states) {
-                                                if (states
-                                                    .contains(WidgetState.pressed)) {
-                                                  return const Color(0x1A13027B);
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            elevation:
-                                                WidgetStateProperty.all<double>(0),
-                                            shape:
-                                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(14),
+                                      child: GestureDetector(
+                                        onTap: _handleLoginTap,
+                                        child: SizedBox(
+                                          width: 160,
+                                          height: 44,
+                                          child: ElevatedButton(
+                                            key: const Key('loginButton'),
+                                            onPressed:
+                                                _isFormValid && !_isLoading ? _submit : null,
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  WidgetStateProperty.resolveWith(
+                                                (states) {
+                                                  if (states
+                                                      .contains(WidgetState.disabled)) {
+                                                    return const Color(0xFFF2F1F6);
+                                                  }
+                                                  if (states
+                                                      .contains(WidgetState.pressed)) {
+                                                    return const Color(0xFF6660E4);
+                                                  }
+                                                  if (states
+                                                      .contains(WidgetState.hovered)) {
+                                                    return const Color(0xFF6660E4);
+                                                  }
+                                                  return const Color(0xFF7069FA);
+                                                },
+                                              ),
+                                              foregroundColor:
+                                                  WidgetStateProperty.resolveWith(
+                                                (states) {
+                                                  if (states
+                                                      .contains(WidgetState.disabled)) {
+                                                    return const Color(0xFFD7D4DC);
+                                                  }
+                                                  return Colors.white;
+                                                },
+                                              ),
+                                              overlayColor:
+                                                  WidgetStateProperty.resolveWith(
+                                                (states) {
+                                                  if (states
+                                                      .contains(WidgetState.pressed)) {
+                                                    return const Color(0x1A13027B);
+                                                  }
+                                                  return null;
+                                                },
+                                              ),
+                                              elevation:
+                                                  WidgetStateProperty.all<double>(0),
+                                              shape:
+                                                  WidgetStateProperty.all<RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(14),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          child: _isLoading
-                                              ? const SizedBox(
-                                                  height: 20,
-                                                  width: 20,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<Color>(
-                                                            Colors.white),
-                                                  ),
-                                                )
-                                              : Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      'assets/icons/login-button.svg',
-                                                      height: 20,
-                                                      width: 20,
-                                                      colorFilter:
-                                                          ColorFilter.mode(
-                                                        _isFormValid &&
-                                                                !_isLoading
-                                                            ? Colors.white
-                                                            : const Color(
-                                                                0xFFD7D4DC),
-                                                        BlendMode.srcIn,
-                                                      ),
+                                            child: _isLoading
+                                                ? const SizedBox(
+                                                    height: 20,
+                                                    width: 20,
+                                                    child: CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<Color>(
+                                                              Colors.white),
                                                     ),
-                                                    const SizedBox(width: 8),
-                                                    const Text('Se connecter'),
-                                                  ],
-                                                ),
+                                                  )
+                                                : Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        'assets/icons/login-button.svg',
+                                                        height: 20,
+                                                        width: 20,
+                                                        colorFilter:
+                                                            ColorFilter.mode(
+                                                          _isFormValid &&
+                                                                  !_isLoading
+                                                              ? Colors.white
+                                                              : const Color(
+                                                                  0xFFD7D4DC),
+                                                          BlendMode.srcIn,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      const Text('Se connecter'),
+                                                    ],
+                                                  ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -610,6 +668,7 @@ class _PasswordField extends StatefulWidget {
     required this.onToggleVisibility,
     required this.isSuccess,
     required this.isError,
+    required this.errorMessage,
     required this.onSubmitted,
     required this.onForgotPassword,
   });
@@ -621,6 +680,7 @@ class _PasswordField extends StatefulWidget {
   final VoidCallback onToggleVisibility;
   final bool isSuccess;
   final bool isError;
+  final String? errorMessage;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onForgotPassword;
 
@@ -746,18 +806,19 @@ class _PasswordFieldState extends State<_PasswordField> {
                     right: 10,
                     top: 10,
                     bottom: 10,
-                    child: Semantics(
-                      button: true,
-                      toggled: !widget.obscureText,
-                      label: widget.obscureText
-                          ? 'Afficher le mot de passe'
-                          : 'Masquer le mot de passe',
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTapDown: (_) => widget.focusNode.requestFocus(),
-                        onTap: widget.onToggleVisibility,
-                        child: SvgPicture.asset(
-                          widget.obscureText
+                child: Semantics(
+                  button: true,
+                  toggled: !widget.obscureText,
+                  label: widget.obscureText
+                      ? 'Afficher le mot de passe'
+                      : 'Masquer le mot de passe',
+                  child: GestureDetector(
+                    key: const Key('passwordToggle'),
+                    behavior: HitTestBehavior.translucent,
+                    onTapDown: (_) => widget.focusNode.requestFocus(),
+                    onTap: widget.onToggleVisibility,
+                    child: SvgPicture.asset(
+                      widget.obscureText
                               ? 'assets/icons/visible_defaut.svg'
                               : 'assets/icons/masque_defaut.svg',
                           width: 25,
@@ -777,11 +838,11 @@ class _PasswordFieldState extends State<_PasswordField> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              widget.isError || widget.isSuccess
-                  ? (widget.isSuccess
+              widget.isError
+                  ? (widget.errorMessage ?? 'Veuillez saisir votre mot de passe.')
+                  : widget.isSuccess
                       ? 'Mot de passe valide'
-                      : 'Mot de passe invalide')
-                  : '',
+                      : '',
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
