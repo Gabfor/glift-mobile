@@ -195,61 +195,72 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _pages.length,
-                  onPageChanged: _handlePageChanged,
-                  itemBuilder: (context, index) {
-                    final data = _pages[index];
-                    return OnboardingSlide(data: data);
-                  },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GliftTheme.onboardingBackground,
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                    height: 48,
+                    child: SvgPicture.asset('assets/images/logo_app.svg'),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _PageIndicator(
-                currentPage: _currentPage,
-                totalPages: _pages.length,
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
+                const SizedBox(height: 8),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _pages.length,
+                    onPageChanged: _handlePageChanged,
+                    itemBuilder: (context, index) {
+                      final data = _pages[index];
+                      return OnboardingSlide(data: data);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _PageIndicator(
+                  currentPage: _currentPage,
+                  totalPages: _pages.length,
+                ),
+                const SizedBox(height: 28),
+                GliftPrimaryButton(
+                  label: 'Se connecter',
                   onPressed: () => _handleConnect(context),
-                  child: const Text('Se connecter'),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: [
-                    Text(
-                      'Pas encore inscrit ? ',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    GestureDetector(
-                      onTap: _openSignup,
-                      child: Text(
-                        'Créer un compte',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: GliftTheme.accent,
-                            ),
+                const SizedBox(height: 20),
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        'Pas encore inscrit ? ',
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                    ),
-                  ],
+                      GestureDetector(
+                        onTap: _openSignup,
+                        child: Text(
+                          'Créer un compte',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: GliftTheme.accent,
+                                decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -284,14 +295,31 @@ class OnboardingSlide extends StatelessWidget {
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 100),
-                Center(
-                  child: EmbeddedRasterImage(
-                    svgAsset: data.imageAsset,
-                    width: 300,
-                    height: 300,
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: GliftTheme.cardShadow,
+                        blurRadius: 30,
+                        offset: Offset(0, 16),
+                      ),
+                    ],
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Center(
+                      child: EmbeddedRasterImage(
+                        svgAsset: data.imageAsset,
+                        width: 240,
+                        height: 240,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -300,17 +328,23 @@ class OnboardingSlide extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  data.title,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall,
+                const SizedBox(height: 14),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Text(
+                    data.title,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  data.description,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Text(
+                    data.description,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
                 ),
               ],
             ),
@@ -336,16 +370,57 @@ class _PageIndicator extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           margin: const EdgeInsets.symmetric(horizontal: 2.5),
-          width: 10,
-          height: 10,
+          width: isActive ? 26 : 10,
+          height: 8,
           decoration: BoxDecoration(
             color: isActive
                 ? GliftTheme.pageIndicatorActive
                 : GliftTheme.pageIndicatorInactive,
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(20),
           ),
         );
       }),
+    );
+  }
+}
+
+class GliftPrimaryButton extends StatelessWidget {
+  const GliftPrimaryButton({super.key, required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: GliftTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33403F68),
+              blurRadius: 18,
+              offset: Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: onPressed,
+            child: Center(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
