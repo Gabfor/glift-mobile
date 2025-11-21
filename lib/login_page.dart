@@ -214,6 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
+
               Expanded(
                 child: Container(
                   width: double.infinity,
@@ -224,228 +225,229 @@ class _LoginPageState extends State<LoginPage> {
                       topRight: Radius.circular(40),
                     ),
                   ),
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 50, 24, 140),
-                        child: SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 420),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Connexion',
-                                    style: GoogleFonts.quicksand(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                      color: GliftTheme.title,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Align(
-                                    alignment: Alignment.center,
-                                    child: ConstrainedBox(
-                                      constraints:
-                                          const BoxConstraints(maxWidth: 368),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          _InputField(
-                                            key: const Key('emailField'),
-                                            inputKey: const Key('emailInput'),
-                                            label: 'Email',
-                                            focusNode: _emailFocusNode,
-                                            controller: _emailController,
-                                            hintText: 'john.doe@email.com',
-                                            keyboardType:
-                                                TextInputType.emailAddress,
-                                            onChanged: (_) {
-                                              setState(() {
-                                                _emailTouched = true;
-                                                _errorMessage = null;
-                                              });
-                                            },
-                                            isSuccess: _showEmailSuccess,
-                                            isError: _showEmailError,
-                                            message: _isEmailValid
-                                                ? 'Merci, cet email sera ton identifiant de connexion'
-                                                : 'Format d’adresse invalide',
-                                          ),
-                                          const SizedBox(height: 16),
-                                          _PasswordField(
-                                            controller: _passwordController,
-                                            focusNode: _passwordFocusNode,
-                                            obscureText: _obscurePassword,
-                                            onChanged: (_) {
-                                              setState(() {
-                                                _passwordTouched = true;
-                                                _errorMessage = null;
-                                              });
-                                            },
-                                            onToggleVisibility:
-                                                _togglePasswordVisibility,
-                                            isSuccess: _showPasswordSuccess,
-                                            isError: _showPasswordError,
-                                            onSubmitted: (_) => _submit(),
-                                            onForgotPassword: _openForgotPassword,
-                                          ),
-                                        ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+                      final verticalPadding = 50 + 24;
+
+                      return SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(
+                          24,
+                          50,
+                          24,
+                          24 + viewInsets,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: 420,
+                            minHeight:
+                                constraints.maxHeight - (verticalPadding + viewInsets),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Form(
+                                key: _formKey,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Connexion',
+                                      style: GoogleFonts.quicksand(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        color: GliftTheme.title,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  if (_errorMessage != null) ...[
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
-                                      child: Text(
-                                        _errorMessage!,
-                                        style: textTheme.bodyMedium?.copyWith(
-                                          color: const Color(0xFFE74C3C),
-                                          fontWeight: FontWeight.w600,
+                                    const SizedBox(height: 24),
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: ConstrainedBox(
+                                        constraints:
+                                            const BoxConstraints(maxWidth: 368),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _InputField(
+                                              key: const Key('emailField'),
+                                              inputKey: const Key('emailInput'),
+                                              label: 'Email',
+                                              focusNode: _emailFocusNode,
+                                              controller: _emailController,
+                                              hintText: 'john.doe@email.com',
+                                              keyboardType:
+                                                  TextInputType.emailAddress,
+                                              onChanged: (_) {
+                                                setState(() {
+                                                  _emailTouched = true;
+                                                  _errorMessage = null;
+                                                });
+                                              },
+                                              isSuccess: _showEmailSuccess,
+                                              isError: _showEmailError,
+                                              message: _isEmailValid
+                                                  ? 'Merci, cet email sera ton identifiant de connexion'
+                                                  : 'Format d’adresse invalide',
+                                            ),
+                                            const SizedBox(height: 16),
+                                            _PasswordField(
+                                              controller: _passwordController,
+                                              focusNode: _passwordFocusNode,
+                                              obscureText: _obscurePassword,
+                                              onChanged: (_) {
+                                                setState(() {
+                                                  _passwordTouched = true;
+                                                  _errorMessage = null;
+                                                });
+                                              },
+                                              onToggleVisibility:
+                                                  _togglePasswordVisibility,
+                                              isSuccess: _showPasswordSuccess,
+                                              isError: _showPasswordError,
+                                              onSubmitted: (_) => _submit(),
+                                              onForgotPassword: _openForgotPassword,
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    if (_errorMessage != null) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: textTheme.bodyMedium?.copyWith(
+                                            color: const Color(0xFFE74C3C),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    Center(
+                                      child: SizedBox(
+                                        width: 160,
+                                        height: 44,
+                                        child: ElevatedButton(
+                                          key: const Key('loginButton'),
+                                          onPressed:
+                                              _isFormValid && !_isLoading ? _submit : null,
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                WidgetStateProperty.resolveWith(
+                                              (states) {
+                                                if (states
+                                                    .contains(WidgetState.disabled)) {
+                                                  return const Color(0xFFF2F1F6);
+                                                }
+                                                if (states
+                                                    .contains(WidgetState.pressed)) {
+                                                  return const Color(0xFF6660E4);
+                                                }
+                                                if (states
+                                                    .contains(WidgetState.hovered)) {
+                                                  return const Color(0xFF6660E4);
+                                                }
+                                                return const Color(0xFF7069FA);
+                                              },
+                                            ),
+                                            foregroundColor:
+                                                WidgetStateProperty.resolveWith(
+                                              (states) {
+                                                if (states
+                                                    .contains(WidgetState.disabled)) {
+                                                  return const Color(0xFFD7D4DC);
+                                                }
+                                                return Colors.white;
+                                              },
+                                            ),
+                                            overlayColor:
+                                                WidgetStateProperty.resolveWith(
+                                              (states) {
+                                                if (states
+                                                    .contains(WidgetState.pressed)) {
+                                                  return const Color(0x1A13027B);
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                            elevation:
+                                                WidgetStateProperty.all<double>(0),
+                                            shape:
+                                                WidgetStateProperty.all<RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(14),
+                                              ),
+                                            ),
+                                          ),
+                                          child: _isLoading
+                                              ? const SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<Color>(
+                                                            Colors.white),
+                                                  ),
+                                                )
+                                              : Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      'assets/icons/login-button.svg',
+                                                      height: 20,
+                                                      width: 20,
+                                                      color: _isFormValid &&
+                                                              !_isLoading
+                                                          ? Colors.white
+                                                          : const Color(
+                                                              0xFFD7D4DC),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    const Text('Se connecter'),
+                                                  ],
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Center(
+                                      child: TextButton(
+                                        onPressed: _openForgotPassword,
+                                        style: TextButton.styleFrom(
+                                          foregroundColor:
+                                              const Color(0xFF7069FA),
+                                          textStyle: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ).copyWith(
+                                          overlayColor:
+                                              WidgetStateProperty.all(
+                                            const Color(0x1A7069FA),
+                                          ),
+                                        ),
+                                        child: const Text('Mot de passe oublié'),
                                       ),
                                     ),
                                   ],
-                                  Center(
-                                    child: SizedBox(
-                                      width: 160,
-                                      height: 44,
-                                      child: ElevatedButton(
-                                        key: const Key('loginButton'),
-                                        onPressed:
-                                            _isFormValid && !_isLoading ? _submit : null,
-                                        style: ButtonStyle(
-                                          backgroundColor:
-                                              WidgetStateProperty.resolveWith(
-                                            (states) {
-                                              if (states
-                                                  .contains(WidgetState.disabled)) {
-                                                return const Color(0xFFF2F1F6);
-                                              }
-                                              if (states
-                                                  .contains(WidgetState.pressed)) {
-                                                return const Color(0xFF6660E4);
-                                              }
-                                              if (states
-                                                  .contains(WidgetState.hovered)) {
-                                                return const Color(0xFF6660E4);
-                                              }
-                                              return const Color(0xFF7069FA);
-                                            },
-                                          ),
-                                          foregroundColor:
-                                              WidgetStateProperty.resolveWith(
-                                            (states) {
-                                              if (states
-                                                  .contains(WidgetState.disabled)) {
-                                                return const Color(0xFFD7D4DC);
-                                              }
-                                              return Colors.white;
-                                            },
-                                          ),
-                                          overlayColor:
-                                              WidgetStateProperty.all(
-                                                  Colors.transparent),
-                                          shape: WidgetStateProperty.all(
-                                            const StadiumBorder(),
-                                          ),
-                                          padding: WidgetStateProperty.all(
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 15),
-                                          ),
-                                          textStyle: WidgetStateProperty.all(
-                                            GoogleFonts.inter(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          elevation: WidgetStateProperty.all(0),
-                                        ),
-                                        child: _isLoading
-                                            ? Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: const [
-                                                  SizedBox(
-                                                    width: 16,
-                                                    height: 16,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation(
-                                                        Colors.white,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 8),
-                                                  Text('En cours…'),
-                                                ],
-                                              )
-                                            : Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    Icons.lock_outline,
-                                                    size: 20,
-                                                    color: _isFormValid &&
-                                                            !_isLoading
-                                                        ? Colors.white
-                                                        : const Color(
-                                                            0xFFD7D4DC),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  const Text('Se connecter'),
-                                                ],
-                                              ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Center(
-                                    child: TextButton(
-                                      onPressed: _openForgotPassword,
-                                      style: TextButton.styleFrom(
-                                        foregroundColor:
-                                            const Color(0xFF7069FA),
-                                        textStyle: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ).copyWith(
-                                        overlayColor:
-                                            WidgetStateProperty.all(
-                                          const Color(0x1A7069FA),
-                                        ),
-                                      ),
-                                      child: const Text('Mot de passe oublié'),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 32),
+                                child: _SignupPrompt(
+                                  onTap: _openSignup,
+                                  textTheme: textTheme,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 50,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: _SignupPrompt(
-                            onTap: _openSignup,
-                            textTheme: textTheme,
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ),
