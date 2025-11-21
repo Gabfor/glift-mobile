@@ -320,54 +320,50 @@ class _LoginPageState extends State<LoginPage> {
                                             _isFormValid && !_isLoading ? _submit : null,
                                         style: ButtonStyle(
                                           backgroundColor:
-                                              MaterialStateProperty.resolveWith(
+                                              WidgetStateProperty.resolveWith(
                                             (states) {
                                               if (states
-                                                  .contains(MaterialState.disabled)) {
+                                                  .contains(WidgetState.disabled)) {
                                                 return const Color(0xFFF2F1F6);
                                               }
                                               if (states
-                                                  .contains(MaterialState.pressed)) {
+                                                  .contains(WidgetState.pressed)) {
                                                 return const Color(0xFF6660E4);
                                               }
                                               if (states
-                                                  .contains(MaterialState.hovered)) {
+                                                  .contains(WidgetState.hovered)) {
                                                 return const Color(0xFF6660E4);
                                               }
                                               return const Color(0xFF7069FA);
                                             },
                                           ),
                                           foregroundColor:
-                                              MaterialStateProperty.resolveWith(
+                                              WidgetStateProperty.resolveWith(
                                             (states) {
                                               if (states
-                                                  .contains(MaterialState.disabled)) {
+                                                  .contains(WidgetState.disabled)) {
                                                 return const Color(0xFFD7D4DC);
                                               }
                                               return Colors.white;
                                             },
                                           ),
                                           overlayColor:
-                                              MaterialStateProperty.all(
+                                              WidgetStateProperty.all(
                                                   Colors.transparent),
-                                          shape:
-                                              MaterialStateProperty.all(
+                                          shape: WidgetStateProperty.all(
                                             const StadiumBorder(),
                                           ),
-                                          padding:
-                                              MaterialStateProperty.all(
+                                          padding: WidgetStateProperty.all(
                                             const EdgeInsets.symmetric(
                                                 horizontal: 15),
                                           ),
-                                          textStyle:
-                                              MaterialStateProperty.all(
+                                          textStyle: WidgetStateProperty.all(
                                             GoogleFonts.inter(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 16,
                                             ),
                                           ),
-                                          elevation:
-                                              MaterialStateProperty.all(0),
+                                          elevation: WidgetStateProperty.all(0),
                                         ),
                                         child: _isLoading
                                             ? Row(
@@ -424,7 +420,7 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                       ).copyWith(
                                         overlayColor:
-                                            MaterialStateProperty.all(
+                                            WidgetStateProperty.all(
                                           const Color(0x1A7069FA),
                                         ),
                                       ),
@@ -547,7 +543,7 @@ class _InputFieldState extends State<_InputField> {
               boxShadow: widget.focusNode.hasFocus
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFA1A5FD).withOpacity(0.45),
+                        color: const Color(0x73A1A5FD),
                         blurRadius: 0,
                         spreadRadius: 2,
                       ),
@@ -684,8 +680,8 @@ class _PasswordFieldState extends State<_PasswordField> {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ).copyWith(
-                  overlayColor: MaterialStateProperty.all(
-                    const Color(0xFF6660E4).withOpacity(0.12),
+                  overlayColor: WidgetStateProperty.all(
+                    const Color(0x1F6660E4),
                   ),
                 ),
                 child: const Text('Mot de passe oublié ?'),
@@ -705,7 +701,7 @@ class _PasswordFieldState extends State<_PasswordField> {
               boxShadow: widget.focusNode.hasFocus
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFA1A5FD).withOpacity(0.45),
+                        color: const Color(0x73A1A5FD),
                         blurRadius: 0,
                         spreadRadius: 2,
                       ),
