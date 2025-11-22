@@ -41,5 +41,31 @@ void main() {
 
       expect(result, Uint8List.fromList([7, 8]));
     });
+
+    test('supports plain href attributes', () {
+      final png = base64Encode([11, 12, 13]);
+      final svg = '''
+<svg xmlns="http://www.w3.org/2000/svg">
+  <image id="only" href="data:image/png;base64,$png" />
+</svg>
+''';
+
+      final result = EmbeddedRasterImage.extractPrimaryImage(svg);
+
+      expect(result, Uint8List.fromList([11, 12, 13]));
+    });
+
+    test('supports embedded webp images', () {
+      final webp = base64Encode([14, 15, 16, 17]);
+      final svg = '''
+<svg xmlns="http://www.w3.org/2000/svg">
+  <image id="webp" xlink:href="data:image/webp;base64,$webp" />
+</svg>
+''';
+
+      final result = EmbeddedRasterImage.extractPrimaryImage(svg);
+
+      expect(result, Uint8List.fromList([14, 15, 16, 17]));
+    });
   });
 }

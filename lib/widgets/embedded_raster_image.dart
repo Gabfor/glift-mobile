@@ -20,13 +20,16 @@ class EmbeddedRasterImage extends StatelessWidget {
   final BoxFit fit;
 
   static final _cache = <String, Future<Uint8List>>{};
+  static const _hrefAttr = '(?:xlink:)?href';
   static final _imageElementPattern = RegExp(
-    r'''<image[^>]+id=["']([^"']+)["'][^>]+xlink:href=["']data:image/(?:png|jpeg);base64,([^"']+)["'][^>]*>''',
+    r'''<image[^>]+id=["']([^"']+)["'][^>]+''' r'$_hrefAttr' r'''=["']data:image/(?:png|jpe?g|webp);base64,([^"']+)["'][^>]*>''',
     dotAll: true,
+    caseSensitive: false,
   );
   static final _patternUsePattern = RegExp(
-    r'''<pattern[^>]+id=["']([^"']+)["'][^>]*>.*?<use[^>]+xlink:href=["']#([^"']+)["']''',
+    r'''<pattern[^>]+id=["']([^"']+)["'][^>]*>.*?<use[^>]+''' r'$_hrefAttr' r'''=["']#([^"']+)["']''',
     dotAll: true,
+    caseSensitive: false,
   );
   static final _rectPatternPattern = RegExp(
     r'''<rect[^>]+fill=["']url\(#([^"')]+)\)["'][^>]*>''',
