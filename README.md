@@ -17,7 +17,13 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Mettre à jour l'icône de l'application
 
-1. Préparez une image PNG carrée (au moins 1024×1024) et placez-la par exemple dans `assets/images/app_icon.png`. Si vous partez du logo vectoriel existant (`assets/images/logo_app.svg`), exportez-le en PNG depuis votre outil de design.
+1. Préparez une image PNG carrée (au moins 1024×1024) et convertissez-la en texte pour éviter d'ajouter des binaires au dépôt :
+
+   ```bash
+   base64 /chemin/vers/mon_icon.png > assets/images/app_icon.b64.txt
+   ```
+
+   Si vous partez du logo vectoriel existant (`assets/images/logo_app.svg`), exportez-le en PNG avant de l'encoder. Le fichier texte reste traçable dans Git alors que les variantes générées sont ignorées.
 2. Ajoutez la dépendance de génération d'icônes au fichier `pubspec.yaml` :
 
    ```yaml
@@ -34,11 +40,13 @@ samples, guidance on mobile development, and a full API reference.
      linux: true
    ```
 
-3. Mettez à jour les dépendances puis générez les icônes :
+3. Mettez à jour les dépendances puis générez les icônes (dans un dossier ignoré ou directement dans les ressources locales) :
 
    ```bash
    flutter pub get
-   flutter pub run flutter_launcher_icons
+   python tool/generate_icons.py --export-dir build/generated_icons
+   # ou, si vous voulez remplir les répertoires de plateforme locaux sans les committer :
+   python tool/generate_icons.py
    ```
 
-La commande remplace les icônes sur toutes les plateformes (Android, iOS, Web et desktop). Pensez à committer le nouveau PNG source ainsi que les fichiers générés.
+La commande remplace les icônes sur toutes les plateformes (Android, iOS, Web et desktop). Seul le fichier texte `assets/images/app_icon.b64.txt` doit être committé : les ressources générées sont listées dans `.gitignore` pour éviter les diffs binaires dans les demandes d'extraction. Joignez les artefacts exportés au besoin lors de vos revues.
