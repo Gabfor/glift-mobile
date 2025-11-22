@@ -196,61 +196,75 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _pages.length,
-                  onPageChanged: _handlePageChanged,
-                  itemBuilder: (context, index) {
-                    final data = _pages[index];
-                    return OnboardingSlide(data: data);
-                  },
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final mediaQuery = MediaQuery.of(context);
+            final topPadding = (constraints.maxHeight * 0.04).clamp(16.0, 32.0);
+            final bottomPadding = (constraints.maxHeight * 0.08)
+                    .clamp(28.0, 56.0) +
+                mediaQuery.padding.bottom;
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                topPadding,
+                24,
+                bottomPadding,
               ),
-              const SizedBox(height: 24),
-              _PageIndicator(
-                currentPage: _currentPage,
-                totalPages: _pages.length,
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () => _handleConnect(context),
-                  child: const Text('Se connecter'),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: [
-                    Text(
-                      'Pas encore inscrit ? ',
-                      style: Theme.of(context).textTheme.bodyMedium,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _pages.length,
+                      onPageChanged: _handlePageChanged,
+                      itemBuilder: (context, index) {
+                        final data = _pages[index];
+                        return OnboardingSlide(data: data);
+                      },
                     ),
-                    GestureDetector(
-                      onTap: _openSignup,
-                      child: Text(
-                        'Créer un compte',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: GliftTheme.accent,
-                            ),
-                      ),
+                  ),
+                  const SizedBox(height: 24),
+                  _PageIndicator(
+                    currentPage: _currentPage,
+                    totalPages: _pages.length,
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => _handleConnect(context),
+                      child: const Text('Se connecter'),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          'Pas encore inscrit ? ',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        GestureDetector(
+                          onTap: _openSignup,
+                          child: Text(
+                            'Créer un compte',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: GliftTheme.accent,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 40),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -283,12 +297,12 @@ class OnboardingSlide extends StatelessWidget {
         final availableHeight = constraints.maxHeight;
         final availableWidth = constraints.maxWidth;
 
-        final topSpacing = (availableHeight * 0.06).clamp(16.0, 48.0);
+        final topSpacing = (availableHeight * 0.04).clamp(12.0, 40.0);
         final imageSize = math.max(
           160.0,
           math.min(
-            320.0,
-            math.min(availableWidth * 0.8, availableHeight * 0.35),
+            360.0,
+            math.min(availableWidth * 0.85, availableHeight * 0.42),
           ),
         );
 
