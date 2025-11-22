@@ -221,7 +221,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 24),
                   _PageIndicator(
                     currentPage: _currentPage,
                     totalPages: _pages.length,
