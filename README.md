@@ -40,13 +40,14 @@ samples, guidance on mobile development, and a full API reference.
      linux: true
    ```
 
-3. Mettez à jour les dépendances puis générez les icônes (dans un dossier ignoré ou directement dans les ressources locales) :
+3. Mettez à jour les dépendances puis générez les icônes (dans un dossier ignoré ou directement dans les répertoires de plate-forme) :
 
    ```bash
    flutter pub get
+   # Option Dart (décode la base64 puis appelle flutter_launcher_icons)
+   dart run tool/generate_app_icons.dart
+   # Option Python existante
    python tool/generate_icons.py --export-dir build/generated_icons
-   # ou, si vous voulez remplir les répertoires de plateforme locaux sans les committer :
-   python tool/generate_icons.py
    ```
 
 La commande remplace les icônes sur toutes les plateformes (Android, iOS, Web et desktop). Seul le fichier texte `assets/images/app_icon.b64.txt` doit être committé : les ressources générées sont listées dans `.gitignore` pour éviter les diffs binaires dans les demandes d'extraction. Joignez les artefacts exportés au besoin lors de vos revues.
