@@ -280,18 +280,30 @@ class OnboardingSlide extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final availableHeight = constraints.maxHeight;
+        final availableWidth = constraints.maxWidth;
+
+        final topSpacing = (availableHeight * 0.06).clamp(16.0, 48.0);
+        final imageSize = math.max(
+          160.0,
+          math.min(
+            320.0,
+            math.min(availableWidth * 0.8, availableHeight * 0.35),
+          ),
+        );
+
         return SingleChildScrollView(
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 100),
+                SizedBox(height: topSpacing),
                 Center(
                   child: EmbeddedRasterImage(
                     svgAsset: data.imageAsset,
-                    width: 300,
-                    height: 300,
+                    width: imageSize,
+                    height: imageSize,
                   ),
                 ),
                 const SizedBox(height: 32),
