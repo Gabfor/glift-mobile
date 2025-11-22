@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
 import 'auth/auth_repository.dart';
+import 'design/colors.dart';
+import 'design/spacing.dart';
+import 'design/theme.dart';
+import 'design/typography.dart';
 import 'forgot_password_page.dart';
 import 'home_page.dart';
 import 'signup_page.dart';
-import 'theme/glift_theme.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.authRepository});
@@ -123,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (!_isFormValid) {
       _focusFirstError(
-        emailError: _isEmailValid ? null : 'Format d’adresse invalide',
+        emailError: _isEmailValid ? null : 'Format d'adresse invalide',
         passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
       );
       return;
@@ -151,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
             : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
       });
       _focusFirstError(
-        emailError: _isEmailValid ? null : 'Format d’adresse invalide',
+        emailError: _isEmailValid ? null : 'Format d'adresse invalide',
         passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
       );
     } catch (error) {
@@ -182,300 +183,65 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = GoogleFonts.interTextTheme(Theme.of(context).textTheme);
-    final bonjourStyle = GoogleFonts.quicksand(
-      fontWeight: FontWeight.w600,
-      fontSize: 14,
-      color: Colors.white,
-    );
-    final bienvenueStyle = GoogleFonts.quicksand(
-      fontWeight: FontWeight.w700,
-      fontSize: 16,
-      color: Colors.white,
-    );
+    final mediaQuery = MediaQuery.of(context);
+    final viewInsets = mediaQuery.viewInsets.bottom;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF6C5CE7), Color(0xFF7B6CFC)],
-              stops: [0, 0.8],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 70, left: 24, right: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Bonjour,', style: bonjourStyle),
-                    const SizedBox(height: 4),
-                    Text('Bienvenue sur Glift', style: bienvenueStyle),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
+    return Theme(
+      data: DesignTheme.light(),
+      child: Scaffold(
+        backgroundColor: BrandColors.pageBackground,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final minHeight = constraints.maxHeight - viewInsets;
 
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
-                  ),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-                      final verticalPadding = 50 + 24;
-
-                      return SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(
-                          24,
-                          50,
-                          24,
-                          24 + viewInsets,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 420,
-                            minHeight:
-                                constraints.maxHeight - (verticalPadding + viewInsets),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Connexion',
-                                      style: GoogleFonts.quicksand(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                        color: GliftTheme.title,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 24),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 368),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _InputField(
-                                              key: const Key('emailField'),
-                                              inputKey: const Key('emailInput'),
-                                              label: 'Email',
-                                              focusNode: _emailFocusNode,
-                                              controller: _emailController,
-                                              hintText: 'john.doe@email.com',
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              onChanged: (_) {
-                                                setState(() {
-                                                  _emailTouched = true;
-                                                  _errorMessage = null;
-                                                });
-                                              },
-                                              isSuccess: _showEmailSuccess,
-                                              isError: _showEmailError,
-                                              message: _emailMessage,
-                                            ),
-                                            const SizedBox(height: 16),
-                                            _PasswordField(
-                                              controller: _passwordController,
-                                              focusNode: _passwordFocusNode,
-                                              obscureText: _obscurePassword,
-                                              onChanged: (_) {
-                                                setState(() {
-                                                  _passwordTouched = true;
-                                                  _errorMessage = null;
-                                                });
-                                              },
-                                              onToggleVisibility:
-                                                  _togglePasswordVisibility,
-                                              isSuccess: _showPasswordSuccess,
-                                              isError: _showPasswordError,
-                                              onSubmitted: (_) => _submit(),
-                                              onForgotPassword: _openForgotPassword,
-                                              message: _passwordMessage,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    if (_errorMessage != null) ...[
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 12),
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: textTheme.bodyMedium?.copyWith(
-                                            color: const Color(0xFFE74C3C),
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    Center(
-                                      child: SizedBox(
-                                        width: 160,
-                                        height: 44,
-                                        child: Stack(
-                                          children: [
-                                            if (!_isFormValid && !_isLoading)
-                                              Positioned.fill(
-                                                child: GestureDetector(
-                                                  behavior: HitTestBehavior.translucent,
-                                                  onTap: _submit,
-                                                ),
-                                              ),
-                                            ElevatedButton(
-                                              key: const Key('loginButton'),
-                                              onPressed: _isFormValid && !_isLoading
-                                                  ? _submit
-                                                  : null,
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                    WidgetStateProperty.resolveWith(
-                                                  (states) {
-                                                    if (states.contains(
-                                                        WidgetState.disabled)) {
-                                                      return const Color(0xFFF2F1F6);
-                                                    }
-                                                    if (states.contains(
-                                                        WidgetState.pressed)) {
-                                                      return const Color(0xFF6660E4);
-                                                    }
-                                                    if (states.contains(
-                                                        WidgetState.hovered)) {
-                                                      return const Color(0xFF6660E4);
-                                                    }
-                                                    return const Color(0xFF7069FA);
-                                                  },
-                                                ),
-                                                foregroundColor:
-                                                    WidgetStateProperty.resolveWith(
-                                                  (states) {
-                                                    if (states.contains(
-                                                        WidgetState.disabled)) {
-                                                      return const Color(0xFFD7D4DC);
-                                                    }
-                                                    return Colors.white;
-                                                  },
-                                                ),
-                                                overlayColor:
-                                                    WidgetStateProperty.resolveWith(
-                                                  (states) {
-                                                    if (states.contains(
-                                                        WidgetState.pressed)) {
-                                                      return const Color(0x1A13027B);
-                                                    }
-                                                    return null;
-                                                  },
-                                                ),
-                                                elevation:
-                                                    WidgetStateProperty.all<double>(0),
-                                                shape: WidgetStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                  RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(14),
-                                                  ),
-                                                ),
-                                              ),
-                                              child: _isLoading
-                                                  ? const SizedBox(
-                                                      height: 20,
-                                                      width: 20,
-                                                      child: CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(Colors.white),
-                                                      ),
-                                                    )
-                                                  : Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          'assets/icons/login-button.svg',
-                                                          height: 20,
-                                                          width: 20,
-                                                          colorFilter:
-                                                              ColorFilter.mode(
-                                                            _isFormValid &&
-                                                                    !_isLoading
-                                                                ? Colors.white
-                                                                : const Color(
-                                                                    0xFFD7D4DC),
-                                                            BlendMode.srcIn,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        const Text('Se connecter'),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Center(
-                                      child: TextButton(
-                                        onPressed: _openForgotPassword,
-                                        style: TextButton.styleFrom(
-                                          foregroundColor:
-                                              const Color(0xFF7069FA),
-                                          textStyle: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ).copyWith(
-                                          overlayColor:
-                                              WidgetStateProperty.all(
-                                            const Color(0x1A7069FA),
-                                          ),
-                                        ),
-                                        child: const Text('Mot de passe oublié'),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 32),
-                                child: _SignupPrompt(
-                                  onTap: _openSignup,
-                                  textTheme: textTheme,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+              return SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20, 24, 20, 16 + viewInsets),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: minHeight),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _PageHeader(),
+                      const SizedBox(height: 20),
+                      _LoginCard(
+                        formKey: _formKey,
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        emailFocusNode: _emailFocusNode,
+                        passwordFocusNode: _passwordFocusNode,
+                        isLoading: _isLoading,
+                        isFormValid: _isFormValid,
+                        showEmailSuccess: _showEmailSuccess,
+                        showEmailError: _showEmailError,
+                        showPasswordSuccess: _showPasswordSuccess,
+                        showPasswordError: _showPasswordError,
+                        emailMessage: _emailMessage,
+                        passwordMessage: _passwordMessage,
+                        errorMessage: _errorMessage,
+                        obscurePassword: _obscurePassword,
+                        onEmailChanged: (_) {
+                          setState(() {
+                            _emailTouched = true;
+                            _errorMessage = null;
+                          });
+                        },
+                        onPasswordChanged: (_) {
+                          setState(() {
+                            _passwordTouched = true;
+                            _errorMessage = null;
+                          });
+                        },
+                        onSubmit: _submit,
+                        onTogglePassword: _togglePasswordVisibility,
+                        onForgotPassword: _openForgotPassword,
+                        onSignup: _openSignup,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -483,7 +249,167 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class _InputField extends StatefulWidget {
+class _PageHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: BrandColors.accentPale,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Text(
+            'Heureux de te revoir',
+            style: textTheme.labelSmall?.copyWith(color: BrandColors.primary),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text('Connexion', style: textTheme.titleLarge),
+        const SizedBox(height: 8),
+        Text(
+          'Accède à ton suivi et reprends ton entraînement où tu t'es arrêté.',
+          style: textTheme.bodyLarge,
+        ),
+      ],
+    );
+  }
+}
+
+class _LoginCard extends StatelessWidget {
+  const _LoginCard({
+    required this.formKey,
+    required this.emailController,
+    required this.passwordController,
+    required this.emailFocusNode,
+    required this.passwordFocusNode,
+    required this.isLoading,
+    required this.isFormValid,
+    required this.showEmailSuccess,
+    required this.showEmailError,
+    required this.showPasswordSuccess,
+    required this.showPasswordError,
+    required this.emailMessage,
+    required this.passwordMessage,
+    required this.errorMessage,
+    required this.obscurePassword,
+    required this.onEmailChanged,
+    required this.onPasswordChanged,
+    required this.onSubmit,
+    required this.onTogglePassword,
+    required this.onForgotPassword,
+    required this.onSignup,
+  });
+
+  final GlobalKey<FormState> formKey;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final FocusNode emailFocusNode;
+  final FocusNode passwordFocusNode;
+  final bool isLoading;
+  final bool isFormValid;
+  final bool showEmailSuccess;
+  final bool showEmailError;
+  final bool showPasswordSuccess;
+  final bool showPasswordError;
+  final String emailMessage;
+  final String passwordMessage;
+  final String? errorMessage;
+  final bool obscurePassword;
+  final ValueChanged<String> onEmailChanged;
+  final ValueChanged<String> onPasswordChanged;
+  final VoidCallback onSubmit;
+  final VoidCallback onTogglePassword;
+  final VoidCallback onForgotPassword;
+  final VoidCallback onSignup;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        boxShadow: const [Shadows.glift],
+      ),
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _InputField(
+              key: const Key('emailField'),
+              inputKey: const Key('emailInput'),
+              label: 'Email',
+              focusNode: emailFocusNode,
+              controller: emailController,
+              hintText: 'john.doe@email.com',
+              keyboardType: TextInputType.emailAddress,
+              onChanged: onEmailChanged,
+              isSuccess: showEmailSuccess,
+              isError: showEmailError,
+              message: emailMessage,
+            ),
+            const SizedBox(height: 14),
+            _PasswordField(
+              controller: passwordController,
+              focusNode: passwordFocusNode,
+              obscureText: obscurePassword,
+              onChanged: onPasswordChanged,
+              onToggleVisibility: onTogglePassword,
+              isSuccess: showPasswordSuccess,
+              isError: showPasswordError,
+              onSubmitted: (_) => onSubmit(),
+              onForgotPassword: onForgotPassword,
+              message: passwordMessage,
+            ),
+            if (errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                errorMessage!,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: TailwindLightColors.destructive,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: AppSpacing.buttonHeight,
+              child: ElevatedButton(
+                key: const Key('loginButton'),
+                onPressed: isFormValid && !isLoading ? onSubmit : null,
+                child: isLoading
+                    ? const SizedBox(
+                        height: AppSpacing.spinnerMd,
+                        width: AppSpacing.spinnerMd,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Se connecter'),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(color: BrandColors.border),
+            const SizedBox(height: 12),
+            _SignupPrompt(
+              onTap: onSignup,
+              textTheme: textTheme,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InputField extends StatelessWidget {
   const _InputField({
     super.key,
     required this.label,
@@ -510,110 +436,54 @@ class _InputField extends StatefulWidget {
   final Key? inputKey;
 
   @override
-  State<_InputField> createState() => _InputFieldState();
-}
-
-class _InputFieldState extends State<_InputField> {
-  bool _isHovered = false;
-
-  Color _borderColor() {
-    if (widget.isError) {
-      return const Color(0xFFEF4444);
-    }
-    if (widget.isSuccess) {
-      return const Color(0xFF00D591);
-    }
-    return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
-  }
-
-  Color _messageColor() {
-    if (widget.isError) {
-      return const Color(0xFFEF4444);
-    }
-    if (widget.isSuccess) {
-      return const Color(0xFF00D591);
-    }
-    return const Color(0xFF5D6494);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final labelStyle = GoogleFonts.inter(
-      fontWeight: FontWeight.w700,
-      fontSize: 16,
-      color: const Color(0xFF3A416F),
-    );
+    final textTheme = Theme.of(context).textTheme;
 
-    final inputStyle = GoogleFonts.inter(
-      fontWeight: FontWeight.w700,
-      fontSize: 16,
-      color: const Color(0xFF5D6494),
-    );
+    Color? suffixColor() {
+      if (isError) return TailwindLightColors.destructive;
+      if (isSuccess) return BrandColors.primary;
+      return null;
+    }
+
+    final suffixIcon = suffixColor() != null
+        ? Icon(
+            isError ? Icons.error_outline : Icons.check_circle,
+            color: suffixColor(),
+          )
+        : null;
+
+    final messageColor = isError
+        ? TailwindLightColors.destructive
+        : isSuccess
+            ? BrandColors.primary
+            : BrandColors.body;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Text(widget.label, style: labelStyle),
+        Text(
+          label,
+          style: textTheme.bodyMedium?.copyWith(color: BrandColors.title),
         ),
-        MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: _borderColor()),
-              boxShadow: widget.focusNode.hasFocus
-                  ? [
-                      BoxShadow(
-                        color: const Color(0x73A1A5FD),
-                        blurRadius: 0,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: SizedBox(
-              height: 45,
-              child: TextFormField(
-                key: widget.inputKey,
-                controller: widget.controller,
-                focusNode: widget.focusNode,
-                keyboardType: widget.keyboardType,
-                style: inputStyle,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: widget.hintText,
-                  hintStyle: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: const Color(0xFFD7D4DC),
-                  ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                ),
-                onChanged: widget.onChanged,
-              ),
-            ),
+        const SizedBox(height: 6),
+        TextFormField(
+          key: inputKey,
+          controller: controller,
+          focusNode: focusNode,
+          keyboardType: keyboardType,
+          style: AppTypography.inputText,
+          decoration: InputDecoration(
+            hintText: hintText,
+            suffixIcon: suffixIcon,
           ),
+          onChanged: onChanged,
         ),
-        const SizedBox(height: 5),
-        SizedBox(
-          height: 20,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              widget.isError || widget.isSuccess ? widget.message : '',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: _messageColor(),
-              ),
-            ),
+        const SizedBox(height: 6),
+        Text(
+          isError || isSuccess ? message : '',
+          style: textTheme.bodySmall?.copyWith(
+            color: messageColor,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -621,7 +491,7 @@ class _InputFieldState extends State<_InputField> {
   }
 }
 
-class _PasswordField extends StatefulWidget {
+class _PasswordField extends StatelessWidget {
   const _PasswordField({
     required this.controller,
     required this.focusNode,
@@ -647,166 +517,76 @@ class _PasswordField extends StatefulWidget {
   final String message;
 
   @override
-  State<_PasswordField> createState() => _PasswordFieldState();
-}
-
-class _PasswordFieldState extends State<_PasswordField> {
-  bool _isHovered = false;
-
-  Color _borderColor() {
-    if (widget.isError) {
-      return const Color(0xFFEF4444);
-    }
-    if (widget.isSuccess) {
-      return const Color(0xFF00D591);
-    }
-    return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
-  }
-
-  Color _messageColor() {
-    if (widget.isError) {
-      return const Color(0xFFEF4444);
-    }
-    if (widget.isSuccess) {
-      return const Color(0xFF00D591);
-    }
-    return const Color(0xFF5D6494);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final labelStyle = GoogleFonts.inter(
-      fontWeight: FontWeight.w700,
-      fontSize: 16,
-      color: const Color(0xFF3A416F),
-    );
+    final textTheme = Theme.of(context).textTheme;
 
-    final inputStyle = GoogleFonts.inter(
-      fontWeight: FontWeight.w700,
-      fontSize: 16,
-      color: const Color(0xFF5D6494),
-    );
+    Color? suffixColor() {
+      if (isError) return TailwindLightColors.destructive;
+      if (isSuccess) return BrandColors.primary;
+      return BrandColors.body;
+    }
+
+    final messageColor = isError
+        ? TailwindLightColors.destructive
+        : isSuccess
+            ? BrandColors.primary
+            : BrandColors.body;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Mot de passe', style: labelStyle),
-              TextButton(
-                onPressed: widget.onForgotPassword,
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF7069FA),
-                  textStyle: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 10,
-                  ),
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ).copyWith(
-                  overlayColor: WidgetStateProperty.all(
-                    const Color(0x1F6660E4),
-                  ),
-                ),
-                child: const Text('Mot de passe oublié ?'),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Mot de passe',
+                style: textTheme.bodyMedium?.copyWith(color: BrandColors.title),
               ),
-            ],
-          ),
-        ),
-        MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: _borderColor()),
-              boxShadow: widget.focusNode.hasFocus
-                  ? [
-                      BoxShadow(
-                        color: const Color(0x73A1A5FD),
-                        blurRadius: 0,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : null,
             ),
-            child: SizedBox(
-              height: 45,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: TextField(
-                      key: const Key('passwordInput'),
-                      controller: widget.controller,
-                      focusNode: widget.focusNode,
-                      obscureText: widget.obscureText,
-                      style: inputStyle,
-                      onChanged: widget.onChanged,
-                      onSubmitted: widget.onSubmitted,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: '••••••••',
-                        hintStyle: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: const Color(0xFFD7D4DC),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 10,
-                    bottom: 10,
-                    child: Semantics(
-                      button: true,
-                      toggled: !widget.obscureText,
-                      label: widget.obscureText
-                          ? 'Afficher le mot de passe'
-                          : 'Masquer le mot de passe',
-                      child: GestureDetector(
-                        key: const Key('passwordToggle'),
-                        behavior: HitTestBehavior.translucent,
-                        onTapDown: (_) => widget.focusNode.requestFocus(),
-                        onTap: widget.onToggleVisibility,
-                        child: SvgPicture.asset(
-                          widget.obscureText
-                              ? 'assets/icons/visible_defaut.svg'
-                              : 'assets/icons/masque_defaut.svg',
-                          width: 25,
-                          height: 25,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            TextButton(
+              onPressed: onForgotPassword,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Oublié ?',
+                style: textTheme.bodySmall?.copyWith(color: BrandColors.primary),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          key: const Key('passwordInput'),
+          controller: controller,
+          focusNode: focusNode,
+          obscureText: obscureText,
+          style: AppTypography.inputText,
+          onChanged: onChanged,
+          onSubmitted: onSubmitted,
+          decoration: InputDecoration(
+            hintText: '••••••••',
+            suffixIcon: IconButton(
+              key: const Key('passwordToggle'),
+              splashRadius: 20,
+              onPressed: onToggleVisibility,
+              icon: Icon(
+                obscureText
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                color: suffixColor(),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 5),
-        SizedBox(
-          height: 20,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              widget.isError || widget.isSuccess ? widget.message : '',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: _messageColor(),
-              ),
-            ),
+        const SizedBox(height: 6),
+        Text(
+          isError || isSuccess ? message : '',
+          style: textTheme.bodySmall?.copyWith(
+            color: messageColor,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -825,12 +605,6 @@ class _SignupPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final promptTextStyle = GoogleFonts.quicksand(
-      fontWeight: FontWeight.w600,
-      fontSize: 16,
-      color: const Color(0xFF5D6494),
-    );
-
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -838,17 +612,22 @@ class _SignupPrompt extends StatelessWidget {
       children: [
         Text(
           'Pas encore inscrit ? ',
-          style: promptTextStyle,
+          style: textTheme.bodyMedium?.copyWith(color: BrandColors.body),
         ),
         TextButton(
           onPressed: onTap,
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF6C5CE7),
-            textStyle: promptTextStyle,
+            foregroundColor: BrandColors.primary,
             padding: EdgeInsets.zero,
             minimumSize: Size.zero,
           ),
-          child: const Text('Créer un compte'),
+          child: Text(
+            'Créer un compte',
+            style: textTheme.bodyMedium?.copyWith(
+              color: BrandColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ],
     );
