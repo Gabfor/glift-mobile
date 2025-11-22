@@ -199,15 +199,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final mediaQuery = MediaQuery.of(context);
-            final topPadding = (constraints.maxHeight * 0.04).clamp(16.0, 32.0);
-            final bottomPadding = (constraints.maxHeight * 0.08)
-                    .clamp(28.0, 56.0) +
-                mediaQuery.padding.bottom;
+            final bottomPadding = mediaQuery.padding.bottom;
 
             return Padding(
               padding: EdgeInsets.fromLTRB(
                 24,
-                topPadding,
+                0,
                 24,
                 bottomPadding,
               ),
