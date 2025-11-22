@@ -294,7 +294,6 @@ class OnboardingSlide extends StatelessWidget {
         final availableHeight = constraints.maxHeight;
         final availableWidth = constraints.maxWidth;
 
-        final topSpacing = (availableHeight * 0.04).clamp(12.0, 40.0);
         final imageSize = math.max(
           160.0,
           math.min(
@@ -307,9 +306,9 @@ class OnboardingSlide extends StatelessWidget {
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: topSpacing),
                 Center(
                   child: EmbeddedRasterImage(
                     svgAsset: data.imageAsset,
@@ -335,6 +334,7 @@ class OnboardingSlide extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
+                SizedBox(height: (availableHeight * 0.05).clamp(16.0, 32.0)),
               ],
             ),
           ),
