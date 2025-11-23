@@ -7,7 +7,6 @@ import 'auth/auth_repository.dart';
 import 'forgot_password_page.dart';
 import 'home_page.dart';
 import 'signup_page.dart';
-import 'theme/glift_theme.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.authRepository});
@@ -196,288 +195,221 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF6C5CE7), Color(0xFF7B6CFC)],
-              stops: [0, 0.8],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 70, left: 24, right: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Bonjour,', style: bonjourStyle),
-                    const SizedBox(height: 4),
-                    Text('Bienvenue sur Glift', style: bienvenueStyle),
-                  ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+            final availableHeight = (constraints.maxHeight - viewInsets)
+                .clamp(0.0, double.infinity)
+                .toDouble();
+
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(color: const Color(0xFF7069FA)),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
+                SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    48,
+                    20,
+                    24 + viewInsets,
                   ),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-                      final verticalPadding = 50 + 24;
-
-                      return SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(
-                          24,
-                          50,
-                          24,
-                          24 + viewInsets,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 420,
-                            minHeight:
-                                constraints.maxHeight - (verticalPadding + viewInsets),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Connexion',
-                                      style: GoogleFonts.quicksand(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                        color: GliftTheme.title,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 24),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 368),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _InputField(
-                                              key: const Key('emailField'),
-                                              inputKey: const Key('emailInput'),
-                                              label: 'Email',
-                                              focusNode: _emailFocusNode,
-                                              controller: _emailController,
-                                              hintText: 'john.doe@email.com',
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              onChanged: (_) {
-                                                setState(() {
-                                                  _emailTouched = true;
-                                                  _errorMessage = null;
-                                                });
-                                              },
-                                              isSuccess: _showEmailSuccess,
-                                              isError: _showEmailError,
-                                              message: _emailMessage,
-                                            ),
-                                            const SizedBox(height: 16),
-                                            _PasswordField(
-                                              controller: _passwordController,
-                                              focusNode: _passwordFocusNode,
-                                              obscureText: _obscurePassword,
-                                              onChanged: (_) {
-                                                setState(() {
-                                                  _passwordTouched = true;
-                                                  _errorMessage = null;
-                                                });
-                                              },
-                                              onToggleVisibility:
-                                                  _togglePasswordVisibility,
-                                              isSuccess: _showPasswordSuccess,
-                                              isError: _showPasswordError,
-                                              onSubmitted: (_) => _submit(),
-                                              onForgotPassword: _openForgotPassword,
-                                              message: _passwordMessage,
-                                            ),
-                                          ],
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight:
+                          (availableHeight - 72).clamp(0.0, double.infinity),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Bonjour,', style: bonjourStyle),
+                            const SizedBox(height: 6),
+                            Text('Bienvenue sur Glift', style: bienvenueStyle),
+                            const SizedBox(height: 32),
+                            Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8F9FA),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Connexion',
+                                        style: GoogleFonts.quicksand(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: const Color(0xFF3A416F),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    if (_errorMessage != null) ...[
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 12),
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: textTheme.bodyMedium?.copyWith(
-                                            color: const Color(0xFFE74C3C),
-                                            fontWeight: FontWeight.w600,
+                                      const SizedBox(height: 24),
+                                      _InputField(
+                                        key: const Key('emailField'),
+                                        inputKey: const Key('emailInput'),
+                                        label: 'Email',
+                                        focusNode: _emailFocusNode,
+                                        controller: _emailController,
+                                        hintText: 'john.doe@email.com',
+                                        keyboardType: TextInputType.emailAddress,
+                                        onChanged: (_) {
+                                          setState(() {
+                                            _emailTouched = true;
+                                            _errorMessage = null;
+                                          });
+                                        },
+                                        isSuccess: _showEmailSuccess,
+                                        isError: _showEmailError,
+                                        message: _emailMessage,
+                                      ),
+                                      const SizedBox(height: 18),
+                                      _PasswordField(
+                                        controller: _passwordController,
+                                        focusNode: _passwordFocusNode,
+                                        obscureText: _obscurePassword,
+                                        onChanged: (_) {
+                                          setState(() {
+                                            _passwordTouched = true;
+                                            _errorMessage = null;
+                                          });
+                                        },
+                                        onToggleVisibility: _togglePasswordVisibility,
+                                        isSuccess: _showPasswordSuccess,
+                                        isError: _showPasswordError,
+                                        onSubmitted: (_) => _submit(),
+                                        message: _passwordMessage,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      if (_errorMessage != null) ...[
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 12),
+                                          child: Text(
+                                            _errorMessage!,
+                                            style: textTheme.bodyMedium?.copyWith(
+                                              color: const Color(0xFFE74C3C),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
+                                        ),
+                                      ],
+                                      _SubmitButton(
+                                        isLoading: _isLoading,
+                                        isEnabled: _isFormValid,
+                                        onSubmit: _submit,
+                                      ),
+                                      const SizedBox(height: 14),
+                                      Center(
+                                        child: TextButton(
+                                          onPressed: _openForgotPassword,
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                const Color(0xFF7069FA),
+                                            textStyle: GoogleFonts.quicksand(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                          child: const Text('Mot de passe oublié'),
                                         ),
                                       ),
                                     ],
-                                    Center(
-                                      child: SizedBox(
-                                        width: 160,
-                                        height: 44,
-                                        child: Stack(
-                                          children: [
-                                            if (!_isFormValid && !_isLoading)
-                                              Positioned.fill(
-                                                child: GestureDetector(
-                                                  behavior: HitTestBehavior.translucent,
-                                                  onTap: _submit,
-                                                ),
-                                              ),
-                                            ElevatedButton(
-                                              key: const Key('loginButton'),
-                                              onPressed: _isFormValid && !_isLoading
-                                                  ? _submit
-                                                  : null,
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                    WidgetStateProperty.resolveWith(
-                                                  (states) {
-                                                    if (states.contains(
-                                                        WidgetState.disabled)) {
-                                                      return const Color(0xFFF2F1F6);
-                                                    }
-                                                    if (states.contains(
-                                                        WidgetState.pressed)) {
-                                                      return const Color(0xFF6660E4);
-                                                    }
-                                                    if (states.contains(
-                                                        WidgetState.hovered)) {
-                                                      return const Color(0xFF6660E4);
-                                                    }
-                                                    return const Color(0xFF7069FA);
-                                                  },
-                                                ),
-                                                foregroundColor:
-                                                    WidgetStateProperty.resolveWith(
-                                                  (states) {
-                                                    if (states.contains(
-                                                        WidgetState.disabled)) {
-                                                      return const Color(0xFFD7D4DC);
-                                                    }
-                                                    return Colors.white;
-                                                  },
-                                                ),
-                                                overlayColor:
-                                                    WidgetStateProperty.resolveWith(
-                                                  (states) {
-                                                    if (states.contains(
-                                                        WidgetState.pressed)) {
-                                                      return const Color(0x1A13027B);
-                                                    }
-                                                    return null;
-                                                  },
-                                                ),
-                                                elevation:
-                                                    WidgetStateProperty.all<double>(0),
-                                                shape: WidgetStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                  RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(14),
-                                                  ),
-                                                ),
-                                              ),
-                                              child: _isLoading
-                                                  ? const SizedBox(
-                                                      height: 20,
-                                                      width: 20,
-                                                      child: CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(Colors.white),
-                                                      ),
-                                                    )
-                                                  : Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          'assets/icons/login-button.svg',
-                                                          height: 20,
-                                                          width: 20,
-                                                          colorFilter:
-                                                              ColorFilter.mode(
-                                                            _isFormValid &&
-                                                                    !_isLoading
-                                                                ? Colors.white
-                                                                : const Color(
-                                                                    0xFFD7D4DC),
-                                                            BlendMode.srcIn,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        const Text('Se connecter'),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Center(
-                                      child: TextButton(
-                                        onPressed: _openForgotPassword,
-                                        style: TextButton.styleFrom(
-                                          foregroundColor:
-                                              const Color(0xFF7069FA),
-                                          textStyle: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ).copyWith(
-                                          overlayColor:
-                                              WidgetStateProperty.all(
-                                            const Color(0x1A7069FA),
-                                          ),
-                                        ),
-                                        child: const Text('Mot de passe oublié'),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 32),
-                                child: _SignupPrompt(
-                                  onTap: _openSignup,
-                                  textTheme: textTheme,
-                                ),
-                              ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 24),
+                          child: _SignupPrompt(
+                            onTap: _openSignup,
+                            textTheme: textTheme,
                           ),
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _SubmitButton extends StatelessWidget {
+  const _SubmitButton({
+    required this.isLoading,
+    required this.isEnabled,
+    required this.onSubmit,
+  });
+
+  final bool isLoading;
+  final bool isEnabled;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = isEnabled && !isLoading
+        ? const Color(0xFF7069FA)
+        : const Color(0xFFF2F1F6);
+
+    final textColor = isEnabled && !isLoading
+        ? Colors.white
+        : const Color(0xFFD7D4DC);
+
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        key: const Key('loginButton'),
+        onPressed: isEnabled && !isLoading ? onSubmit : null,
+        style: ButtonStyle(
+          elevation: WidgetStateProperty.all(0),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return backgroundColor;
+            }
+            return backgroundColor;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return textColor;
+            }
+            return textColor;
+          }),
+          overlayColor: WidgetStateProperty.all(const Color(0x147069FA)),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          ),
+          textStyle: WidgetStateProperty.all(
+            GoogleFonts.quicksand(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
           ),
         ),
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Text('Se connecter'),
       ),
     );
   }
@@ -538,13 +470,13 @@ class _InputFieldState extends State<_InputField> {
 
   @override
   Widget build(BuildContext context) {
-    final labelStyle = GoogleFonts.inter(
+    final labelStyle = GoogleFonts.quicksand(
       fontWeight: FontWeight.w700,
       fontSize: 16,
       color: const Color(0xFF3A416F),
     );
 
-    final inputStyle = GoogleFonts.inter(
+    final inputStyle = GoogleFonts.quicksand(
       fontWeight: FontWeight.w700,
       fontSize: 16,
       color: const Color(0xFF5D6494),
@@ -569,9 +501,10 @@ class _InputFieldState extends State<_InputField> {
               boxShadow: widget.focusNode.hasFocus
                   ? [
                       BoxShadow(
-                        color: const Color(0x73A1A5FD),
-                        blurRadius: 0,
-                        spreadRadius: 2,
+                        color: const Color(0x266069FA),
+                        blurRadius: 10,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 4),
                       ),
                     ]
                   : null,
@@ -588,7 +521,7 @@ class _InputFieldState extends State<_InputField> {
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: widget.hintText,
-                  hintStyle: GoogleFonts.inter(
+                  hintStyle: GoogleFonts.quicksand(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                     color: const Color(0xFFD7D4DC),
@@ -608,7 +541,7 @@ class _InputFieldState extends State<_InputField> {
             alignment: Alignment.centerLeft,
             child: Text(
               widget.isError || widget.isSuccess ? widget.message : '',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.quicksand(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
                 color: _messageColor(),
@@ -631,7 +564,6 @@ class _PasswordField extends StatefulWidget {
     required this.isSuccess,
     required this.isError,
     required this.onSubmitted,
-    required this.onForgotPassword,
     required this.message,
   });
 
@@ -643,7 +575,6 @@ class _PasswordField extends StatefulWidget {
   final bool isSuccess;
   final bool isError;
   final ValueChanged<String> onSubmitted;
-  final VoidCallback onForgotPassword;
   final String message;
 
   @override
@@ -675,13 +606,13 @@ class _PasswordFieldState extends State<_PasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    final labelStyle = GoogleFonts.inter(
+    final labelStyle = GoogleFonts.quicksand(
       fontWeight: FontWeight.w700,
       fontSize: 16,
       color: const Color(0xFF3A416F),
     );
 
-    final inputStyle = GoogleFonts.inter(
+    final inputStyle = GoogleFonts.quicksand(
       fontWeight: FontWeight.w700,
       fontSize: 16,
       color: const Color(0xFF5D6494),
@@ -689,52 +620,30 @@ class _PasswordFieldState extends State<_PasswordField> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Mot de passe', style: labelStyle),
-              TextButton(
-                onPressed: widget.onForgotPassword,
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF7069FA),
-                  textStyle: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 10,
-                  ),
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ).copyWith(
-                  overlayColor: WidgetStateProperty.all(
-                    const Color(0x1F6660E4),
-                  ),
-                ),
-                child: const Text('Mot de passe oublié ?'),
-              ),
-            ],
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Text('Mot de passe', style: labelStyle),
           ),
-        ),
-        MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: _borderColor()),
-              boxShadow: widget.focusNode.hasFocus
-                  ? [
-                      BoxShadow(
-                        color: const Color(0x73A1A5FD),
-                        blurRadius: 0,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : null,
+          MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(color: _borderColor()),
+                boxShadow: widget.focusNode.hasFocus
+                    ? [
+                        BoxShadow(
+                          color: const Color(0x266069FA),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
             ),
             child: SizedBox(
               height: 45,
@@ -752,7 +661,7 @@ class _PasswordFieldState extends State<_PasswordField> {
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '••••••••',
-                        hintStyle: GoogleFonts.inter(
+                        hintStyle: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: const Color(0xFFD7D4DC),
@@ -795,16 +704,16 @@ class _PasswordFieldState extends State<_PasswordField> {
           ),
         ),
         const SizedBox(height: 5),
-        SizedBox(
-          height: 20,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              widget.isError || widget.isSuccess ? widget.message : '',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: _messageColor(),
+          SizedBox(
+            height: 20,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.isError || widget.isSuccess ? widget.message : '',
+                style: GoogleFonts.quicksand(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: _messageColor(),
               ),
             ),
           ),
