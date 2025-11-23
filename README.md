@@ -17,37 +17,14 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Mettre à jour l'icône de l'application
 
-1. Préparez une image PNG carrée (au moins 1024×1024) et convertissez-la en texte pour éviter d'ajouter des binaires au dépôt :
+L'icône source est stockée sous forme vectorielle pour éviter les binaires dans Git : `assets/images/app_icon.svg`.
 
-   ```bash
-   base64 /chemin/vers/mon_icon.png > assets/images/app_icon.b64.txt
-   ```
-
-   Si vous partez du logo vectoriel existant (`assets/images/logo_app.svg`), exportez-le en PNG avant de l'encoder. Le fichier texte reste traçable dans Git alors que les variantes générées sont ignorées.
-2. Ajoutez la dépendance de génération d'icônes au fichier `pubspec.yaml` :
-
-   ```yaml
-   dev_dependencies:
-     flutter_launcher_icons: ^0.14.1
-
-   flutter_launcher_icons:
-     image_path: "assets/images/app_icon.png"
-     android: true
-     ios: true
-     web: true
-     windows: true
-     macos: true
-     linux: true
-   ```
-
-3. Mettez à jour les dépendances puis générez les icônes (dans un dossier ignoré ou directement dans les répertoires de plate-forme) :
+1. Mettez à jour le fichier SVG si nécessaire (format 1024×1024 conseillé).
+2. Installez les dépendances puis générez les icônes locales :
 
    ```bash
    flutter pub get
-   # Option Dart (décode la base64 puis appelle flutter_launcher_icons)
-   dart run tool/generate_app_icons.dart
-   # Option Python existante
-   python tool/generate_icons.py --export-dir build/generated_icons
+   flutter pub run flutter_launcher_icons
    ```
 
-La commande remplace les icônes sur toutes les plateformes (Android, iOS, Web et desktop). Seul le fichier texte `assets/images/app_icon.b64.txt` doit être committé : les ressources générées sont listées dans `.gitignore` pour éviter les diffs binaires dans les demandes d'extraction. Joignez les artefacts exportés au besoin lors de vos revues.
+Les icônes générées sont ignorées par Git (`.gitignore`) afin d'éviter les diffs binaires dans les demandes d'extraction. Pensez à lancer la commande après chaque mise à jour du SVG pour que toutes les plateformes disposent de la bonne icône.
