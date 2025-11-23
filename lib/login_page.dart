@@ -193,7 +193,10 @@ class _LoginPageState extends State<LoginPage> {
       color: Colors.white,
     );
 
+    final viewPadding = MediaQuery.of(context).padding;
+
     return Scaffold(
+      backgroundColor: const Color(0xFF7069FA),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -210,130 +213,121 @@ class _LoginPageState extends State<LoginPage> {
                 SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
                     20,
-                    48,
+                    24 + viewPadding.top,
                     20,
-                    24 + viewInsets,
+                    24 + (viewInsets > 0 ? viewInsets : viewPadding.bottom),
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      minHeight:
-                          (availableHeight - 72).clamp(0.0, double.infinity),
+                      minHeight: (availableHeight - 48)
+                          .clamp(0.0, double.infinity),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Bonjour,', style: bonjourStyle),
-                            const SizedBox(height: 6),
-                            Text('Bienvenue sur Glift', style: bienvenueStyle),
-                            const SizedBox(height: 32),
-                            Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8F9FA),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Connexion',
-                                        style: GoogleFonts.quicksand(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                          color: const Color(0xFF3A416F),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      _InputField(
-                                        key: const Key('emailField'),
-                                        inputKey: const Key('emailInput'),
-                                        label: 'Email',
-                                        focusNode: _emailFocusNode,
-                                        controller: _emailController,
-                                        hintText: 'john.doe@email.com',
-                                        keyboardType: TextInputType.emailAddress,
-                                        onChanged: (_) {
-                                          setState(() {
-                                            _emailTouched = true;
-                                            _errorMessage = null;
-                                          });
-                                        },
-                                        isSuccess: _showEmailSuccess,
-                                        isError: _showEmailError,
-                                        message: _emailMessage,
-                                      ),
-                                      const SizedBox(height: 18),
-                                      _PasswordField(
-                                        controller: _passwordController,
-                                        focusNode: _passwordFocusNode,
-                                        obscureText: _obscurePassword,
-                                        onChanged: (_) {
-                                          setState(() {
-                                            _passwordTouched = true;
-                                            _errorMessage = null;
-                                          });
-                                        },
-                                        onToggleVisibility: _togglePasswordVisibility,
-                                        isSuccess: _showPasswordSuccess,
-                                        isError: _showPasswordError,
-                                        onSubmitted: (_) => _submit(),
-                                        message: _passwordMessage,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      if (_errorMessage != null) ...[
-                                        Padding(
-                                          padding: const EdgeInsets.only(bottom: 12),
-                                          child: Text(
-                                            _errorMessage!,
-                                            style: textTheme.bodyMedium?.copyWith(
-                                              color: const Color(0xFFE74C3C),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      _SubmitButton(
-                                        isLoading: _isLoading,
-                                        isEnabled: _isFormValid,
-                                        onSubmit: _submit,
-                                      ),
-                                      const SizedBox(height: 14),
-                                      Center(
-                                        child: TextButton(
-                                          onPressed: _openForgotPassword,
-                                          style: TextButton.styleFrom(
-                                            foregroundColor:
-                                                const Color(0xFF7069FA),
-                                            textStyle: GoogleFonts.quicksand(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 14,
-                                            ),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                          child: const Text('Mot de passe oublié'),
-                                        ),
-                                      ),
-                                    ],
+                        Text('Bonjour,', style: bonjourStyle),
+                        const SizedBox(height: 6),
+                        Text('Bienvenue sur Glift', style: bienvenueStyle),
+                        const SizedBox(height: 32),
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Connexion',
+                                    style: GoogleFonts.quicksand(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      color: const Color(0xFF3A416F),
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 24),
+                                  _InputField(
+                                    key: const Key('emailField'),
+                                    inputKey: const Key('emailInput'),
+                                    label: 'Email',
+                                    focusNode: _emailFocusNode,
+                                    controller: _emailController,
+                                    hintText: 'john.doe@email.com',
+                                    keyboardType: TextInputType.emailAddress,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        _emailTouched = true;
+                                        _errorMessage = null;
+                                      });
+                                    },
+                                    isSuccess: _showEmailSuccess,
+                                    isError: _showEmailError,
+                                    message: _emailMessage,
+                                  ),
+                                  const SizedBox(height: 18),
+                                  _PasswordField(
+                                    controller: _passwordController,
+                                    focusNode: _passwordFocusNode,
+                                    obscureText: _obscurePassword,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        _passwordTouched = true;
+                                        _errorMessage = null;
+                                      });
+                                    },
+                                    onToggleVisibility: _togglePasswordVisibility,
+                                    isSuccess: _showPasswordSuccess,
+                                    isError: _showPasswordError,
+                                    onSubmitted: (_) => _submit(),
+                                    message: _passwordMessage,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (_errorMessage != null) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: Text(
+                                        _errorMessage!,
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          color: const Color(0xFFE74C3C),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  _SubmitButton(
+                                    isLoading: _isLoading,
+                                    isEnabled: _isFormValid,
+                                    onSubmit: _submit,
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Center(
+                                    child: TextButton(
+                                      onPressed: _openForgotPassword,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color(0xFF7069FA),
+                                        textStyle: GoogleFonts.quicksand(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      child: const Text('Mot de passe oublié'),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24),
-                          child: _SignupPrompt(
-                            onTap: _openSignup,
-                            textTheme: textTheme,
                           ),
+                        ),
+                        const SizedBox(height: 28),
+                        _SignupPrompt(
+                          onTap: _openSignup,
+                          textTheme: textTheme,
                         ),
                       ],
                     ),
