@@ -44,9 +44,13 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Generated launcher icons (kept locally to avoid binary diffs in PRs)
-/assets/images/app_icon.png
-/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_*.png
-/web/favicon.png
-/web/icons/*.png
-/windows/runner/resources/app_icon.ico
+# Generated launcher icons (kept out of version control)
+android/app/src/main/res/mipmap-*/ic_launcher.png
+ios/Runner/Assets.xcassets/AppIcon.appiconset/
+macos/Runner/Assets.xcassets/AppIcon.appiconset/
+web/favicon.png
+web/icons/
+windows/runner/resources/app_icon.ico
+!ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
+!macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
+
