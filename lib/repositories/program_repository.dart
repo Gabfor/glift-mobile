@@ -10,9 +10,15 @@ class ProgramRepository {
 
   Future<List<Program>> getPrograms() async {
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+
       final response = await _supabase
           .from('programs')
           .select('id, name, position, trainings(id, name, position, app, dashboard)')
+          .eq('user_id', userId)
           .order('position', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;

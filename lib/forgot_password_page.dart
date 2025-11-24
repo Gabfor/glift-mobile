@@ -4,6 +4,7 @@ import 'package:supabase/supabase.dart';
 
 import 'auth/auth_repository.dart';
 import 'theme/glift_theme.dart';
+import 'widgets/glift_page_layout.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key, required this.authRepository});
@@ -73,62 +74,57 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Mot de passe oublié'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return GliftPageLayout(
+      title: 'Mot de passe oublié',
+      subtitle: 'Réinitialisation',
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recevez un lien de réinitialisation par email.',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: GliftTheme.title,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+              ),
+              validator: _validateEmail,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Envoyer'),
+              ),
+            ),
+            if (_feedback != null) ...[
+              const SizedBox(height: 16),
               Text(
-                'Recevez un lien de réinitialisation par email.',
+                _feedback!,
                 style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: GliftTheme.title,
+                  color: _feedback!.startsWith('Email envoyé')
+                      ? Colors.green
+                      : const Color(0xFFE74C3C),
                 ),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                ),
-                validator: _validateEmail,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Envoyer'),
-                ),
-              ),
-              if (_feedback != null) ...[
-                const SizedBox(height: 16),
-                Text(
-                  _feedback!,
-                  style: GoogleFonts.inter(
-                    color: _feedback!.startsWith('Email envoyé')
-                        ? Colors.green
-                        : const Color(0xFFE74C3C),
-                  ),
-                ),
-              ],
             ],
-          ),
+          ],
         ),
       ),
     );

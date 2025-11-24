@@ -56,5 +56,4 @@ flutter:
     - assets/images/onboarding_suivre.svg
     - assets/images/onboarding_noter.svg
     - assets/images/onboarding_visualiser.svg
-    - assets/icons/visible_defaut.svg
-    - assets/icons/masque_defaut.svg
+    - assets/icons/

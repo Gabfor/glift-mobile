@@ -8,7 +8,7 @@ import 'forgot_password_page.dart';
 import 'home_page.dart';
 import 'main_page.dart';
 import 'signup_page.dart';
-
+import 'widgets/glift_page_layout.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({
     super.key,
@@ -192,131 +192,87 @@ class _LoginPageState extends State<LoginPage> {
     final paddingTop = height * 0.08;
     final formTop = height * 0.25;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: SafeArea(
-        child: Stack(
+    return GliftPageLayout(
+      title: 'Bonjour,',
+      subtitle: 'Bienvenue sur Glift',
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: height * 0.3,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFF7069FA),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(60),
-                  bottomRight: Radius.circular(60),
+            Text(
+              'Connexion',
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFF3A416F),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _InputField(
+              label: 'Email',
+              hintText: 'john.doe@email.com',
+              controller: _emailController,
+              focusNode: _emailFocusNode,
+              isSuccess: _showEmailSuccess,
+              isError: _showEmailError,
+              message: _emailMessage,
+              onChanged: (_) {
+                setState(() {
+                  _emailTouched = true;
+                  _errorMessage = null;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            _PasswordField(
+              controller: _passwordController,
+              focusNode: _passwordFocusNode,
+              obscureText: _obscurePassword,
+              onChanged: (_) {
+                setState(() {
+                  _passwordTouched = true;
+                  _errorMessage = null;
+                });
+              },
+              onToggleVisibility: _togglePasswordVisibility,
+              isSuccess: _showPasswordSuccess,
+              isError: _showPasswordError,
+              onSubmitted: (_) => _submit(),
+              message: _passwordMessage,
+            ),
+            const SizedBox(height: 16),
+            if (_errorMessage != null)
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFFE74C3C),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              child: Padding(
-                padding: EdgeInsets.only(left: width * 0.05, top: paddingTop),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bonjour,',
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Bienvenue sur Glift',
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 16),
+            _AnimatedButton(
+              isEnabled: _isFormValid,
+              isLoading: _isLoading,
+              onPressed: _submit,
+            ),
+            const SizedBox(height: 14),
+            Center(
+              child: TextButton(
+                onPressed: _openForgotPassword,
+                child: Text(
+                  'Mot de passe oublié',
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFF7069FA),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-            SingleChildScrollView(
-              padding: EdgeInsets.only(top: formTop, left: 20, right: 20, bottom: 30),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Connexion',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _InputField(
-                      label: 'Email',
-                      hintText: 'john.doe@email.com',
-                      controller: _emailController,
-                      focusNode: _emailFocusNode,
-                      isSuccess: _showEmailSuccess,
-                      isError: _showEmailError,
-                      message: _emailMessage,
-                      onChanged: (_) {
-                        setState(() {
-                          _emailTouched = true;
-                          _errorMessage = null;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    _PasswordField(
-                      controller: _passwordController,
-                      focusNode: _passwordFocusNode,
-                      obscureText: _obscurePassword,
-                      onChanged: (_) {
-                        setState(() {
-                          _passwordTouched = true;
-                          _errorMessage = null;
-                        });
-                      },
-                      onToggleVisibility: _togglePasswordVisibility,
-                      isSuccess: _showPasswordSuccess,
-                      isError: _showPasswordError,
-                      onSubmitted: (_) => _submit(),
-                      message: _passwordMessage,
-                    ),
-                    const SizedBox(height: 16),
-                    if (_errorMessage != null)
-                      Text(
-                        _errorMessage!,
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFFE74C3C),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    _AnimatedButton(
-                      isEnabled: _isFormValid,
-                      isLoading: _isLoading,
-                      onPressed: _submit,
-                    ),
-                    const SizedBox(height: 14),
-                    Center(
-                      child: TextButton(
-                        onPressed: _openForgotPassword,
-                        child: Text(
-                          'Mot de passe oublié',
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF7069FA),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: height * 0.12),
-                    _SignupPrompt(onTap: _openSignup),
-                  ],
-                ),
-              ),
-            ),
+            SizedBox(height: height * 0.1),
+            _SignupPrompt(onTap: _openSignup),
           ],
         ),
       ),

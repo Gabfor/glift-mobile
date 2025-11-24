@@ -21,6 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final ProgramRepository _programRepository;
+  late final PageController _pageController;
   List<Program>? _programs;
   String? _selectedProgramId;
   bool _isLoading = true;
@@ -30,7 +31,14 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
+    _pageController = PageController();
     _fetchPrograms();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchPrograms() async {
@@ -55,19 +63,42 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _onProgramSelected(int index) {
+    setState(() {
+      _selectedProgramId = _programs![index].id;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _selectedProgramId = _programs![index].id;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFF7069FA),
       body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Section
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              color: const Color(0xFF7069FA),
-              width: double.infinity,
+            Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: height * 0.02,
+                bottom: 20,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,20 +115,18 @@ class _HomePageState extends State<HomePage> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: _programs!.map((program) {
+                        children: _programs!.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final program = entry.value;
                           final isSelected = program.id == _selectedProgramId;
                           return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedProgramId = program.id;
-                              });
-                            },
+                            onTap: () => _onProgramSelected(index),
                             child: Container(
-                              margin: const EdgeInsets.only(right: 20, bottom: 15),
+                              margin: const EdgeInsets.only(right: 20),
                               child: Text(
                                 program.name,
                                 style: GoogleFonts.quicksand(
-                                  fontSize: isSelected ? 20 : 16,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: isSelected
                                       ? Colors.white
@@ -115,23 +144,28 @@ class _HomePageState extends State<HomePage> {
             
             // Content Section
             Expanded(
-              child: Transform.translate(
-                offset: const Offset(0, -20),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, -5),
                     ),
-                    child: _buildBody(),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
+                  child: _buildBody(),
                 ),
               ),
             ),
@@ -162,49 +196,52 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    final selectedProgram = _programs!.firstWhere(
-      (p) => p.id == _selectedProgramId,
-      orElse: () => _programs!.first,
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
-          child: Text(
-            'Entraînements',
-            style: GoogleFonts.quicksand(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: GliftTheme.title,
+    return PageView.builder(
+      controller: _pageController,
+      onPageChanged: _onPageChanged,
+      itemCount: _programs!.length,
+      itemBuilder: (context, index) {
+        final program = _programs![index];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
+              child: Text(
+                'Entraînements',
+                style: GoogleFonts.quicksand(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: GliftTheme.title,
+                ),
+              ),
             ),
-          ),
-        ),
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            itemCount: selectedProgram.trainings.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final training = selectedProgram.trainings[index];
-              return _TrainingCard(
-                training: training,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => TrainingDetailsPage(
-                        training: training,
-                        supabase: widget.supabase,
-                      ),
-                    ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                itemCount: program.trainings.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final training = program.trainings[index];
+                  return _TrainingCard(
+                    training: training,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => TrainingDetailsPage(
+                            training: training,
+                            supabase: widget.supabase,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
