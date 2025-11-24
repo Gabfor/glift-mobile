@@ -84,7 +84,10 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
       return const SplashScreen();
     }
 
-    return OnboardingFlow(authRepository: widget.authRepository);
+    return OnboardingFlow(
+      authRepository: widget.authRepository,
+      supabase: widget.supabase,
+    );
   }
 }
 
@@ -120,9 +123,14 @@ class _SplashLogo extends StatelessWidget {
 }
 
 class OnboardingFlow extends StatefulWidget {
-  const OnboardingFlow({super.key, required this.authRepository});
+  const OnboardingFlow({
+    super.key,
+    required this.authRepository,
+    required this.supabase,
+  });
 
   final AuthRepository authRepository;
+  final SupabaseClient supabase;
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
@@ -174,7 +182,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   void _handleConnect(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => LoginPage(authRepository: widget.authRepository),
+        builder: (_) => LoginPage(
+          authRepository: widget.authRepository,
+          supabase: widget.supabase,
+        ),
       ),
     );
   }
