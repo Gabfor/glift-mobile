@@ -193,8 +193,39 @@ class _LoginPageState extends State<LoginPage> {
     final formTop = height * 0.25;
 
     return GliftPageLayout(
-      title: 'Bonjour,',
-      subtitle: 'Bienvenue sur Glift',
+      header: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: 'Bonjour',
+              style: GoogleFonts.quicksand(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.86,
+              ),
+            ),
+            TextSpan(
+              text: ',\n',
+              style: GoogleFonts.quicksand(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                height: 1.73,
+              ),
+            ),
+            TextSpan(
+              text: 'Bienvenue sur Glift',
+              style: GoogleFonts.quicksand(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                height: 1.62,
+              ),
+            ),
+          ],
+        ),
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -214,7 +245,6 @@ class _LoginPageState extends State<LoginPage> {
               hintText: 'john.doe@email.com',
               controller: _emailController,
               focusNode: _emailFocusNode,
-              isSuccess: _showEmailSuccess,
               isError: _showEmailError,
               message: _emailMessage,
               onChanged: (_) {
@@ -224,7 +254,7 @@ class _LoginPageState extends State<LoginPage> {
                 });
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             _PasswordField(
               controller: _passwordController,
               focusNode: _passwordFocusNode,
@@ -236,13 +266,12 @@ class _LoginPageState extends State<LoginPage> {
                 });
               },
               onToggleVisibility: _togglePasswordVisibility,
-              isSuccess: _showPasswordSuccess,
               isError: _showPasswordError,
               onSubmitted: (_) => _submit(),
               message: _passwordMessage,
             ),
-            const SizedBox(height: 16),
-            if (_errorMessage != null)
+            const SizedBox(height: 30),
+            if (_errorMessage != null) ...[
               Text(
                 _errorMessage!,
                 style: GoogleFonts.quicksand(
@@ -251,18 +280,25 @@ class _LoginPageState extends State<LoginPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             _AnimatedButton(
               isEnabled: _isFormValid,
               isLoading: _isLoading,
               onPressed: _submit,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 20),
             Center(
               child: TextButton(
                 onPressed: _openForgotPassword,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 child: Text(
                   'Mot de passe oublié',
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.quicksand(
                     color: const Color(0xFF7069FA),
                     fontSize: 14,
@@ -271,11 +307,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            SizedBox(height: height * 0.1),
-            _SignupPrompt(onTap: _openSignup),
           ],
         ),
       ),
+      footer: _SignupPrompt(onTap: _openSignup),
     );
   }
 }
@@ -342,9 +377,17 @@ class _SignupPrompt extends StatelessWidget {
         TextSpan(
           children: [
             TextSpan(
-              text: 'Pas encore inscrit ? ',
+              text: 'Pas encore inscrit ?',
               style: GoogleFonts.quicksand(
                 color: const Color(0xFF5D6494),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextSpan(
+              text: ' ',
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFF97959A),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -370,7 +413,6 @@ class _InputField extends StatefulWidget {
   final String? hintText;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final bool isSuccess;
   final bool isError;
   final String message;
   final ValueChanged<String>? onChanged;
@@ -379,7 +421,6 @@ class _InputField extends StatefulWidget {
     required this.label,
     required this.controller,
     required this.focusNode,
-    required this.isSuccess,
     required this.isError,
     required this.message,
     this.hintText,
@@ -395,13 +436,11 @@ class _InputFieldState extends State<_InputField> {
 
   Color _borderColor() {
     if (widget.isError) return const Color(0xFFEF4444);
-    if (widget.isSuccess) return const Color(0xFF00D591);
     return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
   }
 
   Color _messageColor() {
     if (widget.isError) return const Color(0xFFEF4444);
-    if (widget.isSuccess) return const Color(0xFF00D591);
     return const Color(0xFF5D6494);
   }
 
@@ -455,15 +494,17 @@ class _InputFieldState extends State<_InputField> {
             ),
           ),
         ),
-        const SizedBox(height: 5),
-        Text(
-          widget.isError || widget.isSuccess ? widget.message : '',
-          style: GoogleFonts.quicksand(
-            color: _messageColor(),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+        if (widget.isError) ...[
+          const SizedBox(height: 5),
+          Text(
+            widget.message,
+            style: GoogleFonts.quicksand(
+              color: _messageColor(),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -475,7 +516,6 @@ class _PasswordField extends StatelessWidget {
   final bool obscureText;
   final ValueChanged<String> onChanged;
   final VoidCallback onToggleVisibility;
-  final bool isSuccess;
   final bool isError;
   final ValueChanged<String> onSubmitted;
   final String message;
@@ -486,7 +526,6 @@ class _PasswordField extends StatelessWidget {
     required this.obscureText,
     required this.onChanged,
     required this.onToggleVisibility,
-    required this.isSuccess,
     required this.isError,
     required this.onSubmitted,
     required this.message,
@@ -494,13 +533,11 @@ class _PasswordField extends StatelessWidget {
 
   Color _borderColor() {
     if (isError) return const Color(0xFFEF4444);
-    if (isSuccess) return const Color(0xFF00D591);
     return const Color(0xFFD7D4DC);
   }
 
   Color _messageColor() {
     if (isError) return const Color(0xFFEF4444);
-    if (isSuccess) return const Color(0xFF00D591);
     return const Color(0xFF5D6494);
   }
 
@@ -534,6 +571,7 @@ class _PasswordField extends StatelessWidget {
                     controller: controller,
                     focusNode: focusNode,
                     obscureText: obscureText,
+                    obscuringCharacter: '●',
                     style: GoogleFonts.quicksand(
                       color: const Color(0xFF5D6494),
                       fontSize: 16,
@@ -573,15 +611,17 @@ class _PasswordField extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 5),
-        Text(
-          isError || isSuccess ? message : '',
-          style: GoogleFonts.quicksand(
-            color: _messageColor(),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+        if (isError) ...[
+          const SizedBox(height: 5),
+          Text(
+            message,
+            style: GoogleFonts.quicksand(
+              color: _messageColor(),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

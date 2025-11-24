@@ -63,7 +63,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           children: [
             // Custom Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
                   GestureDetector(

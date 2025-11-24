@@ -22,6 +22,10 @@ class GliftTheme {
       scaffoldBackgroundColor: background,
       useMaterial3: true,
       fontFamily: quicksandFontFamily,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      splashFactory: NoSplash.splashFactory,
     );
 
     final textTheme = GoogleFonts.quicksandTextTheme(baseTheme.textTheme).copyWith(
@@ -56,6 +60,8 @@ class GliftTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: accent,
           foregroundColor: Colors.white,
+          disabledBackgroundColor: const Color(0xFFF2F1F6),
+          disabledForegroundColor: const Color(0xFFD7D4DC),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
@@ -63,6 +69,7 @@ class GliftTheme {
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
     );

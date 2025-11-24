@@ -93,11 +93,11 @@ class _HomePageState extends State<HomePage> {
           children: [
             // Header Section
             Padding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 left: 20,
                 right: 20,
-                top: height * 0.02,
-                bottom: 20,
+                top: 10,
+                bottom: 10,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

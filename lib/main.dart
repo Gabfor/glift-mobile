@@ -242,6 +242,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () => _handleConnect(context),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                      ),
                       child: const Text('Se connecter'),
                     ),
                   ),
