@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -7,8 +6,6 @@ import 'package:intl/intl.dart';
 import 'repositories/dashboard_repository.dart';
 import 'models/program.dart';
 import 'models/training_row.dart';
-import 'theme/glift_theme.dart';
-import 'widgets/glift_page_layout.dart';
 
 class DashboardPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -122,94 +119,150 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GliftPageLayout(
-      header: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      body: Stack(
         children: [
-          Text(
-            'Tableau de bord',
-            style: GoogleFonts.quicksand(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              height: 1.86,
+          // Purple Background Top
+          Positioned(
+            left: 0,
+            top: 0,
+            right: 0,
+            height: 250,
+            child: Container(
+              color: const Color(0xFF7069FA),
             ),
           ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _programs.map((program) {
-                final isSelected = program.id == _selectedProgramId;
-                return GestureDetector(
-                  onTap: () => _onProgramSelected(program.id),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 20),
-                    child: Text(
-                      program.name,
-                      style: GoogleFonts.quicksand(
-                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tableau de bord',
+                        style: GoogleFonts.quicksand(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _programs.map((program) {
+                            final isSelected = program.id == _selectedProgramId;
+                            return GestureDetector(
+                              onTap: () => _onProgramSelected(program.id),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 20),
+                                child: Text(
+                                  program.name,
+                                  style: GoogleFonts.quicksand(
+                                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                                    fontSize: 18,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Main Content Container
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
                       ),
                     ),
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              // Training Selector
+                              if (_trainings.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildArrowButton(
+                                        icon: Icons.chevron_left,
+                                        onTap: _selectedTrainingIndex > 0
+                                            ? () => _onTrainingChanged(-1)
+                                            : null,
+                                      ),
+                                      Text(
+                                        _trainings[_selectedTrainingIndex]['name'],
+                                        style: GoogleFonts.quicksand(
+                                          color: const Color(0xFF3A416F),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      _buildArrowButton(
+                                        icon: Icons.chevron_right,
+                                        onTap: _selectedTrainingIndex < _trainings.length - 1
+                                            ? () => _onTrainingChanged(1)
+                                            : null,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              
+                              const SizedBox(height: 20),
+
+                              // Exercises List
+                              Expanded(
+                                child: _exercises.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          'Aucun exercice trouvé',
+                                          style: GoogleFonts.quicksand(
+                                            color: const Color(0xFF3A416F),
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      )
+                                    : ListView.separated(
+                                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                                        itemCount: _exercises.length,
+                                        separatorBuilder: (context, index) => const SizedBox(height: 20),
+                                        itemBuilder: (context, index) {
+                                          return _ExerciseChartCard(
+                                            key: ValueKey(_exercises[index].id),
+                                            exercise: _exercises[index],
+                                            repository: _repository,
+                                            userId: widget.supabase.auth.currentUser!.id,
+                                          );
+                                        },
+                                      ),
+                              ),
+                            ],
+                          ),
                   ),
-                );
-              }).toList(),
+                ),
+              ],
             ),
           ),
         ],
       ),
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // Training Selector
-                if (_trainings.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildArrowButton(
-                          icon: Icons.chevron_left,
-                          onTap: _selectedTrainingIndex > 0
-                              ? () => _onTrainingChanged(-1)
-                              : null,
-                        ),
-                        Text(
-                          _trainings[_selectedTrainingIndex]['name'],
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        _buildArrowButton(
-                          icon: Icons.chevron_right,
-                          onTap: _selectedTrainingIndex < _trainings.length - 1
-                              ? () => _onTrainingChanged(1)
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                
-                // Exercises List
-                if (_exercises.isEmpty)
-                  const Center(child: Text('Aucun exercice trouvé'))
-                else
-                  ..._exercises.map((exercise) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _ExerciseChartCard(
-                      key: ValueKey(exercise.id),
-                      exercise: exercise,
-                      repository: _repository,
-                      userId: widget.supabase.auth.currentUser!.id,
-                    ),
-                  )),
-              ],
-            ),
     );
   }
 
@@ -227,6 +280,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Icon(
           icon,
           color: onTap != null ? const Color(0xFF3A416F) : const Color(0xFFD7D4DC),
+          size: 20,
         ),
       ),
     );
@@ -267,7 +321,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         limit: 10,
       );
       
-      // Process history to get max weight per session
       final processedHistory = history.map((session) {
         final sets = (session['sets'] as List?) ?? [];
         double maxWeight = 0;
@@ -286,7 +339,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         };
       }).toList();
 
-      // Sort by date ascending
       processedHistory.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
 
       if (mounted) {
@@ -305,8 +357,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 300,
-      padding: const EdgeInsets.all(16),
+      height: 320,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -328,12 +380,18 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _history.isEmpty
-                    ? const Center(child: Text('Aucune donnée disponible'))
+                    ? Center(
+                        child: Text(
+                          'Aucune donnée disponible',
+                          style: GoogleFonts.quicksand(color: const Color(0xFFC2BFC6)),
+                        ),
+                      )
                     : LineChart(
                         LineChartData(
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
+                            horizontalInterval: 1,
                             getDrawingHorizontalLine: (value) {
                               return const FlLine(
                                 color: Color(0xFFECE9F1),
@@ -348,14 +406,17 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 50,
+                                reservedSize: 40,
                                 interval: 1,
                                 getTitlesWidget: (value, meta) {
                                   final index = value.toInt();
                                   if (index >= 0 && index < _history.length) {
                                     final date = _history[index]['date'] as DateTime;
+                                    // Show date only for every other point if too many
+                                    if (_history.length > 5 && index % 2 != 0) return const SizedBox.shrink();
+                                    
                                     return Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
+                                      padding: const EdgeInsets.only(top: 10.0),
                                       child: Column(
                                         children: [
                                           Text(
@@ -378,7 +439,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                       ),
                                     );
                                   }
-                                  return const Text('');
+                                  return const SizedBox.shrink();
                                 },
                               ),
                             ),
@@ -386,6 +447,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 reservedSize: 40,
+                                interval: 1,
                                 getTitlesWidget: (value, meta) {
                                   return Text(
                                     '${value.toInt()} kg',
@@ -410,6 +472,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 return FlSpot(e.key.toDouble(), e.value['value'] as double);
                               }).toList(),
                               isCurved: true,
+                              curveSmoothness: 0.35,
                               color: const Color(0xFFA1A5FD),
                               barWidth: 2,
                               isStrokeCapRound: true,
@@ -419,7 +482,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   return FlDotCirclePainter(
                                     radius: 4,
                                     color: const Color(0xFF7069FA),
-                                    strokeWidth: 1,
+                                    strokeWidth: 2,
                                     strokeColor: Colors.white,
                                   );
                                 },
@@ -430,13 +493,32 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    const Color(0xFFA1A5FD).withOpacity(0.5),
+                                    const Color(0xFFA1A5FD).withOpacity(0.3),
                                     const Color(0xFFA1A5FD).withOpacity(0.0),
                                   ],
                                 ),
                               ),
                             ),
                           ],
+                          lineTouchData: LineTouchData(
+                            touchTooltipData: LineTouchTooltipData(
+                              tooltipBgColor: const Color(0xFF2D2E32),
+                              tooltipRoundedRadius: 8,
+                              tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              getTooltipItems: (touchedSpots) {
+                                return touchedSpots.map((LineBarSpot touchedSpot) {
+                                  return LineTooltipItem(
+                                    '${touchedSpot.y.toInt()} kg',
+                                    GoogleFonts.quicksand(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  );
+                                }).toList();
+                              },
+                            ),
+                          ),
                         ),
                       ),
           ),
