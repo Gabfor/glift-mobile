@@ -77,7 +77,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildNavItem(int index, String label, String iconName) {
     final isSelected = _currentIndex == index;
-    final color = isSelected ? GliftTheme.accent : const Color(0xFFD7D4DC);
+    const color = Color(0xFFC2BFC6);
     final iconPath = isSelected
         ? 'assets/icons/${iconName}_active.svg'
         : 'assets/icons/$iconName.svg';
