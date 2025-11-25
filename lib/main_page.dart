@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'home_page.dart';
 import 'dashboard_page.dart';
+import 'store_page.dart';
 import 'theme/glift_theme.dart';
 
 class MainPage extends StatefulWidget {
@@ -26,7 +27,7 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       DashboardPage(supabase: widget.supabase),
       HomePage(supabase: widget.supabase),
-      const Center(child: Text('Store (Bientôt)')),
+      StorePage(supabase: widget.supabase),
       const Center(child: Text('Shop (Bientôt)')),
       const Center(child: Text('Réglages (Bientôt)')),
     ];

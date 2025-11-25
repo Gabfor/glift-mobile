@@ -502,8 +502,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                           ],
                           lineTouchData: LineTouchData(
                             touchTooltipData: LineTouchTooltipData(
-                              tooltipBgColor: const Color(0xFF2D2E32),
-                              tooltipRoundedRadius: 8,
+                              getTooltipColor: (LineBarSpot touchedSpot) => const Color(0xFF2D2E32),
+
                               tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               getTooltipItems: (touchedSpots) {
                                 return touchedSpots.map((LineBarSpot touchedSpot) {
