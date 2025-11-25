@@ -5,6 +5,7 @@ import 'package:supabase/supabase.dart';
 import 'home_page.dart';
 import 'dashboard_page.dart';
 import 'store_page.dart';
+import 'shop_page.dart';
 import 'theme/glift_theme.dart';
 
 class MainPage extends StatefulWidget {
@@ -28,7 +29,7 @@ class _MainPageState extends State<MainPage> {
       DashboardPage(supabase: widget.supabase),
       HomePage(supabase: widget.supabase),
       StorePage(supabase: widget.supabase),
-      const Center(child: Text('Shop (Bientôt)')),
+      ShopPage(supabase: widget.supabase),
       const Center(child: Text('Réglages (Bientôt)')),
     ];
   }
