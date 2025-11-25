@@ -77,7 +77,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildNavItem(int index, String label, String iconName) {
     final isSelected = _currentIndex == index;
-    const color = Color(0xFFC2BFC6);
+    final textColor = isSelected ? const Color(0xFF7069FA) : const Color(0xFFC2BFC6);
     final iconPath = isSelected
         ? 'assets/icons/${iconName}_active.svg'
         : 'assets/icons/$iconName.svg';
@@ -101,7 +101,7 @@ class _MainPageState extends State<MainPage> {
               label,
               textAlign: TextAlign.center,
               style: GoogleFonts.quicksand(
-                color: color,
+                color: textColor,
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
