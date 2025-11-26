@@ -413,7 +413,7 @@ class _InputFieldState extends State<_InputField> {
 
   Color _borderColor() {
     if (widget.isError) return const Color(0xFFEF4444);
-    if (widget.isFocused) return const Color(0xFF7069FA);
+    if (widget.isFocused) return const Color(0xFFA1A5FD);
     return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
   }
 
@@ -516,7 +516,7 @@ class _PasswordField extends StatelessWidget {
 
   Color _borderColor() {
     if (isError) return const Color(0xFFEF4444);
-    if (isFocused) return const Color(0xFF7069FA);
+    if (isFocused) return const Color(0xFFA1A5FD);
     return const Color(0xFFD7D4DC);
   }
 
