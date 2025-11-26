@@ -4,6 +4,7 @@ import 'package:supabase/supabase.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
+import 'widgets/glift_page_layout.dart';
 
 class TrainingDetailsPage extends StatefulWidget {
   const TrainingDetailsPage({
@@ -53,126 +54,53 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Stack(
+    return GliftPageLayout(
+      header: Row(
         children: [
-          // Purple Background Top
-          Positioned(
-            left: 0,
-            top: 0,
-            right: 0,
-            height: 300, // Extend enough to cover header area
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
             child: Container(
-              color: const Color(0xFF7069FA),
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.chevron_left, color: Color(0xFF7069FA)),
             ),
           ),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                // Custom Header
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.chevron_left, color: Color(0xFF7069FA)),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Entraînements',
-                            style: GoogleFonts.quicksand(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              height: 1.86,
-                            ),
-                          ),
-                          Text(
-                            widget.training.name,
-                            style: GoogleFonts.quicksand(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              height: 1.62,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Content
-                Expanded(
-                  child: _buildBody(),
-                ),
-              ],
-            ),
-          ),
-          // Floating "Commencer" Button
-          Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 200,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00D591),
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0x3F00D591),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      // TODO: Start workout logic
-                    },
-                    borderRadius: BorderRadius.circular(25),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Commencer',
-                          style: GoogleFonts.quicksand(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Using a standard icon instead of FontAwesome for simplicity unless requested
-                        const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-                      ],
-                    ),
-                  ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Entraînements',
+                style: GoogleFonts.quicksand(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  height: 1.86,
                 ),
               ),
-            ),
+              Text(
+                widget.training.name,
+                style: GoogleFonts.quicksand(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  height: 1.62,
+                ),
+              ),
+            ],
           ),
         ],
       ),
+      scrollable: false,
+      padding: EdgeInsets.zero,
+      footer: _StartButton(onTap: () {
+        // TODO: Start workout logic
+      }),
+      child: _buildBody(),
     );
   }
 
@@ -343,6 +271,53 @@ class _ExerciseCard extends StatelessWidget {
             );
           }),
         ],
+      ),
+    );
+  }
+}
+
+class _StartButton extends StatelessWidget {
+  const _StartButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      height: 48,
+      decoration: BoxDecoration(
+        color: const Color(0xFF00D591),
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x3F00D591),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(25),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Commencer',
+                style: GoogleFonts.quicksand(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+            ],
+          ),
+        ),
       ),
     );
   }

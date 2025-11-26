@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
+import 'widgets/glift_page_layout.dart';
+
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
 
@@ -40,268 +42,209 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Stack(
+    return GliftPageLayout(
+      title: 'Réglages',
+      subtitle: 'Personnaliser l’application',
+      scrollable: false,
+      padding: EdgeInsets.zero,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
         children: [
-          // Purple Background Top
-          Positioned(
-            left: 0,
-            top: 0,
-            right: 0,
-            height: 250,
-            child: Container(
-              color: const Color(0xFF7069FA),
-            ),
+          // App Settings
+          const _SettingsSectionHeader(title: 'RÉGLAGES DE L’APPLICATION'),
+          const SizedBox(height: 10),
+          _SettingsContainer(
+            children: [
+              _SettingsTile(
+                title: 'Unités de poids',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Métrique (kg)',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {},
+              ),
+            ],
           ),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Réglages',
-                        style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Personnaliser l’application',
-                        style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          const SizedBox(height: 20),
 
-                // Scrollable Content
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF8F9FA),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
+          // Exercise Settings
+          const _SettingsSectionHeader(title: 'RÉGLAGES DES EXERCICES'),
+          const SizedBox(height: 10),
+          _SettingsContainer(
+            children: [
+              _SettingsSwitchTile(
+                title: 'Activer Effort',
+                value: _effort,
+                onChanged: (v) => setState(() => _effort = v),
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Liens',
+                value: _links,
+                onChanged: (v) => setState(() => _links = v),
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Notes',
+                value: _notes,
+                onChanged: (v) => setState(() => _notes = v),
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Repos',
+                value: _rest,
+                onChanged: (v) => setState(() => _rest = v),
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Suivi',
+                value: _tracking,
+                onChanged: (v) => setState(() => _tracking = v),
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Superset',
+                value: _superset,
+                onChanged: (v) => setState(() => _superset = v),
+                isLast: true,
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Rest Time Settings
+          const _SettingsSectionHeader(title: 'RÉGLAGES DU TEMPS DE REPOS'),
+          const SizedBox(height: 10),
+          _SettingsContainer(
+            children: [
+              _SettingsSwitchTile(
+                title: 'Activer les vibrations',
+                value: _vibrations,
+                onChanged: (v) => setState(() => _vibrations = v),
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer la sonnerie',
+                value: _sound,
+                onChanged: (v) => setState(() => _sound = v),
+              ),
+              _SettingsTile(
+                title: 'Effet sonore',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Radar',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-                      children: [
-                        // App Settings
-                        const _SettingsSectionHeader(title: 'RÉGLAGES DE L’APPLICATION'),
-                        const SizedBox(height: 10),
-                        _SettingsContainer(
-                          children: [
-                            _SettingsTile(
-                              title: 'Unités de poids',
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Métrique (kg)',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF5D6494),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
-                                ],
-                              ),
-                              onTap: () {},
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Exercise Settings
-                        const _SettingsSectionHeader(title: 'RÉGLAGES DES EXERCICES'),
-                        const SizedBox(height: 10),
-                        _SettingsContainer(
-                          children: [
-                            _SettingsSwitchTile(
-                              title: 'Activer Effort',
-                              value: _effort,
-                              onChanged: (v) => setState(() => _effort = v),
-                            ),
-                            _SettingsSwitchTile(
-                              title: 'Activer Liens',
-                              value: _links,
-                              onChanged: (v) => setState(() => _links = v),
-                            ),
-                            _SettingsSwitchTile(
-                              title: 'Activer Notes',
-                              value: _notes,
-                              onChanged: (v) => setState(() => _notes = v),
-                            ),
-                            _SettingsSwitchTile(
-                              title: 'Activer Repos',
-                              value: _rest,
-                              onChanged: (v) => setState(() => _rest = v),
-                            ),
-                            _SettingsSwitchTile(
-                              title: 'Activer Suivi',
-                              value: _tracking,
-                              onChanged: (v) => setState(() => _tracking = v),
-                            ),
-                            _SettingsSwitchTile(
-                              title: 'Activer Superset',
-                              value: _superset,
-                              onChanged: (v) => setState(() => _superset = v),
-                              isLast: true,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Rest Time Settings
-                        const _SettingsSectionHeader(title: 'RÉGLAGES DU TEMPS DE REPOS'),
-                        const SizedBox(height: 10),
-                        _SettingsContainer(
-                          children: [
-                            _SettingsSwitchTile(
-                              title: 'Activer les vibrations',
-                              value: _vibrations,
-                              onChanged: (v) => setState(() => _vibrations = v),
-                            ),
-                            _SettingsSwitchTile(
-                              title: 'Activer la sonnerie',
-                              value: _sound,
-                              onChanged: (v) => setState(() => _sound = v),
-                            ),
-                            _SettingsTile(
-                              title: 'Effet sonore',
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Radar',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF5D6494),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
-                                ],
-                              ),
-                              onTap: () {},
-                            ),
-                            _SettingsTile(
-                              title: 'Valeur par défaut',
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '0 secondes',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF5D6494),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
-                                ],
-                              ),
-                              onTap: () {},
-                              isLast: true,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Others
-                        const _SettingsSectionHeader(title: 'AUTRES'),
-                        const SizedBox(height: 10),
-                        _SettingsContainer(
-                          children: [
-                            _SettingsTile(
-                              title: 'Vous aimez Glift ?',
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Evaluez-nous',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF5D6494),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
-                                ],
-                              ),
-                              onTap: () {},
-                            ),
-                            _SettingsTile(
-                              title: 'Du feedback ?',
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Contactez-nous',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF5D6494),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
-                                ],
-                              ),
-                              onTap: () {},
-                              isLast: true,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-
-                        // Logout Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _signOut,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEF4F4E),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              'Se déconnecter',
-                              style: GoogleFonts.quicksand(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
                 ),
-              ],
+                onTap: () {},
+              ),
+              _SettingsTile(
+                title: 'Valeur par défaut',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '0 secondes',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {},
+                isLast: true,
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Others
+          const _SettingsSectionHeader(title: 'AUTRES'),
+          const SizedBox(height: 10),
+          _SettingsContainer(
+            children: [
+              _SettingsTile(
+                title: 'Vous aimez Glift ?',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Evaluez-nous',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {},
+              ),
+              _SettingsTile(
+                title: 'Du feedback ?',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Contactez-nous',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {},
+                isLast: true,
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+
+          // Logout Button
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _signOut,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4F4E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Se déconnecter',
+                style: GoogleFonts.quicksand(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ],
