@@ -4,6 +4,7 @@ import 'package:supabase/supabase.dart';
 
 import 'repositories/store_repository.dart';
 import 'models/store_program.dart';
+import 'widgets/glift_page_layout.dart';
 
 class StorePage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -45,150 +46,99 @@ class _StorePageState extends State<StorePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Stack(
+    return GliftPageLayout(
+      title: 'Glift Store',
+      subtitle: 'Trouver votre prochain programme',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Purple Background Top
-          Positioned(
-            left: 0,
-            top: 0,
-            right: 0,
-            height: 250,
-            child: Container(
-              color: const Color(0xFF7069FA),
-            ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFFD7D4DC)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: const EdgeInsets.only(right: 8),
+                        child: const Icon(Icons.sort, size: 20, color: Color(0xFF3A416F)),
+                      ),
                       Text(
-                        'Glift Store',
+                        'Popularité',
                         style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 14,
+                          color: const Color(0xFF3A416F),
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Trouver votre prochain programme',
-                        style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
                     ],
                   ),
                 ),
-
-                // Filters
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFFD7D4DC)),
+                  ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(color: const Color(0xFFD7D4DC)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Icon placeholder
-                              Container(
-                                width: 24,
-                                height: 24,
-                                margin: const EdgeInsets.only(right: 8),
-                                child: const Icon(Icons.sort, size: 20, color: Color(0xFF3A416F)),
-                              ),
-                              Text(
-                                'Popularité',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: const EdgeInsets.only(right: 8),
+                        child: const Icon(Icons.filter_list, size: 20, color: Color(0xFF3A416F)),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(color: const Color(0xFFD7D4DC)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Icon placeholder
-                              Container(
-                                width: 24,
-                                height: 24,
-                                margin: const EdgeInsets.only(right: 8),
-                                child: const Icon(Icons.filter_list, size: 20, color: Color(0xFF3A416F)),
-                              ),
-                              Text(
-                                'Voir les filtres',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                      Text(
+                        'Voir les filtres',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // Program List
-                Expanded(
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _programs.isEmpty
-                          ? Center(
-                              child: Text(
-                                'Aucun programme trouvé',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                              itemCount: _programs.length,
-                              separatorBuilder: (context, index) => const SizedBox(height: 20),
-                              itemBuilder: (context, index) {
-                                return _StoreProgramCard(program: _programs[index]);
-                              },
-                            ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+          const SizedBox(height: 20),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_programs.isEmpty)
+            Center(
+              child: Text(
+                'Aucun programme trouvé',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF3A416F),
+                  fontSize: 16,
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 70),
+              itemCount: _programs.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 20),
+              itemBuilder: (context, index) {
+                return _StoreProgramCard(program: _programs[index]);
+              },
+            ),
         ],
       ),
     );

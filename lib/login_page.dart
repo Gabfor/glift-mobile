@@ -187,45 +187,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
-    final paddingTop = height * 0.08;
-    final formTop = height * 0.25;
-
     return GliftPageLayout(
-      header: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: 'Bonjour',
-              style: GoogleFonts.quicksand(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.86,
-              ),
-            ),
-            TextSpan(
-              text: ',\n',
-              style: GoogleFonts.quicksand(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                height: 1.73,
-              ),
-            ),
-            TextSpan(
-              text: 'Bienvenue sur Glift',
-              style: GoogleFonts.quicksand(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                height: 1.62,
-              ),
-            ),
-          ],
-        ),
-      ),
+      title: 'Bonjour,',
+      subtitle: 'Bienvenue sur Glift',
       child: Form(
         key: _formKey,
         child: Column(
