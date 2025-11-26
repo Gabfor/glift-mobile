@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
       resizeToAvoidBottomInset: true,
       footerIgnoresViewInsets: true,
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-      footerPadding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottomPadding),
+      footerPadding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
       footer: _SignupPrompt(onTap: _openSignup),
       child: Form(
         key: _formKey,
