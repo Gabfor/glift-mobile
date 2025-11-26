@@ -22,6 +22,7 @@ class GliftPageLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
+    const double contentTopOffset = 140;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA), // Gray background for the whole page (including under keyboard)
@@ -35,18 +36,19 @@ class GliftPageLayout extends StatelessWidget {
           // Content
           SafeArea(
             bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 10,
-                    bottom: 10,
-                  ),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+              ),
+              child: SizedBox(
+                height: 88,
+                child: Align(
+                  alignment: Alignment.topLeft,
                   child: header ?? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       if (title != null)
                         Text(
@@ -71,51 +73,53 @@ class GliftPageLayout extends StatelessWidget {
                     ],
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF8F9FA),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, -5),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      bottom: true,
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(30),
-                                topRight: Radius.circular(30),
-                              ),
-                              child: SingleChildScrollView(
-                                padding: padding ?? const EdgeInsets.fromLTRB(20, 40, 20, 30),
-                                child: child,
-                              ),
-                            ),
-                          ),
-                          if (footer != null)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 20, top: 10),
-                              child: footer!,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
+              ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Container(
+              margin: const EdgeInsets.only(top: contentTopOffset),
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                bottom: true,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: padding ?? const EdgeInsets.fromLTRB(20, 40, 20, 30),
+                          child: child,
+                        ),
+                      ),
+                    ),
+                    if (footer != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20, top: 10),
+                        child: footer!,
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
