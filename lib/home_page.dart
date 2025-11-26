@@ -199,44 +199,38 @@ class _HomePageState extends State<HomePage> {
       itemCount: _programs!.length,
       itemBuilder: (context, index) {
         final program = _programs![index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
-              child: Text(
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+          itemCount: program.trainings.length + 1,
+          separatorBuilder: (context, separatorIndex) =>
+              SizedBox(height: separatorIndex == 0 ? 10 : 16),
+          itemBuilder: (context, itemIndex) {
+            if (itemIndex == 0) {
+              return Text(
                 'Entraînements',
                 style: GoogleFonts.quicksand(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: GliftTheme.title,
                 ),
-              ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                itemCount: program.trainings.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final training = program.trainings[index];
-                  return _TrainingCard(
-                    training: training,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => TrainingDetailsPage(
-                            training: training,
-                            supabase: widget.supabase,
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+              );
+            }
+
+            final training = program.trainings[itemIndex - 1];
+            return _TrainingCard(
+              training: training,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TrainingDetailsPage(
+                      training: training,
+                      supabase: widget.supabase,
+                    ),
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );

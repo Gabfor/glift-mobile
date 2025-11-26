@@ -49,8 +49,9 @@ class _StorePageState extends State<StorePage> {
     return GliftPageLayout(
       title: 'Glift Store',
       subtitle: 'Trouver votre prochain programme',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      scrollable: false,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         children: [
           Row(
             children: [
@@ -129,16 +130,16 @@ class _StorePageState extends State<StorePage> {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 70),
-              itemCount: _programs.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 20),
-              itemBuilder: (context, index) {
-                return _StoreProgramCard(program: _programs[index]);
-              },
-            ),
+            ..._programs.asMap().entries.map((entry) {
+              final index = entry.key;
+              final program = entry.value;
+              final isLast = index == _programs.length - 1;
+
+              return Padding(
+                padding: EdgeInsets.only(bottom: isLast ? 70 : 20),
+                child: _StoreProgramCard(program: program),
+              );
+            }),
         ],
       ),
     );
