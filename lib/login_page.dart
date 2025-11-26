@@ -193,7 +193,10 @@ class _LoginPageState extends State<LoginPage> {
       title: 'Bonjour,',
       subtitle: 'Bienvenue sur Glift',
       resizeToAvoidBottomInset: false,
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 30 + bottomPadding),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
+      footerIgnoresViewInsets: true,
+      footerPadding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottomPadding),
+      footer: _SignupPrompt(onTap: _openSignup),
       child: Form(
         key: _formKey,
         child: Column(
@@ -257,9 +260,7 @@ class _LoginPageState extends State<LoginPage> {
               isLoading: _isLoading,
               onPressed: _submit,
             ),
-            const SizedBox(height: 24),
-            _SignupPrompt(onTap: _openSignup),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Center(
               child: TextButton(
                 onPressed: _openForgotPassword,
@@ -344,36 +345,39 @@ class _SignupPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: 'Pas encore inscrit ?',
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF5D6494),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'Pas encore inscrit ?',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF5D6494),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            TextSpan(
-              text: ' ',
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF97959A),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+              TextSpan(
+                text: ' ',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF97959A),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            TextSpan(
-              text: 'Créer un compte',
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF7069FA),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+              TextSpan(
+                text: 'Créer un compte',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF7069FA),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }
