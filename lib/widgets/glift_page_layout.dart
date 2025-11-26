@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/glift_theme.dart';
+
 class GliftPageLayout extends StatelessWidget {
   const GliftPageLayout({
     super.key,
@@ -36,40 +38,41 @@ class GliftPageLayout extends StatelessWidget {
     final additionalBottomSpacing = footer != null
         ? footerInset + (footerPadding?.vertical ?? 0.0) + 40.0
         : 0.0;
-    final headerContent = header ?? Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (title != null)
-          Text(
-            title!,
-            style: GoogleFonts.quicksand(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            subtitle!,
-            style: GoogleFonts.quicksand(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-        if (headerBottom != null) ...[
-          const SizedBox(height: 12),
-          headerBottom!,
-        ],
-      ],
-    );
+    final headerContent = header ??
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (title != null)
+              Text(
+                title!,
+                style: GoogleFonts.quicksand(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle!,
+                style: GoogleFonts.quicksand(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+            if (headerBottom != null) ...[
+              const SizedBox(height: 12),
+              headerBottom!,
+            ],
+          ],
+        );
 
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: GliftTheme.accent,
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -79,7 +82,7 @@ class GliftPageLayout extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  color: const Color(0xFF7069FA),
+                  color: GliftTheme.accent,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                     child: headerContent,
@@ -89,7 +92,7 @@ class GliftPageLayout extends StatelessWidget {
                   child: Container(
                     width: double.infinity,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF9FAFB),
+                      color: GliftTheme.background,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30),
