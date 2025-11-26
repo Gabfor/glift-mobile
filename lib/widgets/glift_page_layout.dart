@@ -73,6 +73,9 @@ class GliftPageLayout extends StatelessWidget {
         );
 
     Widget buildBody({required Widget child}) {
+      final contentPadding = (padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30))
+          .add(EdgeInsets.only(bottom: additionalBottomSpacing));
+
       return Container(
         width: double.infinity,
         decoration: const BoxDecoration(
@@ -82,24 +85,27 @@ class GliftPageLayout extends StatelessWidget {
             topRight: Radius.circular(30),
           ),
         ),
-        child: Column(
-          children: [
-            Expanded(
-              child: scrollable
-                  ? SingleChildScrollView(
-                      padding: (padding ??
-                              const EdgeInsets.fromLTRB(20, 20, 20, 30))
-                          .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
-                      child: child,
-                    )
-                  : Padding(
-                      padding: (padding ??
-                              const EdgeInsets.fromLTRB(20, 20, 20, 30))
-                          .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
-                      child: child,
-                    ),
-            ),
-          ],
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final paddedChild = Padding(
+                padding: contentPadding,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: child,
+                ),
+              );
+
+              if (!scrollable) return paddedChild;
+
+              return SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                child: paddedChild,
+              );
+            },
+          ),
         ),
       );
     }
