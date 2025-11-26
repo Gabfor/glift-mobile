@@ -50,98 +50,26 @@ class _StorePageState extends State<StorePage> {
       title: 'Glift Store',
       subtitle: 'Trouver votre prochain programme',
       scrollable: false,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFD7D4DC)),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _programs.isEmpty
+              ? Center(
+                  child: Text(
+                    'Aucun programme trouvé',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF3A416F),
+                      fontSize: 16,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        margin: const EdgeInsets.only(right: 8),
-                        child: const Icon(Icons.sort, size: 20, color: Color(0xFF3A416F)),
-                      ),
-                      Text(
-                        'Popularité',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 50),
+                  itemCount: _programs.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 20),
+                  itemBuilder: (context, index) {
+                    return _StoreProgramCard(program: _programs[index]);
+                  },
                 ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFD7D4DC)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        margin: const EdgeInsets.only(right: 8),
-                        child: const Icon(Icons.filter_list, size: 20, color: Color(0xFF3A416F)),
-                      ),
-                      Text(
-                        'Voir les filtres',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (_programs.isEmpty)
-            Center(
-              child: Text(
-                'Aucun programme trouvé',
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
-                  fontSize: 16,
-                ),
-              ),
-            )
-          else
-            ..._programs.asMap().entries.map((entry) {
-              final index = entry.key;
-              final program = entry.value;
-              final isLast = index == _programs.length - 1;
-
-              return Padding(
-                padding: EdgeInsets.only(bottom: isLast ? 70 : 20),
-                child: _StoreProgramCard(program: program),
-              );
-            }),
-        ],
-      ),
     );
   }
 }
