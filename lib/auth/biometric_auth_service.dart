@@ -75,9 +75,7 @@ class BiometricAuthService {
         );
       }
 
-      final response = await _supabase.auth.refreshSession(
-        refreshToken: refreshToken,
-      );
+      final response = await _supabase.auth.refreshSession(refreshToken);
 
       final newRefreshToken = response.session?.refreshToken;
       if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
