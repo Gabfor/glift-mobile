@@ -31,45 +31,51 @@ class GliftPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final headerContent = header ?? Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (title != null)
+          Text(
+            title!,
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            subtitle!,
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+        if (headerBottom != null) ...[
+          const SizedBox(height: 12),
+          headerBottom!,
+        ],
+      ],
+    );
+
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-      backgroundColor: const Color(0xFF7069FA),
+      backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-              child: header ?? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (title != null)
-                    Text(
-                      title!,
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      subtitle!,
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                  if (headerBottom != null) ...[
-                    const SizedBox(height: 12),
-                    headerBottom!,
-                  ],
-                ],
+            Container(
+              width: double.infinity,
+              color: const Color(0xFF7069FA),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                child: headerContent,
               ),
             ),
             Expanded(
