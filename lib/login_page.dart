@@ -187,10 +187,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return GliftPageLayout(
       title: 'Bonjour,',
       subtitle: 'Bienvenue sur Glift',
       resizeToAvoidBottomInset: false,
+      padding: EdgeInsets.fromLTRB(24, 20, 24, 30 + bottomPadding),
       child: Form(
         key: _formKey,
         child: Column(
@@ -254,6 +257,8 @@ class _LoginPageState extends State<LoginPage> {
               isLoading: _isLoading,
               onPressed: _submit,
             ),
+            const SizedBox(height: 24),
+            _SignupPrompt(onTap: _openSignup),
             const SizedBox(height: 20),
             Center(
               child: TextButton(
@@ -277,11 +282,6 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
-      footerPadding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom + 24,
-      ),
-      footerIgnoresViewInsets: true,
-      footer: _SignupPrompt(onTap: _openSignup),
     );
   }
 }
