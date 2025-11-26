@@ -190,6 +190,7 @@ class _LoginPageState extends State<LoginPage> {
     return GliftPageLayout(
       title: 'Bonjour,',
       subtitle: 'Bienvenue sur Glift',
+      resizeToAvoidBottomInset: false,
       child: Form(
         key: _formKey,
         child: Column(
@@ -209,6 +210,7 @@ class _LoginPageState extends State<LoginPage> {
               hintText: 'john.doe@email.com',
               controller: _emailController,
               focusNode: _emailFocusNode,
+              isFocused: _emailFocused,
               isError: _showEmailError,
               message: _emailMessage,
               onChanged: (_) {
@@ -223,6 +225,7 @@ class _LoginPageState extends State<LoginPage> {
               controller: _passwordController,
               focusNode: _passwordFocusNode,
               obscureText: _obscurePassword,
+              isFocused: _passwordFocused,
               onChanged: (_) {
                 setState(() {
                   _passwordTouched = true;
@@ -274,6 +277,10 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
+      footerPadding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom + 24,
+      ),
+      footerIgnoresViewInsets: true,
       footer: _SignupPrompt(onTap: _openSignup),
     );
   }
@@ -377,6 +384,7 @@ class _InputField extends StatefulWidget {
   final String? hintText;
   final TextEditingController controller;
   final FocusNode focusNode;
+  final bool isFocused;
   final bool isError;
   final String message;
   final ValueChanged<String>? onChanged;
@@ -385,6 +393,7 @@ class _InputField extends StatefulWidget {
     required this.label,
     required this.controller,
     required this.focusNode,
+    required this.isFocused,
     required this.isError,
     required this.message,
     this.hintText,
@@ -400,6 +409,7 @@ class _InputFieldState extends State<_InputField> {
 
   Color _borderColor() {
     if (widget.isError) return const Color(0xFFEF4444);
+    if (widget.isFocused) return const Color(0xFF7069FA);
     return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
   }
 
@@ -429,7 +439,10 @@ class _InputFieldState extends State<_InputField> {
             duration: const Duration(milliseconds: 150),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: _borderColor()),
+              border: Border.all(
+                color: _borderColor(),
+                width: widget.isFocused ? 1.5 : 1,
+              ),
               borderRadius: BorderRadius.circular(5),
             ),
             child: SizedBox(
@@ -483,6 +496,7 @@ class _PasswordField extends StatelessWidget {
   final bool isError;
   final ValueChanged<String> onSubmitted;
   final String message;
+  final bool isFocused;
 
   const _PasswordField({
     required this.controller,
@@ -493,10 +507,12 @@ class _PasswordField extends StatelessWidget {
     required this.isError,
     required this.onSubmitted,
     required this.message,
+    required this.isFocused,
   });
 
   Color _borderColor() {
     if (isError) return const Color(0xFFEF4444);
+    if (isFocused) return const Color(0xFF7069FA);
     return const Color(0xFFD7D4DC);
   }
 
@@ -523,7 +539,10 @@ class _PasswordField extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(color: _borderColor()),
+            border: Border.all(
+              color: _borderColor(),
+              width: isFocused ? 1.5 : 1,
+            ),
             borderRadius: BorderRadius.circular(5),
           ),
           child: SizedBox(
