@@ -84,39 +84,56 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
-      title: 'Programmes',
-      subtitle: 'Vos séances à venir',
-      headerBottom: _programs != null
-          ? SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _programs!.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final program = entry.value;
-                  final isSelected = program.id == _selectedProgramId;
-                  return GestureDetector(
-                    onTap: () => _onProgramSelected(index),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 20),
-                      child: Text(
-                        program.name,
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.5),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            )
-          : null,
+      header: _buildHeader(),
       scrollable: false,
       padding: EdgeInsets.zero,
       child: _buildBody(),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Programmes',
+          style: GoogleFonts.quicksand(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        if (_programs != null && _programs!.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _programs!.asMap().entries.map((entry) {
+                final index = entry.key;
+                final program = entry.value;
+                final isSelected = program.id == _selectedProgramId;
+                return GestureDetector(
+                  onTap: () => _onProgramSelected(index),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Text(
+                      program.name,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
