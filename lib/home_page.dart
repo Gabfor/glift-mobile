@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
@@ -297,18 +298,10 @@ class _TrainingCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
+            SvgPicture.asset(
+              'assets/icons/good.svg',
               width: 20,
               height: 20,
-              decoration: const BoxDecoration(
-                color: Color(0xFF00D591),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_downward_rounded,
-                color: Colors.white,
-                size: 10,
-              ),
             ),
           ],
         ),
