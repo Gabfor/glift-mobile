@@ -81,7 +81,7 @@ class _ShopPageState extends State<ShopPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sélection d’offres régulièrement mises à jour',
+                        'Offres régulièrement mises à jour',
                         style: GoogleFonts.quicksand(
                           color: Colors.white,
                           fontSize: 16,
