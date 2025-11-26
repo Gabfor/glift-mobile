@@ -214,16 +214,46 @@ class _TrainingCard extends StatelessWidget {
   final Training training;
   final VoidCallback onTap;
 
+  static const _defaultDisplay = _TrainingDisplayInfo(
+    lastSession: 'il y a 6 jours',
+    averageTime: '45 min',
+  );
+
+  static const Map<String, _TrainingDisplayInfo> _trainingDisplayData = {
+    'Biceps & triceps': _TrainingDisplayInfo(
+      lastSession: 'il y a 6 jours',
+      averageTime: '45 min',
+    ),
+    'Pectoraux': _TrainingDisplayInfo(
+      lastSession: 'il y a 5 jours',
+      averageTime: '60 min',
+    ),
+    'Epaules': _TrainingDisplayInfo(
+      lastSession: 'il y a 3 jours',
+      averageTime: '40 min',
+    ),
+    'Dos': _TrainingDisplayInfo(
+      lastSession: 'il y a 2 jours',
+      averageTime: '45 min',
+    ),
+    'Jambes': _TrainingDisplayInfo(
+      lastSession: 'il y a 13 heures',
+      averageTime: '1h15 min',
+    ),
+  };
+
   @override
   Widget build(BuildContext context) {
+    final displayInfo = _trainingDisplayData[training.name] ?? _defaultDisplay;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFD7D4DC)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.02),
@@ -242,23 +272,26 @@ class _TrainingCard extends StatelessWidget {
                     training.name,
                     style: GoogleFonts.quicksand(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: GliftTheme.title,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3A416F),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
-                    'Dernière séance : il y a 6 jours', // Placeholder
+                    'Dernière séance : ${displayInfo.lastSession}',
                     style: GoogleFonts.quicksand(
                       fontSize: 12,
-                      color: const Color(0xFFD1D5DB),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFC2BFC6),
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    'Temps moyen : 45min', // Placeholder
+                    'Temps moyen : ${displayInfo.averageTime}',
                     style: GoogleFonts.quicksand(
                       fontSize: 12,
-                      color: const Color(0xFFD1D5DB),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFC2BFC6),
                     ),
                   ),
                 ],
@@ -268,13 +301,13 @@ class _TrainingCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: const BoxDecoration(
-                color: Color(0xFF00D591), // Green color from screenshot
+                color: Color(0xFF00D591),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.arrow_downward, // Looks like a download/arrow icon
+                Icons.arrow_downward_rounded,
                 color: Colors.white,
-                size: 18,
+                size: 16,
               ),
             ),
           ],
@@ -282,4 +315,14 @@ class _TrainingCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TrainingDisplayInfo {
+  const _TrainingDisplayInfo({
+    required this.lastSession,
+    required this.averageTime,
+  });
+
+  final String lastSession;
+  final String averageTime;
 }
