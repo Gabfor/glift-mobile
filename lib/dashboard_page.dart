@@ -121,32 +121,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
-      title: 'Tableau de bord',
-      subtitle: 'Suivez vos progrès',
-      headerBottom: _programs.isEmpty
-          ? null
-          : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _programs.map((program) {
-                  final isSelected = program.id == _selectedProgramId;
-                  return GestureDetector(
-                    onTap: () => _onProgramSelected(program.id),
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 20),
-                      child: Text(
-                        program.name,
-                        style: GoogleFonts.quicksand(
-                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+      header: _buildHeader(),
       scrollable: false,
       padding: EdgeInsets.zero,
       child: _isLoading
@@ -211,6 +186,48 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Tableau de bord',
+          style: GoogleFonts.quicksand(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        if (_programs.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _programs.map((program) {
+                final isSelected = program.id == _selectedProgramId;
+                return GestureDetector(
+                  onTap: () => _onProgramSelected(program.id),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Text(
+                      program.name,
+                      style: GoogleFonts.quicksand(
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
