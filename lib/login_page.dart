@@ -188,100 +188,117 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    const double signupPromptVerticalSpace = 100;
 
     return GliftPageLayout(
       title: 'Bonjour,',
       subtitle: 'Bienvenue sur Glift',
+      scrollable: false,
       resizeToAvoidBottomInset: false,
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-      footerIgnoresViewInsets: true,
-      footerPadding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottomPadding),
-      footer: _SignupPrompt(onTap: _openSignup),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Connexion',
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+      padding: EdgeInsets.zero,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              20,
+              24,
+              signupPromptVerticalSpace + 24 + bottomPadding,
             ),
-            const SizedBox(height: 20),
-            _InputField(
-              label: 'Email',
-              hintText: 'john.doe@email.com',
-              controller: _emailController,
-              focusNode: _emailFocusNode,
-              isFocused: _emailFocused,
-              isError: _showEmailError,
-              message: _emailMessage,
-              onChanged: (_) {
-                setState(() {
-                  _emailTouched = true;
-                  _errorMessage = null;
-                });
-              },
-            ),
-            const SizedBox(height: 30),
-            _PasswordField(
-              controller: _passwordController,
-              focusNode: _passwordFocusNode,
-              obscureText: _obscurePassword,
-              isFocused: _passwordFocused,
-              onChanged: (_) {
-                setState(() {
-                  _passwordTouched = true;
-                  _errorMessage = null;
-                });
-              },
-              onToggleVisibility: _togglePasswordVisibility,
-              isError: _showPasswordError,
-              onSubmitted: (_) => _submit(),
-              message: _passwordMessage,
-            ),
-            const SizedBox(height: 30),
-            if (_errorMessage != null) ...[
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFFE74C3C),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-            _AnimatedButton(
-              isEnabled: _isFormValid,
-              isLoading: _isLoading,
-              onPressed: _submit,
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: TextButton(
-                onPressed: _openForgotPassword,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  'Mot de passe oublié',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.quicksand(
-                    color: const Color(0xFF7069FA),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Connexion',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF3A416F),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  _InputField(
+                    label: 'Email',
+                    hintText: 'john.doe@email.com',
+                    controller: _emailController,
+                    focusNode: _emailFocusNode,
+                    isFocused: _emailFocused,
+                    isError: _showEmailError,
+                    message: _emailMessage,
+                    onChanged: (_) {
+                      setState(() {
+                        _emailTouched = true;
+                        _errorMessage = null;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 30),
+                  _PasswordField(
+                    controller: _passwordController,
+                    focusNode: _passwordFocusNode,
+                    obscureText: _obscurePassword,
+                    isFocused: _passwordFocused,
+                    onChanged: (_) {
+                      setState(() {
+                        _passwordTouched = true;
+                        _errorMessage = null;
+                      });
+                    },
+                    onToggleVisibility: _togglePasswordVisibility,
+                    isError: _showPasswordError,
+                    onSubmitted: (_) => _submit(),
+                    message: _passwordMessage,
+                  ),
+                  const SizedBox(height: 30),
+                  if (_errorMessage != null) ...[
+                    Text(
+                      _errorMessage!,
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFFE74C3C),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  _AnimatedButton(
+                    isEnabled: _isFormValid,
+                    isLoading: _isLoading,
+                    onPressed: _submit,
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: TextButton(
+                      onPressed: _openForgotPassword,
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Mot de passe oublié',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF7069FA),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: 24 + bottomPadding,
+            child: _SignupPrompt(onTap: _openSignup),
+          ),
+        ],
       ),
     );
   }
