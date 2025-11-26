@@ -17,6 +17,7 @@ class GliftPageLayout extends StatelessWidget {
     this.footerPadding,
     this.footerIgnoresViewInsets = false,
     this.resizeToAvoidBottomInset = true,
+    this.fullPageScroll = true,
   });
 
   final String? title;
@@ -30,6 +31,7 @@ class GliftPageLayout extends StatelessWidget {
   final EdgeInsetsGeometry? footerPadding;
   final bool footerIgnoresViewInsets;
   final bool resizeToAvoidBottomInset;
+  final bool fullPageScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +72,72 @@ class GliftPageLayout extends StatelessWidget {
           ],
         );
 
+    Widget buildBody({required Widget child}) {
+      return Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: GliftTheme.background,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: scrollable
+                  ? SingleChildScrollView(
+                      padding: (padding ??
+                              const EdgeInsets.fromLTRB(20, 20, 20, 30))
+                          .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
+                      child: child,
+                    )
+                  : Padding(
+                      padding: (padding ??
+                              const EdgeInsets.fromLTRB(20, 20, 20, 30))
+                          .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
+                      child: child,
+                    ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (fullPageScroll) {
+      return Scaffold(
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        backgroundColor: GliftTheme.accent,
+        body: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverToBoxAdapter(
+                child: Container(
+                  width: double.infinity,
+                  color: GliftTheme.accent,
+                  padding: EdgeInsets.only(top: mediaQuery.padding.top),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                    child: headerContent,
+                  ),
+                ),
+              ),
+            ];
+          },
+          body: buildBody(child: child),
+        ),
+        bottomSheet: footer != null
+            ? Padding(
+                padding: EdgeInsets.only(bottom: footerInset),
+                child: Padding(
+                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
+                  child: footer!,
+                ),
+              )
+            : null,
+      );
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       backgroundColor: GliftTheme.accent,
@@ -89,35 +157,7 @@ class GliftPageLayout extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: GliftTheme.background,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: scrollable
-                              ? SingleChildScrollView(
-                                  padding: (padding ??
-                                          const EdgeInsets.fromLTRB(20, 20, 20, 30))
-                                      .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
-                                  child: child,
-                                )
-                              : Padding(
-                                  padding: (padding ??
-                                          const EdgeInsets.fromLTRB(20, 20, 20, 30))
-                                      .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
-                                  child: child,
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: buildBody(child: child),
                 ),
               ],
             ),
