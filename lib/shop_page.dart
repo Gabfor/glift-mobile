@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'repositories/shop_repository.dart';
 import 'models/shop_offer.dart';
 
@@ -37,7 +37,7 @@ class _ShopPageState extends State<ShopPage> {
         });
       }
     } catch (e) {
-      print('Error loading shop offers: $e');
+      debugPrint('Error loading shop offers: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -243,7 +243,7 @@ class _ShopOfferCard extends StatelessWidget {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF5D6494).withOpacity(0.25),
+                            color: const Color(0xFF5D6494).withValues(alpha: 0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
