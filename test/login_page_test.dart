@@ -36,9 +36,17 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> sendPasswordReset({required String email}) async {}
 }
 
+final _supabase = SupabaseClient(
+  'https://test.supabase.co',
+  'public-anon-key',
+);
+
 Widget _buildLogin(FakeAuthRepository repository) {
   return MaterialApp(
-    home: LoginPage(authRepository: repository),
+    home: LoginPage(
+      authRepository: repository,
+      supabase: _supabase,
+    ),
   );
 }
 
