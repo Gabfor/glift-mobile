@@ -31,6 +31,11 @@ class GliftPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final footerInset = footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom;
+    final additionalBottomSpacing = footer != null
+        ? footerInset + (footerPadding?.vertical ?? 0) + 40
+        : 0;
     final headerContent = header ?? Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -67,54 +72,62 @@ class GliftPageLayout extends StatelessWidget {
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Container(
-              width: double.infinity,
-              color: const Color(0xFF7069FA),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                child: headerContent,
-              ),
-            ),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  color: const Color(0xFF7069FA),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                    child: headerContent,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: scrollable
-                          ? SingleChildScrollView(
-                              padding: padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30),
-                              child: child,
-                            )
-                          : Padding(
-                              padding: padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30),
-                              child: child,
-                            ),
-                    ),
-                    if (footer != null)
-                      MediaQuery.removeViewInsets(
-                        context: context,
-                        removeBottom: footerIgnoresViewInsets,
-                        child: Padding(
-                          padding:
-                              footerPadding ?? const EdgeInsets.only(bottom: 20),
-                          child: footer!,
-                        ),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
                       ),
-                  ],
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: scrollable
+                              ? SingleChildScrollView(
+                                  padding: (padding ??
+                                          const EdgeInsets.fromLTRB(20, 20, 20, 30))
+                                      .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
+                                  child: child,
+                                )
+                              : Padding(
+                                  padding: (padding ??
+                                          const EdgeInsets.fromLTRB(20, 20, 20, 30))
+                                      .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
+                                  child: child,
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (footer != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: footerInset,
+                child: Padding(
+                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
+                  child: footer!,
                 ),
               ),
-            ),
           ],
         ),
       ),
