@@ -345,39 +345,31 @@ class _SignupPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: 'Pas encore inscrit ?',
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF5D6494),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              TextSpan(
-                text: ' ',
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF97959A),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              TextSpan(
-                text: 'Créer un compte',
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF7069FA),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          Text(
+            'Pas encore inscrit ? ',
+            style: GoogleFonts.quicksand(
+              color: const Color(0xFF5D6494),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
+          GestureDetector(
+            onTap: onTap,
+            child: Text(
+              'Créer un compte',
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFF7069FA),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
