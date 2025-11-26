@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> {
               child: Text(
                 'Entraînements',
                 style: GoogleFonts.quicksand(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: GliftTheme.title,
                 ),
@@ -298,8 +298,8 @@ class _TrainingCard extends StatelessWidget {
               ),
             ),
             Container(
-              width: 32,
-              height: 32,
+              width: 20,
+              height: 20,
               decoration: const BoxDecoration(
                 color: Color(0xFF00D591),
                 shape: BoxShape.circle,
@@ -307,7 +307,7 @@ class _TrainingCard extends StatelessWidget {
               child: const Icon(
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
-                size: 16,
+                size: 10,
               ),
             ),
           ],
