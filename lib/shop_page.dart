@@ -51,96 +51,26 @@ class _ShopPageState extends State<ShopPage> {
       title: 'Glift Shop',
       subtitle: 'Offres régulièrement mises à jour',
       scrollable: false,
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFD7D4DC)),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _offers.isEmpty
+              ? Center(
+                  child: Text(
+                    'Aucune offre trouvée',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF3A416F),
+                      fontSize: 16,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        margin: const EdgeInsets.only(right: 8),
-                        child: const Icon(Icons.sort, size: 20, color: Color(0xFF3A416F)),
-                      ),
-                      Text(
-                        'Nouveauté',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 50),
+                  itemCount: _offers.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 20),
+                  itemBuilder: (context, index) {
+                    return _ShopOfferCard(offer: _offers[index]);
+                  },
                 ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFD7D4DC)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        margin: const EdgeInsets.only(right: 8),
-                        child: const Icon(Icons.filter_list, size: 20, color: Color(0xFF3A416F)),
-                      ),
-                      Text(
-                        'Voir les filtres',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _offers.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Aucune offre trouvée',
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
-                            fontSize: 16,
-                          ),
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                        itemCount: _offers.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 20),
-                        itemBuilder: (context, index) {
-                          return _ShopOfferCard(offer: _offers[index]);
-                        },
-                      ),
-          ),
-        ],
-      ),
     );
   }
 }
