@@ -2,10 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:glift_mobile/login_page.dart';
 import 'package:glift_mobile/auth/auth_repository.dart';
+import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
 
@@ -20,10 +23,16 @@ Future<void> main() async {
 
   final supabase = SupabaseClient(supabaseUrl, supabaseAnonKey);
   final authRepository = SupabaseAuthRepository(supabase);
+  final biometricAuthService = BiometricAuthService(
+    supabase: supabase,
+    localAuth: LocalAuthentication(),
+    secureStorage: const FlutterSecureStorage(),
+  );
 
   runApp(GliftApp(
     supabase: supabase,
     authRepository: authRepository,
+    biometricAuthService: biometricAuthService,
   ));
 }
 
@@ -32,10 +41,12 @@ class GliftApp extends StatelessWidget {
     super.key,
     required this.supabase,
     required this.authRepository,
+    required this.biometricAuthService,
   });
 
   final SupabaseClient supabase;
   final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +57,7 @@ class GliftApp extends StatelessWidget {
       home: SplashToOnboarding(
         supabase: supabase,
         authRepository: authRepository,
+        biometricAuthService: biometricAuthService,
       ),
     );
   }
@@ -56,10 +68,12 @@ class SplashToOnboarding extends StatefulWidget {
     super.key,
     required this.supabase,
     required this.authRepository,
+    required this.biometricAuthService,
   });
 
   final SupabaseClient supabase;
   final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
 
   @override
   State<SplashToOnboarding> createState() => _SplashToOnboardingState();
@@ -90,6 +104,7 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
     return OnboardingFlow(
       authRepository: widget.authRepository,
       supabase: widget.supabase,
+      biometricAuthService: widget.biometricAuthService,
     );
   }
 }
@@ -130,10 +145,12 @@ class OnboardingFlow extends StatefulWidget {
     super.key,
     required this.authRepository,
     required this.supabase,
+    required this.biometricAuthService,
   });
 
   final AuthRepository authRepository;
   final SupabaseClient supabase;
+  final BiometricAuthService biometricAuthService;
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
@@ -188,6 +205,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         builder: (_) => LoginPage(
           authRepository: widget.authRepository,
           supabase: widget.supabase,
+          biometricAuthService: widget.biometricAuthService,
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
+import 'auth/biometric_auth_service.dart';
 import 'auth/auth_repository.dart';
 import 'forgot_password_page.dart';
 import 'home_page.dart';
@@ -14,10 +15,12 @@ class LoginPage extends StatefulWidget {
     super.key,
     required this.authRepository,
     required this.supabase,
+    required this.biometricAuthService,
   });
 
   final AuthRepository authRepository;
   final SupabaseClient supabase;
+  final BiometricAuthService biometricAuthService;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -32,12 +35,15 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isBiometricLoading = false;
   String? _errorMessage;
   bool _emailTouched = false;
   bool _passwordTouched = false;
   bool _emailFocused = false;
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
+  bool _isBiometricAvailable = false;
+  bool _hasStoredBiometricSession = false;
 
   bool get _isFormValid =>
       _isEmailValid && _passwordController.text.trim().isNotEmpty;
@@ -90,6 +96,28 @@ class _LoginPageState extends State<LoginPage> {
         _passwordTouched = _passwordTouched || _passwordFocused;
       });
     });
+    _initializeBiometrics();
+  }
+
+  Future<void> _initializeBiometrics() async {
+    try {
+      final isAvailable =
+          await widget.biometricAuthService.isBiometricAvailable();
+      final hasStoredSession =
+          await widget.biometricAuthService.hasStoredCredentials();
+
+      if (!mounted) return;
+      setState(() {
+        _isBiometricAvailable = isAvailable;
+        _hasStoredBiometricSession = hasStoredSession;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isBiometricAvailable = false;
+        _hasStoredBiometricSession = false;
+      });
+    }
   }
 
   @override
@@ -139,10 +167,19 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await widget.authRepository.signInWithPassword(
+      final session = await widget.authRepository.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      await widget.biometricAuthService.persistSession(session);
+      final hasStoredSession =
+          await widget.biometricAuthService.hasStoredCredentials();
+      if (mounted) {
+        setState(() {
+          _hasStoredBiometricSession = hasStoredSession;
+          _isBiometricAvailable = _isBiometricAvailable || hasStoredSession;
+        });
+      }
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -167,6 +204,48 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _signInWithBiometrics() async {
+    setState(() {
+      _isBiometricLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await widget.biometricAuthService.signInWithBiometrics();
+      final session = response.session;
+
+      if (session != null) {
+        await widget.biometricAuthService.persistSession(session);
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => MainPage(supabase: widget.supabase),
+        ),
+      );
+    } on BiometricAuthException catch (error) {
+      setState(() {
+        _errorMessage = error.message;
+      });
+    } on AuthException catch (error) {
+      setState(() {
+        _errorMessage = error.message.isNotEmpty
+            ? error.message
+            : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
+      });
+    } catch (_) {
+      setState(() {
+        _errorMessage =
+            'Impossible d’utiliser la connexion biométrique pour le moment.';
+      });
+    } finally {
+      setState(() {
+        _isBiometricLoading = false;
       });
     }
   }
@@ -210,7 +289,24 @@ class _LoginPageState extends State<LoginPage> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            if (_isBiometricAvailable && _hasStoredBiometricSession) ...[
+              _BiometricButton(
+                isLoading: _isBiometricLoading,
+                onPressed: _signInWithBiometrics,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Ou continuez avec votre email',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF5D6494),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            const SizedBox(height: 8),
             _InputField(
               label: 'Email',
               hintText: 'john.doe@email.com',
@@ -281,6 +377,52 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BiometricButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  const _BiometricButton({
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 46,
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFF7069FA)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        ),
+        icon: isLoading
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7069FA)),
+                ),
+              )
+            : const Icon(
+                Icons.face_retouching_natural_outlined,
+                color: Color(0xFF7069FA),
+              ),
+        label: Text(
+          'Se connecter avec Face ID',
+          style: GoogleFonts.quicksand(
+            color: const Color(0xFF7069FA),
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

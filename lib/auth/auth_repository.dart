@@ -3,7 +3,7 @@ import 'package:supabase/supabase.dart';
 import '../supabase_credentials.dart';
 
 abstract class AuthRepository {
-  Future<void> signInWithPassword({
+  Future<Session> signInWithPassword({
     required String email,
     required String password,
   });
@@ -17,7 +17,7 @@ class SupabaseAuthRepository implements AuthRepository {
   final SupabaseClient supabase;
 
   @override
-  Future<void> signInWithPassword({
+  Future<Session> signInWithPassword({
     required String email,
     required String password,
   }) async {
@@ -27,11 +27,15 @@ class SupabaseAuthRepository implements AuthRepository {
         password: password,
       );
 
-      if (response.session == null) {
+      final session = response.session;
+
+      if (session == null) {
         throw const AuthException(
           'Identifiants invalides. Vérifiez votre email et votre mot de passe.',
         );
       }
+
+      return session;
     } on AuthException catch (error) {
       throw AuthException(
         error.message.isNotEmpty
