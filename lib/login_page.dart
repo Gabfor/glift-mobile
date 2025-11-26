@@ -272,6 +272,7 @@ class _LoginPageState extends State<LoginPage> {
       title: 'Bonjour,',
       subtitle: 'Bienvenue sur Glift',
       resizeToAvoidBottomInset: false,
+      fullPageScroll: false,
       footerIgnoresViewInsets: true,
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
       footerPadding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
