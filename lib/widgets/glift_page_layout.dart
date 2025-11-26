@@ -34,8 +34,8 @@ class GliftPageLayout extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     final footerInset = footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom;
     final additionalBottomSpacing = footer != null
-        ? footerInset + (footerPadding?.vertical ?? 0) + 40
-        : 0;
+        ? footerInset + (footerPadding?.vertical ?? 0.0) + 40.0
+        : 0.0;
     final headerContent = header ?? Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
