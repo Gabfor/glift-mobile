@@ -126,64 +126,64 @@ class _DashboardPageState extends State<DashboardPage> {
       padding: EdgeInsets.zero,
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
               children: [
-                const SizedBox(height: 20),
                 if (_trainings.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildArrowButton(
-                          icon: Icons.chevron_left,
-                          onTap: _selectedTrainingIndex > 0
-                              ? () => _onTrainingChanged(-1)
-                              : null,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildArrowButton(
+                        icon: Icons.chevron_left,
+                        onTap: _selectedTrainingIndex > 0
+                            ? () => _onTrainingChanged(-1)
+                            : null,
+                      ),
+                      Text(
+                        _trainings[_selectedTrainingIndex]['name'],
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
-                        Text(
-                          _trainings[_selectedTrainingIndex]['name'],
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        _buildArrowButton(
-                          icon: Icons.chevron_right,
-                          onTap: _selectedTrainingIndex < _trainings.length - 1
-                              ? () => _onTrainingChanged(1)
-                              : null,
-                        ),
-                      ],
-                    ),
+                      ),
+                      _buildArrowButton(
+                        icon: Icons.chevron_right,
+                        onTap: _selectedTrainingIndex < _trainings.length - 1
+                            ? () => _onTrainingChanged(1)
+                            : null,
+                      ),
+                    ],
                   ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: _exercises.isEmpty
-                      ? Center(
-                          child: Text(
-                            'Aucun exercice trouvé',
-                            style: GoogleFonts.quicksand(
-                              color: const Color(0xFF3A416F),
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                          itemCount: _exercises.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 20),
-                          itemBuilder: (context, index) {
-                            return _ExerciseChartCard(
-                              key: ValueKey(_exercises[index].id),
-                              exercise: _exercises[index],
-                              repository: _repository,
-                              userId: widget.supabase.auth.currentUser!.id,
-                            );
-                          },
+                if (_trainings.isNotEmpty) const SizedBox(height: 20),
+                if (_exercises.isEmpty)
+                  Center(
+                    child: Text(
+                      'Aucun exercice trouvé',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF3A416F),
+                        fontSize: 16,
+                      ),
+                    ),
+                  )
+                else
+                  ..._exercises.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final exercise = entry.value;
+                    final isLast = index == _exercises.length - 1;
+
+                    return Column(
+                      children: [
+                        _ExerciseChartCard(
+                          key: ValueKey(exercise.id),
+                          exercise: exercise,
+                          repository: _repository,
+                          userId: widget.supabase.auth.currentUser!.id,
                         ),
-                ),
+                        if (!isLast) const SizedBox(height: 20),
+                      ],
+                    );
+                  }),
               ],
             ),
     );
