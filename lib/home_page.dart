@@ -24,6 +24,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final ProgramRepository _programRepository;
   late final PageController _pageController;
+  late final ScrollController _programScrollController;
+  final List<GlobalKey> _programKeys = [];
   List<Program>? _programs;
   String? _selectedProgramId;
   bool _isLoading = true;
@@ -34,12 +36,14 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
     _pageController = PageController();
+    _programScrollController = ScrollController();
     _fetchPrograms();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _programScrollController.dispose();
     super.dispose();
   }
 
@@ -49,6 +53,9 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         setState(() {
           _programs = programs;
+          _programKeys
+            ..clear()
+            ..addAll(List.generate(programs.length, (_) => GlobalKey()));
           if (programs.isNotEmpty) {
             _selectedProgramId = programs.first.id;
           }
@@ -69,6 +76,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedProgramId = _programs![index].id;
     });
+    _scrollProgramIntoView(index);
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -80,6 +88,28 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedProgramId = _programs![index].id;
     });
+    _scrollProgramIntoView(index);
+  }
+
+  void _scrollProgramIntoView(int index) {
+    if (_programScrollController.hasClients && index < _programKeys.length) {
+      final context = _programKeys[index].currentContext;
+
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          alignment: 0.5,
+        );
+      } else {
+        _programScrollController.animateTo(
+          _programScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   @override
@@ -109,6 +139,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 8),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            controller: _programScrollController,
             child: Row(
               children: _programs!.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -118,14 +149,17 @@ class _HomePageState extends State<HomePage> {
                   onTap: () => _onProgramSelected(index),
                   child: Padding(
                     padding: const EdgeInsets.only(right: 20),
-                    child: Text(
-                      program.name,
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: isSelected
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.5),
+                    child: Container(
+                      key: _programKeys[index],
+                      child: Text(
+                        program.name,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.5),
+                        ),
                       ),
                     ),
                   ),
