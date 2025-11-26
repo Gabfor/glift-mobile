@@ -5,6 +5,7 @@ import 'package:supabase/supabase.dart';
 
 import 'repositories/shop_repository.dart';
 import 'models/shop_offer.dart';
+import 'widgets/glift_page_layout.dart';
 
 class ShopPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -46,147 +47,97 @@ class _ShopPageState extends State<ShopPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Stack(
+    return GliftPageLayout(
+      title: 'Glift Shop',
+      subtitle: 'Offres régulièrement mises à jour',
+      scrollable: false,
+      child: Column(
         children: [
-          // Purple Background Top
-          Positioned(
-            left: 0,
-            top: 0,
-            right: 0,
-            height: 250,
-            child: Container(
-              color: const Color(0xFF7069FA),
-            ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFFD7D4DC)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: const EdgeInsets.only(right: 8),
+                        child: const Icon(Icons.sort, size: 20, color: Color(0xFF3A416F)),
+                      ),
                       Text(
-                        'Glift Shop',
+                        'Nouveauté',
                         style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 14,
+                          color: const Color(0xFF3A416F),
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Offres régulièrement mises à jour',
-                        style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
                     ],
                   ),
                 ),
-
-                // Filters
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFFD7D4DC)),
+                  ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(color: const Color(0xFFD7D4DC)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                margin: const EdgeInsets.only(right: 8),
-                                child: const Icon(Icons.sort, size: 20, color: Color(0xFF3A416F)),
-                              ),
-                              Text(
-                                'Nouveauté',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: const EdgeInsets.only(right: 8),
+                        child: const Icon(Icons.filter_list, size: 20, color: Color(0xFF3A416F)),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(color: const Color(0xFFD7D4DC)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                margin: const EdgeInsets.only(right: 8),
-                                child: const Icon(Icons.filter_list, size: 20, color: Color(0xFF3A416F)),
-                              ),
-                              Text(
-                                'Voir les filtres',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                      Text(
+                        'Voir les filtres',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // Offer List
-                Expanded(
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _offers.isEmpty
-                          ? Center(
-                              child: Text(
-                                'Aucune offre trouvée',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                              itemCount: _offers.length,
-                              separatorBuilder: (context, index) => const SizedBox(height: 20),
-                              itemBuilder: (context, index) {
-                                return _ShopOfferCard(offer: _offers[index]);
-                              },
-                            ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _offers.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Aucune offre trouvée',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF3A416F),
+                            fontSize: 16,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                        itemCount: _offers.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 20),
+                        itemBuilder: (context, index) {
+                          return _ShopOfferCard(offer: _offers[index]);
+                        },
+                      ),
           ),
         ],
       ),

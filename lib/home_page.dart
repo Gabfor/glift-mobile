@@ -9,6 +9,7 @@ import 'models/training.dart';
 import 'repositories/program_repository.dart';
 import 'theme/glift_theme.dart';
 import 'training_details_page.dart';
+import 'widgets/glift_page_layout.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.supabase});
@@ -82,96 +83,40 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF7069FA),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Section
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 10,
-                bottom: 10,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Programmes',
-                    style: GoogleFonts.quicksand(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (_programs != null)
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: _programs!.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final program = entry.value;
-                          final isSelected = program.id == _selectedProgramId;
-                          return GestureDetector(
-                            onTap: () => _onProgramSelected(index),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 20),
-                              child: Text(
-                                program.name,
-                                style: GoogleFonts.quicksand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.white.withOpacity(0.5),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+    return GliftPageLayout(
+      title: 'Programmes',
+      subtitle: 'Vos séances à venir',
+      headerBottom: _programs != null
+          ? SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _programs!.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final program = entry.value;
+                  final isSelected = program.id == _selectedProgramId;
+                  return GestureDetector(
+                    onTap: () => _onProgramSelected(index),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 20),
+                      child: Text(
+                        program.name,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.5),
+                        ),
                       ),
                     ),
-                ],
+                  );
+                }).toList(),
               ),
-            ),
-            
-            // Content Section
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  child: _buildBody(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+            )
+          : null,
+      scrollable: false,
+      padding: EdgeInsets.zero,
+      child: _buildBody(),
     );
   }
 

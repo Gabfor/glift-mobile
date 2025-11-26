@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'repositories/dashboard_repository.dart';
 import 'models/program.dart';
 import 'models/training_row.dart';
+import 'widgets/glift_page_layout.dart';
 
 class DashboardPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -119,136 +120,97 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF7069FA),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tableau de bord',
-                    style: GoogleFonts.quicksand(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _programs.map((program) {
-                        final isSelected = program.id == _selectedProgramId;
-                        return GestureDetector(
-                          onTap: () => _onProgramSelected(program.id),
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: Text(
-                              program.name,
-                              style: GoogleFonts.quicksand(
-                                color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Main Content Container
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                ),
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          // Training Selector
-                          if (_trainings.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  _buildArrowButton(
-                                    icon: Icons.chevron_left,
-                                    onTap: _selectedTrainingIndex > 0
-                                        ? () => _onTrainingChanged(-1)
-                                        : null,
-                                  ),
-                                  Text(
-                                    _trainings[_selectedTrainingIndex]['name'],
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF3A416F),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  _buildArrowButton(
-                                    icon: Icons.chevron_right,
-                                    onTap: _selectedTrainingIndex < _trainings.length - 1
-                                        ? () => _onTrainingChanged(1)
-                                        : null,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          
-                          const SizedBox(height: 20),
-
-                          // Exercises List
-                          Expanded(
-                            child: _exercises.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'Aucun exercice trouvé',
-                                      style: GoogleFonts.quicksand(
-                                        color: const Color(0xFF3A416F),
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  )
-                                : ListView.separated(
-                                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                                    itemCount: _exercises.length,
-                                    separatorBuilder: (context, index) => const SizedBox(height: 20),
-                                    itemBuilder: (context, index) {
-                                      return _ExerciseChartCard(
-                                        key: ValueKey(_exercises[index].id),
-                                        exercise: _exercises[index],
-                                        repository: _repository,
-                                        userId: widget.supabase.auth.currentUser!.id,
-                                      );
-                                    },
-                                  ),
-                          ),
-                        ],
+    return GliftPageLayout(
+      title: 'Tableau de bord',
+      subtitle: 'Suivez vos progrès',
+      headerBottom: _programs.isEmpty
+          ? null
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _programs.map((program) {
+                  final isSelected = program.id == _selectedProgramId;
+                  return GestureDetector(
+                    onTap: () => _onProgramSelected(program.id),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: Text(
+                        program.name,
+                        style: GoogleFonts.quicksand(
+                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
-          ],
-        ),
-      ),
+      scrollable: false,
+      padding: EdgeInsets.zero,
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                const SizedBox(height: 20),
+                if (_trainings.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildArrowButton(
+                          icon: Icons.chevron_left,
+                          onTap: _selectedTrainingIndex > 0
+                              ? () => _onTrainingChanged(-1)
+                              : null,
+                        ),
+                        Text(
+                          _trainings[_selectedTrainingIndex]['name'],
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF3A416F),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        _buildArrowButton(
+                          icon: Icons.chevron_right,
+                          onTap: _selectedTrainingIndex < _trainings.length - 1
+                              ? () => _onTrainingChanged(1)
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: _exercises.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Aucun exercice trouvé',
+                            style: GoogleFonts.quicksand(
+                              color: const Color(0xFF3A416F),
+                              fontSize: 16,
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          itemCount: _exercises.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 20),
+                          itemBuilder: (context, index) {
+                            return _ExerciseChartCard(
+                              key: ValueKey(_exercises[index].id),
+                              exercise: _exercises[index],
+                              repository: _repository,
+                              userId: widget.supabase.auth.currentUser!.id,
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 
