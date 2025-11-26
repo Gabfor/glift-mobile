@@ -12,6 +12,9 @@ class GliftPageLayout extends StatelessWidget {
     this.footer,
     this.padding,
     this.scrollable = true,
+    this.footerPadding,
+    this.footerIgnoresViewInsets = false,
+    this.resizeToAvoidBottomInset = true,
   });
 
   final String? title;
@@ -22,10 +25,14 @@ class GliftPageLayout extends StatelessWidget {
   final Widget? footer;
   final EdgeInsetsGeometry? padding;
   final bool scrollable;
+  final EdgeInsetsGeometry? footerPadding;
+  final bool footerIgnoresViewInsets;
+  final bool resizeToAvoidBottomInset;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       backgroundColor: const Color(0xFF7069FA),
       body: SafeArea(
         bottom: false,
@@ -89,9 +96,14 @@ class GliftPageLayout extends StatelessWidget {
                             ),
                     ),
                     if (footer != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: footer!,
+                      MediaQuery.removeViewInsets(
+                        context: context,
+                        removeBottom: footerIgnoresViewInsets,
+                        child: Padding(
+                          padding:
+                              footerPadding ?? const EdgeInsets.only(bottom: 20),
+                          child: footer!,
+                        ),
                       ),
                   ],
                 ),
