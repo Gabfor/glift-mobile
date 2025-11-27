@@ -340,7 +340,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       case _EffortState.neutral:
         return 'assets/icons/smiley_jaune.svg';
       case _EffortState.positive:
-        return 'assets/icons/smileys-vert.svg';
+        return 'assets/icons/smiley_vert.svg';
       case _EffortState.negative:
         return 'assets/icons/smiley_rouge.svg';
     }
