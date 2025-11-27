@@ -19,6 +19,9 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late final DashboardRepository _repository;
+  late final PageController _programPageController;
+  late final ScrollController _programScrollController;
+  final List<GlobalKey> _programKeys = [];
   
   List<Program> _programs = [];
   String? _selectedProgramId;
@@ -33,7 +36,16 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _repository = DashboardRepository(widget.supabase);
+    _programPageController = PageController();
+    _programScrollController = ScrollController();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _programPageController.dispose();
+    _programScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -50,6 +62,9 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _programs = programs;
         _selectedProgramId = programs.first.id;
+        _programKeys
+          ..clear()
+          ..addAll(List.generate(programs.length, (_) => GlobalKey()));
       });
 
       await _loadTrainings(_selectedProgramId!);
@@ -102,7 +117,55 @@ class _DashboardPageState extends State<DashboardPage> {
       _selectedProgramId = programId;
       _isLoading = true;
     });
+    final targetIndex = _programs.indexWhere((program) => program.id == programId);
+    if (targetIndex != -1) {
+      _programPageController.animateToPage(
+        targetIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
     _loadTrainings(programId);
+    _scrollProgramIntoView(programId);
+  }
+
+  void _onProgramPageChanged(int index) {
+    if (index < 0 || index >= _programs.length) return;
+
+    final programId = _programs[index].id;
+    if (_selectedProgramId == programId) return;
+
+    setState(() {
+      _selectedProgramId = programId;
+      _isLoading = true;
+    });
+
+    _scrollProgramIntoView(programId);
+    _loadTrainings(programId);
+  }
+
+  void _scrollProgramIntoView(String programId) {
+    final index = _programs.indexWhere((program) => program.id == programId);
+    if (index == -1) return;
+
+    if (_programScrollController.hasClients && index < _programKeys.length) {
+      final context = _programKeys[index].currentContext;
+
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          alignment: 0.5,
+        );
+      } else {
+        _programScrollController.animateTo(
+          _programScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   void _onTrainingChanged(int delta) {
@@ -124,68 +187,103 @@ class _DashboardPageState extends State<DashboardPage> {
       header: _buildHeader(),
       scrollable: false,
       padding: EdgeInsets.zero,
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              children: [
-                if (_trainings.isNotEmpty)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildArrowButton(
-                        icon: Icons.chevron_left,
-                        onTap: _selectedTrainingIndex > 0
-                            ? () => _onTrainingChanged(-1)
-                            : null,
-                      ),
-                      Text(
-                        _trainings[_selectedTrainingIndex]['name'],
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      _buildArrowButton(
-                        icon: Icons.chevron_right,
-                        onTap: _selectedTrainingIndex < _trainings.length - 1
-                            ? () => _onTrainingChanged(1)
-                            : null,
-                      ),
-                    ],
-                  ),
-                if (_trainings.isNotEmpty) const SizedBox(height: 20),
-                if (_exercises.isEmpty)
-                  Center(
-                    child: Text(
-                      'Aucun exercice trouvé',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
-                        fontSize: 16,
-                      ),
-                    ),
-                  )
-                else
-                  ..._exercises.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final exercise = entry.value;
-                    final isLast = index == _exercises.length - 1;
+      child: _buildProgramPager(),
+    );
+  }
 
-                    return Column(
-                      children: [
-                        _ExerciseChartCard(
-                          key: ValueKey(exercise.id),
-                          exercise: exercise,
-                          repository: _repository,
-                          userId: widget.supabase.auth.currentUser!.id,
-                        ),
-                        if (!isLast) const SizedBox(height: 20),
-                      ],
-                    );
-                  }),
-              ],
-            ),
+  Widget _buildProgramPager() {
+    if (_isLoading && _programs.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_programs.isEmpty) {
+      return Center(
+        child: Text(
+          'Aucun programme disponible',
+          style: GoogleFonts.quicksand(
+            color: const Color(0xFF3A416F),
+            fontSize: 16,
+          ),
+        ),
+      );
+    }
+
+    return PageView.builder(
+      controller: _programPageController,
+      onPageChanged: _onProgramPageChanged,
+      itemCount: _programs.length,
+      itemBuilder: (context, index) {
+        final programId = _programs[index].id;
+        final isCurrentProgram = programId == _selectedProgramId;
+
+        if (!isCurrentProgram) {
+          return const SizedBox.shrink();
+        }
+
+        if (_isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          children: [
+            if (_trainings.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildArrowButton(
+                    icon: Icons.chevron_left,
+                    onTap: _selectedTrainingIndex > 0
+                        ? () => _onTrainingChanged(-1)
+                        : null,
+                  ),
+                  Text(
+                    _trainings[_selectedTrainingIndex]['name'],
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF3A416F),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  _buildArrowButton(
+                    icon: Icons.chevron_right,
+                    onTap: _selectedTrainingIndex < _trainings.length - 1
+                        ? () => _onTrainingChanged(1)
+                        : null,
+                  ),
+                ],
+              ),
+            if (_trainings.isNotEmpty) const SizedBox(height: 20),
+            if (_exercises.isEmpty)
+              Center(
+                child: Text(
+                  'Aucun exercice trouvé',
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFF3A416F),
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            else
+              ..._exercises.asMap().entries.map((entry) {
+                final exercise = entry.value;
+                final isLast = entry.key == _exercises.length - 1;
+
+                return Column(
+                  children: [
+                    _ExerciseChartCard(
+                      key: ValueKey(exercise.id),
+                      exercise: exercise,
+                      repository: _repository,
+                      userId: widget.supabase.auth.currentUser!.id,
+                    ),
+                    if (!isLast) const SizedBox(height: 20),
+                  ],
+                );
+              }),
+          ],
+        );
+      },
     );
   }
 
@@ -206,8 +304,11 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 8),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            controller: _programScrollController,
             child: Row(
-              children: _programs.map((program) {
+              children: _programs.asMap().entries.map((entry) {
+                final index = entry.key;
+                final program = entry.value;
                 final isSelected = program.id == _selectedProgramId;
                 return GestureDetector(
                   onTap: () => _onProgramSelected(program.id),
@@ -215,6 +316,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     padding: const EdgeInsets.only(right: 20),
                     child: Text(
                       program.name,
+                      key: _programKeys[index],
                       style: GoogleFonts.quicksand(
                         color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
                         fontSize: 16,
