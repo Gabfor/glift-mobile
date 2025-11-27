@@ -384,193 +384,206 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                           style: GoogleFonts.quicksand(color: const Color(0xFFC2BFC6)),
                         ),
                       )
-                    : LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Stack(
-                            children: [
-                              SizedBox.expand(
-                                child: LineChart(
-                                  LineChartData(
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            horizontalInterval: interval,
-                            getDrawingHorizontalLine: (value) {
-                              return const FlLine(
-                                color: Color(0xFFECE9F1),
-                                strokeWidth: 1,
-                              );
-                            },
-                            checkToShowHorizontalLine: (value) {
-                              return true; 
-                            },
-                          ),
-                          extraLinesData: ExtraLinesData(
-                            horizontalLines: [
-                              HorizontalLine(y: 0, color: const Color(0xFFECE9F1), strokeWidth: 1),
-                              HorizontalLine(y: chartMaxY, color: const Color(0xFFECE9F1), strokeWidth: 1),
-                            ],
-                          ),
-                          titlesData: FlTitlesData(
-                            show: true,
-                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 60,
-                                interval: 1,
-                                getTitlesWidget: (value, meta) {
-                                  final index = value.toInt();
-                                  if (index >= 0 && index < _history.length) {
-                                    final date = _history[index]['date'] as DateTime;
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          DateFormat('dd').format(date),
-                                          style: GoogleFonts.quicksand(
-                                            color: const Color(0xFF3A416F),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Stack(
+                              children: [
+                                SizedBox.expand(
+                                  child: LineChart(
+                                    LineChartData(
+                                      gridData: FlGridData(
+                                        show: true,
+                                        drawVerticalLine: false,
+                                        horizontalInterval: interval,
+                                        getDrawingHorizontalLine: (value) {
+                                          return const FlLine(
+                                            color: Color(0xFFECE9F1),
+                                            strokeWidth: 1,
+                                          );
+                                        },
+                                        checkToShowHorizontalLine: (value) {
+                                          return true;
+                                        },
+                                      ),
+                                      extraLinesData: ExtraLinesData(
+                                        horizontalLines: [
+                                          HorizontalLine(
+                                            y: 0,
+                                            color: const Color(0xFFECE9F1),
+                                            strokeWidth: 1,
+                                          ),
+                                          HorizontalLine(
+                                            y: chartMaxY,
+                                            color: const Color(0xFFECE9F1),
+                                            strokeWidth: 1,
+                                          ),
+                                        ],
+                                      ),
+                                      titlesData: FlTitlesData(
+                                        show: true,
+                                        rightTitles: const AxisTitles(
+                                            sideTitles: SideTitles(showTitles: false)),
+                                        topTitles: const AxisTitles(
+                                            sideTitles: SideTitles(showTitles: false)),
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 60,
+                                            interval: 1,
+                                            getTitlesWidget: (value, meta) {
+                                              final index = value.toInt();
+                                              if (index >= 0 && index < _history.length) {
+                                                final date =
+                                                    _history[index]['date'] as DateTime;
+                                                return Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    const SizedBox(height: 10),
+                                                    Text(
+                                                      DateFormat('dd').format(date),
+                                                      style: GoogleFonts.quicksand(
+                                                        color: const Color(0xFF3A416F),
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      DateFormat('MMM', 'fr_FR').format(date),
+                                                      style: GoogleFonts.quicksand(
+                                                        color: const Color(0xFFC2BFC6),
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              }
+                                              return const SizedBox.shrink();
+                                            },
                                           ),
                                         ),
-                                        Text(
-                                          DateFormat('MMM', 'fr_FR').format(date),
-                                          style: GoogleFonts.quicksand(
-                                            color: const Color(0xFFC2BFC6),
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
+                                        leftTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 40,
+                                            interval: interval,
+                                            getTitlesWidget: (value, meta) {
+                                              final realValue = value + realMinY;
+                                              final displayValue = realValue.round();
+                                              return Text(
+                                                '$displayValue kg',
+                                                style: GoogleFonts.quicksand(
+                                                  color: const Color(0xFF3A416F),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              );
+                                            },
                                           ),
                                         ),
-                                      ],
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                              ),
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 40,
-                                interval: interval,
-                                getTitlesWidget: (value, meta) {
-                                  final realValue = value + realMinY;
-                                  final displayValue = realValue.round();
-                                  return Text(
-                                    '$displayValue kg',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF3A416F),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: false),
-                          minX: 0,
-                          maxX: (_history.length - 1).toDouble(),
-                          minY: 0, // Chart starts at 0
-                          maxY: chartMaxY, // Chart ends at range
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: _history.asMap().entries.map((e) {
-                                return FlSpot(e.key.toDouble(), (e.value['value'] as double) - realMinY);
-                              }).toList(),
-                              isCurved: true,
-                              curveSmoothness: 0.35,
-                              color: const Color(0xFFA1A5FD),
-                              barWidth: 2,
-                              isStrokeCapRound: true,
-                              dotData: FlDotData(
-                                show: true,
-                                getDotPainter: (spot, percent, barData, index) {
-                                  return FlDotCirclePainter(
-                                    radius: 4,
-                                    color: const Color(0xFF7069FA),
-                                    strokeWidth: 2,
-                                    strokeColor: Colors.white,
-                                  );
-                                },
-                              ),
-                              belowBarData: BarAreaData(
-                                show: true,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    const Color(0xFF7069FA).withOpacity(0.2),
-                                    const Color(0xFF7069FA).withOpacity(0.0),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                                  lineTouchData: LineTouchData(
-                                    getTouchedSpotIndicator: (barData, spotIndexes) {
-                                      return spotIndexes.map((barSpot) {
-                                        return TouchedSpotIndicatorData(
-                                          const FlLine(color: Colors.transparent, strokeWidth: 0),
-                                          FlDotData(
+                                      ),
+                                      borderData: FlBorderData(show: false),
+                                      minX: 0,
+                                      maxX: (_history.length - 1).toDouble(),
+                                      minY: 0, // Chart starts at 0
+                                      maxY: chartMaxY, // Chart ends at range
+                                      lineBarsData: [
+                                        LineChartBarData(
+                                          spots: _history.asMap().entries.map((e) {
+                                            return FlSpot(e.key.toDouble(),
+                                                (e.value['value'] as double) - realMinY);
+                                          }).toList(),
+                                          isCurved: true,
+                                          curveSmoothness: 0.35,
+                                          color: const Color(0xFFA1A5FD),
+                                          barWidth: 2,
+                                          isStrokeCapRound: true,
+                                          dotData: FlDotData(
                                             show: true,
                                             getDotPainter: (spot, percent, barData, index) {
                                               return FlDotCirclePainter(
-                                                radius: 6,
+                                                radius: 4,
                                                 color: const Color(0xFF7069FA),
                                                 strokeWidth: 2,
                                                 strokeColor: Colors.white,
                                               );
                                             },
                                           ),
-                                        );
-                                      }).toList();
-                                    },
-                                    touchCallback: (event, response) {
-                                      if (!event.isInterestedForInteractions ||
-                                          response == null ||
-                                          response.lineBarSpots == null ||
-                                          response.lineBarSpots!.isEmpty) {
-                                        setState(() {
-                                          _touchedSpot = null;
-                                          _touchPosition = null;
-                                        });
-                                        return;
-                                      }
+                                          belowBarData: BarAreaData(
+                                            show: true,
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                const Color(0xFF7069FA).withOpacity(0.2),
+                                                const Color(0xFF7069FA).withOpacity(0.0),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      lineTouchData: LineTouchData(
+                                        getTouchedSpotIndicator: (barData, spotIndexes) {
+                                          return spotIndexes.map((barSpot) {
+                                            return TouchedSpotIndicatorData(
+                                              const FlLine(
+                                                  color: Colors.transparent, strokeWidth: 0),
+                                              FlDotData(
+                                                show: true,
+                                                getDotPainter: (spot, percent, barData, index) {
+                                                  return FlDotCirclePainter(
+                                                    radius: 6,
+                                                    color: const Color(0xFF7069FA),
+                                                    strokeWidth: 2,
+                                                    strokeColor: Colors.white,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          }).toList();
+                                        },
+                                        touchCallback: (event, response) {
+                                          if (!event.isInterestedForInteractions ||
+                                              response == null ||
+                                              response.lineBarSpots == null ||
+                                              response.lineBarSpots!.isEmpty) {
+                                            setState(() {
+                                              _touchedSpot = null;
+                                              _touchPosition = null;
+                                            });
+                                            return;
+                                          }
 
-                                      setState(() {
-                                        _touchedSpot = response.lineBarSpots!.first;
-                                        _touchPosition = event.localPosition;
-                                      });
-                                    },
-                                    touchTooltipData: LineTouchTooltipData(
-                                      tooltipBgColor: Colors.transparent,
-                                      tooltipPadding: EdgeInsets.zero,
-                                      tooltipMargin: 0,
-                                      getTooltipItems: (touchedSpots) => const [],
+                                          setState(() {
+                                            _touchedSpot = response.lineBarSpots!.first;
+                                            _touchPosition = event.localPosition;
+                                          });
+                                        },
+                                        touchTooltipData: LineTouchTooltipData(
+                                          tooltipPadding: EdgeInsets.zero,
+                                          tooltipMargin: 0,
+                                          getTooltipItems: (touchedSpots) => const [],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              if (_touchedSpot != null && _touchPosition != null)
-                                Positioned(
-                                  left: (_touchPosition!.dx - 30)
-                                      .clamp(0.0, constraints.maxWidth - 60),
-                                  top: (_touchPosition!.dy - 38)
-                                      .clamp(0.0, constraints.maxHeight - 38),
-                                  child: _TooltipWithArrow(
-                                    backgroundColor: const Color(0xFF2D2E32),
-                                    label:
-                                        '${(_touchedSpot!.y + realMinY).toInt()} kg',
+                                if (_touchedSpot != null && _touchPosition != null)
+                                  Positioned(
+                                    left: (_touchPosition!.dx - 30)
+                                        .clamp(0.0, constraints.maxWidth - 60),
+                                    top: (_touchPosition!.dy - 38)
+                                        .clamp(0.0, constraints.maxHeight - 38),
+                                    child: _TooltipWithArrow(
+                                      backgroundColor: const Color(0xFF2D2E32),
+                                      label:
+                                          '${(_touchedSpot!.y + realMinY).toInt()} kg',
+                                    ),
                                   ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
+                              ],
+                            );
+                          },
+                        ),
           ),
         ],
       ),
