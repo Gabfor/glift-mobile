@@ -20,6 +20,7 @@ class _ShopPageState extends State<ShopPage> {
   late final ShopRepository _repository;
   List<ShopOffer> _offers = [];
   bool _isLoading = true;
+  String _selectedType = 'Tous';
 
   @override
   void initState() {
@@ -45,12 +46,27 @@ class _ShopPageState extends State<ShopPage> {
     }
   }
 
+  List<String> get _availableFilters {
+    final filters = <String>{};
+
+    for (final offer in _offers) {
+      filters.addAll(offer.type.where((type) => type.trim().isNotEmpty));
+    }
+
+    final sortedFilters = filters.toList()..sort();
+    return ['Tous', ...sortedFilters];
+  }
+
+  List<ShopOffer> get _filteredOffers {
+    if (_selectedType == 'Tous') return _offers;
+    return _offers.where((offer) => offer.type.contains(_selectedType)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
       title: 'Glift Shop',
       subtitle: 'Offres régulièrement mises à jour',
-      scrollable: false,
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _offers.isEmpty
@@ -63,14 +79,73 @@ class _ShopPageState extends State<ShopPage> {
                     ),
                   ),
                 )
-              : ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 50),
-                  itemCount: _offers.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 20),
-                  itemBuilder: (context, index) {
-                    return _ShopOfferCard(offer: _offers[index]);
-                  },
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_availableFilters.length > 1) ...[
+                      _FiltersRow(
+                        options: _availableFilters,
+                        selected: _selectedType,
+                        onSelected: (value) {
+                          setState(() => _selectedType = value);
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 50),
+                      itemCount: _filteredOffers.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 20),
+                      itemBuilder: (context, index) {
+                        return _ShopOfferCard(offer: _filteredOffers[index]);
+                      },
+                    ),
+                  ],
                 ),
+    );
+  }
+}
+
+class _FiltersRow extends StatelessWidget {
+  const _FiltersRow({
+    required this.options,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<String> options;
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: options
+            .map(
+              (option) => Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: ChoiceChip(
+                  label: Text(
+                    option,
+                    style: GoogleFonts.quicksand(
+                      color: selected == option ? Colors.white : const Color(0xFF3A416F),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  selected: selected == option,
+                  selectedColor: const Color(0xFF7069FA),
+                  backgroundColor: const Color(0xFFF2F1F6),
+                  showCheckmark: false,
+                  onSelected: (_) => onSelected(option),
+                ),
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 }
