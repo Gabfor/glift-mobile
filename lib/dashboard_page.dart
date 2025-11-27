@@ -271,6 +271,8 @@ class _ExerciseChartCard extends StatefulWidget {
 class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
+  LineBarSpot? _touchedSpot;
+  Offset? _touchPosition;
 
   @override
   void initState() {
@@ -382,8 +384,13 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                           style: GoogleFonts.quicksand(color: const Color(0xFFC2BFC6)),
                         ),
                       )
-                    : LineChart(
-                        LineChartData(
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Stack(
+                            children: [
+                              SizedBox.expand(
+                                child: LineChart(
+                                  LineChartData(
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
@@ -503,48 +510,133 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               ),
                             ),
                           ],
-                          lineTouchData: LineTouchData(
-                            getTouchedSpotIndicator: (barData, spotIndexes) {
-                              return spotIndexes.map((barSpot) {
-                                return TouchedSpotIndicatorData(
-                                  const FlLine(color: Colors.transparent, strokeWidth: 0),
-                                  FlDotData(
-                                    show: true,
-                                    getDotPainter: (spot, percent, barData, index) {
-                                      return FlDotCirclePainter(
-                                        radius: 6,
-                                        color: const Color(0xFF7069FA),
-                                        strokeWidth: 2,
-                                        strokeColor: Colors.white,
-                                      );
+                                  lineTouchData: LineTouchData(
+                                    getTouchedSpotIndicator: (barData, spotIndexes) {
+                                      return spotIndexes.map((barSpot) {
+                                        return TouchedSpotIndicatorData(
+                                          const FlLine(color: Colors.transparent, strokeWidth: 0),
+                                          FlDotData(
+                                            show: true,
+                                            getDotPainter: (spot, percent, barData, index) {
+                                              return FlDotCirclePainter(
+                                                radius: 6,
+                                                color: const Color(0xFF7069FA),
+                                                strokeWidth: 2,
+                                                strokeColor: Colors.white,
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      }).toList();
                                     },
-                                  ),
-                                );
-                              }).toList();
-                            },
-                            touchTooltipData: LineTouchTooltipData(
-                              getTooltipColor: (LineBarSpot touchedSpot) => const Color(0xFF2D2E32),
-                              tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              getTooltipItems: (touchedSpots) {
-                                return touchedSpots.map((LineBarSpot touchedSpot) {
-                                  final realValue = touchedSpot.y + realMinY;
-                                  return LineTooltipItem(
-                                    '${realValue.toInt()} kg',
-                                    GoogleFonts.quicksand(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
+                                    touchCallback: (event, response) {
+                                      if (!event.isInterestedForInteractions ||
+                                          response == null ||
+                                          response.lineBarSpots == null ||
+                                          response.lineBarSpots!.isEmpty) {
+                                        setState(() {
+                                          _touchedSpot = null;
+                                          _touchPosition = null;
+                                        });
+                                        return;
+                                      }
+
+                                      setState(() {
+                                        _touchedSpot = response.lineBarSpots!.first;
+                                        _touchPosition = event.localPosition;
+                                      });
+                                    },
+                                    touchTooltipData: LineTouchTooltipData(
+                                      tooltipBgColor: Colors.transparent,
+                                      tooltipPadding: EdgeInsets.zero,
+                                      tooltipMargin: 0,
+                                      getTooltipItems: (touchedSpots) => const [],
                                     ),
-                                  );
-                                }).toList();
-                              },
-                            ),
-                          ),
-                        ),
+                                  ),
+                                ),
+                              ),
+                              if (_touchedSpot != null && _touchPosition != null)
+                                Positioned(
+                                  left: (_touchPosition!.dx - 30)
+                                      .clamp(0.0, constraints.maxWidth - 60),
+                                  top: (_touchPosition!.dy - 38)
+                                      .clamp(0.0, constraints.maxHeight - 38),
+                                  child: _TooltipWithArrow(
+                                    backgroundColor: const Color(0xFF2D2E32),
+                                    label:
+                                        '${(_touchedSpot!.y + realMinY).toInt()} kg',
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
           ),
         ],
       ),
     );
   }
+}
+
+class _TooltipWithArrow extends StatelessWidget {
+  final Color backgroundColor;
+  final String label;
+
+  const _TooltipWithArrow({
+    required this.backgroundColor,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        CustomPaint(
+          size: const Size(12, 6),
+          painter: _TooltipArrowPainter(backgroundColor),
+        ),
+      ],
+    );
+  }
+}
+
+class _TooltipArrowPainter extends CustomPainter {
+  final Color color;
+
+  const _TooltipArrowPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
