@@ -318,11 +318,20 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     }
   }
 
+  double _calculateInterval(double height, double range) {
+    const targetSpacing = 38.0;
+    if (range <= 0 || height <= 0) return 1;
+
+    final lineCount = (height / targetSpacing).floor();
+    if (lineCount <= 0) return range;
+
+    return range / lineCount;
+  }
+
   @override
   Widget build(BuildContext context) {
     double realMinY = 0;
     double realMaxY = 100;
-    double interval = 20;
     double chartMaxY = 100;
 
     if (_history.isNotEmpty) {
@@ -337,17 +346,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         realMaxY += 5;
         realMinY = (realMinY - 5).clamp(0, double.infinity);
       }
-      
-      // Calculate interval to have roughly 3-4 horizontal lines
-      double range = realMaxY - realMinY;
-      if (range % 3 == 0) {
-        interval = range / 3;
-      } else {
-        interval = range / 4;
-      }
-      
-      if (interval == 0) interval = 1;
-      chartMaxY = range;
+
+      chartMaxY = realMaxY - realMinY;
     }
 
     return Container(
@@ -381,157 +381,163 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                           style: GoogleFonts.quicksand(color: const Color(0xFFC2BFC6)),
                         ),
                       )
-                    : LineChart(
-                        LineChartData(
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            horizontalInterval: interval,
-                            getDrawingHorizontalLine: (value) {
-                              return const FlLine(
-                                color: Color(0xFFECE9F1),
-                                strokeWidth: 1,
-                              );
-                            },
-                            checkToShowHorizontalLine: (value) {
-                              return true; 
-                            },
-                          ),
-                          extraLinesData: ExtraLinesData(
-                            horizontalLines: [
-                              HorizontalLine(y: 0, color: const Color(0xFFECE9F1), strokeWidth: 1),
-                              HorizontalLine(y: chartMaxY, color: const Color(0xFFECE9F1), strokeWidth: 1),
-                            ],
-                          ),
-                          titlesData: FlTitlesData(
-                            show: true,
-                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 60,
-                                interval: 1,
-                                getTitlesWidget: (value, meta) {
-                                  final index = value.toInt();
-                                  if (index >= 0 && index < _history.length) {
-                                    final date = _history[index]['date'] as DateTime;
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          DateFormat('dd').format(date),
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          final interval = _calculateInterval(constraints.maxHeight, chartMaxY);
+
+                          return LineChart(
+                            LineChartData(
+                              gridData: FlGridData(
+                                show: true,
+                                drawVerticalLine: false,
+                                horizontalInterval: interval,
+                                getDrawingHorizontalLine: (value) {
+                                  return const FlLine(
+                                    color: Color(0xFFECE9F1),
+                                    strokeWidth: 1,
+                                  );
+                                },
+                                checkToShowHorizontalLine: (value) {
+                                  return true;
+                                },
+                              ),
+                              extraLinesData: ExtraLinesData(
+                                horizontalLines: [
+                                  HorizontalLine(y: 0, color: const Color(0xFFECE9F1), strokeWidth: 1),
+                                  HorizontalLine(y: chartMaxY, color: const Color(0xFFECE9F1), strokeWidth: 1),
+                                ],
+                              ),
+                              titlesData: FlTitlesData(
+                                show: true,
+                                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 60,
+                                    interval: 1,
+                                    getTitlesWidget: (value, meta) {
+                                      final index = value.toInt();
+                                      if (index >= 0 && index < _history.length) {
+                                        final date = _history[index]['date'] as DateTime;
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              DateFormat('dd').format(date),
+                                              style: GoogleFonts.quicksand(
+                                                color: const Color(0xFF3A416F),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            Text(
+                                              DateFormat('MMM', 'fr_FR').format(date),
+                                              style: GoogleFonts.quicksand(
+                                                color: const Color(0xFFC2BFC6),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 40,
+                                    interval: interval,
+                                    getTitlesWidget: (value, meta) {
+                                      final realValue = value + realMinY;
+                                      // Round to 1 decimal place if needed, or int if whole number
+                                      if (realValue % 1 == 0) {
+                                        return Text(
+                                          '${realValue.toInt()} kg',
                                           style: GoogleFonts.quicksand(
                                             color: const Color(0xFF3A416F),
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
                                           ),
+                                        );
+                                      }
+                                      return Text(
+                                        '${realValue.toStringAsFixed(1)} kg',
+                                        style: GoogleFonts.quicksand(
+                                          color: const Color(0xFF3A416F),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
                                         ),
-                                        Text(
-                                          DateFormat('MMM', 'fr_FR').format(date),
-                                          style: GoogleFonts.quicksand(
-                                            color: const Color(0xFFC2BFC6),
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              borderData: FlBorderData(show: false),
+                              minX: 0,
+                              maxX: (_history.length - 1).toDouble(),
+                              minY: 0, // Chart starts at 0
+                              maxY: chartMaxY, // Chart ends at range
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: _history.asMap().entries.map((e) {
+                                    return FlSpot(e.key.toDouble(), (e.value['value'] as double) - realMinY);
+                                  }).toList(),
+                                  isCurved: true,
+                                  curveSmoothness: 0.35,
+                                  color: const Color(0xFFA1A5FD),
+                                  barWidth: 2,
+                                  isStrokeCapRound: true,
+                                  dotData: FlDotData(
+                                    show: true,
+                                    getDotPainter: (spot, percent, barData, index) {
+                                      return FlDotCirclePainter(
+                                        radius: 4,
+                                        color: const Color(0xFF7069FA),
+                                        strokeWidth: 2,
+                                        strokeColor: Colors.white,
+                                      );
+                                    },
+                                  ),
+                                  belowBarData: BarAreaData(
+                                    show: true,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        const Color(0xFF7069FA).withOpacity(0.2),
+                                        const Color(0xFF7069FA).withOpacity(0.0),
                                       ],
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                              ),
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 40,
-                                interval: interval,
-                                getTitlesWidget: (value, meta) {
-                                  final realValue = value + realMinY;
-                                  // Round to 1 decimal place if needed, or int if whole number
-                                  if (realValue % 1 == 0) {
-                                    return Text(
-                                      '${realValue.toInt()} kg',
-                                      style: GoogleFonts.quicksand(
-                                        color: const Color(0xFF3A416F),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    );
-                                  }
-                                  return Text(
-                                    '${realValue.toStringAsFixed(1)} kg',
-                                    style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF3A416F),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
                                     ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: false),
-                          minX: 0,
-                          maxX: (_history.length - 1).toDouble(),
-                          minY: 0, // Chart starts at 0
-                          maxY: chartMaxY, // Chart ends at range
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: _history.asMap().entries.map((e) {
-                                return FlSpot(e.key.toDouble(), (e.value['value'] as double) - realMinY);
-                              }).toList(),
-                              isCurved: true,
-                              curveSmoothness: 0.35,
-                              color: const Color(0xFFA1A5FD),
-                              barWidth: 2,
-                              isStrokeCapRound: true,
-                              dotData: FlDotData(
-                                show: true,
-                                getDotPainter: (spot, percent, barData, index) {
-                                  return FlDotCirclePainter(
-                                    radius: 4,
-                                    color: const Color(0xFF7069FA),
-                                    strokeWidth: 2,
-                                    strokeColor: Colors.white,
-                                  );
-                                },
-                              ),
-                              belowBarData: BarAreaData(
-                                show: true,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    const Color(0xFF7069FA).withOpacity(0.2),
-                                    const Color(0xFF7069FA).withOpacity(0.0),
-                                  ],
+                                  ),
+                                ),
+                              ],
+                              lineTouchData: LineTouchData(
+                                touchTooltipData: LineTouchTooltipData(
+                                  getTooltipColor: (LineBarSpot touchedSpot) => const Color(0xFF2D2E32),
+                                  tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  getTooltipItems: (touchedSpots) {
+                                    return touchedSpots.map((LineBarSpot touchedSpot) {
+                                      final realValue = touchedSpot.y + realMinY;
+                                      return LineTooltipItem(
+                                        '${realValue.toInt()} kg',
+                                        GoogleFonts.quicksand(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
                                 ),
                               ),
                             ),
-                          ],
-                          lineTouchData: LineTouchData(
-                            touchTooltipData: LineTouchTooltipData(
-                              getTooltipColor: (LineBarSpot touchedSpot) => const Color(0xFF2D2E32),
-                              tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              getTooltipItems: (touchedSpots) {
-                                return touchedSpots.map((LineBarSpot touchedSpot) {
-                                  final realValue = touchedSpot.y + realMinY;
-                                  return LineTooltipItem(
-                                    '${realValue.toInt()} kg',
-                                    GoogleFonts.quicksand(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  );
-                                }).toList();
-                              },
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
           ),
         ],
