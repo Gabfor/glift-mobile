@@ -390,7 +390,30 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                       )
                       : LayoutBuilder(
                           builder: (context, constraints) {
+                            double? tooltipLeft;
+                            double? tooltipTop;
+
+                            if (_touchedSpot != null) {
+                              final spot = _touchedSpot!;
+                              final chartWidth = constraints.maxWidth - 40;
+                              final chartHeight = constraints.maxHeight - 60;
+                              
+                              double xPercent = 0.5;
+                              if (_history.length > 1) {
+                                xPercent = spot.x / (_history.length - 1);
+                              }
+                              
+                              final yPercent = spot.y / chartMaxY;
+                              
+                              final spotPxX = 40 + xPercent * chartWidth;
+                              final spotPxY = chartHeight * (1 - yPercent);
+                              
+                              tooltipLeft = spotPxX;
+                              tooltipTop = spotPxY - 16; // 10px spacing + 6px dot radius
+                            }
+
                             return Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 SizedBox.expand(
                                   child: LineChart(
@@ -579,17 +602,17 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                     ),
                                   ),
                                 ),
-                                if (_touchedSpot != null && _touchPosition != null)
+                                if (_touchedSpot != null && tooltipLeft != null && tooltipTop != null)
                                   Positioned(
-                                    left: (_touchPosition!.dx - _tooltipWidth / 2)
-                                        .clamp(0.0, constraints.maxWidth - _tooltipWidth),
-                                    top: (_touchPosition!.dy - _tooltipHeight -
-                                            _tooltipVerticalOffset)
-                                        .clamp(0.0, constraints.maxHeight - _tooltipHeight),
-                                    child: _TooltipWithArrow(
-                                      backgroundColor: const Color(0xFF2D2E32),
-                                      label:
-                                          '${(_touchedSpot!.y + realMinY).toInt()} kg',
+                                    left: tooltipLeft,
+                                    top: tooltipTop,
+                                    child: FractionalTranslation(
+                                      translation: const Offset(-0.5, -1.0),
+                                      child: _TooltipWithArrow(
+                                        backgroundColor: const Color(0xFF2D2E32),
+                                        label:
+                                            '${(_touchedSpot!.y + realMinY).toInt()} kg',
+                                      ),
                                     ),
                                   ),
                               ],
