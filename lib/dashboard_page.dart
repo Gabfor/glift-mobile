@@ -338,10 +338,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         realMinY = (realMinY - 5).clamp(0, double.infinity);
       }
       
-      // Calculate interval to have exactly 6 horizontal lines (38px spacing)
-      // Plot area is ~228px (368 - 140 overhead). 228 / 38 = 6.
+      // Calculate interval to have exactly 5 horizontal lines (38px spacing)
+      // Plot area is ~190px (330 - 140 overhead). 190 / 38 = 5.
       double range = realMaxY - realMinY;
-      interval = range / 6;
+      interval = range / 5;
       
       if (interval == 0) interval = 1;
       chartMaxY = range;
@@ -349,7 +349,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
     return Container(
       width: double.infinity,
-      height: 368, // Adjusted height for 38px spacing (228px plot area)
+      height: 330, // Adjusted height for 38px spacing (190px plot area)
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
