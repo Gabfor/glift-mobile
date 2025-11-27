@@ -20,12 +20,14 @@ class _ShopPageState extends State<ShopPage> {
   late final ShopRepository _repository;
   List<ShopOffer> _offers = [];
   bool _isLoading = true;
-  String _selectedType = 'Tous';
+  Set<String> _selectedTypes = {};
+  String _selectedSort = 'newest'; // 'newest', 'popularity', 'expiration'
 
   @override
   void initState() {
     super.initState();
     _repository = ShopRepository(widget.supabase);
+    _selectedTypes.add('Tous');
     _loadOffers();
   }
 
@@ -58,8 +60,39 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   List<ShopOffer> get _filteredOffers {
-    if (_selectedType == 'Tous') return _offers;
-    return _offers.where((offer) => offer.type.contains(_selectedType)).toList();
+    var filtered = _offers;
+
+    // Filter
+    if (_selectedTypes.isNotEmpty && !_selectedTypes.contains('Tous')) {
+      filtered = filtered.where((offer) {
+        // Check if offer has ANY of the selected types
+        return offer.type.any((t) => _selectedTypes.contains(t));
+      }).toList();
+    }
+
+    // Sort
+    switch (_selectedSort) {
+      case 'newest':
+        filtered.sort((a, b) {
+          final dateA = DateTime.tryParse(a.startDate ?? '') ?? DateTime(0);
+          final dateB = DateTime.tryParse(b.startDate ?? '') ?? DateTime(0);
+          return dateB.compareTo(dateA); // Descending
+        });
+        break;
+      case 'expiration':
+        filtered.sort((a, b) {
+          final dateA = DateTime.tryParse(a.endDate ?? '') ?? DateTime(2100);
+          final dateB = DateTime.tryParse(b.endDate ?? '') ?? DateTime(2100);
+          return dateA.compareTo(dateB); // Ascending (soonest first)
+        });
+        break;
+      case 'popularity':
+      default:
+        // Default order (as received from DB or specific logic if available)
+        break;
+    }
+
+    return filtered;
   }
 
   @override
@@ -83,11 +116,69 @@ class _ShopPageState extends State<ShopPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (_availableFilters.length > 1) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Trier par',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: const Color(0xFFD7D4DC)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedSort,
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
+                          items: const [
+                            DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
+                            DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
+                            DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedSort = value);
+                            }
+                          },
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF3A416F),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_availableFilters.length > 1) ...[
                       _FiltersRow(
                         options: _availableFilters,
-                        selected: _selectedType,
+                        selected: _selectedTypes,
                         onSelected: (value) {
-                          setState(() => _selectedType = value);
+                          setState(() {
+                            if (value == 'Tous') {
+                              _selectedTypes.clear();
+                              _selectedTypes.add('Tous');
+                            } else {
+                              _selectedTypes.remove('Tous');
+                              if (_selectedTypes.contains(value)) {
+                                _selectedTypes.remove(value);
+                              } else {
+                                _selectedTypes.add(value);
+                              }
+                              if (_selectedTypes.isEmpty) {
+                                _selectedTypes.add('Tous');
+                              }
+                            }
+                          });
                         },
                       ),
                       const SizedBox(height: 20),
@@ -116,7 +207,7 @@ class _FiltersRow extends StatelessWidget {
   });
 
   final List<String> options;
-  final String selected;
+  final Set<String> selected;
   final ValueChanged<String> onSelected;
 
   @override
@@ -128,18 +219,22 @@ class _FiltersRow extends StatelessWidget {
             .map(
               (option) => Padding(
                 padding: const EdgeInsets.only(right: 10),
-                child: ChoiceChip(
+                child: FilterChip(
                   label: Text(
                     option,
                     style: GoogleFonts.quicksand(
-                      color: selected == option ? Colors.white : const Color(0xFF3A416F),
+                      color: selected.contains(option) ? Colors.white : const Color(0xFF3A416F),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  selected: selected == option,
+                  selected: selected.contains(option),
                   selectedColor: const Color(0xFF7069FA),
                   backgroundColor: const Color(0xFFF2F1F6),
                   showCheckmark: false,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    side: BorderSide.none,
+                  ),
                   onSelected: (_) => onSelected(option),
                 ),
               ),
