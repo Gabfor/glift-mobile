@@ -320,9 +320,13 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
   @override
   Widget build(BuildContext context) {
+    const int desiredGridLines = 5;
+    const double gridLineSpacingPx = 38;
+    const double chartOverheadHeight = 140;
+
     double realMinY = 0;
     double realMaxY = 100;
-    double interval = 20;
+    double interval = 25;
     double chartMaxY = 100;
 
     if (_history.isNotEmpty) {
@@ -337,19 +341,19 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         realMaxY += 5;
         realMinY = (realMinY - 5).clamp(0, double.infinity);
       }
-      
-      // Calculate interval to have exactly 5 horizontal lines (38px spacing)
-      // Plot area is ~190px (330 - 140 overhead). 190 / 38 = 5.
+
       double range = realMaxY - realMinY;
-      interval = range / 5;
-      
-      if (interval == 0) interval = 1;
-      chartMaxY = range;
+      double rawInterval = range / (desiredGridLines - 1);
+      if (rawInterval <= 0) rawInterval = 1;
+
+      // Round interval to avoid decimal values on the y-axis.
+      interval = rawInterval.ceilToDouble();
+      chartMaxY = interval * (desiredGridLines - 1);
     }
 
     return Container(
       width: double.infinity,
-      height: 330, // Adjusted height for 38px spacing (190px plot area)
+      height: chartOverheadHeight + (desiredGridLines - 1) * gridLineSpacingPx,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -447,19 +451,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 interval: interval,
                                 getTitlesWidget: (value, meta) {
                                   final realValue = value + realMinY;
-                                  // Round to 1 decimal place if needed, or int if whole number
-                                  if (realValue % 1 == 0) {
-                                    return Text(
-                                      '${realValue.toInt()} kg',
-                                      style: GoogleFonts.quicksand(
-                                        color: const Color(0xFF3A416F),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    );
-                                  }
+                                  final displayValue = realValue.round();
                                   return Text(
-                                    '${realValue.toStringAsFixed(1)} kg',
+                                    '$displayValue kg',
                                     style: GoogleFonts.quicksand(
                                       color: const Color(0xFF3A416F),
                                       fontSize: 12,
