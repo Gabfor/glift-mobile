@@ -572,8 +572,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   Positioned(
                                     left: (_touchPosition!.dx - 30)
                                         .clamp(0.0, constraints.maxWidth - 60),
-                                    top: (_touchPosition!.dy - 38)
-                                        .clamp(0.0, constraints.maxHeight - 38),
+                                    top: (_touchPosition!.dy - 48)
+                                        .clamp(0.0, constraints.maxHeight - 48),
                                     child: _TooltipWithArrow(
                                       backgroundColor: const Color(0xFF2D2E32),
                                       label:
