@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import '../models/training.dart';
@@ -143,6 +144,19 @@ class _ExerciseCard extends StatelessWidget {
   final TrainingRow row;
 
   @override
+  State<_ExerciseCard> createState() => _ExerciseCardState();
+}
+
+class _ExerciseCardState extends State<_ExerciseCard> {
+  late final List<_EffortState> _effortStates;
+
+  @override
+  void initState() {
+    super.initState();
+    _effortStates = List<_EffortState>.filled(widget.row.series, _EffortState.neutral);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -155,7 +169,7 @@ class _ExerciseCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            row.exercise,
+            widget.row.exercise,
             style: GoogleFonts.quicksand(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -163,7 +177,7 @@ class _ExerciseCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Header Row
           Row(
             children: [
@@ -179,10 +193,13 @@ class _ExerciseCard extends StatelessWidget {
           const SizedBox(height: 10),
 
           // Sets Rows
-          ...List.generate(row.series, (index) {
-            final reps = index < row.repetitions.length ? row.repetitions[index] : '-';
-            final weight = index < row.weights.length ? row.weights[index] : '-';
-            
+          ...List.generate(widget.row.series, (index) {
+            final reps = index < widget.row.repetitions.length ? widget.row.repetitions[index] : '-';
+            final weight = index < widget.row.weights.length ? widget.row.weights[index] : '-';
+            final state = _effortStates[index];
+            final backgroundColor = _backgroundColorForState(state);
+            final textColor = _textColorForState(state);
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
@@ -208,7 +225,7 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  
+
                   // Reps
                   Expanded(
                     flex: 86,
@@ -216,7 +233,7 @@ class _ExerciseCard extends StatelessWidget {
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: backgroundColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: const Color(0xFFECE9F1)),
                       ),
@@ -225,7 +242,7 @@ class _ExerciseCard extends StatelessWidget {
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -239,7 +256,7 @@ class _ExerciseCard extends StatelessWidget {
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: backgroundColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: const Color(0xFFECE9F1)),
                       ),
@@ -248,21 +265,32 @@ class _ExerciseCard extends StatelessWidget {
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: textColor,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
 
-                  // Effort (Empty for now as per design)
+                  // Effort toggle
                   Expanded(
                     flex: 68,
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFECE9F1)),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _cycleEffortState(index),
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFECE9F1)),
+                        ),
+                        alignment: Alignment.center,
+                        child: SvgPicture.asset(
+                          _iconForState(state),
+                          width: 24,
+                          height: 24,
+                        ),
                       ),
                     ),
                   ),
@@ -274,7 +302,52 @@ class _ExerciseCard extends StatelessWidget {
       ),
     );
   }
+
+  void _cycleEffortState(int index) {
+    setState(() {
+      _effortStates[index] = switch (_effortStates[index]) {
+        _EffortState.neutral => _EffortState.positive,
+        _EffortState.positive => _EffortState.negative,
+        _EffortState.negative => _EffortState.neutral,
+      };
+    });
+  }
+
+  Color _backgroundColorForState(_EffortState state) {
+    switch (state) {
+      case _EffortState.neutral:
+        return Colors.white;
+      case _EffortState.positive:
+        return const Color(0xFFF6FDF7);
+      case _EffortState.negative:
+        return const Color(0xFFFFF1F1);
+    }
+  }
+
+  Color _textColorForState(_EffortState state) {
+    switch (state) {
+      case _EffortState.neutral:
+        return const Color(0xFF3A416F);
+      case _EffortState.positive:
+        return const Color(0xFF57AE5B);
+      case _EffortState.negative:
+        return const Color(0xFFEF4F4E);
+    }
+  }
+
+  String _iconForState(_EffortState state) {
+    switch (state) {
+      case _EffortState.neutral:
+        return 'assets/icons/smiley_jaune.svg';
+      case _EffortState.positive:
+        return 'assets/icons/smileys-vert.svg';
+      case _EffortState.negative:
+        return 'assets/icons/smiley_rouge.svg';
+    }
+  }
 }
+
+enum _EffortState { neutral, positive, negative }
 
 class _StartButton extends StatelessWidget {
   const _StartButton({required this.onTap});
