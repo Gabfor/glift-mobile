@@ -504,6 +504,24 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                             ),
                           ],
                           lineTouchData: LineTouchData(
+                            getTouchedSpotIndicator: (barData, spotIndexes) {
+                              return spotIndexes.map((barSpot) {
+                                return TouchedSpotIndicatorData(
+                                  const FlLine(color: Colors.transparent, strokeWidth: 0),
+                                  FlDotData(
+                                    show: true,
+                                    getDotPainter: (spot, percent, barData, index) {
+                                      return FlDotCirclePainter(
+                                        radius: 6,
+                                        color: const Color(0xFF7069FA),
+                                        strokeWidth: 2,
+                                        strokeColor: Colors.white,
+                                      );
+                                    },
+                                  ),
+                                );
+                              }).toList();
+                            },
                             touchTooltipData: LineTouchTooltipData(
                               getTooltipColor: (LineBarSpot touchedSpot) => const Color(0xFF2D2E32),
                               tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
