@@ -281,7 +281,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: backgroundColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: const Color(0xFFECE9F1)),
                         ),
