@@ -138,7 +138,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 }
 
-class _ExerciseCard extends StatelessWidget {
+class _ExerciseCard extends StatefulWidget {
   const _ExerciseCard({required this.row});
 
   final TrainingRow row;
