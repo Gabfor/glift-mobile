@@ -269,6 +269,10 @@ class _ExerciseChartCard extends StatefulWidget {
 }
 
 class _ExerciseChartCardState extends State<_ExerciseChartCard> {
+  static const double _tooltipWidth = 72;
+  static const double _tooltipHeight = 34;
+  static const double _tooltipVerticalOffset = 10;
+
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
   LineBarSpot? _touchedSpot;
@@ -562,7 +566,14 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         touchTooltipData: LineTouchTooltipData(
                                           tooltipPadding: EdgeInsets.zero,
                                           tooltipMargin: 0,
-                                          getTooltipItems: (touchedSpots) => const [],
+                                          getTooltipItems: (touchedSpots) => touchedSpots
+                                              .map(
+                                                (_) => const LineTooltipItem(
+                                                  '',
+                                                  TextStyle(color: Colors.transparent),
+                                                ),
+                                              )
+                                              .toList(),
                                         ),
                                       ),
                                     ),
@@ -570,10 +581,11 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 ),
                                 if (_touchedSpot != null && _touchPosition != null)
                                   Positioned(
-                                    left: (_touchPosition!.dx - 30)
-                                        .clamp(0.0, constraints.maxWidth - 60),
-                                    top: (_touchPosition!.dy - 48)
-                                        .clamp(0.0, constraints.maxHeight - 48),
+                                    left: (_touchPosition!.dx - _tooltipWidth / 2)
+                                        .clamp(0.0, constraints.maxWidth - _tooltipWidth),
+                                    top: (_touchPosition!.dy - _tooltipHeight -
+                                            _tooltipVerticalOffset)
+                                        .clamp(0.0, constraints.maxHeight - _tooltipHeight),
                                     child: _TooltipWithArrow(
                                       backgroundColor: const Color(0xFF2D2E32),
                                       label:
