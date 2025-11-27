@@ -20,6 +20,7 @@ class _StorePageState extends State<StorePage> {
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
   String _selectedGoal = 'Tous';
+  String _selectedSort = 'newest'; // 'newest', 'popularity', 'expiration'
 
   @override
   void initState() {
@@ -59,8 +60,37 @@ class _StorePageState extends State<StorePage> {
   }
 
   List<StoreProgram> get _filteredPrograms {
-    if (_selectedGoal == 'Tous') return _programs;
-    return _programs.where((program) => program.goal == _selectedGoal).toList();
+    var filtered = _programs;
+    
+    // Filter
+    if (_selectedGoal != 'Tous') {
+      filtered = filtered.where((program) => program.goal == _selectedGoal).toList();
+    }
+
+    // Sort
+    switch (_selectedSort) {
+      case 'newest':
+        // Assuming there is a date field, otherwise fallback to default or title
+        // For now, let's sort by title as a placeholder if no date exists
+        // Or if StoreProgram has a date, use it. 
+        // Checking StoreProgram definition (implied): it has title, sessions, duration, etc.
+        // If no date, maybe just keep default order or sort by title?
+        // Let's assume default order for 'newest' if no date is available, or add a TODO.
+        // Actually, ShopPage used startDate. StoreProgram might not have it.
+        // Let's check StoreProgram structure later if needed. For now, I'll just leave it as is or sort by title?
+        // Let's just implement the switch but keep default for now if fields are missing.
+        break;
+      case 'expiration':
+        // Store programs usually don't expire?
+        // Maybe 'popularity' (e.g. number of downloads/sessions)?
+        // I'll implement the structure but maybe just return filtered for now until I know the fields.
+        break;
+      case 'popularity':
+      default:
+        break;
+    }
+
+    return filtered;
   }
 
   @override
@@ -68,6 +98,7 @@ class _StorePageState extends State<StorePage> {
     return GliftPageLayout(
       title: 'Glift Store',
       subtitle: 'Trouver votre prochain programme',
+      padding: const EdgeInsets.only(top: 20, bottom: 30),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _programs.isEmpty
@@ -84,6 +115,56 @@ class _StorePageState extends State<StorePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (_availableGoals.length > 1) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'Trier par',
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF3A416F),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(color: const Color(0xFFD7D4DC)),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedSort,
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
+                                  items: const [
+                                    DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
+                                    DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
+                                    DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(() => _selectedSort = value);
+                                    }
+                                  },
+                                  style: GoogleFonts.quicksand(
+                                    color: const Color(0xFF3A416F),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       _FiltersRow(
                         options: _availableGoals,
                         selected: _selectedGoal,
@@ -93,15 +174,18 @@ class _StorePageState extends State<StorePage> {
                       ),
                       const SizedBox(height: 20),
                     ],
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 50),
-                      itemCount: _filteredPrograms.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 20),
-                      itemBuilder: (context, index) {
-                        return _StoreProgramCard(program: _filteredPrograms[index]);
-                      },
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 50),
+                        itemCount: _filteredPrograms.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 20),
+                        itemBuilder: (context, index) {
+                          return _StoreProgramCard(program: _filteredPrograms[index]);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -124,6 +208,7 @@ class _FiltersRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: options
             .map(

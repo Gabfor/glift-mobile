@@ -143,7 +143,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         _trainings[_selectedTrainingIndex]['name'],
                         style: GoogleFonts.quicksand(
                           color: const Color(0xFF3A416F),
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -320,9 +320,39 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
   @override
   Widget build(BuildContext context) {
+    double realMinY = 0;
+    double realMaxY = 100;
+    double interval = 20;
+    double chartMaxY = 100;
+
+    if (_history.isNotEmpty) {
+      final values = _history.map((e) => e['value'] as double).toList();
+      final minVal = values.reduce((a, b) => a < b ? a : b);
+      final maxVal = values.reduce((a, b) => a > b ? a : b);
+      
+      realMinY = minVal.floorToDouble();
+      realMaxY = maxVal.ceilToDouble();
+      
+      if (realMinY == realMaxY) {
+        realMaxY += 5;
+        realMinY = (realMinY - 5).clamp(0, double.infinity);
+      }
+      
+      // Calculate interval to have roughly 3-4 horizontal lines
+      double range = realMaxY - realMinY;
+      if (range % 3 == 0) {
+        interval = range / 3;
+      } else {
+        interval = range / 4;
+      }
+      
+      if (interval == 0) interval = 1;
+      chartMaxY = range;
+    }
+
     return Container(
       width: double.infinity,
-      height: 320,
+      height: 380, // Increased height to prevent overflow
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -356,13 +386,22 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
-                            horizontalInterval: 1,
+                            horizontalInterval: interval,
                             getDrawingHorizontalLine: (value) {
                               return const FlLine(
                                 color: Color(0xFFECE9F1),
                                 strokeWidth: 1,
                               );
                             },
+                            checkToShowHorizontalLine: (value) {
+                              return true; 
+                            },
+                          ),
+                          extraLinesData: ExtraLinesData(
+                            horizontalLines: [
+                              HorizontalLine(y: 0, color: const Color(0xFFECE9F1), strokeWidth: 1),
+                              HorizontalLine(y: chartMaxY, color: const Color(0xFFECE9F1), strokeWidth: 1),
+                            ],
                           ),
                           titlesData: FlTitlesData(
                             show: true,
@@ -371,34 +410,33 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 40,
+                                reservedSize: 60,
                                 interval: 1,
                                 getTitlesWidget: (value, meta) {
                                   final index = value.toInt();
                                   if (index >= 0 && index < _history.length) {
                                     final date = _history[index]['date'] as DateTime;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 10.0),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            DateFormat('dd').format(date),
-                                            style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          DateFormat('dd').format(date),
+                                          style: GoogleFonts.quicksand(
+                                            color: const Color(0xFF3A416F),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
                                           ),
-                                          Text(
-                                            DateFormat('MMM', 'fr_FR').format(date),
-                                            style: GoogleFonts.quicksand(
-                                              color: const Color(0xFFC2BFC6),
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                        ),
+                                        Text(
+                                          DateFormat('MMM', 'fr_FR').format(date),
+                                          style: GoogleFonts.quicksand(
+                                            color: const Color(0xFFC2BFC6),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     );
                                   }
                                   return const SizedBox.shrink();
@@ -409,10 +447,22 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 reservedSize: 40,
-                                interval: 1,
+                                interval: interval,
                                 getTitlesWidget: (value, meta) {
+                                  final realValue = value + realMinY;
+                                  // Round to 1 decimal place if needed, or int if whole number
+                                  if (realValue % 1 == 0) {
+                                    return Text(
+                                      '${realValue.toInt()} kg',
+                                      style: GoogleFonts.quicksand(
+                                        color: const Color(0xFF3A416F),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    );
+                                  }
                                   return Text(
-                                    '${value.toInt()} kg',
+                                    '${realValue.toStringAsFixed(1)} kg',
                                     style: GoogleFonts.quicksand(
                                       color: const Color(0xFF3A416F),
                                       fontSize: 12,
@@ -426,12 +476,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                           borderData: FlBorderData(show: false),
                           minX: 0,
                           maxX: (_history.length - 1).toDouble(),
-                          minY: _history.map((e) => e['value'] as double).reduce((a, b) => a < b ? a : b) * 0.9,
-                          maxY: _history.map((e) => e['value'] as double).reduce((a, b) => a > b ? a : b) * 1.1,
+                          minY: 0, // Chart starts at 0
+                          maxY: chartMaxY, // Chart ends at range
                           lineBarsData: [
                             LineChartBarData(
                               spots: _history.asMap().entries.map((e) {
-                                return FlSpot(e.key.toDouble(), e.value['value'] as double);
+                                return FlSpot(e.key.toDouble(), (e.value['value'] as double) - realMinY);
                               }).toList(),
                               isCurved: true,
                               curveSmoothness: 0.35,
@@ -468,8 +518,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               getTooltipItems: (touchedSpots) {
                                 return touchedSpots.map((LineBarSpot touchedSpot) {
+                                  final realValue = touchedSpot.y + realMinY;
                                   return LineTooltipItem(
-                                    '${touchedSpot.y.toInt()} kg',
+                                    '${realValue.toInt()} kg',
                                     GoogleFonts.quicksand(
                                       color: Colors.white,
                                       fontSize: 12,

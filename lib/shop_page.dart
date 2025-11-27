@@ -100,6 +100,7 @@ class _ShopPageState extends State<ShopPage> {
     return GliftPageLayout(
       title: 'Glift Shop',
       subtitle: 'Offres régulièrement mises à jour',
+      padding: const EdgeInsets.only(top: 20, bottom: 30), // Remove horizontal padding
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _offers.isEmpty
@@ -116,49 +117,56 @@ class _ShopPageState extends State<ShopPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (_availableFilters.length > 1) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        'Trier par',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: const Color(0xFFD7D4DC)),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedSort,
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
-                          items: const [
-                            DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
-                            DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
-                            DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'Trier par',
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF3A416F),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(color: const Color(0xFFD7D4DC)),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedSort,
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
+                                  items: const [
+                                    DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
+                                    DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
+                                    DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(() => _selectedSort = value);
+                                    }
+                                  },
+                                  style: GoogleFonts.quicksand(
+                                    color: const Color(0xFF3A416F),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _selectedSort = value);
-                            }
-                          },
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    if (_availableFilters.length > 1) ...[
+                      const SizedBox(height: 20),
                       _FiltersRow(
                         options: _availableFilters,
                         selected: _selectedTypes,
@@ -183,15 +191,18 @@ class _ShopPageState extends State<ShopPage> {
                       ),
                       const SizedBox(height: 20),
                     ],
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 50),
-                      itemCount: _filteredOffers.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 20),
-                      itemBuilder: (context, index) {
-                        return _ShopOfferCard(offer: _filteredOffers[index]);
-                      },
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 50),
+                        itemCount: _filteredOffers.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 20),
+                        itemBuilder: (context, index) {
+                          return _ShopOfferCard(offer: _filteredOffers[index]);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -214,6 +225,7 @@ class _FiltersRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20), // Add padding here
       child: Row(
         children: options
             .map(
