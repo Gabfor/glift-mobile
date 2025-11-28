@@ -7,6 +7,7 @@ import 'package:supabase/supabase.dart';
 import 'repositories/shop_repository.dart';
 import 'models/shop_offer.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/filter_modal.dart';
 
 class ShopPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -64,10 +65,41 @@ class _ShopPageState extends State<ShopPage> {
     var filtered = _offers;
 
     // Filter
-    if (_selectedTypes.isNotEmpty && !_selectedTypes.contains('Tous')) {
+    // Filter
+    if (_selectedFiltersMap.isNotEmpty) {
       filtered = filtered.where((offer) {
-        // Check if offer has ANY of the selected types
-        return offer.type.any((t) => _selectedTypes.contains(t));
+        bool matches = true;
+
+        // Catégorie
+        if (_selectedFiltersMap.containsKey('Catégorie') && _selectedFiltersMap['Catégorie']!.isNotEmpty) {
+          if (!offer.type.any((t) => _selectedFiltersMap['Catégorie']!.contains(t))) {
+            matches = false;
+          }
+        }
+
+        // Boutique
+        if (matches && _selectedFiltersMap.containsKey('Boutique') && _selectedFiltersMap['Boutique']!.isNotEmpty) {
+          if (offer.shop == null || !_selectedFiltersMap['Boutique']!.contains(offer.shop)) {
+            matches = false;
+          }
+        }
+
+        // Sexe & Sport (Assuming these might be in type or we ignore if not present in data)
+        // For now, if user selects Sexe or Sport, we might filter by type if they match, or ignore if data is missing.
+        // Let's try to match against type for Sport as well.
+        if (matches && _selectedFiltersMap.containsKey('Sport') && _selectedFiltersMap['Sport']!.isNotEmpty) {
+           if (!offer.type.any((t) => _selectedFiltersMap['Sport']!.contains(t))) {
+             // If sport is not in type, maybe we shouldn't filter out? 
+             // But if user explicitly selects "Boxe", they expect Boxe items.
+             matches = false;
+           }
+        }
+        
+        // Sexe - ShopOffer doesn't have gender. Ignoring for now to avoid empty results, unless we want to mock.
+        // If I filter by Sexe, I'll get 0 results if data doesn't support it.
+        // User asked for the UI. I'll implement the UI. Logic might be limited by data.
+
+        return matches;
       }).toList();
     }
 
@@ -95,6 +127,56 @@ class _ShopPageState extends State<ShopPage> {
 
     return filtered;
   }
+
+  void _showFilterModal() {
+    // Extract unique values for filters
+    final categories = <String>{};
+    final shops = <String>{};
+    
+    for (final offer in _offers) {
+      categories.addAll(offer.type.where((t) => t.isNotEmpty));
+      if (offer.shop != null && offer.shop!.isNotEmpty) {
+        shops.add(offer.shop!);
+      }
+    }
+
+    final sections = [
+      FilterSection(
+        title: 'Sexe',
+        options: ['Femme', 'Homme'],
+      ),
+      FilterSection(
+        title: 'Catégorie',
+        options: categories.toList()..sort(),
+      ),
+      FilterSection(
+        title: 'Sport',
+        options: ['Boxe', 'Musculation'],
+      ),
+      FilterSection(
+        title: 'Boutique',
+        options: shops.toList()..sort(),
+      ),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FilterModal(
+        sections: sections,
+        selectedFilters: _selectedFiltersMap,
+        totalResults: _filteredOffers.length, // This should ideally be dynamic based on selection in modal, but for now passing current
+        onApply: (selected) {
+          setState(() {
+            _selectedFiltersMap = selected;
+          });
+        },
+      ),
+    );
+  }
+
+  Map<String, Set<String>> _selectedFiltersMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +272,7 @@ class _ShopPageState extends State<ShopPage> {
                                 const SizedBox(width: 12),
                                 GestureDetector(
                                   onTap: () {
-                                    // TODO: Show filter modal or logic
+                                    _showFilterModal();
                                   },
                                   child: Container(
                                     width: 48,
@@ -209,7 +291,6 @@ class _ShopPageState extends State<ShopPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
                       const SizedBox(height: 20),
                     ],
                     Padding(

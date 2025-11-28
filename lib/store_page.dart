@@ -6,6 +6,7 @@ import 'package:supabase/supabase.dart';
 import 'repositories/store_repository.dart';
 import 'models/store_program.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/filter_modal.dart';
 
 class StorePage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -64,8 +65,35 @@ class _StorePageState extends State<StorePage> {
     var filtered = _programs;
     
     // Filter
-    if (_selectedGoal != 'Tous') {
-      filtered = filtered.where((program) => program.goal == _selectedGoal).toList();
+    // Filter
+    if (_selectedFiltersMap.isNotEmpty) {
+      filtered = filtered.where((program) {
+        bool matches = true;
+
+        // Catégorie (Goal)
+        if (_selectedFiltersMap.containsKey('Catégorie') && _selectedFiltersMap['Catégorie']!.isNotEmpty) {
+          if (!_selectedFiltersMap['Catégorie']!.contains(program.goal)) {
+            matches = false;
+          }
+        }
+
+        // Boutique (Partner)
+        if (matches && _selectedFiltersMap.containsKey('Boutique') && _selectedFiltersMap['Boutique']!.isNotEmpty) {
+          if (program.partnerName == null || !_selectedFiltersMap['Boutique']!.contains(program.partnerName)) {
+            matches = false;
+          }
+        }
+
+        // Sexe
+        if (matches && _selectedFiltersMap.containsKey('Sexe') && _selectedFiltersMap['Sexe']!.isNotEmpty) {
+          if (!_selectedFiltersMap['Sexe']!.contains(program.gender)) {
+            // Handle 'Tous' or specific gender logic if needed, but assuming exact match for now
+             matches = false;
+          }
+        }
+
+        return matches;
+      }).toList();
     }
 
     // Sort
@@ -93,6 +121,53 @@ class _StorePageState extends State<StorePage> {
 
     return filtered;
   }
+
+  void _showFilterModal() {
+    final goals = <String>{};
+    final partners = <String>{};
+    final genders = <String>{};
+
+    for (final program in _programs) {
+      if (program.goal.isNotEmpty) goals.add(program.goal);
+      if (program.partnerName != null && program.partnerName!.isNotEmpty) {
+        partners.add(program.partnerName!);
+      }
+      if (program.gender.isNotEmpty) genders.add(program.gender);
+    }
+
+    final sections = [
+      FilterSection(
+        title: 'Sexe',
+        options: genders.toList()..sort(),
+      ),
+      FilterSection(
+        title: 'Catégorie', // Using Goal as Category
+        options: goals.toList()..sort(),
+      ),
+      FilterSection(
+        title: 'Boutique', // Using Partner as Boutique
+        options: partners.toList()..sort(),
+      ),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FilterModal(
+        sections: sections,
+        selectedFilters: _selectedFiltersMap,
+        totalResults: _filteredPrograms.length,
+        onApply: (selected) {
+          setState(() {
+            _selectedFiltersMap = selected;
+          });
+        },
+      ),
+    );
+  }
+
+  Map<String, Set<String>> _selectedFiltersMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +263,7 @@ class _StorePageState extends State<StorePage> {
                                 const SizedBox(width: 12),
                                 GestureDetector(
                                   onTap: () {
-                                    // TODO: Show filter modal or logic
+                                    _showFilterModal();
                                   },
                                   child: Container(
                                     width: 48,
