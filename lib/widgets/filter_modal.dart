@@ -31,6 +31,16 @@ class _FilterModalState extends State<FilterModal> {
   late Map<String, Set<String>> _tempSelectedFilters;
   late int _currentResults;
 
+  bool get _hasActiveFilters {
+    for (final section in widget.sections) {
+      final options = section.options.toSet();
+      final selected = _tempSelectedFilters[section.title] ?? {};
+      final isFiltering = selected.isNotEmpty && selected.length != options.length;
+      if (isFiltering) return true;
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -94,7 +104,13 @@ class _FilterModalState extends State<FilterModal> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SvgPicture.asset('assets/icons/filtre_red.svg', width: 20, height: 20), // Using red filter icon as per design header
+                    SvgPicture.asset(
+                      _hasActiveFilters
+                          ? 'assets/icons/filtre_green.svg'
+                          : 'assets/icons/filtre_red.svg',
+                      width: 20,
+                      height: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Filtres',
