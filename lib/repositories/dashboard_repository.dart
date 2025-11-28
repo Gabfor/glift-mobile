@@ -29,6 +29,7 @@ class DashboardRepository {
           name: json['name'],
           trainings: [], // We don't need full trainings here, just the program info
           position: json['position'],
+          dashboard: json['dashboard'] ?? true,
         );
       }).whereType<Program>().toList();
     } catch (e) {
@@ -40,7 +41,7 @@ class DashboardRepository {
     try {
       final response = await _supabase
           .from('trainings')
-          .select('id, name, dashboard, position')
+          .select('id, name, dashboard, position, program_id')
           .eq('program_id', programId)
           .order('position', ascending: true);
 
@@ -49,6 +50,7 @@ class DashboardRepository {
         'id': json['id'],
         'name': json['name'],
         'position': json['position'],
+        'program_id': json['program_id'],
       }).toList();
     } catch (e) {
       throw Exception('Erreur lors du chargement des entraînements: $e');
