@@ -28,7 +28,6 @@ class _ShopPageState extends State<ShopPage> {
   void initState() {
     super.initState();
     _repository = ShopRepository(widget.supabase);
-    _selectedTypes.add('Tous');
     _loadOffers();
   }
 
@@ -38,6 +37,7 @@ class _ShopPageState extends State<ShopPage> {
       if (mounted) {
         setState(() {
           _offers = offers;
+          _selectedTypes = _availableTypeSet;
           _isLoading = false;
         });
       }
@@ -60,40 +60,171 @@ class _ShopPageState extends State<ShopPage> {
     return ['Tous', ...sortedFilters];
   }
 
-  List<ShopOffer> get _filteredOffers {
+  Set<String> get _availableTypeSet =>
+      _availableFilters.where((filter) => filter != 'Tous').toSet();
+
+  List<ShopOffer> _filterAndSortOffers({Set<String>? selection}) {
+    final appliedSelection = selection ?? _selectedTypes;
+    final availableTypes = _availableTypeSet;
+    final activeSelection = appliedSelection.intersection(availableTypes);
+
     var filtered = _offers;
 
-    // Filter
-    if (_selectedTypes.isNotEmpty && !_selectedTypes.contains('Tous')) {
-      filtered = filtered.where((offer) {
-        // Check if offer has ANY of the selected types
-        return offer.type.any((t) => _selectedTypes.contains(t));
-      }).toList();
+    if (activeSelection.isNotEmpty && activeSelection.length != availableTypes.length) {
+      filtered = filtered
+          .where((offer) => offer.type.any((t) => activeSelection.contains(t)))
+          .toList();
     }
 
-    // Sort
     switch (_selectedSort) {
       case 'newest':
-        filtered.sort((a, b) {
-          final dateA = DateTime.tryParse(a.startDate ?? '') ?? DateTime(0);
-          final dateB = DateTime.tryParse(b.startDate ?? '') ?? DateTime(0);
-          return dateB.compareTo(dateA); // Descending
-        });
+        filtered = [...filtered]
+          ..sort((a, b) {
+            final dateA = DateTime.tryParse(a.startDate ?? '') ?? DateTime(0);
+            final dateB = DateTime.tryParse(b.startDate ?? '') ?? DateTime(0);
+            return dateB.compareTo(dateA); // Descending
+          });
         break;
       case 'expiration':
-        filtered.sort((a, b) {
-          final dateA = DateTime.tryParse(a.endDate ?? '') ?? DateTime(2100);
-          final dateB = DateTime.tryParse(b.endDate ?? '') ?? DateTime(2100);
-          return dateA.compareTo(dateB); // Ascending (soonest first)
-        });
+        filtered = [...filtered]
+          ..sort((a, b) {
+            final dateA = DateTime.tryParse(a.endDate ?? '') ?? DateTime(2100);
+            final dateB = DateTime.tryParse(b.endDate ?? '') ?? DateTime(2100);
+            return dateA.compareTo(dateB); // Ascending (soonest first)
+          });
         break;
       case 'popularity':
       default:
-        // Default order (as received from DB or specific logic if available)
+        filtered = [...filtered];
         break;
     }
 
     return filtered;
+  }
+
+  List<ShopOffer> get _filteredOffers {
+    return _filterAndSortOffers();
+  }
+
+  void _openFilters() {
+    final availableTypes = _availableTypeSet;
+    final initialSelection = _selectedTypes.isEmpty
+        ? availableTypes
+        : _selectedTypes.intersection(availableTypes);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        Set<String> tempSelection = {...initialSelection};
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final previewCount = _filterAndSortOffers(selection: tempSelection).length;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Filtres',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() => tempSelection = {...availableTypes});
+                        },
+                        child: Text(
+                          'Réinitialiser',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF7069FA),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ...availableTypes.map(
+                    (type) => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: tempSelection.contains(type),
+                      onChanged: (checked) {
+                        setModalState(() {
+                          if (checked ?? false) {
+                            tempSelection.add(type);
+                          } else {
+                            tempSelection.remove(type);
+                          }
+
+                          if (tempSelection.isEmpty) {
+                            tempSelection = {...availableTypes};
+                          }
+                        });
+                      },
+                      title: Text(
+                        type,
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      activeColor: const Color(0xFF7069FA),
+                      checkboxShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7069FA),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() => _selectedTypes = tempSelection);
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Afficher $previewCount résultat${previewCount > 1 ? 's' : ''}',
+                        style: GoogleFonts.quicksand(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -189,9 +320,7 @@ class _ShopPageState extends State<ShopPage> {
                                 ),
                                 const SizedBox(width: 12),
                                 GestureDetector(
-                                  onTap: () {
-                                    // TODO: Show filter modal or logic
-                                  },
+                                  onTap: _openFilters,
                                   child: Container(
                                     width: 48,
                                     height: 48,

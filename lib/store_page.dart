@@ -20,7 +20,7 @@ class _StorePageState extends State<StorePage> {
   late final StoreRepository _repository;
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
-  String _selectedGoal = 'Tous';
+  Set<String> _selectedGoals = {};
   String _selectedSort = 'newest'; // 'newest', 'popularity', 'expiration'
 
   @override
@@ -36,6 +36,7 @@ class _StorePageState extends State<StorePage> {
       if (mounted) {
         setState(() {
           _programs = programs;
+          _selectedGoals = _availableGoalSet;
           _isLoading = false;
         });
       }
@@ -60,38 +61,157 @@ class _StorePageState extends State<StorePage> {
     return ['Tous', ...sortedGoals];
   }
 
-  List<StoreProgram> get _filteredPrograms {
+  Set<String> get _availableGoalSet =>
+      _availableGoals.where((goal) => goal != 'Tous').toSet();
+
+  List<StoreProgram> _filterAndSortPrograms({Set<String>? selection}) {
+    final appliedSelection = selection ?? _selectedGoals;
+    final availableGoals = _availableGoalSet;
+    final activeSelection = appliedSelection.intersection(availableGoals);
+
     var filtered = _programs;
-    
-    // Filter
-    if (_selectedGoal != 'Tous') {
-      filtered = filtered.where((program) => program.goal == _selectedGoal).toList();
+
+    if (activeSelection.isNotEmpty && activeSelection.length != availableGoals.length) {
+      filtered = filtered
+          .where((program) => activeSelection.contains(program.goal))
+          .toList();
     }
 
-    // Sort
     switch (_selectedSort) {
       case 'newest':
-        // Assuming there is a date field, otherwise fallback to default or title
-        // For now, let's sort by title as a placeholder if no date exists
-        // Or if StoreProgram has a date, use it. 
-        // Checking StoreProgram definition (implied): it has title, sessions, duration, etc.
-        // If no date, maybe just keep default order or sort by title?
-        // Let's assume default order for 'newest' if no date is available, or add a TODO.
-        // Actually, ShopPage used startDate. StoreProgram might not have it.
-        // Let's check StoreProgram structure later if needed. For now, I'll just leave it as is or sort by title?
-        // Let's just implement the switch but keep default for now if fields are missing.
-        break;
       case 'expiration':
-        // Store programs usually don't expire?
-        // Maybe 'popularity' (e.g. number of downloads/sessions)?
-        // I'll implement the structure but maybe just return filtered for now until I know the fields.
-        break;
       case 'popularity':
       default:
+        filtered = [...filtered];
         break;
     }
 
     return filtered;
+  }
+
+  List<StoreProgram> get _filteredPrograms {
+    return _filterAndSortPrograms();
+  }
+
+  void _openFilters() {
+    final availableGoals = _availableGoalSet;
+    final initialSelection = _selectedGoals.isEmpty
+        ? availableGoals
+        : _selectedGoals.intersection(availableGoals);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        Set<String> tempSelection = {...initialSelection};
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final previewCount = _filterAndSortPrograms(selection: tempSelection).length;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Filtres',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() => tempSelection = {...availableGoals});
+                        },
+                        child: Text(
+                          'Réinitialiser',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF7069FA),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ...availableGoals.map(
+                    (goal) => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: tempSelection.contains(goal),
+                      onChanged: (checked) {
+                        setModalState(() {
+                          if (checked ?? false) {
+                            tempSelection.add(goal);
+                          } else {
+                            tempSelection.remove(goal);
+                          }
+
+                          if (tempSelection.isEmpty) {
+                            tempSelection = {...availableGoals};
+                          }
+                        });
+                      },
+                      title: Text(
+                        goal,
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      activeColor: const Color(0xFF7069FA),
+                      checkboxShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7069FA),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() => _selectedGoals = tempSelection);
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Afficher $previewCount résultat${previewCount > 1 ? 's' : ''}',
+                        style: GoogleFonts.quicksand(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -187,9 +307,7 @@ class _StorePageState extends State<StorePage> {
                                 ),
                                 const SizedBox(width: 12),
                                 GestureDetector(
-                                  onTap: () {
-                                    // TODO: Show filter modal or logic
-                                  },
+                                  onTap: _openFilters,
                                   child: Container(
                                     width: 48,
                                     height: 48,
