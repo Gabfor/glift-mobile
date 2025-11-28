@@ -11,8 +11,9 @@ import 'widgets/filter_modal.dart';
 
 class ShopPage extends StatefulWidget {
   final SupabaseClient supabase;
+  final ValueChanged<bool>? onNavigationVisibilityChanged;
 
-  const ShopPage({super.key, required this.supabase});
+  const ShopPage({super.key, required this.supabase, this.onNavigationVisibilityChanged});
 
   @override
   State<ShopPage> createState() => _ShopPageState();
@@ -28,6 +29,9 @@ class _ShopPageState extends State<ShopPage> {
     'Sexe': {'Femme', 'Homme'},
     'Sport': {'Boxe', 'Musculation'},
   };
+
+  bool _isNavigationVisible = true;
+  double _lastScrollOffset = 0;
 
   @override
   void initState() {
@@ -209,171 +213,193 @@ class _ShopPageState extends State<ShopPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GliftPageLayout(
-      title: 'Glift Shop',
-      subtitle: 'Offres régulièrement mises à jour',
-      padding: const EdgeInsets.only(top: 20, bottom: 30), // Remove horizontal padding
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _offers.isEmpty
-              ? Center(
-                  child: Text(
-                    'Aucune offre trouvée',
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 16,
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: GliftPageLayout(
+        title: 'Glift Shop',
+        subtitle: 'Offres régulièrement mises à jour',
+        padding: const EdgeInsets.only(top: 20, bottom: 30), // Remove horizontal padding
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _offers.isEmpty
+                ? Center(
+                    child: Text(
+                      'Aucune offre trouvée',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF3A416F),
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_availableFilters.length > 1) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Text(
-                                'Trier par',
-                                style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_availableFilters.length > 1) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  'Trier par',
+                                  style: GoogleFonts.quicksand(
+                                    color: const Color(0xFF3A416F),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height: 40,
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(5),
-                                      border: Border.all(color: const Color(0xFFD7D4DC)),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: _selectedSort,
-                                        isExpanded: true,
-                                        icon: const SizedBox.shrink(),
-                                        items: [
-                                          DropdownMenuItem(
-                                            value: 'popularity',
-                                            child: Text(
-                                              'Pertinence',
-                                              style: GoogleFonts.quicksand(
-                                                color: const Color(0xFF3A416F),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 'newest',
-                                            child: Text(
-                                              'Nouveauté',
-                                              style: GoogleFonts.quicksand(
-                                                color: const Color(0xFF3A416F),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 'expiration',
-                                            child: Text(
-                                              'Expiration',
-                                              style: GoogleFonts.quicksand(
-                                                color: const Color(0xFF3A416F),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                        onChanged: (value) {
-                                          if (value != null) {
-                                            setState(() => _selectedSort = value);
-                                          }
-                                        },
-                                        selectedItemBuilder: (context) {
-                                          return [
-                                            'popularity',
-                                            'newest',
-                                            'expiration'
-                                          ].map((String value) {
-                                            return Row(
-                                              children: [
-                                                SvgPicture.asset('assets/icons/tri.svg', width: 15, height: 15),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  value == 'popularity' ? 'Pertinence' :
-                                                  value == 'newest' ? 'Nouveauté' : 'Expiration',
-                                                  style: GoogleFonts.quicksand(
-                                                    color: const Color(0xFF3A416F),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(color: const Color(0xFFD7D4DC)),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          value: _selectedSort,
+                                          isExpanded: true,
+                                          icon: const SizedBox.shrink(),
+                                          items: [
+                                            DropdownMenuItem(
+                                              value: 'popularity',
+                                              child: Text(
+                                                'Pertinence',
+                                                style: GoogleFonts.quicksand(
+                                                  color: const Color(0xFF3A416F),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
-                                              ],
-                                            );
-                                          }).toList();
-                                        },
+                                              ),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 'newest',
+                                              child: Text(
+                                                'Nouveauté',
+                                                style: GoogleFonts.quicksand(
+                                                  color: const Color(0xFF3A416F),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 'expiration',
+                                              child: Text(
+                                                'Expiration',
+                                                style: GoogleFonts.quicksand(
+                                                  color: const Color(0xFF3A416F),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                          onChanged: (value) {
+                                            if (value != null) {
+                                              setState(() => _selectedSort = value);
+                                            }
+                                          },
+                                          selectedItemBuilder: (context) {
+                                            return [
+                                              'popularity',
+                                              'newest',
+                                              'expiration'
+                                            ].map((String value) {
+                                              return Row(
+                                                children: [
+                                                  SvgPicture.asset('assets/icons/tri.svg', width: 15, height: 15),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    value == 'popularity' ? 'Pertinence' :
+                                                    value == 'newest' ? 'Nouveauté' : 'Expiration',
+                                                    style: GoogleFonts.quicksand(
+                                                      color: const Color(0xFF3A416F),
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            }).toList();
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                GestureDetector(
-                                  onTap: () {
-                                    _showFilterModal();
-                                  },
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: const Color(0xFFD7D4DC)),
-                                    ),
-                                    padding: const EdgeInsets.all(10),
-                                    child: SvgPicture.asset(
-                                      _hasActiveFilters
-                                          ? 'assets/icons/filtre_green.svg'
-                                          : 'assets/icons/filtre_red.svg',
-                                      height: 16,
-                                      width: 16,
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: () {
+                                      _showFilterModal();
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: const Color(0xFFD7D4DC)),
+                                      ),
+                                      padding: const EdgeInsets.all(10),
+                                      child: SvgPicture.asset(
+                                        _hasActiveFilters
+                                            ? 'assets/icons/filtre_green.svg'
+                                            : 'assets/icons/filtre_red.svg',
+                                        height: 16,
+                                        width: 16,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(bottom: 50),
+                          itemCount: _filteredOffers.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 20),
+                          itemBuilder: (context, index) {
+                            return _ShopOfferCard(offer: _filteredOffers[index]);
+                          },
                         ),
                       ),
-                      const SizedBox(height: 20),
                     ],
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(bottom: 50),
-                        itemCount: _filteredOffers.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 20),
-                        itemBuilder: (context, index) {
-                          return _ShopOfferCard(offer: _filteredOffers[index]);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+      ),
     );
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      final currentOffset = notification.metrics.pixels;
+      final delta = currentOffset - _lastScrollOffset;
+
+      if (delta > 10 && _isNavigationVisible) {
+        _isNavigationVisible = false;
+        widget.onNavigationVisibilityChanged?.call(false);
+      } else if (delta < -10 && !_isNavigationVisible) {
+        _isNavigationVisible = true;
+        widget.onNavigationVisibilityChanged?.call(true);
+      }
+
+      _lastScrollOffset = currentOffset;
+    }
+
+    return false;
   }
 }
 
