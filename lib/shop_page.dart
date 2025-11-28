@@ -279,7 +279,7 @@ class _ShopPageState extends State<ShopPage> {
                                           ].map((String value) {
                                             return Row(
                                               children: [
-                                                SvgPicture.asset('assets/icons/tri.svg', width: 20, height: 20),
+                                                SvgPicture.asset('assets/icons/tri.svg', width: 12, height: 12),
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   value == 'popularity' ? 'Pertinence' :
@@ -316,6 +316,8 @@ class _ShopPageState extends State<ShopPage> {
                                       _hasActiveFilters
                                           ? 'assets/icons/filtre_green.svg'
                                           : 'assets/icons/filtre_red.svg',
+                                      height: 12,
+                                      width: 12,
                                     ),
                                   ),
                                 ),
