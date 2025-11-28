@@ -369,10 +369,18 @@ class _SettingsSwitchTile extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-            activeColor: const Color(0xFF7069FA),
+          SizedBox(
+            width: 44,
+            height: 26,
+            child: FittedBox(
+              fit: BoxFit.fill,
+              child: Switch.adaptive(
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                value: value,
+                onChanged: onChanged,
+                activeColor: const Color(0xFFA1A5FD),
+              ),
+            ),
           ),
         ],
       ),
