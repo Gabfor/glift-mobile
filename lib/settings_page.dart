@@ -112,7 +112,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: 'Activer Superset',
                 value: _superset,
                 onChanged: (v) => setState(() => _superset = v),
-                isLast: true,
               ),
             ],
           ),
@@ -170,7 +169,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
                 onTap: () {},
-                isLast: true,
               ),
             ],
           ),
@@ -218,7 +216,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
                 onTap: () {},
-                isLast: true,
               ),
             ],
           ),
@@ -295,13 +292,11 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final Widget trailing;
   final VoidCallback? onTap;
-  final bool isLast;
 
   const _SettingsTile({
     required this.title,
     required this.trailing,
     this.onTap,
-    this.isLast = false,
   });
 
   @override
@@ -311,11 +306,6 @@ class _SettingsTile extends StatelessWidget {
       child: Container(
         height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 15),
-        decoration: BoxDecoration(
-          border: isLast
-              ? null
-              : const Border(bottom: BorderSide(color: Color(0xFFF2F1F6))),
-        ),
         child: Row(
           children: [
             Text(
@@ -339,13 +329,11 @@ class _SettingsSwitchTile extends StatelessWidget {
   final String title;
   final bool value;
   final ValueChanged<bool> onChanged;
-  final bool isLast;
 
   const _SettingsSwitchTile({
     required this.title,
     required this.value,
     required this.onChanged,
-    this.isLast = false,
   });
 
   @override
@@ -353,11 +341,6 @@ class _SettingsSwitchTile extends StatelessWidget {
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      decoration: BoxDecoration(
-        border: isLast
-            ? null
-            : const Border(bottom: BorderSide(color: Color(0xFFF2F1F6))),
-      ),
       child: Row(
         children: [
           Text(
@@ -372,14 +355,11 @@ class _SettingsSwitchTile extends StatelessWidget {
           SizedBox(
             width: 44,
             height: 26,
-            child: FittedBox(
-              fit: BoxFit.fill,
-              child: Switch.adaptive(
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                value: value,
-                onChanged: onChanged,
-                activeColor: const Color(0xFFA1A5FD),
-              ),
+            child: Switch.adaptive(
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              value: value,
+              onChanged: onChanged,
+              activeColor: const Color(0xFFA1A5FD),
             ),
           ),
         ],
