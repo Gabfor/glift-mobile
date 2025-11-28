@@ -255,6 +255,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
   // Track active cell for highlighting
   int? _activeRepsIndex;
   int? _activeWeightIndex;
+  bool _isFirstInput = true;
 
   @override
   void initState() {
@@ -273,6 +274,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         _activeRepsIndex = null;
         _activeWeightIndex = index;
       }
+      _isFirstInput = true; // Reset flag when activating a cell
     });
 
     widget.onFocus(
@@ -291,7 +293,13 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       }
       
       String current = list[index];
-      if (current == '-') current = '';
+      
+      if (_isFirstInput) {
+        current = ''; // Clear on first input
+        _isFirstInput = false;
+      } else if (current == '-') {
+        current = '';
+      }
       
       // Prevent multiple decimals
       if (value == '.' && current.contains('.')) return;
