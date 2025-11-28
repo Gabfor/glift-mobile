@@ -65,6 +65,10 @@ class _StorePageState extends State<StorePage> {
     return _applyFilters(_selectedFiltersMap);
   }
 
+  bool get _hasActiveFilters {
+    return _selectedFiltersMap.values.any((values) => values.isNotEmpty);
+  }
+
   List<StoreProgram> _applyFilters(Map<String, Set<String>> selectedFilters) {
     var filtered = List<StoreProgram>.from(_programs);
 
@@ -214,7 +218,7 @@ class _StorePageState extends State<StorePage> {
                               children: [
                                 Expanded(
                                   child: Container(
-                                    height: 48,
+                                    height: 40,
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
@@ -225,11 +229,41 @@ class _StorePageState extends State<StorePage> {
                                       child: DropdownButton<String>(
                                         value: _selectedSort,
                                         isExpanded: true,
-                                        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
-                                        items: const [
-                                          DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
-                                          DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
-                                          DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
+                                        icon: const SizedBox.shrink(),
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: 'popularity',
+                                            child: Text(
+                                              'Pertinence',
+                                              style: GoogleFonts.quicksand(
+                                                color: const Color(0xFF3A416F),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'newest',
+                                            child: Text(
+                                              'Nouveauté',
+                                              style: GoogleFonts.quicksand(
+                                                color: const Color(0xFF3A416F),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'expiration',
+                                            child: Text(
+                                              'Expiration',
+                                              style: GoogleFonts.quicksand(
+                                                color: const Color(0xFF3A416F),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
                                         ],
                                         onChanged: (value) {
                                           if (value != null) {
@@ -244,7 +278,7 @@ class _StorePageState extends State<StorePage> {
                                           ].map((String value) {
                                             return Row(
                                               children: [
-                                                SvgPicture.asset('assets/icons/tri.svg', width: 12, height: 12),
+                                                SvgPicture.asset('assets/icons/tri.svg', width: 15, height: 15),
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   value == 'popularity' ? 'Pertinence' :
@@ -263,24 +297,26 @@ class _StorePageState extends State<StorePage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 GestureDetector(
                                   onTap: () {
                                     _showFilterModal();
                                   },
                                   child: Container(
-                                    width: 48,
-                                    height: 48,
+                                    width: 40,
+                                    height: 40,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
                                       border: Border.all(color: const Color(0xFFD7D4DC)),
                                     ),
-                                    padding: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(10),
                                     child: SvgPicture.asset(
-                                      'assets/icons/filtre_red.svg',
-                                      height: 12,
-                                      width: 12,
+                                      _hasActiveFilters
+                                          ? 'assets/icons/filtre_green.svg'
+                                          : 'assets/icons/filtre_red.svg',
+                                      height: 16,
+                                      width: 16,
                                     ),
                                   ),
                                 ),
