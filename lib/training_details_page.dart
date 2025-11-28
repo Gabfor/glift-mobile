@@ -284,7 +284,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                           border: Border.all(color: const Color(0xFFECE9F1)),
                         ),
                         alignment: Alignment.center,
-                        child: SvgPicture.asset(
+                        child: Image.asset(
                           visuals.iconPath,
                           width: 24,
                           height: 24,
@@ -317,19 +317,19 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         return const _EffortVisuals(
           backgroundColor: Colors.white,
           textColor: Color(0xFF3A416F),
-          iconPath: 'assets/icons/smiley_jaune.svg',
+          iconPath: 'assets/icons/smiley_jaune.png',
         );
       case _EffortState.positive:
         return const _EffortVisuals(
           backgroundColor: Color(0xFFF6FDF7),
           textColor: Color(0xFF57AE5B),
-          iconPath: 'assets/icons/smiley_vert.svg',
+          iconPath: 'assets/icons/smiley_vert.png',
         );
       case _EffortState.negative:
         return const _EffortVisuals(
           backgroundColor: Color(0xFFFFF1F1),
           textColor: Color(0xFFEF4F4E),
-          iconPath: 'assets/icons/smiley_rouge.svg',
+          iconPath: 'assets/icons/smiley_rouge.png',
         );
     }
   }
