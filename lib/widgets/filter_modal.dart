@@ -78,6 +78,15 @@ class _FilterModalState extends State<FilterModal> {
     });
   }
 
+  void _setSectionSelection(String sectionTitle, bool selectAll) {
+    setState(() {
+      final options =
+          widget.sections.firstWhere((section) => section.title == sectionTitle).options.toSet();
+      _tempSelectedFilters[sectionTitle] = selectAll ? options : <String>{};
+      _currentResults = widget.computeResults(_tempSelectedFilters);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -130,53 +139,75 @@ class _FilterModalState extends State<FilterModal> {
           // Content
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 20),
               itemCount: widget.sections.length,
               itemBuilder: (context, index) {
                 final section = widget.sections[index];
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      section.title,
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...section.options.map((option) {
-                      final isSelected = _tempSelectedFilters[section.title]?.contains(option) ?? false;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: GestureDetector(
-                          onTap: () => _toggleFilter(section.title, option),
-                          behavior: HitTestBehavior.opaque,
-                          child: Row(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              SvgPicture.asset(
-                                isSelected
-                                    ? 'assets/icons/checkbox_checked.svg'
-                                    : 'assets/icons/checkbox.svg',
-                                width: 18,
-                                height: 18,
-                              ),
-                              const SizedBox(width: 12),
                               Text(
-                                option,
+                                section.title,
                                 style: GoogleFonts.quicksand(
                                   color: const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                              _SectionToggleButton(
+                                allOptions: section.options.toSet(),
+                                selectedOptions:
+                                    _tempSelectedFilters[section.title] ?? section.options.toSet(),
+                                onSelectAll: () => _setSectionSelection(section.title, true),
+                                onDeselectAll: () => _setSectionSelection(section.title, false),
                               ),
                             ],
                           ),
-                        ),
-                      );
-                    }),
+                          const SizedBox(height: 16),
+                          ...section.options.map((option) {
+                            final isSelected =
+                                _tempSelectedFilters[section.title]?.contains(option) ?? false;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: GestureDetector(
+                                onTap: () => _toggleFilter(section.title, option),
+                                behavior: HitTestBehavior.opaque,
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      isSelected
+                                          ? 'assets/icons/checkbox_checked.svg'
+                                          : 'assets/icons/checkbox.svg',
+                                      width: 18,
+                                      height: 18,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      option,
+                                      style: GoogleFonts.quicksand(
+                                        color: const Color(0xFF3A416F),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
                     if (index != widget.sections.length - 1) ...[
+                      const SizedBox(height: 30),
                       const Divider(
                         color: Color(0xFFECE9F1),
                         thickness: 1,
@@ -224,6 +255,40 @@ class _FilterModalState extends State<FilterModal> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionToggleButton extends StatelessWidget {
+  final Set<String> allOptions;
+  final Set<String> selectedOptions;
+  final VoidCallback onSelectAll;
+  final VoidCallback onDeselectAll;
+
+  const _SectionToggleButton({
+    required this.allOptions,
+    required this.selectedOptions,
+    required this.onSelectAll,
+    required this.onDeselectAll,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final allSelected = selectedOptions.length == allOptions.length && allOptions.isNotEmpty;
+    final label = allSelected ? 'Tout désélectionner' : 'Tout sélectionner';
+    final onTap = allSelected ? onDeselectAll : onSelectAll;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Text(
+        label,
+        style: GoogleFonts.quicksand(
+          color: const Color(0xFF7069FA),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
