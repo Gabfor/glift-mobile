@@ -156,8 +156,8 @@ class _FilterModalState extends State<FilterModal> {
                           child: Row(
                             children: [
                               SvgPicture.asset(
-                                isSelected 
-                                    ? 'assets/icons/checkbox_checked.svg' 
+                                isSelected
+                                    ? 'assets/icons/checkbox_checked.svg'
                                     : 'assets/icons/checkbox.svg',
                                 width: 18,
                                 height: 18,
@@ -176,7 +176,14 @@ class _FilterModalState extends State<FilterModal> {
                         ),
                       );
                     }),
-                    const SizedBox(height: 20),
+                    if (index != widget.sections.length - 1) ...[
+                      const Divider(
+                        color: Color(0xFFECE9F1),
+                        thickness: 1,
+                        height: 1,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ],
                 );
               },
