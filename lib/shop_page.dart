@@ -512,7 +512,7 @@ class _ShopOfferCard extends StatelessWidget {
                 
                 // Info Lines
                 _buildInfoLine(
-                  icon: Icons.check_circle_outline,
+                  iconAsset: 'assets/icons/check_green.svg',
                   label: 'Valide depuis le :',
                   value: _formatDate(offer.startDate),
                   valueColor: const Color(0xFF3A416F),
@@ -576,14 +576,14 @@ class _ShopOfferCard extends StatelessWidget {
   }
 
   Widget _buildInfoLine({
-    required IconData icon,
+    required String iconAsset,
     required String label,
     required String value,
     required Color valueColor,
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF00D591)), // Using green check for now
+        _buildStatusIcon(iconAsset),
         const SizedBox(width: 8),
         Text(
           label,
@@ -610,12 +610,12 @@ class _ShopOfferCard extends StatelessWidget {
     if (shipping == null || shipping.isEmpty) {
        return Row(
         children: [
-          const Icon(Icons.cancel_outlined, size: 20, color: Color(0xFFEF4F4E)),
+          _buildStatusIcon('assets/icons/check_grey.svg'),
           const SizedBox(width: 8),
           Text(
             'La livraison n’est pas offerte',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFFD7D4DC),
+              color: const Color(0xFF5D6494),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -629,7 +629,7 @@ class _ShopOfferCard extends StatelessWidget {
     if (shippingValue == 0) {
       return Row(
         children: [
-          const Icon(Icons.check_circle_outline, size: 20, color: Color(0xFF00D591)),
+          _buildStatusIcon('assets/icons/check_green.svg'),
           const SizedBox(width: 8),
           Text(
             'Livraison offerte',
@@ -646,7 +646,7 @@ class _ShopOfferCard extends StatelessWidget {
     if (shippingValue != null && shippingValue > 0) {
       return Row(
         children: [
-          const Icon(Icons.check_circle_outline, size: 20, color: Color(0xFF00D591)),
+          _buildStatusIcon('assets/icons/check_green.svg'),
           const SizedBox(width: 8),
           Text(
             'Livraison offerte à partir de :',
@@ -680,6 +680,14 @@ class _ShopOfferCard extends StatelessWidget {
     } catch (_) {
       return dateStr;
     }
+  }
+
+  Widget _buildStatusIcon(String assetPath) {
+    return SvgPicture.asset(
+      assetPath,
+      width: 20,
+      height: 20,
+    );
   }
 }
 
@@ -727,9 +735,9 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
   @override
   Widget build(BuildContext context) {
     if (widget.endDateStr == null) {
-       return Row(
+      return Row(
         children: [
-          const Icon(Icons.check_circle_outline, size: 20, color: Color(0xFF00D591)),
+          SvgPicture.asset('assets/icons/check_green.svg', width: 20, height: 20),
           const SizedBox(width: 8),
           Text(
             'Aucune date d\'expiration',
@@ -744,9 +752,9 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
     }
 
     if (_timeLeft == null || _timeLeft!.isNegative) {
-       return Row(
+      return Row(
         children: [
-          const Icon(Icons.cancel_outlined, size: 20, color: Color(0xFFEF4F4E)), // Cross icon
+          SvgPicture.asset('assets/icons/check_red.svg', width: 20, height: 20),
           const SizedBox(width: 8),
           Text(
             'Offre expirée',
@@ -761,21 +769,19 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
     }
 
     final days = _timeLeft!.inDays;
-    
+
     if (days >= 1) {
       Color valueColor = const Color(0xFF3A416F);
-      IconData icon = Icons.check_circle_outline;
-      Color iconColor = const Color(0xFF00D591);
+      String iconAsset = 'assets/icons/check_green.svg';
 
       if (days <= 3) {
         valueColor = const Color(0xFFF0C863); // Yellowish for warning
-        icon = Icons.access_time; // Or specific icon
-        iconColor = const Color(0xFFF0C863);
+        iconAsset = 'assets/icons/check_yellow.svg';
       }
 
       return Row(
         children: [
-          Icon(icon, size: 20, color: iconColor),
+          SvgPicture.asset(iconAsset, width: 20, height: 20),
           const SizedBox(width: 8),
           Text(
             'L’offre expire dans :',
@@ -805,7 +811,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
 
     return Row(
       children: [
-        const Icon(Icons.access_time, size: 20, color: Color(0xFFEF4F4E)), // Red clock
+        SvgPicture.asset('assets/icons/check_red.svg', width: 20, height: 20),
         const SizedBox(width: 8),
         Text(
           'L’offre expire dans :',
