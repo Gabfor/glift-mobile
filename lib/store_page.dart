@@ -244,7 +244,7 @@ class _StorePageState extends State<StorePage> {
                                           ].map((String value) {
                                             return Row(
                                               children: [
-                                                SvgPicture.asset('assets/icons/tri.svg', width: 20, height: 20),
+                                                SvgPicture.asset('assets/icons/tri.svg', width: 12, height: 12),
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   value == 'popularity' ? 'Pertinence' :
@@ -277,7 +277,11 @@ class _StorePageState extends State<StorePage> {
                                       border: Border.all(color: const Color(0xFFD7D4DC)),
                                     ),
                                     padding: const EdgeInsets.all(12),
-                                    child: SvgPicture.asset('assets/icons/filtre_red.svg'),
+                                    child: SvgPicture.asset(
+                                      'assets/icons/filtre_red.svg',
+                                      height: 12,
+                                      width: 12,
+                                    ),
                                   ),
                                 ),
                               ],
