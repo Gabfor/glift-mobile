@@ -66,6 +66,16 @@ class _MainPageState extends State<MainPage> {
       ),
       bottomNavigationBar: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, animation) {
+          return SizeTransition(
+            sizeFactor: animation,
+            axisAlignment: -1,
+            child: FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+          );
+        },
         child: _isBottomNavVisible
             ? Container(
                 key: const ValueKey('bottom-nav'),
@@ -95,7 +105,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               )
-            : const SizedBox.shrink(),
+            : const SizedBox.shrink(key: ValueKey('bottom-nav-hidden')),
       ),
     );
   }
