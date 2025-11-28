@@ -20,6 +20,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 1; // Default to 'Séances'
+  bool _isBottomNavVisible = true;
 
   late final List<Widget> _pages;
 
@@ -29,8 +30,14 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       DashboardPage(supabase: widget.supabase),
       HomePage(supabase: widget.supabase),
-      StorePage(supabase: widget.supabase),
-      ShopPage(supabase: widget.supabase),
+      StorePage(
+        supabase: widget.supabase,
+        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+      ),
+      ShopPage(
+        supabase: widget.supabase,
+        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+      ),
       SettingsPage(supabase: widget.supabase),
     ];
   }
@@ -38,6 +45,15 @@ class _MainPageState extends State<MainPage> {
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
+      _isBottomNavVisible = true;
+    });
+  }
+
+  void _handleNavigationVisibilityChanged(bool isVisible) {
+    if (_isBottomNavVisible == isVisible) return;
+
+    setState(() {
+      _isBottomNavVisible = isVisible;
     });
   }
 
@@ -48,32 +64,38 @@ class _MainPageState extends State<MainPage> {
         index: _currentIndex,
         children: _pages,
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(
-              color: Color(0xFFECE9F1),
-              width: 1,
-            ),
-          ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, 'Progrès', 'progress'),
-                _buildNavItem(1, 'Séances', 'dumbbell'),
-                _buildNavItem(2, 'Store', 'store'),
-                _buildNavItem(3, 'Shop', 'shop'),
-                _buildNavItem(4, 'Réglages', 'settings'),
-              ],
-            ),
-          ),
-        ),
+      bottomNavigationBar: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: _isBottomNavVisible
+            ? Container(
+                key: const ValueKey('bottom-nav'),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(
+                      color: Color(0xFFECE9F1),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(0, 'Progrès', 'progress'),
+                        _buildNavItem(1, 'Séances', 'dumbbell'),
+                        _buildNavItem(2, 'Store', 'store'),
+                        _buildNavItem(3, 'Shop', 'shop'),
+                        _buildNavItem(4, 'Réglages', 'settings'),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }
