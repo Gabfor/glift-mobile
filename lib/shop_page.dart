@@ -62,24 +62,27 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   List<ShopOffer> get _filteredOffers {
-    var filtered = _offers;
+    return _applyFilters(_selectedFiltersMap);
+  }
+
+  List<ShopOffer> _applyFilters(Map<String, Set<String>> selectedFilters) {
+    var filtered = List<ShopOffer>.from(_offers);
 
     // Filter
-    // Filter
-    if (_selectedFiltersMap.isNotEmpty) {
+    if (selectedFilters.isNotEmpty) {
       filtered = filtered.where((offer) {
         bool matches = true;
 
         // Catégorie
-        if (_selectedFiltersMap.containsKey('Catégorie') && _selectedFiltersMap['Catégorie']!.isNotEmpty) {
-          if (!offer.type.any((t) => _selectedFiltersMap['Catégorie']!.contains(t))) {
+        if (selectedFilters.containsKey('Catégorie') && selectedFilters['Catégorie']!.isNotEmpty) {
+          if (!offer.type.any((t) => selectedFilters['Catégorie']!.contains(t))) {
             matches = false;
           }
         }
 
         // Boutique
-        if (matches && _selectedFiltersMap.containsKey('Boutique') && _selectedFiltersMap['Boutique']!.isNotEmpty) {
-          if (offer.shop == null || !_selectedFiltersMap['Boutique']!.contains(offer.shop)) {
+        if (matches && selectedFilters.containsKey('Boutique') && selectedFilters['Boutique']!.isNotEmpty) {
+          if (offer.shop == null || !selectedFilters['Boutique']!.contains(offer.shop)) {
             matches = false;
           }
         }
@@ -87,14 +90,14 @@ class _ShopPageState extends State<ShopPage> {
         // Sexe & Sport (Assuming these might be in type or we ignore if not present in data)
         // For now, if user selects Sexe or Sport, we might filter by type if they match, or ignore if data is missing.
         // Let's try to match against type for Sport as well.
-        if (matches && _selectedFiltersMap.containsKey('Sport') && _selectedFiltersMap['Sport']!.isNotEmpty) {
-           if (!offer.type.any((t) => _selectedFiltersMap['Sport']!.contains(t))) {
-             // If sport is not in type, maybe we shouldn't filter out? 
-             // But if user explicitly selects "Boxe", they expect Boxe items.
-             matches = false;
-           }
+        if (matches && selectedFilters.containsKey('Sport') && selectedFilters['Sport']!.isNotEmpty) {
+          if (!offer.type.any((t) => selectedFilters['Sport']!.contains(t))) {
+            // If sport is not in type, maybe we shouldn't filter out?
+            // But if user explicitly selects "Boxe", they expect Boxe items.
+            matches = false;
+          }
         }
-        
+
         // Sexe - ShopOffer doesn't have gender. Ignoring for now to avoid empty results, unless we want to mock.
         // If I filter by Sexe, I'll get 0 results if data doesn't support it.
         // User asked for the UI. I'll implement the UI. Logic might be limited by data.
@@ -166,7 +169,7 @@ class _ShopPageState extends State<ShopPage> {
       builder: (context) => FilterModal(
         sections: sections,
         selectedFilters: _selectedFiltersMap,
-        totalResults: _filteredOffers.length, // This should ideally be dynamic based on selection in modal, but for now passing current
+        computeResults: (filters) => _applyFilters(filters).length,
         onApply: (selected) {
           setState(() {
             _selectedFiltersMap = selected;

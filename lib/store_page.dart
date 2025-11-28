@@ -62,33 +62,36 @@ class _StorePageState extends State<StorePage> {
   }
 
   List<StoreProgram> get _filteredPrograms {
-    var filtered = _programs;
-    
+    return _applyFilters(_selectedFiltersMap);
+  }
+
+  List<StoreProgram> _applyFilters(Map<String, Set<String>> selectedFilters) {
+    var filtered = List<StoreProgram>.from(_programs);
+
     // Filter
-    // Filter
-    if (_selectedFiltersMap.isNotEmpty) {
+    if (selectedFilters.isNotEmpty) {
       filtered = filtered.where((program) {
         bool matches = true;
 
         // Catégorie (Goal)
-        if (_selectedFiltersMap.containsKey('Catégorie') && _selectedFiltersMap['Catégorie']!.isNotEmpty) {
-          if (!_selectedFiltersMap['Catégorie']!.contains(program.goal)) {
+        if (selectedFilters.containsKey('Catégorie') && selectedFilters['Catégorie']!.isNotEmpty) {
+          if (!selectedFilters['Catégorie']!.contains(program.goal)) {
             matches = false;
           }
         }
 
         // Boutique (Partner)
-        if (matches && _selectedFiltersMap.containsKey('Boutique') && _selectedFiltersMap['Boutique']!.isNotEmpty) {
-          if (program.partnerName == null || !_selectedFiltersMap['Boutique']!.contains(program.partnerName)) {
+        if (matches && selectedFilters.containsKey('Boutique') && selectedFilters['Boutique']!.isNotEmpty) {
+          if (program.partnerName == null || !selectedFilters['Boutique']!.contains(program.partnerName)) {
             matches = false;
           }
         }
 
         // Sexe
-        if (matches && _selectedFiltersMap.containsKey('Sexe') && _selectedFiltersMap['Sexe']!.isNotEmpty) {
-          if (!_selectedFiltersMap['Sexe']!.contains(program.gender)) {
+        if (matches && selectedFilters.containsKey('Sexe') && selectedFilters['Sexe']!.isNotEmpty) {
+          if (!selectedFilters['Sexe']!.contains(program.gender)) {
             // Handle 'Tous' or specific gender logic if needed, but assuming exact match for now
-             matches = false;
+            matches = false;
           }
         }
 
@@ -101,7 +104,7 @@ class _StorePageState extends State<StorePage> {
       case 'newest':
         // Assuming there is a date field, otherwise fallback to default or title
         // For now, let's sort by title as a placeholder if no date exists
-        // Or if StoreProgram has a date, use it. 
+        // Or if StoreProgram has a date, use it.
         // Checking StoreProgram definition (implied): it has title, sessions, duration, etc.
         // If no date, maybe just keep default order or sort by title?
         // Let's assume default order for 'newest' if no date is available, or add a TODO.
@@ -157,7 +160,7 @@ class _StorePageState extends State<StorePage> {
       builder: (context) => FilterModal(
         sections: sections,
         selectedFilters: _selectedFiltersMap,
-        totalResults: _filteredPrograms.length,
+        computeResults: (filters) => _applyFilters(filters).length,
         onApply: (selected) {
           setState(() {
             _selectedFiltersMap = selected;

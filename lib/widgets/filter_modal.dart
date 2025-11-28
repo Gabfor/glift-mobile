@@ -13,14 +13,14 @@ class FilterModal extends StatefulWidget {
   final List<FilterSection> sections;
   final Map<String, Set<String>> selectedFilters;
   final Function(Map<String, Set<String>>) onApply;
-  final int totalResults;
+  final int Function(Map<String, Set<String>> filters) computeResults;
 
   const FilterModal({
     super.key,
     required this.sections,
     required this.selectedFilters,
     required this.onApply,
-    required this.totalResults,
+    required this.computeResults,
   });
 
   @override
@@ -29,6 +29,7 @@ class FilterModal extends StatefulWidget {
 
 class _FilterModalState extends State<FilterModal> {
   late Map<String, Set<String>> _tempSelectedFilters;
+  late int _currentResults;
 
   @override
   void initState() {
@@ -38,6 +39,16 @@ class _FilterModalState extends State<FilterModal> {
     widget.selectedFilters.forEach((key, value) {
       _tempSelectedFilters[key] = Set.from(value);
     });
+
+    // Ensure all checkboxes are selected by default
+    for (final section in widget.sections) {
+      _tempSelectedFilters[section.title] ??= section.options.toSet();
+      if (_tempSelectedFilters[section.title]!.isEmpty) {
+        _tempSelectedFilters[section.title]!.addAll(section.options);
+      }
+    }
+
+    _currentResults = widget.computeResults(_tempSelectedFilters);
   }
 
   void _toggleFilter(String section, String option) {
@@ -52,6 +63,8 @@ class _FilterModalState extends State<FilterModal> {
       } else {
         sectionFilters.add(option);
       }
+
+      _currentResults = widget.computeResults(_tempSelectedFilters);
     });
   }
 
@@ -177,7 +190,7 @@ class _FilterModalState extends State<FilterModal> {
                   elevation: 0,
                 ),
                 child: Text(
-                  'Voir ${widget.totalResults} résultats',
+                  'Voir $_currentResults résultats',
                   style: GoogleFonts.quicksand(
                     color: Colors.white,
                     fontSize: 16,
