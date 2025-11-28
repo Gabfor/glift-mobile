@@ -196,9 +196,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
           ...List.generate(widget.row.series, (index) {
             final reps = index < widget.row.repetitions.length ? widget.row.repetitions[index] : '-';
             final weight = index < widget.row.weights.length ? widget.row.weights[index] : '-';
-            final state = _effortStates[index];
-            final backgroundColor = _backgroundColorForState(state);
-            final textColor = _textColorForState(state);
+            final visuals = _visualsForState(_effortStates[index]);
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -233,7 +231,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: backgroundColor,
+                        color: visuals.backgroundColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: const Color(0xFFECE9F1)),
                       ),
@@ -242,7 +240,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: textColor,
+                          color: visuals.textColor,
                         ),
                       ),
                     ),
@@ -256,7 +254,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: backgroundColor,
+                        color: visuals.backgroundColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: const Color(0xFFECE9F1)),
                       ),
@@ -265,7 +263,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: textColor,
+                          color: visuals.textColor,
                         ),
                       ),
                     ),
@@ -281,13 +279,13 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                          color: backgroundColor,
+                          color: visuals.backgroundColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: const Color(0xFFECE9F1)),
                         ),
                         alignment: Alignment.center,
                         child: SvgPicture.asset(
-                          _iconForState(state),
+                          visuals.iconPath,
                           width: 24,
                           height: 24,
                         ),
@@ -313,41 +311,43 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     });
   }
 
-  Color _backgroundColorForState(_EffortState state) {
+  _EffortVisuals _visualsForState(_EffortState state) {
     switch (state) {
       case _EffortState.neutral:
-        return Colors.white;
+        return const _EffortVisuals(
+          backgroundColor: Colors.white,
+          textColor: Color(0xFF3A416F),
+          iconPath: 'assets/icons/smiley_jaune.svg',
+        );
       case _EffortState.positive:
-        return const Color(0xFFF6FDF7);
+        return const _EffortVisuals(
+          backgroundColor: Color(0xFFF6FDF7),
+          textColor: Color(0xFF57AE5B),
+          iconPath: 'assets/icons/smiley_vert.svg',
+        );
       case _EffortState.negative:
-        return const Color(0xFFFFF1F1);
-    }
-  }
-
-  Color _textColorForState(_EffortState state) {
-    switch (state) {
-      case _EffortState.neutral:
-        return const Color(0xFF3A416F);
-      case _EffortState.positive:
-        return const Color(0xFF57AE5B);
-      case _EffortState.negative:
-        return const Color(0xFFEF4F4E);
-    }
-  }
-
-  String _iconForState(_EffortState state) {
-    switch (state) {
-      case _EffortState.neutral:
-        return 'assets/icons/smiley_jaune.svg';
-      case _EffortState.positive:
-        return 'assets/icons/smiley_vert.svg';
-      case _EffortState.negative:
-        return 'assets/icons/smiley_rouge.svg';
+        return const _EffortVisuals(
+          backgroundColor: Color(0xFFFFF1F1),
+          textColor: Color(0xFFEF4F4E),
+          iconPath: 'assets/icons/smiley_rouge.svg',
+        );
     }
   }
 }
 
 enum _EffortState { neutral, positive, negative }
+
+class _EffortVisuals {
+  const _EffortVisuals({
+    required this.backgroundColor,
+    required this.textColor,
+    required this.iconPath,
+  });
+
+  final Color backgroundColor;
+  final Color textColor;
+  final String iconPath;
+}
 
 class _StartButton extends StatelessWidget {
   const _StartButton({required this.onTap});
