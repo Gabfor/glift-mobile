@@ -5,12 +5,14 @@ class Program {
   final String name;
   final List<Training> trainings;
   final int position;
+  final bool dashboard;
 
   Program({
     required this.id,
     required this.name,
     required this.trainings,
     required this.position,
+    required this.dashboard,
   });
 
   factory Program.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class Program {
       name: json['name'] as String,
       trainings: trainingsList,
       position: json['position'] as int? ?? 0,
+      dashboard: json['dashboard'] as bool? ?? true,
     );
   }
 }

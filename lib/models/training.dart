@@ -4,6 +4,7 @@ class Training {
   final bool app;
   final bool dashboard;
   final int position;
+  final String? programId;
 
   Training({
     required this.id,
@@ -11,6 +12,7 @@ class Training {
     required this.app,
     required this.dashboard,
     required this.position,
+    this.programId,
   });
 
   factory Training.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Training {
       app: json['app'] as bool? ?? false,
       dashboard: json['dashboard'] as bool? ?? true,
       position: json['position'] as int? ?? 0,
+      programId: json['program_id']?.toString(),
     );
   }
 }

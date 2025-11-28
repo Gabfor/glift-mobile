@@ -19,16 +19,16 @@ class ProgramRepository {
       try {
         final response = await _supabase
             .from('programs')
-            .select('id, name, position, dashboard, trainings(id, name, position, app, dashboard)')
+            .select('id, name, position, dashboard, trainings(id, name, position, app, dashboard, program_id)')
             .eq('user_id', userId)
             .order('position', ascending: true);
         
         return _processProgramsResponse(response, userId);
       } catch (_) {
-        // Fallback: fetch without dashboard column
+        // Fallback: fetch without dashboard column on trainings
         final response = await _supabase
             .from('programs')
-            .select('id, name, position, trainings(id, name, position, app)')
+            .select('id, name, position, dashboard, trainings(id, name, position, app, program_id)')
             .eq('user_id', userId)
             .order('position', ascending: true);
             
@@ -54,6 +54,7 @@ class ProgramRepository {
           name: newProgram['name'],
           trainings: [],
           position: newProgram['position'],
+          dashboard: newProgram['dashboard'] ?? true,
         )
       ];
     }
@@ -72,6 +73,7 @@ class ProgramRepository {
         name: program.name,
         trainings: visibleTrainings,
         position: program.position,
+        dashboard: program.dashboard,
       );
     }).where((p) => p.trainings.isNotEmpty).toList();
   }
