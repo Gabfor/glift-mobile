@@ -7,6 +7,8 @@ import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'widgets/glift_page_layout.dart';
 
+import 'widgets/numeric_keypad.dart';
+
 class TrainingDetailsPage extends StatefulWidget {
   const TrainingDetailsPage({
     super.key,
@@ -26,6 +28,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   List<TrainingRow>? _rows;
   bool _isLoading = true;
   String? _error;
+
+  // Keypad state
+  int? _activeRowIndex;
+  int? _activeSeriesIndex;
+  String? _activeFieldType; // 'reps' or 'weight'
 
   @override
   void initState() {
@@ -53,9 +60,60 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
+  void _onKeypadInput(String value) {
+    if (_activeRowIndex == null || _activeSeriesIndex == null || _activeFieldType == null) return;
+    // This will be handled by the _ExerciseCard via a callback or by lifting state up.
+    // Given the structure, it's better to lift the active state to the page level 
+    // OR pass the keypad events down to the active card.
+    // Actually, since the keypad is at page level (in the Stack), the page needs to know which card is active.
+    // But the data is inside _ExerciseCard (local state).
+    // We need to refactor so _ExerciseCard exposes its state or accepts updates.
+    // EASIER APPROACH: The Page holds the keypad, but the _ExerciseCard handles the tap and "registers" itself as the listener.
+    // But the keypad is in the Page's build method.
+    // Let's make the Page manage the active state and pass a callback to _ExerciseCard to "request focus".
+    // When "focused", the Page shows the keypad. When keypad emits, Page calls a callback provided by the Card.
+  }
+  
+  // New approach:
+  // The Page manages the visibility of the keypad.
+  // We pass a `onFocus` callback to `_ExerciseCard`.
+  // When a cell is tapped, `_ExerciseCard` calls `onFocus` with a callback to handle input.
+  
+  ValueChanged<String>? _currentInputHandler;
+  VoidCallback? _currentBackspaceHandler;
+  VoidCallback? _currentDecimalHandler;
+  VoidCallback? _currentCloseHandler;
+
+  void _handleFocus({
+    required ValueChanged<String> onInput,
+    required VoidCallback onBackspace,
+    required VoidCallback onDecimal,
+    required VoidCallback onClose,
+  }) {
+    setState(() {
+      _currentInputHandler = onInput;
+      _currentBackspaceHandler = onBackspace;
+      _currentDecimalHandler = onDecimal;
+      _currentCloseHandler = onClose;
+    });
+  }
+
+  void _closeKeypad() {
+    if (_currentCloseHandler != null) {
+      _currentCloseHandler!();
+    }
+    setState(() {
+      _currentInputHandler = null;
+      _currentBackspaceHandler = null;
+      _currentDecimalHandler = null;
+      _currentCloseHandler = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
+      resizeToAvoidBottomInset: false, // Prevent resize
       header: Row(
         children: [
           GestureDetector(
@@ -98,10 +156,37 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       ),
       scrollable: false,
       padding: EdgeInsets.zero,
-      footer: _StartButton(onTap: () {
-        // TODO: Start workout logic
-      }),
-      child: _buildBody(),
+      child: Stack(
+        children: [
+          GestureDetector(
+            onTap: _closeKeypad, // Close keypad on outside tap
+            behavior: HitTestBehavior.translucent,
+            child: _buildBody(),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 30, // Adjust as needed for safe area/padding
+            child: Center(
+              child: _StartButton(onTap: () {
+                // TODO: Start workout logic
+              }),
+            ),
+          ),
+          if (_currentInputHandler != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: NumericKeypad(
+                onNumber: _currentInputHandler!,
+                onBackspace: _currentBackspaceHandler!,
+                onDecimal: _currentDecimalHandler!,
+                onClose: _closeKeypad,
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -132,16 +217,31 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       separatorBuilder: (context, index) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final row = _rows![index];
-        return _ExerciseCard(row: row);
+        return _ExerciseCard(
+          row: row,
+          repository: _programRepository,
+          onFocus: _handleFocus,
+        );
       },
     );
   }
 }
 
 class _ExerciseCard extends StatefulWidget {
-  const _ExerciseCard({required this.row});
+  const _ExerciseCard({
+    required this.row,
+    required this.repository,
+    required this.onFocus,
+  });
 
   final TrainingRow row;
+  final ProgramRepository repository;
+  final Function({
+    required ValueChanged<String> onInput,
+    required VoidCallback onBackspace,
+    required VoidCallback onDecimal,
+    required VoidCallback onClose,
+  }) onFocus;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -149,12 +249,101 @@ class _ExerciseCard extends StatefulWidget {
 
 class _ExerciseCardState extends State<_ExerciseCard> {
   late final List<_EffortState> _effortStates;
+  late List<String> _repetitions;
+  late List<String> _weights;
+  
+  // Track active cell for highlighting
+  int? _activeRepsIndex;
+  int? _activeWeightIndex;
 
   @override
   void initState() {
     super.initState();
     _effortStates = List<_EffortState>.filled(widget.row.series, _EffortState.neutral);
+    _repetitions = List<String>.from(widget.row.repetitions);
+    _weights = List<String>.from(widget.row.weights);
   }
+
+  void _activateCell(int index, String type) {
+    setState(() {
+      if (type == 'reps') {
+        _activeRepsIndex = index;
+        _activeWeightIndex = null;
+      } else {
+        _activeRepsIndex = null;
+        _activeWeightIndex = index;
+      }
+    });
+
+    widget.onFocus(
+      onInput: (value) => _handleInput(index, type, value),
+      onBackspace: () => _handleBackspace(index, type),
+      onDecimal: () => _handleInput(index, type, '.'),
+      onClose: () => _handleClose(index, type),
+    );
+  }
+
+  void _handleInput(int index, String type, String value) {
+    setState(() {
+      List<String> list = type == 'reps' ? _repetitions : _weights;
+      if (index >= list.length) {
+        list.addAll(List.filled(index - list.length + 1, '-'));
+      }
+      
+      String current = list[index];
+      if (current == '-') current = '';
+      
+      // Prevent multiple decimals
+      if (value == '.' && current.contains('.')) return;
+      
+      list[index] = current + value;
+      
+      // Reset smiley
+      if (index < _effortStates.length) {
+        _effortStates[index] = _EffortState.neutral;
+      }
+    });
+  }
+
+  void _handleBackspace(int index, String type) {
+    setState(() {
+      List<String> list = type == 'reps' ? _repetitions : _weights;
+      if (index < list.length) {
+        String current = list[index];
+        if (current != '-' && current.isNotEmpty) {
+          list[index] = current.substring(0, current.length - 1);
+          if (list[index].isEmpty) list[index] = '-';
+        }
+      }
+      
+      // Reset smiley
+      if (index < _effortStates.length) {
+        _effortStates[index] = _EffortState.neutral;
+      }
+    });
+  }
+
+  Future<void> _handleClose(int index, String type) async {
+    setState(() {
+      _activeRepsIndex = null;
+      _activeWeightIndex = null;
+    });
+
+    // Save to DB
+    if (type == 'reps') {
+      await widget.repository.updateTrainingRow(
+        widget.row.id,
+        repetitions: _repetitions,
+      );
+    } else {
+      await widget.repository.updateTrainingRow(
+        widget.row.id,
+        weights: _weights,
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -194,8 +383,8 @@ class _ExerciseCardState extends State<_ExerciseCard> {
 
           // Sets Rows
           ...List.generate(widget.row.series, (index) {
-            final reps = index < widget.row.repetitions.length ? widget.row.repetitions[index] : '-';
-            final weight = index < widget.row.weights.length ? widget.row.weights[index] : '-';
+            final reps = index < _repetitions.length ? _repetitions[index] : '-';
+            final weight = index < _weights.length ? _weights[index] : '-';
             final visuals = _visualsForState(_effortStates[index]);
 
             return Padding(
@@ -227,20 +416,26 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                   // Reps
                   Expanded(
                     flex: 86,
-                    child: Container(
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFECE9F1)),
-                      ),
-                      child: Text(
-                        reps,
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: visuals.textColor,
+                    child: GestureDetector(
+                      onTap: () => _activateCell(index, 'reps'),
+                      child: Container(
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: visuals.backgroundColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _activeRepsIndex == index ? const Color(0xFF7069FA) : const Color(0xFFECE9F1),
+                            width: _activeRepsIndex == index ? 2 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          reps,
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: visuals.textColor,
+                          ),
                         ),
                       ),
                     ),
@@ -250,20 +445,26 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                   // Weight
                   Expanded(
                     flex: 86,
-                    child: Container(
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFECE9F1)),
-                      ),
-                      child: Text(
-                        weight,
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: visuals.textColor,
+                    child: GestureDetector(
+                      onTap: () => _activateCell(index, 'weight'),
+                      child: Container(
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: visuals.backgroundColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _activeWeightIndex == index ? const Color(0xFF7069FA) : const Color(0xFFECE9F1),
+                            width: _activeWeightIndex == index ? 2 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          weight,
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: visuals.textColor,
+                          ),
                         ),
                       ),
                     ),

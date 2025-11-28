@@ -90,4 +90,20 @@ class ProgramRepository {
       throw Exception('Erreur lors du chargement du détail de l\'entraînement: $e');
     }
   }
+  Future<void> updateTrainingRow(String rowId, {List<String>? repetitions, List<String>? weights}) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (repetitions != null) updates['repetitions'] = repetitions;
+      if (weights != null) updates['poids'] = weights;
+
+      if (updates.isEmpty) return;
+
+      await _supabase
+          .from('training_rows')
+          .update(updates)
+          .eq('id', rowId);
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour de l\'exercice: $e');
+    }
+  }
 }
