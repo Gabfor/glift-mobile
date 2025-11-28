@@ -24,6 +24,10 @@ class _ShopPageState extends State<ShopPage> {
   bool _isLoading = true;
   Set<String> _selectedTypes = {};
   String _selectedSort = 'newest'; // 'newest', 'popularity', 'expiration'
+  Map<String, Set<String>> _filterOptionsBySection = {
+    'Sexe': {'Femme', 'Homme'},
+    'Sport': {'Boxe', 'Musculation'},
+  };
 
   @override
   void initState() {
@@ -36,10 +40,25 @@ class _ShopPageState extends State<ShopPage> {
   Future<void> _loadOffers() async {
     try {
       final offers = await _repository.getShopOffers();
+      final categories = <String>{};
+      final shops = <String>{};
+
+      for (final offer in offers) {
+        categories.addAll(offer.type.where((t) => t.isNotEmpty));
+        if (offer.shop != null && offer.shop!.isNotEmpty) {
+          shops.add(offer.shop!);
+        }
+      }
+
       if (mounted) {
         setState(() {
           _offers = offers;
           _isLoading = false;
+          _filterOptionsBySection = {
+            ..._filterOptionsBySection,
+            'Catégorie': categories,
+            'Boutique': shops,
+          };
         });
       }
     } catch (e) {
@@ -68,39 +87,46 @@ class _ShopPageState extends State<ShopPage> {
   List<ShopOffer> _applyFilters(Map<String, Set<String>> selectedFilters) {
     var filtered = List<ShopOffer>.from(_offers);
 
+    final activeFilters = <String, Set<String>>{};
+
+    selectedFilters.forEach((section, values) {
+      final options = _filterOptionsBySection[section];
+      final isFiltering = options == null ? values.isNotEmpty : values.length != options.length;
+      if (isFiltering) {
+        activeFilters[section] = values;
+      }
+    });
+
     // Filter
-    if (selectedFilters.isNotEmpty) {
+    if (activeFilters.isNotEmpty) {
       filtered = filtered.where((offer) {
         bool matches = true;
 
         // Catégorie
-        if (selectedFilters.containsKey('Catégorie') && selectedFilters['Catégorie']!.isNotEmpty) {
-          if (!offer.type.any((t) => selectedFilters['Catégorie']!.contains(t))) {
+        if (activeFilters.containsKey('Catégorie')) {
+          final categories = activeFilters['Catégorie']!;
+          if (categories.isEmpty || !offer.type.any(categories.contains)) {
             matches = false;
           }
         }
 
         // Boutique
-        if (matches && selectedFilters.containsKey('Boutique') && selectedFilters['Boutique']!.isNotEmpty) {
-          if (offer.shop == null || !selectedFilters['Boutique']!.contains(offer.shop)) {
+        if (matches && activeFilters.containsKey('Boutique')) {
+          final boutiques = activeFilters['Boutique']!;
+          if (boutiques.isEmpty || offer.shop == null || !boutiques.contains(offer.shop)) {
             matches = false;
           }
         }
 
-        // Sexe & Sport (Assuming these might be in type or we ignore if not present in data)
-        // For now, if user selects Sexe or Sport, we might filter by type if they match, or ignore if data is missing.
-        // Let's try to match against type for Sport as well.
-        if (matches && selectedFilters.containsKey('Sport') && selectedFilters['Sport']!.isNotEmpty) {
-          if (!offer.type.any((t) => selectedFilters['Sport']!.contains(t))) {
-            // If sport is not in type, maybe we shouldn't filter out?
-            // But if user explicitly selects "Boxe", they expect Boxe items.
+        // Sport
+        if (matches && activeFilters.containsKey('Sport')) {
+          final sports = activeFilters['Sport']!;
+          if (sports.isEmpty || !offer.type.any(sports.contains)) {
             matches = false;
           }
         }
 
-        // Sexe - ShopOffer doesn't have gender. Ignoring for now to avoid empty results, unless we want to mock.
-        // If I filter by Sexe, I'll get 0 results if data doesn't support it.
-        // User asked for the UI. I'll implement the UI. Logic might be limited by data.
+        // Sexe - ShopOffer doesn't have gender, so skip unless data supports it
 
         return matches;
       }).toList();
@@ -132,33 +158,22 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   void _showFilterModal() {
-    // Extract unique values for filters
-    final categories = <String>{};
-    final shops = <String>{};
-    
-    for (final offer in _offers) {
-      categories.addAll(offer.type.where((t) => t.isNotEmpty));
-      if (offer.shop != null && offer.shop!.isNotEmpty) {
-        shops.add(offer.shop!);
-      }
-    }
-
     final sections = [
       FilterSection(
         title: 'Sexe',
-        options: ['Femme', 'Homme'],
+        options: (_filterOptionsBySection['Sexe'] ?? {}).toList()..sort(),
       ),
       FilterSection(
         title: 'Catégorie',
-        options: categories.toList()..sort(),
+        options: (_filterOptionsBySection['Catégorie'] ?? {}).toList()..sort(),
       ),
       FilterSection(
         title: 'Sport',
-        options: ['Boxe', 'Musculation'],
+        options: (_filterOptionsBySection['Sport'] ?? {}).toList()..sort(),
       ),
       FilterSection(
         title: 'Boutique',
-        options: shops.toList()..sort(),
+        options: (_filterOptionsBySection['Boutique'] ?? {}).toList()..sort(),
       ),
     ];
 
@@ -180,6 +195,17 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   Map<String, Set<String>> _selectedFiltersMap = {};
+
+  bool get _hasActiveFilters {
+    for (final entry in _selectedFiltersMap.entries) {
+      final options = _filterOptionsBySection[entry.key];
+      final isFiltering = options == null ? entry.value.isNotEmpty : entry.value.length != options.length;
+      if (isFiltering) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +312,11 @@ class _ShopPageState extends State<ShopPage> {
                                       border: Border.all(color: const Color(0xFFD7D4DC)),
                                     ),
                                     padding: const EdgeInsets.all(12),
-                                    child: SvgPicture.asset('assets/icons/filtre_red.svg'),
+                                    child: SvgPicture.asset(
+                                      _hasActiveFilters
+                                          ? 'assets/icons/filtre_green.svg'
+                                          : 'assets/icons/filtre_red.svg',
+                                    ),
                                   ),
                                 ),
                               ],
