@@ -108,8 +108,8 @@ class _FilterModalState extends State<FilterModal> {
                       _hasActiveFilters
                           ? 'assets/icons/filtre_green.svg'
                           : 'assets/icons/filtre_red.svg',
-                      width: 20,
-                      height: 20,
+                      width: 16,
+                      height: 16,
                     ),
                     const SizedBox(width: 8),
                     Text(
