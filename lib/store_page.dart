@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
 
 import 'repositories/store_repository.dart';
@@ -131,46 +132,80 @@ class _StorePageState extends State<StorePage> {
                                 ),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(color: const Color(0xFFD7D4DC)),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _selectedSort,
-                                  isExpanded: true,
-                                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
-                                  items: const [
-                                    DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
-                                    DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
-                                    DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() => _selectedSort = value);
-                                    }
-                                  },
-                                  style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF3A416F),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 48,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(color: const Color(0xFFD7D4DC)),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: _selectedSort,
+                                        isExpanded: true,
+                                        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF3A416F)),
+                                        items: const [
+                                          DropdownMenuItem(value: 'popularity', child: Text('Pertinence')),
+                                          DropdownMenuItem(value: 'newest', child: Text('Nouveauté')),
+                                          DropdownMenuItem(value: 'expiration', child: Text('Expiration')),
+                                        ],
+                                        onChanged: (value) {
+                                          if (value != null) {
+                                            setState(() => _selectedSort = value);
+                                          }
+                                        },
+                                        selectedItemBuilder: (context) {
+                                          return [
+                                            'popularity',
+                                            'newest',
+                                            'expiration'
+                                          ].map((String value) {
+                                            return Row(
+                                              children: [
+                                                SvgPicture.asset('assets/icons/tri.svg', width: 20, height: 20),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  value == 'popularity' ? 'Pertinence' :
+                                                  value == 'newest' ? 'Nouveauté' : 'Expiration',
+                                                  style: GoogleFonts.quicksand(
+                                                    color: const Color(0xFF3A416F),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          }).toList();
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: () {
+                                    // TODO: Show filter modal or logic
+                                  },
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: const Color(0xFFD7D4DC)),
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset('assets/icons/filtre_red.svg'),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      _FiltersRow(
-                        options: _availableGoals,
-                        selected: _selectedGoal,
-                        onSelected: (value) {
-                          setState(() => _selectedGoal = value);
-                        },
                       ),
                       const SizedBox(height: 20),
                     ],
