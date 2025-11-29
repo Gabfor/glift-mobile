@@ -309,37 +309,41 @@ class DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 8),
           LayoutBuilder(
             builder: (context, constraints) {
+              const horizontalPadding = 20.0;
               return SizedBox(
-                width: constraints.maxWidth,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _programScrollController,
-                  padding: EdgeInsets.zero,
-                  child: Row(
-                    children: [
-                      ..._programs.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final program = entry.value;
-                        final isSelected = program.id == _selectedProgramId;
-                        return GestureDetector(
-                          onTap: () => _onProgramSelected(program.id),
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: Text(
-                              program.name,
-                              key: _programKeys[index],
-                              style: GoogleFonts.quicksand(
-                                color: isSelected
-                                    ? Colors.white
-                                    : Colors.white.withOpacity(0.5),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                width: constraints.maxWidth + horizontalPadding * 2,
+                child: Transform.translate(
+                  offset: const Offset(-horizontalPadding, 0),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    controller: _programScrollController,
+                    padding: EdgeInsets.zero,
+                    child: Row(
+                      children: [
+                        ..._programs.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final program = entry.value;
+                          final isSelected = program.id == _selectedProgramId;
+                          return GestureDetector(
+                            onTap: () => _onProgramSelected(program.id),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 20),
+                              child: Text(
+                                program.name,
+                                key: _programKeys[index],
+                                style: GoogleFonts.quicksand(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white.withOpacity(0.5),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }),
-                    ],
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
               );
