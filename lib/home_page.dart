@@ -31,7 +31,6 @@ class _HomePageState extends State<HomePage> {
   late final PageController _pageController;
   late final ScrollController _programScrollController;
   final List<GlobalKey> _programKeys = [];
-  double _programLeftPadding = 20;
   List<Program>? _programs;
   String? _selectedProgramId;
   bool _isLoading = true;
@@ -42,17 +41,14 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
     _pageController = PageController();
-    _programScrollController = ScrollController()
-      ..addListener(_handleProgramScroll);
+    _programScrollController = ScrollController();
     _fetchPrograms();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _programScrollController
-      ..removeListener(_handleProgramScroll)
-      ..dispose();
+    _programScrollController.dispose();
     super.dispose();
   }
 
@@ -78,17 +74,6 @@ class _HomePageState extends State<HomePage> {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  void _handleProgramScroll() {
-    if (!_programScrollController.hasClients) return;
-
-    final hasOffset = _programScrollController.offset > 0;
-    final newPadding = hasOffset ? 0.0 : 20.0;
-
-    if (newPadding != _programLeftPadding) {
-      setState(() => _programLeftPadding = newPadding);
     }
   }
 
@@ -160,13 +145,12 @@ class _HomePageState extends State<HomePage> {
           LayoutBuilder(
             builder: (context, constraints) {
               return Padding(
-                padding: const EdgeInsets.only(right: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     controller: _programScrollController,
-                    padding: EdgeInsets.only(left: _programLeftPadding),
                     child: Row(
                       children: [
                         ..._programs!.asMap().entries.map((entry) {
