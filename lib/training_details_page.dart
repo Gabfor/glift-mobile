@@ -111,6 +111,20 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     });
   }
 
+  void _openActiveTraining() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => ActiveTrainingPage(
+          training: widget.training,
+          supabase: widget.supabase,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        transitionsBuilder: (_, __, ___, child) => child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
@@ -169,16 +183,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             right: 0,
             bottom: 30, // Adjust as needed for safe area/padding
             child: Center(
-              child: _StartButton(onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ActiveTrainingPage(
-                      training: widget.training,
-                      supabase: widget.supabase,
-                    ),
-                  ),
-                );
-              }),
+              child: _StartButton(onTap: _openActiveTraining),
             ),
           ),
           if (_currentInputHandler != null)
