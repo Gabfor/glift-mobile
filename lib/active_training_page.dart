@@ -6,12 +6,10 @@ import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'widgets/glift_page_layout.dart';
-
 import 'widgets/numeric_keypad.dart';
-import 'active_training_page.dart';
 
-class TrainingDetailsPage extends StatefulWidget {
-  const TrainingDetailsPage({
+class ActiveTrainingPage extends StatefulWidget {
+  const ActiveTrainingPage({
     super.key,
     required this.training,
     required this.supabase,
@@ -21,19 +19,20 @@ class TrainingDetailsPage extends StatefulWidget {
   final SupabaseClient supabase;
 
   @override
-  State<TrainingDetailsPage> createState() => _TrainingDetailsPageState();
+  State<ActiveTrainingPage> createState() => _ActiveTrainingPageState();
 }
 
-class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
+class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   late final ProgramRepository _programRepository;
   List<TrainingRow>? _rows;
   bool _isLoading = true;
   String? _error;
 
   // Keypad state
-  int? _activeRowIndex;
-  int? _activeSeriesIndex;
-  String? _activeFieldType; // 'reps' or 'weight'
+  ValueChanged<String>? _currentInputHandler;
+  VoidCallback? _currentBackspaceHandler;
+  VoidCallback? _currentDecimalHandler;
+  VoidCallback? _currentCloseHandler;
 
   @override
   void initState() {
@@ -60,30 +59,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       }
     }
   }
-
-  void _onKeypadInput(String value) {
-    if (_activeRowIndex == null || _activeSeriesIndex == null || _activeFieldType == null) return;
-    // This will be handled by the _ExerciseCard via a callback or by lifting state up.
-    // Given the structure, it's better to lift the active state to the page level 
-    // OR pass the keypad events down to the active card.
-    // Actually, since the keypad is at page level (in the Stack), the page needs to know which card is active.
-    // But the data is inside _ExerciseCard (local state).
-    // We need to refactor so _ExerciseCard exposes its state or accepts updates.
-    // EASIER APPROACH: The Page holds the keypad, but the _ExerciseCard handles the tap and "registers" itself as the listener.
-    // But the keypad is in the Page's build method.
-    // Let's make the Page manage the active state and pass a callback to _ExerciseCard to "request focus".
-    // When "focused", the Page shows the keypad. When keypad emits, Page calls a callback provided by the Card.
-  }
-  
-  // New approach:
-  // The Page manages the visibility of the keypad.
-  // We pass a `onFocus` callback to `_ExerciseCard`.
-  // When a cell is tapped, `_ExerciseCard` calls `onFocus` with a callback to handle input.
-  
-  ValueChanged<String>? _currentInputHandler;
-  VoidCallback? _currentBackspaceHandler;
-  VoidCallback? _currentDecimalHandler;
-  VoidCallback? _currentCloseHandler;
 
   void _handleFocus({
     required ValueChanged<String> onInput,
@@ -114,7 +89,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
-      resizeToAvoidBottomInset: false, // Prevent resize
+      resizeToAvoidBottomInset: false,
       header: Row(
         children: [
           GestureDetector(
@@ -160,26 +135,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       child: Stack(
         children: [
           GestureDetector(
-            onTap: _closeKeypad, // Close keypad on outside tap
+            onTap: _closeKeypad,
             behavior: HitTestBehavior.translucent,
             child: _buildBody(),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 30, // Adjust as needed for safe area/padding
-            child: Center(
-              child: _StartButton(onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ActiveTrainingPage(
-                      training: widget.training,
-                      supabase: widget.supabase,
-                    ),
-                  ),
-                );
-              }),
-            ),
           ),
           if (_currentInputHandler != null)
             Positioned(
@@ -220,12 +178,12 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100), // Bottom padding for button
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
       itemCount: _rows!.length,
       separatorBuilder: (context, index) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final row = _rows![index];
-        return _ExerciseCard(
+        return _ActiveExerciseCard(
           row: row,
           repository: _programRepository,
           onFocus: _handleFocus,
@@ -235,8 +193,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 }
 
-class _ExerciseCard extends StatefulWidget {
-  const _ExerciseCard({
+class _ActiveExerciseCard extends StatefulWidget {
+  const _ActiveExerciseCard({
     required this.row,
     required this.repository,
     required this.onFocus,
@@ -252,18 +210,21 @@ class _ExerciseCard extends StatefulWidget {
   }) onFocus;
 
   @override
-  State<_ExerciseCard> createState() => _ExerciseCardState();
+  State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
 }
 
-class _ExerciseCardState extends State<_ExerciseCard> {
+class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with AutomaticKeepAliveClientMixin {
   late final List<_EffortState> _effortStates;
   late List<String> _repetitions;
   late List<String> _weights;
+  late List<bool> _completedSets;
   
-  // Track active cell for highlighting
   int? _activeRepsIndex;
   int? _activeWeightIndex;
   bool _isFirstInput = true;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -271,6 +232,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     _effortStates = List<_EffortState>.filled(widget.row.series, _EffortState.neutral);
     _repetitions = List<String>.from(widget.row.repetitions);
     _weights = List<String>.from(widget.row.weights);
+    _completedSets = List<bool>.filled(widget.row.series, false);
   }
 
   void _activateCell(int index, String type) {
@@ -282,7 +244,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         _activeRepsIndex = null;
         _activeWeightIndex = index;
       }
-      _isFirstInput = true; // Reset flag when activating a cell
+      _isFirstInput = true;
     });
 
     widget.onFocus(
@@ -303,18 +265,16 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       String current = list[index];
       
       if (_isFirstInput) {
-        current = ''; // Clear on first input
+        current = '';
         _isFirstInput = false;
       } else if (current == '-') {
         current = '';
       }
       
-      // Prevent multiple decimals
       if (value == '.' && current.contains('.')) return;
       
       list[index] = current + value;
       
-      // Reset smiley
       if (index < _effortStates.length) {
         _effortStates[index] = _EffortState.neutral;
       }
@@ -332,7 +292,6 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         }
       }
       
-      // Reset smiley
       if (index < _effortStates.length) {
         _effortStates[index] = _EffortState.neutral;
       }
@@ -345,7 +304,6 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       _activeWeightIndex = null;
     });
 
-    // Save to DB
     if (type == 'reps') {
       await widget.repository.updateTrainingRow(
         widget.row.id,
@@ -359,10 +317,15 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     }
   }
 
-
+  void _toggleSetCompletion(int index) {
+    setState(() {
+      _completedSets[index] = !_completedSets[index];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -373,13 +336,25 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.row.exercise,
-            style: GoogleFonts.quicksand(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF7069FA),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.row.exercise,
+                style: GoogleFonts.quicksand(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF7069FA),
+                ),
+              ),
+              Row(
+                children: [
+                  SvgPicture.asset('assets/icons/timer_off.svg', width: 24, height: 24),
+                  const SizedBox(width: 10),
+                  SvgPicture.asset('assets/icons/note_off.svg', width: 24, height: 24),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 20),
 
@@ -393,6 +368,8 @@ class _ExerciseCardState extends State<_ExerciseCard> {
               _GridHeader('Poids', flex: 86),
               const SizedBox(width: 10),
               _GridHeader('Effort', flex: 68),
+              const SizedBox(width: 10),
+              _GridHeader('Suivi', flex: 40),
             ],
           ),
           const SizedBox(height: 10),
@@ -402,6 +379,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
             final reps = index < _repetitions.length ? _repetitions[index] : '-';
             final weight = index < _weights.length ? _weights[index] : '-';
             final visuals = _visualsForState(_effortStates[index]);
+            final isCompleted = _completedSets[index];
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -509,10 +487,52 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 10),
+
+                  // Suivi (Completion)
+                  Expanded(
+                    flex: 40,
+                    child: GestureDetector(
+                      onTap: () => _toggleSetCompletion(index),
+                      child: SvgPicture.asset(
+                        isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg',
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
           }),
+
+          const SizedBox(height: 20),
+
+          // Action Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _ActionButton(
+                label: 'Ignorer',
+                icon: 'assets/icons/croix_small.svg',
+                color: const Color(0xFFC2BFC6),
+                onTap: () {},
+              ),
+              _ActionButton(
+                label: 'Déplacer',
+                icon: 'assets/icons/arrow_small.svg',
+                color: const Color(0xFFC2BFC6),
+                onTap: () {},
+              ),
+              _ActionButton(
+                label: 'Terminé',
+                icon: 'assets/icons/check_small.svg',
+                color: const Color(0xFF00D591),
+                isPrimary: true,
+                onTap: () {},
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -566,53 +586,6 @@ class _EffortVisuals {
   final String iconPath;
 }
 
-class _StartButton extends StatelessWidget {
-  const _StartButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 48,
-      decoration: BoxDecoration(
-        color: const Color(0xFF00D591),
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x3F00D591),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(25),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Commencer',
-                style: GoogleFonts.quicksand(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _GridHeader extends StatelessWidget {
   final String text;
   final int flex;
@@ -621,32 +594,67 @@ class _GridHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (flex > 0) {
-       return Expanded(
-        flex: flex,
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.redHatText(
-            fontSize: 14,
-            color: const Color(0xFFC2BFC6),
-            fontWeight: FontWeight.w500,
-          ),
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.redHatText(
+          fontSize: 14,
+          color: const Color(0xFFC2BFC6),
+          fontWeight: FontWeight.w500,
         ),
-      );
-    } else {
-      return SizedBox(
-        width: 40, // Fixed width for "Sets" if needed, but using flex is safer for responsiveness
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.redHatText(
-            fontSize: 14,
-            color: const Color(0xFFC2BFC6),
-            fontWeight: FontWeight.w500,
-          ),
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final String label;
+  final String icon;
+  final Color color;
+  final bool isPrimary;
+  final VoidCallback onTap;
+
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    this.isPrimary = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: isPrimary ? color : const Color(0xFFECE9F1)),
         ),
-      );
-    }
+        child: Row(
+          children: [
+            SvgPicture.asset(
+              icon,
+              width: 16,
+              height: 16,
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.quicksand(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
