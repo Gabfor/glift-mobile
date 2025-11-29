@@ -6,6 +6,7 @@ class TrainingRow {
   final List<String> repetitions;
   final List<String> weights;
   final String rest;
+  final String? videoUrl;
   final String? note;
   final int order;
 
@@ -18,6 +19,7 @@ class TrainingRow {
     required this.weights,
     required this.rest,
     this.note,
+    this.videoUrl,
     required this.order,
   });
 
@@ -31,6 +33,7 @@ class TrainingRow {
       weights: List<String>.from(json['poids'] ?? []),
       rest: json['repos'] as String,
       note: json['note'] as String?,
+      videoUrl: json['video_url'] as String?,
       order: json['order'] as int,
     );
   }

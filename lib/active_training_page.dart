@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
@@ -323,11 +324,24 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     });
   }
 
+  Future<void> _launchVideoUrl() async {
+    if (widget.row.videoUrl != null) {
+      final uri = Uri.parse(widget.row.videoUrl!);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
+    final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
+    final hasLink = widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15), // Reduced bottom padding to 15px
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -339,19 +353,41 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.row.exercise,
-                style: GoogleFonts.quicksand(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF7069FA),
-                ),
-              ),
+              hasLink
+                  ? GestureDetector(
+                      onTap: _launchVideoUrl,
+                      child: Text(
+                        widget.row.exercise,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF7069FA),
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFF7069FA),
+                        ),
+                      ),
+                    )
+                  : Text(
+                      widget.row.exercise,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                      ),
+                    ),
               Row(
                 children: [
-                  SvgPicture.asset('assets/icons/timer_off.svg', width: 24, height: 24),
+                  SvgPicture.asset(
+                    hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
+                    width: 24,
+                    height: 24,
+                  ),
                   const SizedBox(width: 20),
-                  SvgPicture.asset('assets/icons/note_off.svg', width: 24, height: 24),
+                  SvgPicture.asset(
+                    hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg',
+                    width: 24,
+                    height: 24,
+                  ),
                 ],
               ),
             ],
@@ -515,24 +551,24 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               _ActionButton(
                 label: 'Ignorer',
                 icon: 'assets/icons/croix_small.svg',
-                iconWidth: 7.56,
-                iconHeight: 6,
+                iconWidth: 12, // Increased from 7.56
+                iconHeight: 12, // Increased from 6
                 color: const Color(0xFFC2BFC6),
                 onTap: () {},
               ),
               _ActionButton(
                 label: 'Déplacer',
                 icon: 'assets/icons/arrow_small.svg',
-                iconWidth: 7.61,
-                iconHeight: 8,
+                iconWidth: 12, // Increased from 7.61
+                iconHeight: 12, // Increased from 8
                 color: const Color(0xFFC2BFC6),
                 onTap: () {},
               ),
               _ActionButton(
                 label: 'Terminé',
                 icon: 'assets/icons/check_small.svg',
-                iconWidth: 7,
-                iconHeight: 6.05,
+                iconWidth: 12, // Increased from 7
+                iconHeight: 12, // Increased from 6.05
                 color: const Color(0xFF00D591),
                 isPrimary: true,
                 onTap: () {},
