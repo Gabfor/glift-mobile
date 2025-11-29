@@ -192,6 +192,7 @@ class DashboardPageState extends State<DashboardPage> {
       header: _buildHeader(),
       scrollable: false,
       padding: EdgeInsets.zero,
+      headerPadding: EdgeInsets.zero,
       child: _buildProgramPager(),
     );
   }
@@ -297,12 +298,15 @@ class DashboardPageState extends State<DashboardPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'Tableau de bord',
-          style: GoogleFonts.quicksand(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+          child: Text(
+            'Tableau de bord',
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         if (_programs.isNotEmpty) ...[
@@ -311,7 +315,9 @@ class DashboardPageState extends State<DashboardPage> {
             scrollDirection: Axis.horizontal,
             controller: _programScrollController,
             child: Row(
-              children: _programs.asMap().entries.map((entry) {
+              children: [
+                const SizedBox(width: 20),
+                ..._programs.asMap().entries.map((entry) {
                 final index = entry.key;
                 final program = entry.value;
                 final isSelected = program.id == _selectedProgramId;
@@ -331,9 +337,11 @@ class DashboardPageState extends State<DashboardPage> {
                   ),
                 );
               }).toList(),
+              ],
             ),
           ),
         ],
+        const SizedBox(height: 20),
       ],
     );
   }

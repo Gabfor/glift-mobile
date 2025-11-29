@@ -123,6 +123,7 @@ class _HomePageState extends State<HomePage> {
       header: _buildHeader(),
       scrollable: false,
       padding: EdgeInsets.zero,
+      headerPadding: EdgeInsets.zero,
       child: _buildBody(),
     );
   }
@@ -132,12 +133,15 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'Programmes',
-          style: GoogleFonts.quicksand(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+          child: Text(
+            'Programmes',
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         if (_programs != null && _programs!.isNotEmpty) ...[
@@ -146,7 +150,9 @@ class _HomePageState extends State<HomePage> {
             scrollDirection: Axis.horizontal,
             controller: _programScrollController,
             child: Row(
-              children: _programs!.asMap().entries.map((entry) {
+              children: [
+                const SizedBox(width: 20),
+                ..._programs!.asMap().entries.map((entry) {
                 final index = entry.key;
                 final program = entry.value;
                 final isSelected = program.id == _selectedProgramId;
@@ -170,9 +176,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               }).toList(),
+              ],
             ),
           ),
         ],
+        const SizedBox(height: 20),
       ],
     );
   }

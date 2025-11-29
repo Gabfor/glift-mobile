@@ -18,6 +18,7 @@ class GliftPageLayout extends StatelessWidget {
     this.footerIgnoresViewInsets = false,
     this.resizeToAvoidBottomInset = true,
     this.fullPageScroll = true,
+    this.headerPadding,
   });
 
   final String? title;
@@ -31,7 +32,9 @@ class GliftPageLayout extends StatelessWidget {
   final EdgeInsetsGeometry? footerPadding;
   final bool footerIgnoresViewInsets;
   final bool resizeToAvoidBottomInset;
+
   final bool fullPageScroll;
+  final EdgeInsetsGeometry? headerPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +126,7 @@ class GliftPageLayout extends StatelessWidget {
                   color: GliftTheme.accent,
                   padding: EdgeInsets.only(top: mediaQuery.padding.top),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                    padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
                     child: headerContent,
                   ),
                 ),
@@ -158,7 +161,7 @@ class GliftPageLayout extends StatelessWidget {
                   width: double.infinity,
                   color: GliftTheme.accent,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                    padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
                     child: headerContent,
                   ),
                 ),
