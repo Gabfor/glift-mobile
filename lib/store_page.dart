@@ -8,6 +8,8 @@ import 'models/store_program.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/filter_modal.dart';
 
+import 'services/filter_service.dart';
+
 class StorePage extends StatefulWidget {
   final SupabaseClient supabase;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
@@ -23,7 +25,7 @@ class _StorePageState extends State<StorePage> {
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
   String _selectedGoal = 'Tous';
-  String _selectedSort = 'newest'; // 'newest', 'popularity', 'expiration'
+  late String _selectedSort;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -32,6 +34,12 @@ class _StorePageState extends State<StorePage> {
   void initState() {
     super.initState();
     _repository = StoreRepository(widget.supabase);
+    
+    // Initialize from service
+    final filterService = FilterService();
+    _selectedFiltersMap = Map.from(filterService.storeFilters);
+    _selectedSort = filterService.storeSort;
+    
     _loadPrograms();
   }
 
@@ -172,6 +180,7 @@ class _StorePageState extends State<StorePage> {
         onApply: (selected) {
           setState(() {
             _selectedFiltersMap = selected;
+            FilterService().storeFilters = selected; // Persist
           });
         },
       ),
@@ -273,7 +282,10 @@ class _StorePageState extends State<StorePage> {
                                           ],
                                           onChanged: (value) {
                                             if (value != null) {
-                                              setState(() => _selectedSort = value);
+                                              setState(() {
+                                                _selectedSort = value;
+                                                FilterService().storeSort = value; // Persist
+                                              });
                                             }
                                           },
                                           selectedItemBuilder: (context) {
