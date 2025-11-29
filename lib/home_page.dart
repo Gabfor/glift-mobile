@@ -162,7 +162,7 @@ class _HomePageState extends State<HomePage> {
               return Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: Align(
-                  alignment: Alignment.centerRight,
+                  alignment: Alignment.centerLeft,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     controller: _programScrollController,
@@ -176,17 +176,42 @@ class _HomePageState extends State<HomePage> {
                           return GestureDetector(
                             onTap: () => _onProgramSelected(index),
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: Container(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: AnimatedContainer(
                                 key: _programKeys[index],
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.25),
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.08),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6),
+                                          )
+                                        ]
+                                      : null,
+                                ),
                                 child: Text(
                                   program.name,
                                   style: GoogleFonts.quicksand(
-                                    fontSize: 16,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w700,
                                     color: isSelected
-                                        ? Colors.white
-                                        : Colors.white.withOpacity(0.5),
+                                        ? const Color(0xFF3A416F)
+                                        : Colors.white.withOpacity(0.7),
                                   ),
                                 ),
                               ),

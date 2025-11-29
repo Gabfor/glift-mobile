@@ -327,7 +327,7 @@ class DashboardPageState extends State<DashboardPage> {
               return Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: Align(
-                  alignment: Alignment.centerRight,
+                  alignment: Alignment.centerLeft,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     controller: _programScrollController,
@@ -341,16 +341,43 @@ class DashboardPageState extends State<DashboardPage> {
                           return GestureDetector(
                             onTap: () => _onProgramSelected(program.id),
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: Text(
-                                program.name,
+                              padding: const EdgeInsets.only(right: 12),
+                              child: AnimatedContainer(
                                 key: _programKeys[index],
-                                style: GoogleFonts.quicksand(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.white
-                                      : Colors.white.withOpacity(0.5),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
+                                      : Colors.white.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.25),
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.08),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6),
+                                          )
+                                        ]
+                                      : null,
+                                ),
+                                child: Text(
+                                  program.name,
+                                  style: GoogleFonts.quicksand(
+                                    color: isSelected
+                                        ? const Color(0xFF3A416F)
+                                        : Colors.white.withOpacity(0.7),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ),
