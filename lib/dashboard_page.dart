@@ -37,18 +37,18 @@ class DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _repository = DashboardRepository(widget.supabase);
-    _programPageController = PageController();
-    _programScrollController = ScrollController()
-      ..addListener(_handleProgramScroll);
+    _programPageController = PageController()
+      ..addListener(_handleProgramPageScroll);
+    _programScrollController = ScrollController();
     _loadData();
   }
 
   @override
   void dispose() {
-    _programPageController.dispose();
-    _programScrollController
-      ..removeListener(_handleProgramScroll)
+    _programPageController
+      ..removeListener(_handleProgramPageScroll)
       ..dispose();
+    _programScrollController.dispose();
     super.dispose();
   }
 
@@ -177,11 +177,20 @@ class DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  void _handleProgramScroll() {
-    if (!_programScrollController.hasClients) return;
+  void _handleProgramPageScroll() {
+    if (!_programPageController.hasClients) return;
 
-    final hasOffset = _programScrollController.offset > 0;
-    final newPadding = hasOffset ? 0.0 : 20.0;
+    final page = _programPageController.page ??
+        _programPageController.initialPage.toDouble();
+    double newPadding;
+
+    if (page <= 0) {
+      newPadding = 20.0;
+    } else if (page < 1) {
+      newPadding = 20.0 * (1 - page.clamp(0.0, 1.0));
+    } else {
+      newPadding = 0.0;
+    }
 
     if (newPadding != _programLeftPadding) {
       setState(() => _programLeftPadding = newPadding);
