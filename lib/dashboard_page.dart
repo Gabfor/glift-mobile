@@ -338,9 +338,6 @@ class DashboardPageState extends State<DashboardPage> {
                         ),
                       );
                     }),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                    ),
                   ],
                 ),
               ),
