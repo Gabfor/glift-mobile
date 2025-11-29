@@ -484,7 +484,7 @@ class _StoreProgramCard extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: program.partnerImage != null ? 45 : 15),
+          SizedBox(height: program.partnerImage != null ? 30 : 15),
 
           // Content Section
           Padding(

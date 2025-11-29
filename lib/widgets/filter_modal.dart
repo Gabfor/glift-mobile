@@ -208,7 +208,7 @@ class _FilterModalState extends State<FilterModal> {
                     ),
                     if (index != widget.sections.length - 1)
                       const Padding(
-                        padding: EdgeInsets.only(top: 30, bottom: 20),
+                        padding: EdgeInsets.only(top: 14, bottom: 20),
                         child: Divider(
                           color: Color(0xFFECE9F1),
                           thickness: 1,

@@ -542,7 +542,7 @@ class _ShopOfferCard extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: offer.brandImage != null ? 45 : 0),
+          SizedBox(height: offer.brandImage != null ? 30 : 0),
 
           // Content Section
           Padding(
