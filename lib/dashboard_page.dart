@@ -22,6 +22,7 @@ class DashboardPageState extends State<DashboardPage> {
   late final PageController _programPageController;
   late final ScrollController _programScrollController;
   final List<GlobalKey> _programKeys = [];
+  double _programLeftPadding = 20;
   
   List<Program> _programs = [];
   String? _selectedProgramId;
@@ -37,14 +38,17 @@ class DashboardPageState extends State<DashboardPage> {
     super.initState();
     _repository = DashboardRepository(widget.supabase);
     _programPageController = PageController();
-    _programScrollController = ScrollController();
+    _programScrollController = ScrollController()
+      ..addListener(_handleProgramScroll);
     _loadData();
   }
 
   @override
   void dispose() {
     _programPageController.dispose();
-    _programScrollController.dispose();
+    _programScrollController
+      ..removeListener(_handleProgramScroll)
+      ..dispose();
     super.dispose();
   }
 
@@ -170,6 +174,17 @@ class DashboardPageState extends State<DashboardPage> {
           curve: Curves.easeInOut,
         );
       }
+    }
+  }
+
+  void _handleProgramScroll() {
+    if (!_programScrollController.hasClients) return;
+
+    final hasOffset = _programScrollController.offset > 0;
+    final newPadding = hasOffset ? 0.0 : 20.0;
+
+    if (newPadding != _programLeftPadding) {
+      setState(() => _programLeftPadding = newPadding);
     }
   }
 
@@ -309,15 +324,14 @@ class DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 8),
           LayoutBuilder(
             builder: (context, constraints) {
-              const horizontalPadding = 20.0;
-              return SizedBox(
-                width: constraints.maxWidth + horizontalPadding * 2,
-                child: Transform.translate(
-                  offset: const Offset(-horizontalPadding, 0),
+              return Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child: Align(
+                  alignment: Alignment.centerRight,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     controller: _programScrollController,
-                    padding: EdgeInsets.zero,
+                    padding: EdgeInsets.only(left: _programLeftPadding),
                     child: Row(
                       children: [
                         ..._programs.asMap().entries.map((entry) {
