@@ -350,7 +350,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               Row(
                 children: [
                   SvgPicture.asset('assets/icons/timer_off.svg', width: 24, height: 24),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 20),
                   SvgPicture.asset('assets/icons/note_off.svg', width: 24, height: 24),
                 ],
               ),
@@ -515,18 +515,24 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               _ActionButton(
                 label: 'Ignorer',
                 icon: 'assets/icons/croix_small.svg',
+                iconWidth: 7.56,
+                iconHeight: 6,
                 color: const Color(0xFFC2BFC6),
                 onTap: () {},
               ),
               _ActionButton(
                 label: 'Déplacer',
                 icon: 'assets/icons/arrow_small.svg',
+                iconWidth: 7.61,
+                iconHeight: 8,
                 color: const Color(0xFFC2BFC6),
                 onTap: () {},
               ),
               _ActionButton(
                 label: 'Terminé',
                 icon: 'assets/icons/check_small.svg',
+                iconWidth: 7,
+                iconHeight: 6.05,
                 color: const Color(0xFF00D591),
                 isPrimary: true,
                 onTap: () {},
@@ -614,6 +620,8 @@ class _ActionButton extends StatelessWidget {
   final String icon;
   final Color color;
   final bool isPrimary;
+  final double iconWidth;
+  final double iconHeight;
   final VoidCallback onTap;
 
   const _ActionButton({
@@ -621,6 +629,8 @@ class _ActionButton extends StatelessWidget {
     required this.icon,
     required this.color,
     this.isPrimary = false,
+    this.iconWidth = 16,
+    this.iconHeight = 16,
     required this.onTap,
   });
 
@@ -639,8 +649,8 @@ class _ActionButton extends StatelessWidget {
           children: [
             SvgPicture.asset(
               icon,
-              width: 16,
-              height: 16,
+              width: iconWidth,
+              height: iconHeight,
               colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
             ),
             const SizedBox(width: 8),
