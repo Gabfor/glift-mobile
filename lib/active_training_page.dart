@@ -542,7 +542,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             );
           }),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 5),
 
           // Action Buttons
           Row(
