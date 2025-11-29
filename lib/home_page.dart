@@ -148,30 +148,35 @@ class _HomePageState extends State<HomePage> {
               scrollDirection: Axis.horizontal,
               controller: _programScrollController,
               child: Row(
-                children: _programs!.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final program = entry.value;
-                  final isSelected = program.id == _selectedProgramId;
-                  return GestureDetector(
-                    onTap: () => _onProgramSelected(index),
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 20),
-                      child: Container(
-                        key: _programKeys[index],
-                        child: Text(
-                          program.name,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.5),
+                children: [
+                  ..._programs!.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final program = entry.value;
+                    final isSelected = program.id == _selectedProgramId;
+                    return GestureDetector(
+                      onTap: () => _onProgramSelected(index),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 20),
+                        child: Container(
+                          key: _programKeys[index],
+                          child: Text(
+                            program.name,
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 40,
+                  ),
+                ],
               ),
             ),
           ),
