@@ -307,39 +307,42 @@ class DashboardPageState extends State<DashboardPage> {
         ),
         if (_programs.isNotEmpty) ...[
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              controller: _programScrollController,
-              child: Row(
-                children: [
-                  ..._programs.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final program = entry.value;
-                    final isSelected = program.id == _selectedProgramId;
-                    return GestureDetector(
-                      onTap: () => _onProgramSelected(program.id),
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 20),
-                        child: Text(
-                          program.name,
-                          key: _programKeys[index],
-                          style: GoogleFonts.quicksand(
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.5),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: -20),
+            child: SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: _programScrollController,
+                child: Row(
+                  children: [
+                    ..._programs.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final program = entry.value;
+                      final isSelected = program.id == _selectedProgramId;
+                      return GestureDetector(
+                        onTap: () => _onProgramSelected(program.id),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Text(
+                            program.name,
+                            key: _programKeys[index],
+                            style: GoogleFonts.quicksand(
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
-                  ),
-                ],
+                      );
+                    }),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
