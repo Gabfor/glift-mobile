@@ -564,8 +564,8 @@ class _ShopOfferCard extends StatelessWidget {
                   runSpacing: 5,
                   children: offer.type.map((t) => _buildTag(t)).toList(),
                 ),
-                const SizedBox(height: 20),
-                
+                const SizedBox(height: 15),
+
                 // Info Lines
                 _buildInfoLine(
                   iconAsset: 'assets/icons/check_green.svg',
@@ -578,7 +578,7 @@ class _ShopOfferCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 _buildShippingInfo(offer.shipping),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 
                 // Button
                 SizedBox(

@@ -514,7 +514,7 @@ class _StoreProgramCard extends StatelessWidget {
                       _buildIconTag('assets/icons/femme.svg'),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 Text(
                   program.description,
                   style: GoogleFonts.quicksand(
@@ -524,7 +524,7 @@ class _StoreProgramCard extends StatelessWidget {
                     height: 1.57,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 
                 // Buttons
                 Row(
