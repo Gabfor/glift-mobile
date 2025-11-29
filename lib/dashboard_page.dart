@@ -14,10 +14,10 @@ class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, required this.supabase});
 
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
+  State<DashboardPage> createState() => DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class DashboardPageState extends State<DashboardPage> {
   late final DashboardRepository _repository;
   late final PageController _programPageController;
   late final ScrollController _programScrollController;
@@ -46,6 +46,11 @@ class _DashboardPageState extends State<DashboardPage> {
     _programPageController.dispose();
     _programScrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> refresh() async {
+    setState(() => _isLoading = true);
+    await _loadData();
   }
 
   Future<void> _loadData() async {

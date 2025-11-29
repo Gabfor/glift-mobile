@@ -13,9 +13,14 @@ import 'training_details_page.dart';
 import 'widgets/glift_page_layout.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.supabase});
+  const HomePage({
+    super.key,
+    required this.supabase,
+    this.onNavigateToDashboard,
+  });
 
   final SupabaseClient supabase;
+  final VoidCallback? onNavigateToDashboard;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -219,8 +224,8 @@ class _HomePageState extends State<HomePage> {
             final training = program.trainings[itemIndex - 1];
             return _TrainingCard(
               training: training,
-              onTap: () {
-                Navigator.of(context).push(
+              onTap: () async {
+                final result = await Navigator.of(context).push(
                   PageRouteBuilder(
                     pageBuilder: (_, __, ___) => TrainingDetailsPage(
                       training: training,
@@ -242,6 +247,10 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 );
+
+                if (result == true) {
+                  widget.onNavigateToDashboard?.call();
+                }
               },
             );
           },

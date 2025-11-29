@@ -108,4 +108,51 @@ class ProgramRepository {
       throw Exception('Erreur lors de la mise à jour de l\'exercice: $e');
     }
   }
+
+  Future<void> saveTrainingSession({
+    required String userId,
+    required String trainingId,
+    required List<TrainingRow> completedRows,
+  }) async {
+    try {
+      // 1. Create session
+      final sessionResponse = await _supabase.from('training_sessions').insert({
+        'user_id': userId,
+        'training_id': trainingId,
+        'performed_at': DateTime.now().toIso8601String(),
+      }).select().single();
+
+      final sessionId = sessionResponse['id'];
+
+      // 2. Create exercises and sets
+      for (final row in completedRows) {
+        final exerciseResponse = await _supabase.from('training_session_exercises').insert({
+          'training_session_id': sessionId,
+          'training_row_id': row.id,
+        }).select().single();
+
+        final exerciseId = exerciseResponse['id'];
+
+        // 3. Create sets
+        final setsData = <Map<String, dynamic>>[];
+        for (int i = 0; i < row.series; i++) {
+          final reps = i < row.repetitions.length ? row.repetitions[i] : '';
+          final weight = i < row.weights.length ? row.weights[i] : '';
+
+          setsData.add({
+            'training_session_exercise_id': exerciseId,
+            'set_number': i + 1,
+            'repetitions': [reps],
+            'weights': [weight],
+          });
+        }
+
+        if (setsData.isNotEmpty) {
+          await _supabase.from('training_session_sets').insert(setsData);
+        }
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la sauvegarde de la séance: $e');
+    }
+  }
 }

@@ -87,8 +87,109 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     });
   }
 
+  // Interaction handlers
+  void _moveRowDown(int index) {
+    if (_rows == null || index >= _rows!.length - 1) return;
+    
+    setState(() {
+      final item = _rows!.removeAt(index);
+      _rows!.insert(index + 1, item);
+    });
+  }
+
+  void _handleRowUpdate(int index, List<String> repetitions, List<String> weights) {
+    if (_rows == null) return;
+    
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: oldRow.exercise,
+        series: oldRow.series,
+        repetitions: repetitions,
+        weights: weights,
+        rest: oldRow.rest,
+        note: oldRow.note,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+      );
+    });
+  }
+
+  Future<void> _finishTraining() async {
+    if (_rows == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Filter only completed rows
+      final completedRowsData = _rows!.where((row) => _completedRows.contains(row.id)).toList();
+
+      if (completedRowsData.isNotEmpty) {
+        final userId = widget.supabase.auth.currentUser?.id;
+        if (userId != null) {
+          // Save history
+          await _programRepository.saveTrainingSession(
+            userId: userId,
+            trainingId: widget.training.id,
+            completedRows: completedRowsData,
+          );
+        }
+
+        // Update templates (last used weights)
+        await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
+          row.id,
+          repetitions: row.repetitions,
+          weights: row.weights,
+        )));
+      }
+
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  final Set<String> _completedRows = {};
+  final Set<String> _ignoredRows = {};
+
+  Future<void> _completeRow(int index) async {
+    if (_rows == null) return;
+    
+    final row = _rows![index];
+    
+    setState(() {
+      _completedRows.add(row.id);
+      final item = _rows!.removeAt(index);
+      _rows!.add(item);
+    });
+  }
+
+  void _ignoreRow(int index) {
+    if (_rows == null) return;
+    
+    final row = _rows![index];
+    
+    setState(() {
+      _ignoredRows.add(row.id);
+      final item = _rows!.removeAt(index);
+      _rows!.add(item);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final allProcessed = _rows != null && 
+        (_completedRows.length + _ignoredRows.length == _rows!.length);
+
     return GliftPageLayout(
       resizeToAvoidBottomInset: false,
       header: Row(
@@ -138,8 +239,17 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           GestureDetector(
             onTap: _closeKeypad,
             behavior: HitTestBehavior.translucent,
-            child: _buildBody(),
+            child: _buildBody(allProcessed),
           ),
+          if (allProcessed)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 30,
+              child: Center(
+                child: _FinishButton(onTap: _finishTraining),
+              ),
+            ),
           if (_currentInputHandler != null)
             Positioned(
               left: 0,
@@ -157,7 +267,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(bool allProcessed) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: Colors.white));
     }
@@ -179,15 +289,26 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, allProcessed ? 100 : 20),
       itemCount: _rows!.length,
       separatorBuilder: (context, index) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final row = _rows![index];
+        final isLast = index == _rows!.length - 1;
+        final isCompleted = _completedRows.contains(row.id);
+        final isIgnored = _ignoredRows.contains(row.id);
+
         return _ActiveExerciseCard(
+          key: ValueKey(row.id),
           row: row,
-          repository: _programRepository,
           onFocus: _handleFocus,
+          isLast: isLast,
+          isCompleted: isCompleted,
+          isIgnored: isIgnored,
+          onMoveDown: () => _moveRowDown(index),
+          onComplete: () => _completeRow(index),
+          onIgnore: () => _ignoreRow(index),
+          onUpdate: (reps, weights) => _handleRowUpdate(index, reps, weights),
         );
       },
     );
@@ -196,19 +317,32 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
 class _ActiveExerciseCard extends StatefulWidget {
   const _ActiveExerciseCard({
+    super.key,
     required this.row,
-    required this.repository,
     required this.onFocus,
+    required this.isLast,
+    required this.isCompleted,
+    required this.isIgnored,
+    required this.onMoveDown,
+    required this.onComplete,
+    required this.onIgnore,
+    required this.onUpdate,
   });
 
   final TrainingRow row;
-  final ProgramRepository repository;
   final Function({
     required ValueChanged<String> onInput,
     required VoidCallback onBackspace,
     required VoidCallback onDecimal,
     required VoidCallback onClose,
   }) onFocus;
+  final bool isLast;
+  final bool isCompleted;
+  final bool isIgnored;
+  final VoidCallback onMoveDown;
+  final VoidCallback onComplete;
+  final VoidCallback onIgnore;
+  final Function(List<String>, List<String>) onUpdate;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -305,17 +439,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       _activeWeightIndex = null;
     });
 
-    if (type == 'reps') {
-      await widget.repository.updateTrainingRow(
-        widget.row.id,
-        repetitions: _repetitions,
-      );
-    } else {
-      await widget.repository.updateTrainingRow(
-        widget.row.id,
-        weights: _weights,
-      );
-    }
+    // Notify parent of updates instead of saving to repository
+    widget.onUpdate(_repetitions, _weights);
   }
 
   void _toggleSetCompletion(int index) {
@@ -341,7 +466,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final hasLink = widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15), // Reduced bottom padding to 15px
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -551,27 +676,29 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               _ActionButton(
                 label: 'Ignorer',
                 icon: 'assets/icons/croix_small.svg',
-                iconWidth: 12, // Increased from 7.56
-                iconHeight: 12, // Increased from 6
-                color: const Color(0xFFC2BFC6),
-                onTap: () {},
+                iconWidth: 12,
+                iconHeight: 12,
+                color: widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6),
+                backgroundColor: widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                onTap: widget.onIgnore,
               ),
               _ActionButton(
                 label: 'Déplacer',
                 icon: 'assets/icons/arrow_small.svg',
-                iconWidth: 12, // Increased from 7.61
-                iconHeight: 12, // Increased from 8
-                color: const Color(0xFFC2BFC6),
-                onTap: () {},
+                iconWidth: 12,
+                iconHeight: 12,
+                color: widget.isLast ? const Color(0xFFECE9F1) : const Color(0xFFC2BFC6),
+                onTap: widget.isLast ? () {} : widget.onMoveDown,
               ),
               _ActionButton(
                 label: 'Terminé',
                 icon: 'assets/icons/check_small.svg',
-                iconWidth: 12, // Increased from 7
-                iconHeight: 12, // Increased from 6.05
-                color: const Color(0xFF00D591),
+                iconWidth: 12,
+                iconHeight: 12,
+                color: widget.isCompleted ? Colors.white : const Color(0xFF00D591),
+                backgroundColor: widget.isCompleted ? const Color(0xFF00D591) : Colors.white,
                 isPrimary: true,
-                onTap: () {},
+                onTap: widget.onComplete,
               ),
             ],
           ),
@@ -611,6 +738,53 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
           iconPath: 'assets/icons/smiley_rouge.png',
         );
     }
+  }
+}
+
+class _FinishButton extends StatelessWidget {
+  const _FinishButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      height: 48,
+      decoration: BoxDecoration(
+        color: const Color(0xFF00D591),
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x3F00D591),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(25),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.check, color: Colors.white, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'J\'ai terminé !',
+                style: GoogleFonts.quicksand(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -655,6 +829,7 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final String icon;
   final Color color;
+  final Color backgroundColor;
   final bool isPrimary;
   final double iconWidth;
   final double iconHeight;
@@ -664,6 +839,7 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.color,
+    this.backgroundColor = Colors.white,
     this.isPrimary = false,
     this.iconWidth = 16,
     this.iconHeight = 16,
@@ -677,9 +853,13 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: isPrimary ? color : const Color(0xFFECE9F1)),
+          border: Border.all(
+            color: isPrimary && backgroundColor == Colors.white 
+                ? color 
+                : (!isPrimary && backgroundColor == Colors.white ? const Color(0xFFECE9F1) : Colors.transparent),
+          ),
         ),
         child: Row(
           children: [
@@ -704,3 +884,4 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
+

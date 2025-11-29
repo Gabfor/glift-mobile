@@ -21,6 +21,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 1; // Default to 'Séances'
   bool _isBottomNavVisible = true;
+  final GlobalKey<DashboardPageState> _dashboardKey = GlobalKey();
 
   late final List<Widget> _pages;
 
@@ -28,8 +29,14 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      DashboardPage(supabase: widget.supabase),
-      HomePage(supabase: widget.supabase),
+      DashboardPage(
+        key: _dashboardKey,
+        supabase: widget.supabase,
+      ),
+      HomePage(
+        supabase: widget.supabase,
+        onNavigateToDashboard: _navigateToDashboard,
+      ),
       StorePage(
         supabase: widget.supabase,
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
@@ -40,6 +47,17 @@ class _MainPageState extends State<MainPage> {
       ),
       SettingsPage(supabase: widget.supabase),
     ];
+  }
+
+  void _navigateToDashboard() {
+    setState(() {
+      _currentIndex = 0;
+      _isBottomNavVisible = true;
+    });
+    // Slight delay to ensure the widget is built/visible before refreshing
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _dashboardKey.currentState?.refresh();
+    });
   }
 
   void _onItemTapped(int index) {

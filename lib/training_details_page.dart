@@ -111,8 +111,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     });
   }
 
-  void _openActiveTraining() {
-    Navigator.of(context).push(
+  Future<void> _openActiveTraining() async {
+    final result = await Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => ActiveTrainingPage(
           training: widget.training,
@@ -123,6 +123,10 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         transitionsBuilder: (_, __, ___, child) => child,
       ),
     );
+
+    if (result == true && mounted) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   @override
@@ -144,28 +148,31 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             ),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Entraînements',
-                style: GoogleFonts.quicksand(
-                  fontSize: 14,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  height: 1.86,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Entraînements',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    height: 1.86,
+                  ),
                 ),
-              ),
-              Text(
-                widget.training.name,
-                style: GoogleFonts.quicksand(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  height: 1.62,
+                Text(
+                  widget.training.name,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    height: 1.62,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
