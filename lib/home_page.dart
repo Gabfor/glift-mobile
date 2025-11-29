@@ -142,43 +142,49 @@ class _HomePageState extends State<HomePage> {
         ),
         if (_programs != null && _programs!.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: -20),
-            child: SizedBox(
-              width: double.infinity,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                controller: _programScrollController,
-                child: Row(
-                  children: [
-                    ..._programs!.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final program = entry.value;
-                      final isSelected = program.id == _selectedProgramId;
-                      return GestureDetector(
-                        onTap: () => _onProgramSelected(index),
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 20),
-                          child: Container(
-                            key: _programKeys[index],
-                            child: Text(
-                              program.name,
-                              style: GoogleFonts.quicksand(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: isSelected
-                                    ? Colors.white
-                                    : Colors.white.withOpacity(0.5),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const double edgePadding = 20.0;
+              return Transform.translate(
+                offset: const Offset(-edgePadding, 0),
+                child: SizedBox(
+                  width: constraints.maxWidth + edgePadding * 2,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    controller: _programScrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: edgePadding),
+                    child: Row(
+                      children: [
+                        ..._programs!.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final program = entry.value;
+                          final isSelected = program.id == _selectedProgramId;
+                          return GestureDetector(
+                            onTap: () => _onProgramSelected(index),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 20),
+                              child: Container(
+                                key: _programKeys[index],
+                                child: Text(
+                                  program.name,
+                                  style: GoogleFonts.quicksand(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.5),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ],
