@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -35,10 +37,22 @@ class GliftPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    EdgeInsets _nonNegativePadding(EdgeInsetsGeometry padding) {
+      final resolved = padding.resolve(Directionality.of(context));
+      return EdgeInsets.fromLTRB(
+        max(0, resolved.left),
+        max(0, resolved.top),
+        max(0, resolved.right),
+        max(0, resolved.bottom),
+      );
+    }
+
     final mediaQuery = MediaQuery.of(context);
     final footerInset = footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom;
+    final safeFooterPadding =
+        footerPadding != null ? _nonNegativePadding(footerPadding!) : const EdgeInsets.only(bottom: 20);
     final additionalBottomSpacing = footer != null
-        ? footerInset + (footerPadding?.vertical ?? 0.0) + 40.0
+        ? footerInset + safeFooterPadding.vertical + 40.0
         : 0.0;
     final headerContent = header ??
         Column(
@@ -73,8 +87,10 @@ class GliftPageLayout extends StatelessWidget {
         );
 
     Widget buildBody({required Widget child}) {
-      final contentPadding = (padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30))
-          .add(EdgeInsets.only(bottom: additionalBottomSpacing));
+      final contentPadding = _nonNegativePadding(
+        (padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30))
+            .add(EdgeInsets.only(bottom: additionalBottomSpacing)),
+      );
 
       return Container(
         width: double.infinity,
@@ -121,7 +137,9 @@ class GliftPageLayout extends StatelessWidget {
                 child: Container(
                   width: double.infinity,
                   color: GliftTheme.accent,
-                  padding: EdgeInsets.only(top: mediaQuery.padding.top),
+                  padding: _nonNegativePadding(
+                    EdgeInsets.only(top: mediaQuery.padding.top),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                     child: headerContent,
@@ -135,10 +153,7 @@ class GliftPageLayout extends StatelessWidget {
         bottomSheet: footer != null
             ? Padding(
                 padding: EdgeInsets.only(bottom: footerInset),
-                child: Padding(
-                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
-                  child: footer!,
-                ),
+                child: Padding(padding: safeFooterPadding, child: footer!),
               )
             : null,
       );
@@ -172,10 +187,7 @@ class GliftPageLayout extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: footerInset,
-                child: Padding(
-                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
-                  child: footer!,
-                ),
+                child: Padding(padding: safeFooterPadding, child: footer!),
               ),
           ],
         ),
