@@ -457,8 +457,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
   LineBarSpot? _touchedSpot;
+  LineBarSpot? _lastTouchedSpot;
   Offset? _touchPosition;
   Timer? _tooltipDelayTimer;
+  Timer? _tooltipHideTimer;
 
   @override
   void initState() {
@@ -509,6 +511,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   @override
   void dispose() {
     _tooltipDelayTimer?.cancel();
+    _tooltipHideTimer?.cancel();
     super.dispose();
   }
 
@@ -780,21 +783,34 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                               response.lineBarSpots == null ||
                                               response.lineBarSpots!.isEmpty) {
                                             _tooltipDelayTimer?.cancel();
-                                            if (_touchedSpot != null || _touchPosition != null) {
-                                              setState(() {
-                                                _touchedSpot = null;
-                                                _touchPosition = null;
-                                              });
-                                            }
+                                            _tooltipHideTimer?.cancel();
+                                            _tooltipHideTimer = Timer(
+                                              const Duration(milliseconds: 120),
+                                              () {
+                                                if (!mounted) return;
+
+                                                if (_touchedSpot != null ||
+                                                    _touchPosition != null ||
+                                                    _lastTouchedSpot != null) {
+                                                  setState(() {
+                                                    _touchedSpot = null;
+                                                    _touchPosition = null;
+                                                    _lastTouchedSpot = null;
+                                                  });
+                                                }
+                                              },
+                                            );
                                             return;
                                           }
 
                                           final newSpot = response.lineBarSpots!.first;
-                                          final hasNewSpot = _touchedSpot == null ||
-                                              _touchedSpot!.x != newSpot.x ||
-                                              _touchedSpot!.y != newSpot.y;
+                                          final previousSpot = _touchedSpot ?? _lastTouchedSpot;
+                                          final hasNewSpot = previousSpot == null ||
+                                              previousSpot.x != newSpot.x ||
+                                              previousSpot.y != newSpot.y;
 
                                           _tooltipDelayTimer?.cancel();
+                                          _tooltipHideTimer?.cancel();
                                           _tooltipDelayTimer = Timer(
                                             const Duration(milliseconds: 175),
                                             () {
@@ -803,6 +819,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                               setState(() {
                                                 _touchedSpot = newSpot;
                                                 _touchPosition = event.localPosition;
+                                                _lastTouchedSpot = newSpot;
                                               });
 
                                               if (hasNewSpot) {
