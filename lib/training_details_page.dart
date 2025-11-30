@@ -108,7 +108,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   void _handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       final delta = notification.scrollDelta ?? 0;
-      if (delta > 0 && notification.metrics.extentBefore > 0) {
+      if (delta > 0 &&
+          notification.metrics.extentBefore > 0 &&
+          notification.metrics.extentAfter > 0) {
         _scrollEndTimer?.cancel();
         if (!_isScrolling) {
           setState(() {
@@ -131,21 +133,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       }
     } else if (notification is OverscrollNotification) {
       _scrollEndTimer?.cancel();
-      if (notification.overscroll > 0) {
-        if (!_isScrolling) {
-          setState(() {
-            _isScrolling = true;
-          });
-        }
-
-        _scrollEndTimer = Timer(const Duration(milliseconds: 200), () {
-          if (mounted) {
-            setState(() {
-              _isScrolling = false;
-            });
-          }
-        });
-      } else if (notification.overscroll < 0 && _isScrolling) {
+      if (notification.overscroll < 0 && _isScrolling) {
         setState(() {
           _isScrolling = false;
         });
@@ -707,12 +695,10 @@ class _StartButton extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
-                child: SizeTransition(
-                  sizeFactor: animation,
-                  axis: Axis.horizontal,
-                  child: child,
-                ),
+                child: child,
               ),
+              layoutBuilder: (currentChild, previousChildren) =>
+                  currentChild ?? const SizedBox.shrink(),
               child: isCollapsed
                   ? Center(
                       child: SvgPicture.asset(
