@@ -8,6 +8,7 @@ import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/numeric_keypad.dart';
+import '../theme/glift_theme.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -269,11 +270,11 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
   Widget _buildBody(bool allProcessed) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return Center(child: CircularProgressIndicator(color: GliftTheme.accent));
     }
 
     if (_error != null) {
-      return Center(child: Text('Erreur: $_error', style: const TextStyle(color: Colors.white)));
+      return Center(child: Text('Erreur: $_error', style: const TextStyle(color: Colors.red)));
     }
 
     if (_rows == null || _rows!.isEmpty) {
@@ -282,7 +283,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           'Aucun exercice dans cet entraînement',
           style: GoogleFonts.quicksand(
             fontSize: 16,
-            color: Colors.white,
+            color: GliftTheme.title,
           ),
         ),
       );

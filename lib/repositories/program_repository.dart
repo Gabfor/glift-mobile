@@ -127,8 +127,9 @@ class ProgramRepository {
       // 2. Create exercises and sets
       for (final row in completedRows) {
         final exerciseResponse = await _supabase.from('training_session_exercises').insert({
-          'training_session_id': sessionId,
+          'session_id': sessionId,
           'training_row_id': row.id,
+          'exercise_name': row.exercise,
         }).select().single();
 
         final exerciseId = exerciseResponse['id'];
