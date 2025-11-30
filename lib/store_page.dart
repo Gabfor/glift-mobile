@@ -615,7 +615,6 @@ class _StoreProgramCard extends StatelessWidget {
         assetPath,
         width: 14,
         height: 14,
-        colorFilter: const ColorFilter.mode(Color(0xFFA1A5FD), BlendMode.srcIn),
       ),
     );
   }
