@@ -108,7 +108,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   void _handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       final delta = notification.scrollDelta ?? 0;
-      if (delta > 0) {
+      if (delta > 0 && notification.metrics.extentBefore > 0) {
         _scrollEndTimer?.cancel();
         if (!_isScrolling) {
           setState(() {
@@ -714,11 +714,13 @@ class _StartButton extends StatelessWidget {
                 ),
               ),
               child: isCollapsed
-                  ? SvgPicture.asset(
-                      'assets/icons/arrow.svg',
-                      key: const ValueKey('collapsed_arrow'),
-                      width: 26,
-                      height: 26,
+                  ? Center(
+                      child: SvgPicture.asset(
+                        'assets/icons/arrow.svg',
+                        key: const ValueKey('collapsed_arrow'),
+                        width: 26,
+                        height: 26,
+                      ),
                     )
                   : Center(
                       child: Row(
