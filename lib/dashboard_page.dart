@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -696,10 +697,19 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                             return;
                                           }
 
+                                          final newSpot = response.lineBarSpots!.first;
+                                          final hasNewSpot = _touchedSpot == null ||
+                                              _touchedSpot!.x != newSpot.x ||
+                                              _touchedSpot!.y != newSpot.y;
+
                                           setState(() {
-                                            _touchedSpot = response.lineBarSpots!.first;
+                                            _touchedSpot = newSpot;
                                             _touchPosition = event.localPosition;
                                           });
+
+                                          if (hasNewSpot) {
+                                            HapticFeedback.lightImpact();
+                                          }
                                         },
                                         touchTooltipData: LineTouchTooltipData(
                                           tooltipPadding: EdgeInsets.zero,
