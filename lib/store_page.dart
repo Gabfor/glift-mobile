@@ -605,16 +605,18 @@ class _StoreProgramCard extends StatelessWidget {
   }
 
   Widget _buildIconTag(String assetPath) {
-    // Placeholder for gender icon since we might not have the assets yet
-    // Or we can try to load them if they exist.
-    // For now using a simple container with icon
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F5FE),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: const Icon(Icons.person, size: 14, color: Color(0xFFA1A5FD)),
+      child: SvgPicture.asset(
+        assetPath,
+        width: 14,
+        height: 14,
+        colorFilter: const ColorFilter.mode(Color(0xFFA1A5FD), BlendMode.srcIn),
+      ),
     );
   }
 }
