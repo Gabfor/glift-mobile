@@ -571,7 +571,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                       bottomTitles: AxisTitles(
                                         sideTitles: SideTitles(
                                           showTitles: true,
-                                          reservedSize: 40,
+                                          reservedSize: 41,
                                             interval: 1,
                                             getTitlesWidget: (value, meta) {
                                               final index = value.toInt();
