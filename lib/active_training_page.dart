@@ -827,7 +827,7 @@ class _GridHeader extends StatelessWidget {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class _ActionButton extends StatefulWidget {
   final String label;
   final String icon;
   final Color color;
@@ -849,41 +849,83 @@ class _ActionButton extends StatelessWidget {
   });
 
   @override
+  State<_ActionButton> createState() => _ActionButtonState();
+}
+
+class _ActionButtonState extends State<_ActionButton> {
+  bool _isPressed = false;
+
+  Future<void> _handleTap() async {
+    HapticFeedback.lightImpact();
+
+    setState(() => _isPressed = true);
+
+    await Future.delayed(const Duration(milliseconds: 140));
+
+    if (!mounted) return;
+
+    widget.onTap();
+
+    if (!mounted) return;
+
+    setState(() => _isPressed = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final overlayColor = Colors.black.withOpacity(0.05);
+    final backgroundColor = _isPressed
+        ? Color.lerp(widget.backgroundColor, overlayColor, 0.35)!
+        : widget.backgroundColor;
+
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: isPrimary && backgroundColor == Colors.white 
-                ? color 
-                : (!isPrimary && backgroundColor == Colors.white ? const Color(0xFFECE9F1) : Colors.transparent),
+      onTap: _handleTap,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 140),
+        scale: _isPressed ? 0.97 : 1,
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(
+              color: widget.isPrimary && backgroundColor == Colors.white
+                  ? widget.color
+                  : (!widget.isPrimary && backgroundColor == Colors.white
+                      ? const Color(0xFFECE9F1)
+                      : Colors.transparent),
+            ),
+            boxShadow: _isPressed
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
-        ),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              icon,
-              width: iconWidth,
-              height: iconHeight,
-              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.quicksand(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+          child: Row(
+            children: [
+              SvgPicture.asset(
+                widget.icon,
+                width: widget.iconWidth,
+                height: widget.iconHeight,
+                colorFilter: ColorFilter.mode(widget.color, BlendMode.srcIn),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                widget.label,
+                style: GoogleFonts.quicksand(
+                  color: widget.color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
