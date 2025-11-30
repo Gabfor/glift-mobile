@@ -678,22 +678,24 @@ class _StartButton extends StatelessWidget {
                       color: Colors.white,
                       size: 20,
                     )
-                  : Row(
-                      key: const ValueKey('expanded_button'),
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Commencer',
-                          style: GoogleFonts.quicksand(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                  : Center(
+                      child: Row(
+                        key: const ValueKey('expanded_button'),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Commencer',
+                            style: GoogleFonts.quicksand(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward,
-                            color: Colors.white, size: 16),
-                      ],
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward,
+                              color: Colors.white, size: 16),
+                        ],
+                      ),
                     ),
             ),
           ),
