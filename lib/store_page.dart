@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,6 +31,7 @@ class _StorePageState extends State<StorePage> {
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
+  Timer? _navigationRevealTimer;
 
   @override
   void initState() {
@@ -58,6 +61,12 @@ class _StorePageState extends State<StorePage> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _navigationRevealTimer?.cancel();
+    super.dispose();
   }
 
   List<String> get _availableGoals {
@@ -372,15 +381,27 @@ class _StorePageState extends State<StorePage> {
       if (delta > 10 && _isNavigationVisible) {
         _isNavigationVisible = false;
         widget.onNavigationVisibilityChanged?.call(false);
+        _scheduleNavigationReveal();
       } else if (delta < -10 && !_isNavigationVisible) {
         _isNavigationVisible = true;
         widget.onNavigationVisibilityChanged?.call(true);
+        _navigationRevealTimer?.cancel();
       }
 
       _lastScrollOffset = currentOffset;
     }
 
     return false;
+  }
+
+  void _scheduleNavigationReveal() {
+    _navigationRevealTimer?.cancel();
+    _navigationRevealTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted && !_isNavigationVisible) {
+        _isNavigationVisible = true;
+        widget.onNavigationVisibilityChanged?.call(true);
+      }
+    });
   }
 }
 
