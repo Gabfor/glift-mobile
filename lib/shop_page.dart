@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -404,7 +405,18 @@ class _ShopPageState extends State<ShopPage> {
 
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      final currentOffset = notification.metrics.pixels;
+      final currentOffset = max(notification.metrics.pixels, 0);
+
+      if (currentOffset <= 0) {
+        _lastScrollOffset = 0;
+        if (!_isNavigationVisible) {
+          _isNavigationVisible = true;
+          widget.onNavigationVisibilityChanged?.call(true);
+        }
+        _navigationRevealTimer?.cancel();
+        return false;
+      }
+
       final delta = currentOffset - _lastScrollOffset;
 
       if (delta > 10 && _isNavigationVisible) {

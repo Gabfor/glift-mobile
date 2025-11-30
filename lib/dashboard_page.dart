@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -236,7 +237,14 @@ class DashboardPageState extends State<DashboardPage> {
     if (notification is ScrollUpdateNotification) {
       _resetNavigationInactivityTimer();
 
-      final currentOffset = notification.metrics.pixels;
+      final currentOffset = max(notification.metrics.pixels, 0);
+
+      if (currentOffset <= 0) {
+        _lastScrollOffset = 0;
+        _showNavigation();
+        return false;
+      }
+
       final delta = currentOffset - _lastScrollOffset;
 
       if (delta > 10) {
