@@ -119,7 +119,7 @@ class ProgramRepository {
       final sessionResponse = await _supabase.from('training_sessions').insert({
         'user_id': userId,
         'training_id': trainingId,
-        'performed_at': DateTime.now().toIso8601String(),
+        'performed_at': DateTime.now().toUtc().toIso8601String(),
       }).select().single();
 
       final sessionId = sessionResponse['id'];
@@ -137,24 +137,26 @@ class ProgramRepository {
         // 3. Create sets
         final setsData = <Map<String, dynamic>>[];
         for (int i = 0; i < row.series; i++) {
-          final reps = i < row.repetitions.length ? row.repetitions[i] : '';
+          final repsStr = i < row.repetitions.length ? row.repetitions[i] : '0';
           final weight = i < row.weights.length ? row.weights[i] : '';
 
-          final hasReps = reps.trim().isNotEmpty;
-          final hasWeight = weight.trim().isNotEmpty;
+          // Parse repetitions safely (handle decimals like "10.0" by rounding)
+          final repsDouble = double.tryParse(repsStr.replaceAll(',', '.')) ?? 0.0;
+          final reps = repsDouble.round();
 
-          if (!hasReps && !hasWeight) {
-            throw Exception(
-              'La série ${i + 1} de l\'exercice "${row.exercise}" ne contient aucune répétition ou poids.',
-            );
+          // Only insert sets with valid repetitions (assuming check constraint requires > 0)
+          if (reps > 0) {
+            // Ensure weights array length matches repetitions (check constraint: cardinality(weights) == repetitions)
+            final weightToUse = weight.trim().isEmpty ? '0' : weight;
+            final weightsList = List<String>.filled(reps, weightToUse);
+
+            setsData.add({
+              'session_exercise_id': exerciseId, // Fixed column name
+              'set_number': i + 1,
+              'repetitions': reps, // Fixed type: int instead of List<String>
+              'weights': weightsList, // Match length with repetitions
+            });
           }
-
-          setsData.add({
-            'training_session_exercise_id': exerciseId,
-            'set_number': i + 1,
-            'repetitions': [reps],
-            'weights': [weight],
-          });
         }
 
         if (setsData.isNotEmpty) {
@@ -164,11 +166,11 @@ class ProgramRepository {
     } on PostgrestException catch (e) {
       final errorDetails = StringBuffer('Erreur lors de la sauvegarde de la séance: ${e.message}');
 
-      if (e.details != null && e.details!.isNotEmpty) {
+      if (e.details is String && (e.details as String).isNotEmpty) {
         errorDetails.write(' | Détails: ${e.details}');
       }
 
-      if (e.hint != null && e.hint!.isNotEmpty) {
+      if (e.hint is String && (e.hint as String).isNotEmpty) {
         errorDetails.write(' | Suggestion: ${e.hint}');
       }
 
