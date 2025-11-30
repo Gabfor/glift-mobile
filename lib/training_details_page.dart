@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,6 +32,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   List<TrainingRow>? _rows;
   bool _isLoading = true;
   String? _error;
+  bool _isScrolling = false;
+  Timer? _scrollEndTimer;
 
   // Keypad state
   int? _activeRowIndex;
@@ -97,6 +101,24 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       _currentBackspaceHandler = onBackspace;
       _currentDecimalHandler = onDecimal;
       _currentCloseHandler = onClose;
+    });
+  }
+
+  void _handleScrollActivity() {
+    _scrollEndTimer?.cancel();
+
+    if (!_isScrolling) {
+      setState(() {
+        _isScrolling = true;
+      });
+    }
+
+    _scrollEndTimer = Timer(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() {
+          _isScrolling = false;
+        });
+      }
     });
   }
 
@@ -190,8 +212,18 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             left: 0,
             right: 0,
             bottom: 30, // Adjust as needed for safe area/padding
-            child: Center(
-              child: _StartButton(onTap: _openActiveTraining),
+            child: AnimatedAlign(
+              duration: const Duration(milliseconds: 200),
+              alignment:
+                  _isScrolling ? Alignment.bottomRight : Alignment.bottomCenter,
+              child: AnimatedPadding(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.only(right: _isScrolling ? 20 : 0),
+                child: _StartButton(
+                  onTap: _openActiveTraining,
+                  isCollapsed: _isScrolling,
+                ),
+              ),
             ),
           ),
           if (_currentInputHandler != null)
@@ -209,6 +241,12 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollEndTimer?.cancel();
+    super.dispose();
   }
 
   Widget _buildBody() {
@@ -232,18 +270,30 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100), // Bottom padding for button
-      itemCount: _rows!.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 20),
-      itemBuilder: (context, index) {
-        final row = _rows![index];
-        return _ExerciseCard(
-          row: row,
-          repository: _programRepository,
-          onFocus: _handleFocus,
-        );
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification ||
+            notification is OverscrollNotification ||
+            notification is UserScrollNotification ||
+            notification is ScrollStartNotification) {
+          _handleScrollActivity();
+        }
+        return false;
       },
+      child: ListView.separated(
+        padding:
+            const EdgeInsets.fromLTRB(20, 20, 20, 100), // Bottom padding for button
+        itemCount: _rows!.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 20),
+        itemBuilder: (context, index) {
+          final row = _rows![index];
+          return _ExerciseCard(
+            row: row,
+            repository: _programRepository,
+            onFocus: _handleFocus,
+          );
+        },
+      ),
     );
   }
 }
@@ -580,18 +630,23 @@ class _EffortVisuals {
 }
 
 class _StartButton extends StatelessWidget {
-  const _StartButton({required this.onTap});
+  const _StartButton({
+    required this.onTap,
+    required this.isCollapsed,
+  });
 
   final VoidCallback onTap;
+  final bool isCollapsed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 48,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: isCollapsed ? 56 : 200,
+      height: 56,
       decoration: BoxDecoration(
         color: const Color(0xFF00D591),
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(isCollapsed ? 28 : 25),
         boxShadow: const [
           BoxShadow(
             color: Color(0x3F00D591),
@@ -604,21 +659,33 @@ class _StartButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(25),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Commencer',
-                style: GoogleFonts.quicksand(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-            ],
+          borderRadius: BorderRadius.circular(isCollapsed ? 28 : 25),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isCollapsed
+                ? const Icon(
+                    Icons.arrow_forward,
+                    key: ValueKey('collapsed_arrow'),
+                    color: Colors.white,
+                    size: 20,
+                  )
+                : Row(
+                    key: const ValueKey('expanded_button'),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Commencer',
+                        style: GoogleFonts.quicksand(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward,
+                          color: Colors.white, size: 16),
+                    ],
+                  ),
           ),
         ),
       ),
