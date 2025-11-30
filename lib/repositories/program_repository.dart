@@ -140,6 +140,15 @@ class ProgramRepository {
           final reps = i < row.repetitions.length ? row.repetitions[i] : '';
           final weight = i < row.weights.length ? row.weights[i] : '';
 
+          final hasReps = reps.trim().isNotEmpty;
+          final hasWeight = weight.trim().isNotEmpty;
+
+          if (!hasReps && !hasWeight) {
+            throw Exception(
+              'La série ${i + 1} de l\'exercice "${row.exercise}" ne contient aucune répétition ou poids.',
+            );
+          }
+
           setsData.add({
             'training_session_exercise_id': exerciseId,
             'set_number': i + 1,
@@ -152,6 +161,22 @@ class ProgramRepository {
           await _supabase.from('training_session_sets').insert(setsData);
         }
       }
+    } on PostgrestException catch (e) {
+      final errorDetails = StringBuffer('Erreur lors de la sauvegarde de la séance: ${e.message}');
+
+      if (e.details != null && e.details!.isNotEmpty) {
+        errorDetails.write(' | Détails: ${e.details}');
+      }
+
+      if (e.hint != null && e.hint!.isNotEmpty) {
+        errorDetails.write(' | Suggestion: ${e.hint}');
+      }
+
+      if (e.code != null && e.code!.isNotEmpty) {
+        errorDetails.write(' | Code: ${e.code}');
+      }
+
+      throw Exception(errorDetails.toString());
     } catch (e) {
       throw Exception('Erreur lors de la sauvegarde de la séance: $e');
     }
