@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
@@ -104,22 +105,63 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     });
   }
 
-  void _handleScrollActivity() {
-    _scrollEndTimer?.cancel();
+  void _handleScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta ?? 0;
+      if (delta > 0) {
+        _scrollEndTimer?.cancel();
+        if (!_isScrolling) {
+          setState(() {
+            _isScrolling = true;
+          });
+        }
 
-    if (!_isScrolling) {
-      setState(() {
-        _isScrolling = true;
-      });
-    }
-
-    _scrollEndTimer = Timer(const Duration(milliseconds: 200), () {
-      if (mounted) {
+        _scrollEndTimer = Timer(const Duration(milliseconds: 200), () {
+          if (mounted) {
+            setState(() {
+              _isScrolling = false;
+            });
+          }
+        });
+      } else if (delta < 0 && _isScrolling) {
+        _scrollEndTimer?.cancel();
         setState(() {
           _isScrolling = false;
         });
       }
-    });
+    } else if (notification is OverscrollNotification) {
+      _scrollEndTimer?.cancel();
+      if (notification.overscroll > 0) {
+        if (!_isScrolling) {
+          setState(() {
+            _isScrolling = true;
+          });
+        }
+
+        _scrollEndTimer = Timer(const Duration(milliseconds: 200), () {
+          if (mounted) {
+            setState(() {
+              _isScrolling = false;
+            });
+          }
+        });
+      } else if (notification.overscroll < 0 && _isScrolling) {
+        setState(() {
+          _isScrolling = false;
+        });
+      }
+    }
+
+    if (notification is ScrollEndNotification ||
+        (notification is UserScrollNotification &&
+            notification.direction == ScrollDirection.idle)) {
+      _scrollEndTimer?.cancel();
+      if (_isScrolling) {
+        setState(() {
+          _isScrolling = false;
+        });
+      }
+    }
   }
 
   void _closeKeypad() {
@@ -212,17 +254,10 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             left: 0,
             right: 0,
             bottom: 30, // Adjust as needed for safe area/padding
-            child: AnimatedAlign(
-              duration: const Duration(milliseconds: 200),
-              alignment:
-                  _isScrolling ? Alignment.bottomRight : Alignment.bottomCenter,
-              child: AnimatedPadding(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.only(right: _isScrolling ? 20 : 0),
-                child: _StartButton(
-                  onTap: _openActiveTraining,
-                  isCollapsed: _isScrolling,
-                ),
+            child: Center(
+              child: _StartButton(
+                onTap: _openActiveTraining,
+                isCollapsed: _isScrolling,
               ),
             ),
           ),
@@ -274,9 +309,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       onNotification: (notification) {
         if (notification is ScrollUpdateNotification ||
             notification is OverscrollNotification ||
-            notification is UserScrollNotification ||
-            notification is ScrollStartNotification) {
-          _handleScrollActivity();
+            notification is ScrollEndNotification ||
+            notification is UserScrollNotification) {
+          _handleScrollNotification(notification);
         }
         return false;
       },
@@ -642,11 +677,11 @@ class _StartButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      width: isCollapsed ? 56 : 200,
-      height: 56,
+      width: isCollapsed ? 48 : 200,
+      height: 48,
       decoration: BoxDecoration(
         color: const Color(0xFF00D591),
-        borderRadius: BorderRadius.circular(isCollapsed ? 28 : 25),
+        borderRadius: BorderRadius.circular(isCollapsed ? 24 : 25),
         boxShadow: const [
           BoxShadow(
             color: Color(0x3F00D591),
@@ -659,7 +694,7 @@ class _StartButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(isCollapsed ? 28 : 25),
+          borderRadius: BorderRadius.circular(isCollapsed ? 24 : 25),
           child: ClipRect(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
@@ -676,7 +711,7 @@ class _StartButton extends StatelessWidget {
                       Icons.arrow_forward,
                       key: ValueKey('collapsed_arrow'),
                       color: Colors.white,
-                      size: 20,
+                      size: 16,
                     )
                   : Center(
                       child: Row(
