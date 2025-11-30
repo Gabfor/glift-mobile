@@ -376,7 +376,7 @@ class _StorePageState extends State<StorePage> {
 
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      final currentOffset = max(notification.metrics.pixels, 0);
+      final currentOffset = max(notification.metrics.pixels, 0.0).toDouble();
 
       if (currentOffset <= 0) {
         _lastScrollOffset = 0;
