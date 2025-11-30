@@ -111,28 +111,19 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       if (delta > 0 &&
           notification.metrics.extentBefore > 0 &&
           notification.metrics.extentAfter > 0) {
-        _scrollEndTimer?.cancel();
         if (!_isScrolling) {
           setState(() {
             _isScrolling = true;
           });
         }
-
-        _scrollEndTimer = Timer(const Duration(milliseconds: 200), () {
-          if (mounted) {
-            setState(() {
-              _isScrolling = false;
-            });
-          }
-        });
       } else if (delta < 0 && _isScrolling) {
-        _scrollEndTimer?.cancel();
         setState(() {
           _isScrolling = false;
         });
       }
+      _startInactivityTimer();
     } else if (notification is OverscrollNotification) {
-      _scrollEndTimer?.cancel();
+      _startInactivityTimer();
       if (notification.overscroll < 0 && _isScrolling) {
         setState(() {
           _isScrolling = false;
@@ -143,13 +134,19 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     if (notification is ScrollEndNotification ||
         (notification is UserScrollNotification &&
             notification.direction == ScrollDirection.idle)) {
-      _scrollEndTimer?.cancel();
-      if (_isScrolling) {
+      _startInactivityTimer();
+    }
+  }
+
+  void _startInactivityTimer() {
+    _scrollEndTimer?.cancel();
+    _scrollEndTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted && _isScrolling) {
         setState(() {
           _isScrolling = false;
         });
       }
-    }
+    });
   }
 
   void _closeKeypad() {
@@ -709,25 +706,28 @@ class _StartButton extends StatelessWidget {
                       ),
                     )
                   : Center(
-                      child: Row(
-                        key: const ValueKey('expanded_button'),
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Commencer',
-                            style: GoogleFonts.quicksand(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          key: const ValueKey('expanded_button'),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Commencer',
+                              style: GoogleFonts.quicksand(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          SvgPicture.asset(
-                            'assets/icons/arrow.svg',
-                            width: 26,
-                            height: 26,
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            SvgPicture.asset(
+                              'assets/icons/arrow.svg',
+                              width: 26,
+                              height: 26,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
             ),
