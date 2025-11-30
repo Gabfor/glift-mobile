@@ -874,9 +874,16 @@ class _ActionButtonState extends State<_ActionButton> {
   @override
   Widget build(BuildContext context) {
     final overlayColor = Colors.black.withOpacity(0.05);
-    final backgroundColor = _isPressed
-        ? Color.lerp(widget.backgroundColor, overlayColor, 0.35)!
-        : widget.backgroundColor;
+    final usePrimaryPressedStyle =
+        widget.isPrimary && widget.backgroundColor == Colors.white && _isPressed;
+
+    final backgroundColor = usePrimaryPressedStyle
+        ? widget.color
+        : (_isPressed
+            ? Color.lerp(widget.backgroundColor, overlayColor, 0.35)!
+            : widget.backgroundColor);
+
+    final contentColor = usePrimaryPressedStyle ? Colors.white : widget.color;
 
     return GestureDetector(
       onTap: _handleTap,
@@ -913,13 +920,13 @@ class _ActionButtonState extends State<_ActionButton> {
                 widget.icon,
                 width: widget.iconWidth,
                 height: widget.iconHeight,
-                colorFilter: ColorFilter.mode(widget.color, BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
               ),
               const SizedBox(width: 8),
               Text(
                 widget.label,
                 style: GoogleFonts.quicksand(
-                  color: widget.color,
+                  color: contentColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
