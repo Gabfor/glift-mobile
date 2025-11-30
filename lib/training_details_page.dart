@@ -254,10 +254,17 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             left: 0,
             right: 0,
             bottom: 30, // Adjust as needed for safe area/padding
-            child: Center(
-              child: _StartButton(
-                onTap: _openActiveTraining,
-                isCollapsed: _isScrolling,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                alignment:
+                    _isScrolling ? Alignment.centerRight : Alignment.center,
+                child: _StartButton(
+                  onTap: _openActiveTraining,
+                  isCollapsed: _isScrolling,
+                ),
               ),
             ),
           ),
@@ -707,11 +714,11 @@ class _StartButton extends StatelessWidget {
                 ),
               ),
               child: isCollapsed
-                  ? const Icon(
-                      Icons.arrow_forward,
-                      key: ValueKey('collapsed_arrow'),
-                      color: Colors.white,
-                      size: 16,
+                  ? SvgPicture.asset(
+                      'assets/icons/arrow.svg',
+                      key: const ValueKey('collapsed_arrow'),
+                      width: 26,
+                      height: 26,
                     )
                   : Center(
                       child: Row(
@@ -727,8 +734,11 @@ class _StartButton extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward,
-                              color: Colors.white, size: 16),
+                          SvgPicture.asset(
+                            'assets/icons/arrow.svg',
+                            width: 26,
+                            height: 26,
+                          ),
                         ],
                       ),
                     ),
