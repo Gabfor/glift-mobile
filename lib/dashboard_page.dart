@@ -452,6 +452,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     const double gridLineSpacingPx = 38;
     const double chartOverheadHeight = 140;
 
+    double minX = 0;
+    double maxX = 6;
+
     double realMinY = 0;
     double realMaxY = 100;
     double interval = 25;
@@ -459,24 +462,45 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
     if (_history.isNotEmpty) {
       final values = _history.map((e) => e['value'] as double).toList();
-      final minVal = values.reduce((a, b) => a < b ? a : b);
-      final maxVal = values.reduce((a, b) => a > b ? a : b);
+      double minV = values.reduce((a, b) => a < b ? a : b);
+      double maxV = values.reduce((a, b) => a > b ? a : b);
       
-      realMinY = minVal.floorToDouble();
-      realMaxY = maxVal.ceilToDouble();
+      // Initial range estimate
+      double minFloor = minV.floorToDouble();
+      double maxCeil = maxV.ceilToDouble();
+      if (minFloor == maxCeil) maxCeil += 5;
       
-      if (realMinY == realMaxY) {
-        realMaxY += 5;
-        realMinY = (realMinY - 5).clamp(0, double.infinity);
-      }
-
-      double range = realMaxY - realMinY;
+      double range = maxCeil - minFloor;
       double rawInterval = range / (desiredGridLines - 1);
-      if (rawInterval <= 0) rawInterval = 1;
-
-      // Round interval to avoid decimal values on the y-axis.
+      if (rawInterval < 1) rawInterval = 1;
       interval = rawInterval.ceilToDouble();
+      
+      // Snap min to interval and ensure padding from bottom
+      // We want the lowest point to be at least 20% of an interval above the bottom line
+      double snappedMin = (minFloor / interval).floorToDouble() * interval;
+      if (minV - snappedMin < interval * 0.2) {
+        snappedMin -= interval;
+      }
+      realMinY = snappedMin;
+      
+      // Recalculate interval to ensure we cover the max value
+      // We have fixed number of lines starting from realMinY
+      double neededRange = maxV - realMinY;
+      rawInterval = neededRange / (desiredGridLines - 1);
+      if (rawInterval < 1) rawInterval = 1;
+      interval = rawInterval.ceilToDouble();
+      
       chartMaxY = interval * (desiredGridLines - 1);
+
+      // Calculate centered viewport
+      // We want the spacing to be the same as if there were 7 points (range 0..6)
+      // So the view range must always be 6.
+      // We center the available data points within this range.
+      final double dataCount = _history.length.toDouble();
+      final double centerData = (dataCount - 1) / 2;
+      final double viewRange = 6;
+      minX = centerData - viewRange / 2;
+      maxX = centerData + viewRange / 2;
     }
 
     return Container(
@@ -520,10 +544,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               final chartWidth = constraints.maxWidth - 40;
                               final chartHeight = constraints.maxHeight - 60;
                               
-                              double xPercent = 0.5;
-                              if (_history.length > 1) {
-                                xPercent = spot.x / (_history.length - 1);
-                              }
+                              // Calculate xPercent based on the fixed view range (minX to maxX)
+                              final xPercent = (spot.x - minX) / (maxX - minX);
                               
                               final yPercent = spot.y / chartMaxY;
                               
@@ -554,30 +576,16 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           return true;
                                         },
                                       ),
-                                      extraLinesData: ExtraLinesData(
-                                        horizontalLines: [
-                                          HorizontalLine(
-                                            y: 0,
-                                            color: const Color(0xFFECE9F1),
-                                            strokeWidth: 1,
-                                          ),
-                                          HorizontalLine(
-                                            y: chartMaxY,
-                                            color: const Color(0xFFECE9F1),
-                                            strokeWidth: 1,
-                                          ),
-                                        ],
-                                      ),
                                       titlesData: FlTitlesData(
                                         show: true,
                                         rightTitles: const AxisTitles(
                                             sideTitles: SideTitles(showTitles: false)),
                                         topTitles: const AxisTitles(
                                             sideTitles: SideTitles(showTitles: false)),
-                                      bottomTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          reservedSize: 41,
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 41, // Reduced to 41px as requested
                                             interval: 1,
                                             getTitlesWidget: (value, meta) {
                                               final index = value.toInt();
@@ -631,9 +639,17 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           ),
                                         ),
                                       ),
-                                      borderData: FlBorderData(show: false),
-                                      minX: 0,
-                                      maxX: (_history.length - 1).toDouble(),
+                                      borderData: FlBorderData(
+                                        show: true,
+                                        border: const Border(
+                                          top: BorderSide(color: Color(0xFFECE9F1), width: 1),
+                                          bottom: BorderSide(color: Color(0xFFECE9F1), width: 1),
+                                          left: BorderSide.none,
+                                          right: BorderSide.none,
+                                        ),
+                                      ),
+                                      minX: minX,
+                                      maxX: maxX,
                                       minY: 0, // Chart starts at 0
                                       maxY: chartMaxY, // Chart ends at range
                                       lineBarsData: [
@@ -644,6 +660,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           }).toList(),
                                           isCurved: true,
                                           curveSmoothness: 0.35,
+                                          preventCurveOverShooting: true, // Prevent curve from dipping below lines
                                           color: const Color(0xFFA1A5FD),
                                           barWidth: 2,
                                           isStrokeCapRound: true,
