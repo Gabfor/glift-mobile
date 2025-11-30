@@ -237,7 +237,7 @@ class DashboardPageState extends State<DashboardPage> {
     if (notification is ScrollUpdateNotification) {
       _resetNavigationInactivityTimer();
 
-      final currentOffset = max(notification.metrics.pixels, 0);
+      final currentOffset = max(notification.metrics.pixels, 0.0).toDouble();
 
       if (currentOffset <= 0) {
         _lastScrollOffset = 0;

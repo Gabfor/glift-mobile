@@ -688,48 +688,55 @@ class _StartButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(isCollapsed ? 24 : 25),
           child: ClipRect(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-              layoutBuilder: (currentChild, previousChildren) =>
-                  currentChild ?? const SizedBox.shrink(),
-              child: isCollapsed
-                  ? Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/arrow.svg',
-                        key: const ValueKey('collapsed_arrow'),
-                        width: 26,
-                        height: 26,
-                      ),
-                    )
-                  : Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          key: const ValueKey('expanded_button'),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Commencer',
-                              style: GoogleFonts.quicksand(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final showExpandedContent =
+                    !isCollapsed && constraints.maxWidth >= 120;
+
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  ),
+                  layoutBuilder: (currentChild, previousChildren) =>
+                      currentChild ?? const SizedBox.shrink(),
+                  child: showExpandedContent
+                      ? Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              key: const ValueKey('expanded_button'),
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Commencer',
+                                  style: GoogleFonts.quicksand(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                SvgPicture.asset(
+                                  'assets/icons/arrow.svg',
+                                  width: 26,
+                                  height: 26,
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            SvgPicture.asset(
-                              'assets/icons/arrow.svg',
-                              width: 26,
-                              height: 26,
-                            ),
-                          ],
+                          ),
+                        )
+                      : Center(
+                          child: SvgPicture.asset(
+                            'assets/icons/arrow.svg',
+                            key: const ValueKey('collapsed_arrow'),
+                            width: 26,
+                            height: 26,
+                          ),
                         ),
-                      ),
-                    ),
+                );
+              },
             ),
           ),
         ),
