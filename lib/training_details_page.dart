@@ -660,32 +660,42 @@ class _StartButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(isCollapsed ? 28 : 25),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: isCollapsed
-                ? const Icon(
-                    Icons.arrow_forward,
-                    key: ValueKey('collapsed_arrow'),
-                    color: Colors.white,
-                    size: 20,
-                  )
-                : Row(
-                    key: const ValueKey('expanded_button'),
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Commencer',
-                        style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+          child: ClipRect(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SizeTransition(
+                  sizeFactor: animation,
+                  axis: Axis.horizontal,
+                  child: child,
+                ),
+              ),
+              child: isCollapsed
+                  ? const Icon(
+                      Icons.arrow_forward,
+                      key: ValueKey('collapsed_arrow'),
+                      color: Colors.white,
+                      size: 20,
+                    )
+                  : Row(
+                      key: const ValueKey('expanded_button'),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Commencer',
+                          style: GoogleFonts.quicksand(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward,
-                          color: Colors.white, size: 16),
-                    ],
-                  ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward,
+                            color: Colors.white, size: 16),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
