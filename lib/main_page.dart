@@ -32,6 +32,7 @@ class _MainPageState extends State<MainPage> {
       DashboardPage(
         key: _dashboardKey,
         supabase: widget.supabase,
+        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
       ),
       HomePage(
         supabase: widget.supabase,
