@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -40,6 +42,7 @@ class DashboardPageState extends State<DashboardPage> {
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
+  Timer? _navigationInactivityTimer;
 
   @override
   void initState() {
@@ -52,6 +55,7 @@ class DashboardPageState extends State<DashboardPage> {
 
   @override
   void dispose() {
+    _navigationInactivityTimer?.cancel();
     _programPageController.dispose();
     _programScrollController.dispose();
     super.dispose();
@@ -195,17 +199,42 @@ class DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  void _showNavigation() {
+    if (_isNavigationVisible) return;
+
+    setState(() {
+      _isNavigationVisible = true;
+    });
+
+    widget.onNavigationVisibilityChanged?.call(true);
+  }
+
+  void _hideNavigation() {
+    if (!_isNavigationVisible) return;
+
+    setState(() {
+      _isNavigationVisible = false;
+    });
+
+    widget.onNavigationVisibilityChanged?.call(false);
+  }
+
+  void _resetNavigationInactivityTimer() {
+    _navigationInactivityTimer?.cancel();
+    _navigationInactivityTimer = Timer(const Duration(seconds: 2), _showNavigation);
+  }
+
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
+      _resetNavigationInactivityTimer();
+
       final currentOffset = notification.metrics.pixels;
       final delta = currentOffset - _lastScrollOffset;
 
-      if (delta > 10 && _isNavigationVisible) {
-        _isNavigationVisible = false;
-        widget.onNavigationVisibilityChanged?.call(false);
-      } else if (delta < -10 && !_isNavigationVisible) {
-        _isNavigationVisible = true;
-        widget.onNavigationVisibilityChanged?.call(true);
+      if (delta > 10) {
+        _hideNavigation();
+      } else if (delta < -10) {
+        _showNavigation();
       }
 
       _lastScrollOffset = currentOffset;
@@ -429,6 +458,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   bool _isLoading = true;
   LineBarSpot? _touchedSpot;
   Offset? _touchPosition;
+  Timer? _tooltipDelayTimer;
 
   @override
   void initState() {
@@ -474,6 +504,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
       print('Error loading history: $e');
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _tooltipDelayTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -743,10 +779,13 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                               response == null ||
                                               response.lineBarSpots == null ||
                                               response.lineBarSpots!.isEmpty) {
-                                            setState(() {
-                                              _touchedSpot = null;
-                                              _touchPosition = null;
-                                            });
+                                            _tooltipDelayTimer?.cancel();
+                                            if (_touchedSpot != null || _touchPosition != null) {
+                                              setState(() {
+                                                _touchedSpot = null;
+                                                _touchPosition = null;
+                                              });
+                                            }
                                             return;
                                           }
 
@@ -755,14 +794,22 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                               _touchedSpot!.x != newSpot.x ||
                                               _touchedSpot!.y != newSpot.y;
 
-                                          setState(() {
-                                            _touchedSpot = newSpot;
-                                            _touchPosition = event.localPosition;
-                                          });
+                                          _tooltipDelayTimer?.cancel();
+                                          _tooltipDelayTimer = Timer(
+                                            const Duration(milliseconds: 175),
+                                            () {
+                                              if (!mounted) return;
 
-                                          if (hasNewSpot) {
-                                            HapticFeedback.lightImpact();
-                                          }
+                                              setState(() {
+                                                _touchedSpot = newSpot;
+                                                _touchPosition = event.localPosition;
+                                              });
+
+                                              if (hasNewSpot) {
+                                                HapticFeedback.lightImpact();
+                                              }
+                                            },
+                                          );
                                         },
                                         touchTooltipData: LineTouchTooltipData(
                                           tooltipPadding: EdgeInsets.zero,
