@@ -225,6 +225,14 @@ class DashboardPageState extends State<DashboardPage> {
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
+    final axisDirection = notification.metrics.axisDirection;
+
+    // Ignore horizontal scrolls (e.g., program page swipes) to keep navigation
+    // visibility unchanged during page transitions.
+    if (axisDirection == AxisDirection.left || axisDirection == AxisDirection.right) {
+      return false;
+    }
+
     if (notification is ScrollUpdateNotification) {
       _resetNavigationInactivityTimer();
 
