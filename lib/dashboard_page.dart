@@ -236,7 +236,6 @@ class DashboardPageState extends State<DashboardPage> {
           children: [
             if (_trainings.isNotEmpty)
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildArrowButton(
                     icon: Icons.chevron_left,
@@ -244,14 +243,21 @@ class DashboardPageState extends State<DashboardPage> {
                         ? () => _onTrainingChanged(-1)
                         : null,
                   ),
-                  Text(
-                    _trainings[_selectedTrainingIndex]['name'],
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Text(
+                      _trainings[_selectedTrainingIndex]['name'],
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF3A416F),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 20),
                   _buildArrowButton(
                     icon: Icons.chevron_right,
                     onTap: _selectedTrainingIndex < _trainings.length - 1
