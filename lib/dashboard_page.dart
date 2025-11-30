@@ -11,8 +11,13 @@ import 'widgets/glift_page_layout.dart';
 
 class DashboardPage extends StatefulWidget {
   final SupabaseClient supabase;
+  final ValueChanged<bool>? onNavigationVisibilityChanged;
 
-  const DashboardPage({super.key, required this.supabase});
+  const DashboardPage({
+    super.key,
+    required this.supabase,
+    this.onNavigationVisibilityChanged,
+  });
 
   @override
   State<DashboardPage> createState() => DashboardPageState();
@@ -32,6 +37,9 @@ class DashboardPageState extends State<DashboardPage> {
   
   List<TrainingRow> _exercises = [];
   bool _isLoading = true;
+
+  bool _isNavigationVisible = true;
+  double _lastScrollOffset = 0;
 
   @override
   void initState() {
@@ -176,7 +184,7 @@ class DashboardPageState extends State<DashboardPage> {
 
   void _onTrainingChanged(int delta) {
     if (_trainings.isEmpty) return;
-    
+
     final newIndex = _selectedTrainingIndex + delta;
     if (newIndex >= 0 && newIndex < _trainings.length) {
       setState(() {
@@ -187,14 +195,36 @@ class DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      final currentOffset = notification.metrics.pixels;
+      final delta = currentOffset - _lastScrollOffset;
+
+      if (delta > 10 && _isNavigationVisible) {
+        _isNavigationVisible = false;
+        widget.onNavigationVisibilityChanged?.call(false);
+      } else if (delta < -10 && !_isNavigationVisible) {
+        _isNavigationVisible = true;
+        widget.onNavigationVisibilityChanged?.call(true);
+      }
+
+      _lastScrollOffset = currentOffset;
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GliftPageLayout(
-      header: _buildHeader(),
-      scrollable: false,
-      padding: EdgeInsets.zero,
-      headerPadding: EdgeInsets.zero,
-      child: _buildProgramPager(),
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: GliftPageLayout(
+        header: _buildHeader(),
+        scrollable: false,
+        padding: EdgeInsets.zero,
+        headerPadding: EdgeInsets.zero,
+        child: _buildProgramPager(),
+      ),
     );
   }
 
