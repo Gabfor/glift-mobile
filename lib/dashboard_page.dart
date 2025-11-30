@@ -476,7 +476,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     return Container(
       width: double.infinity,
       height: chartOverheadHeight + (desiredGridLines - 1) * gridLineSpacingPx,
-      padding: const EdgeInsets.only(left: 20, top: 20, right: 30, bottom: 10),
+      padding: const EdgeInsets.only(left: 20, top: 20, right: 30, bottom: 50),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
