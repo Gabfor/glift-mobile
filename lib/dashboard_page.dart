@@ -476,7 +476,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     return Container(
       width: double.infinity,
       height: chartOverheadHeight + (desiredGridLines - 1) * gridLineSpacingPx,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.only(left: 20, top: 20, right: 30, bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -571,34 +571,22 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         bottomTitles: AxisTitles(
                                           sideTitles: SideTitles(
                                             showTitles: true,
-                                            reservedSize: 60,
+                                            reservedSize: 20,
                                             interval: 1,
                                             getTitlesWidget: (value, meta) {
                                               final index = value.toInt();
                                               if (index >= 0 && index < _history.length) {
                                                 final date =
                                                     _history[index]['date'] as DateTime;
-                                                return Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    const SizedBox(height: 10),
-                                                    Text(
-                                                      DateFormat('dd').format(date),
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(0xFF3A416F),
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w700,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      DateFormat('MMM', 'fr_FR').format(date),
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(0xFFC2BFC6),
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                return Text(
+                                                  '${DateFormat('dd').format(date)} \n${DateFormat('MMM', 'fr_FR').format(date)}',
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.quicksand(
+                                                    color: const Color(0xFF3A416F),
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    height: 1.2,
+                                                  ),
                                                 );
                                               }
                                               return const SizedBox.shrink();
