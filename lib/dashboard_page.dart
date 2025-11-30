@@ -476,7 +476,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     return Container(
       width: double.infinity,
       height: chartOverheadHeight + (desiredGridLines - 1) * gridLineSpacingPx,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 25, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -568,10 +568,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                             sideTitles: SideTitles(showTitles: false)),
                                         topTitles: const AxisTitles(
                                             sideTitles: SideTitles(showTitles: false)),
-                                        bottomTitles: AxisTitles(
-                                          sideTitles: SideTitles(
-                                            showTitles: true,
-                                            reservedSize: 60,
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          reservedSize: 40,
                                             interval: 1,
                                             getTitlesWidget: (value, meta) {
                                               final index = value.toInt();
