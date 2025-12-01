@@ -33,7 +33,9 @@ class TrainingRow {
       weights: List<String>.from(json['poids'] ?? []),
       rest: json['repos'] as String,
       note: json['note'] as String?,
-      videoUrl: json['video_url'] as String?,
+      // Some databases use `link` instead of `video_url`. Use whichever is present
+      // to ensure the app displays clickable exercise names when a link exists.
+      videoUrl: (json['video_url'] ?? json['link']) as String?,
       order: json['order'] as int,
     );
   }
