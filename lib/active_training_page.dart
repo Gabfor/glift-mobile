@@ -99,12 +99,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     });
   }
 
-  void _handleRowUpdate(
+  Future<void> _handleRowUpdate(
     int index,
     List<String> repetitions,
     List<String> weights,
     List<String> efforts,
-  ) {
+  ) async {
     if (_rows == null) return;
     
     setState(() {
@@ -123,6 +123,19 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         order: oldRow.order,
       );
     });
+
+    try {
+      await _programRepository.updateTrainingRow(
+        _rows![index].id,
+        repetitions: repetitions,
+        weights: weights,
+        efforts: efforts,
+      );
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
   }
 
   Future<void> _finishTraining() async {
@@ -356,7 +369,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final VoidCallback onMoveDown;
   final VoidCallback onComplete;
   final VoidCallback onIgnore;
-  final Function(List<String>, List<String>, List<String>) onUpdate;
+  final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -480,8 +493,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       _activeWeightIndex = null;
     });
 
-    // Notify parent of updates instead of saving to repository
-    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    // Notify parent to persist updates
+    await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   void _toggleSetCompletion(int index) {
@@ -752,7 +765,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     );
   }
 
-  void _cycleEffortState(int index) {
+  Future<void> _cycleEffortState(int index) async {
     setState(() {
       _effortStates[index] = switch (_effortStates[index]) {
         _EffortState.neutral => _EffortState.positive,
@@ -761,7 +774,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       };
     });
 
-    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   _EffortVisuals _visualsForState(_EffortState state) {
