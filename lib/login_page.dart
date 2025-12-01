@@ -192,8 +192,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
+    final now = DateTime.now();
+    final greeting = (now.hour >= 18 && now.hour <= 23) ? 'Bonsoir,' : 'Bonjour,';
+
     return GliftPageLayout(
-      title: 'Bonjour,',
+      title: greeting,
       subtitle: 'Bienvenue sur Glift',
       resizeToAvoidBottomInset: false,
       fullPageScroll: false,
