@@ -112,11 +112,13 @@ class ProgramRepository {
     String rowId, {
     List<String>? repetitions,
     List<String>? weights,
+    List<String>? efforts,
   }) async {
     try {
       final updates = <String, dynamic>{};
       if (repetitions != null) updates['repetitions'] = repetitions;
       if (weights != null) updates['poids'] = weights;
+      if (efforts != null) updates['effort'] = efforts;
 
       if (updates.isEmpty) return;
 

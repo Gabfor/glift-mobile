@@ -5,6 +5,7 @@ class TrainingRow {
   final int series;
   final List<String> repetitions;
   final List<String> weights;
+  final List<String> efforts;
   final String rest;
   final String? videoUrl;
   final String? note;
@@ -17,6 +18,7 @@ class TrainingRow {
     required this.series,
     required this.repetitions,
     required this.weights,
+    required this.efforts,
     required this.rest,
     this.note,
     this.videoUrl,
@@ -31,6 +33,7 @@ class TrainingRow {
       series: json['series'] as int,
       repetitions: List<String>.from(json['repetitions'] ?? []),
       weights: List<String>.from(json['poids'] ?? []),
+      efforts: List<String>.from(json['effort'] ?? []),
       rest: json['repos'] as String,
       note: json['note'] as String?,
       // Some databases use `link` instead of `video_url`. Use whichever is present

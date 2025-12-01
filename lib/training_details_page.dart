@@ -359,10 +359,37 @@ class _ExerciseCardState extends State<_ExerciseCard> {
   @override
   void initState() {
     super.initState();
-    _effortStates = List<_EffortState>.filled(widget.row.series, _EffortState.neutral);
+    _effortStates = List<_EffortState>.generate(
+      widget.row.series,
+      (index) => index < widget.row.efforts.length
+          ? _effortValueToState(widget.row.efforts[index])
+          : _EffortState.neutral,
+    );
     _repetitions = List<String>.from(widget.row.repetitions);
     _weights = List<String>.from(widget.row.weights);
   }
+
+  _EffortState _effortValueToState(String? value) {
+    switch (value) {
+      case 'positive':
+        return _EffortState.positive;
+      case 'negative':
+        return _EffortState.negative;
+      default:
+        return _EffortState.neutral;
+    }
+  }
+
+  String _effortStateToValue(_EffortState state) {
+    return switch (state) {
+      _EffortState.neutral => 'neutral',
+      _EffortState.positive => 'positive',
+      _EffortState.negative => 'negative',
+    };
+  }
+
+  List<String> _effortsAsStrings() =>
+      _effortStates.map((state) => _effortStateToValue(state)).toList();
 
   void _activateCell(int index, String type) {
     setState(() {
@@ -441,11 +468,13 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       await widget.repository.updateTrainingRow(
         widget.row.id,
         repetitions: _repetitions,
+        efforts: _effortsAsStrings(),
       );
     } else {
       await widget.repository.updateTrainingRow(
         widget.row.id,
         weights: _weights,
+        efforts: _effortsAsStrings(),
       );
     }
   }
@@ -639,7 +668,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     );
   }
 
-  void _cycleEffortState(int index) {
+  Future<void> _cycleEffortState(int index) async {
     setState(() {
       _effortStates[index] = switch (_effortStates[index]) {
         _EffortState.neutral => _EffortState.positive,
@@ -647,6 +676,11 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         _EffortState.negative => _EffortState.neutral,
       };
     });
+
+    await widget.repository.updateTrainingRow(
+      widget.row.id,
+      efforts: _effortsAsStrings(),
+    );
   }
 
   _EffortVisuals _visualsForState(_EffortState state) {

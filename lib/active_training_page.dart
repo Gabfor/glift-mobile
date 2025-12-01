@@ -99,7 +99,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     });
   }
 
-  void _handleRowUpdate(int index, List<String> repetitions, List<String> weights) {
+  void _handleRowUpdate(
+    int index,
+    List<String> repetitions,
+    List<String> weights,
+    List<String> efforts,
+  ) {
     if (_rows == null) return;
     
     setState(() {
@@ -111,6 +116,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         series: oldRow.series,
         repetitions: repetitions,
         weights: weights,
+        efforts: efforts,
         rest: oldRow.rest,
         note: oldRow.note,
         videoUrl: oldRow.videoUrl,
@@ -144,6 +150,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           row.id,
           repetitions: row.repetitions,
           weights: row.weights,
+          efforts: row.efforts,
         )));
       }
 
@@ -314,7 +321,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           onMoveDown: () => _moveRowDown(index),
           onComplete: () => _completeRow(index),
           onIgnore: () => _ignoreRow(index),
-          onUpdate: (reps, weights) => _handleRowUpdate(index, reps, weights),
+          onUpdate: (reps, weights, efforts) =>
+              _handleRowUpdate(index, reps, weights, efforts),
         );
       },
     );
@@ -348,7 +356,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final VoidCallback onMoveDown;
   final VoidCallback onComplete;
   final VoidCallback onIgnore;
-  final Function(List<String>, List<String>) onUpdate;
+  final Function(List<String>, List<String>, List<String>) onUpdate;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -370,11 +378,38 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   @override
   void initState() {
     super.initState();
-    _effortStates = List<_EffortState>.filled(widget.row.series, _EffortState.neutral);
+    _effortStates = List<_EffortState>.generate(
+      widget.row.series,
+      (index) => index < widget.row.efforts.length
+          ? _effortValueToState(widget.row.efforts[index])
+          : _EffortState.neutral,
+    );
     _repetitions = List<String>.from(widget.row.repetitions);
     _weights = List<String>.from(widget.row.weights);
     _completedSets = List<bool>.filled(widget.row.series, false);
   }
+
+  _EffortState _effortValueToState(String? value) {
+    switch (value) {
+      case 'positive':
+        return _EffortState.positive;
+      case 'negative':
+        return _EffortState.negative;
+      default:
+        return _EffortState.neutral;
+    }
+  }
+
+  String _effortStateToValue(_EffortState state) {
+    return switch (state) {
+      _EffortState.neutral => 'neutral',
+      _EffortState.positive => 'positive',
+      _EffortState.negative => 'negative',
+    };
+  }
+
+  List<String> _effortsAsStrings() =>
+      _effortStates.map((state) => _effortStateToValue(state)).toList();
 
   void _activateCell(int index, String type) {
     setState(() {
@@ -446,7 +481,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     });
 
     // Notify parent of updates instead of saving to repository
-    widget.onUpdate(_repetitions, _weights);
+    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   void _toggleSetCompletion(int index) {
@@ -725,6 +760,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         _EffortState.negative => _EffortState.neutral,
       };
     });
+
+    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   _EffortVisuals _visualsForState(_EffortState state) {
