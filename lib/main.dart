@@ -167,6 +167,7 @@ class OnboardingFlow extends StatefulWidget {
 class _OnboardingFlowState extends State<OnboardingFlow> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  bool _isConnecting = false;
 
   static final List<OnboardingPageData> _pages = [
     const OnboardingPageData(
@@ -207,8 +208,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     });
   }
 
-  void _handleConnect(BuildContext context) {
-    Navigator.of(context).push(
+  Future<void> _handleConnect(BuildContext context) async {
+    setState(() {
+      _isConnecting = true;
+    });
+
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => LoginPage(
           authRepository: widget.authRepository,
@@ -217,6 +222,11 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         ),
       ),
     );
+
+    if (!mounted) return;
+    setState(() {
+      _isConnecting = false;
+    });
   }
 
   Future<void> _openSignup() async {
@@ -270,11 +280,30 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () => _handleConnect(context),
+                      onPressed:
+                          _isConnecting ? null : () => _handleConnect(context),
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                       ),
-                      child: const Text('Se connecter'),
+                      child: _isConnecting
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFD7D4DC),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Text('En cours'),
+                              ],
+                            )
+                          : const Text('Se connecter'),
                     ),
                   ),
                   const SizedBox(height: 24),
