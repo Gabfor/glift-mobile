@@ -91,6 +91,17 @@ class DashboardPageState extends State<DashboardPage> {
           ..addAll(List.generate(programs.length, (_) => GlobalKey()));
       });
 
+      final selectedProgramIndex =
+          programs.indexWhere((program) => program.id == _selectedProgramId);
+
+      if (selectedProgramIndex != -1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_programPageController.hasClients) {
+            _programPageController.jumpToPage(selectedProgramIndex);
+          }
+        });
+      }
+
       await _loadTrainings(_selectedProgramId!);
       
       // Scroll to selected program if needed
