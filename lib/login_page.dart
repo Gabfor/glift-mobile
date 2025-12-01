@@ -330,13 +330,28 @@ class _AnimatedButton extends StatelessWidget {
           ),
         ),
         child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'En cours...',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFFD7D4DC),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               )
             : const Text('Se connecter'),
       ),
