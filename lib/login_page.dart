@@ -147,28 +147,28 @@ class _LoginPageState extends State<LoginPage> {
       );
       await widget.biometricAuthService.persistSession(session);
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      await Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => MainPage(supabase: widget.supabase),
         ),
       );
     } on AuthException catch (error) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = error.message.isNotEmpty
             ? error.message
             : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
+        _isLoading = false;
       });
       _focusFirstError(
         emailError: _isEmailValid ? null : 'Format d’adresse invalide',
         passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
       );
     } catch (error) {
+      if (!mounted) return;
       setState(() {
         _errorMessage =
             'Une erreur est survenue. Veuillez réessayer plus tard.';
-      });
-    } finally {
-      setState(() {
         _isLoading = false;
       });
     }
