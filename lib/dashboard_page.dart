@@ -62,12 +62,12 @@ class DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh([String? programId]) async {
     setState(() => _isLoading = true);
-    await _loadData();
+    await _loadData(programId);
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData([String? programId]) async {
     try {
       final userId = widget.supabase.auth.currentUser?.id;
       if (userId == null) return;
@@ -80,13 +80,26 @@ class DashboardPageState extends State<DashboardPage> {
 
       setState(() {
         _programs = programs;
-        _selectedProgramId = programs.first.id;
+        // Use provided programId if valid, otherwise default to first
+        if (programId != null && programs.any((p) => p.id == programId)) {
+          _selectedProgramId = programId;
+        } else {
+          _selectedProgramId = programs.first.id;
+        }
         _programKeys
           ..clear()
           ..addAll(List.generate(programs.length, (_) => GlobalKey()));
       });
 
       await _loadTrainings(_selectedProgramId!);
+      
+      // Scroll to selected program if needed
+      if (_selectedProgramId != null) {
+        // Small delay to ensure layout is built
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) _scrollProgramIntoView(_selectedProgramId!);
+        });
+      }
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
       setState(() => _isLoading = false);

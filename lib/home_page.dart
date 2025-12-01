@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
   });
 
   final SupabaseClient supabase;
-  final VoidCallback? onNavigateToDashboard;
+  final void Function(String?)? onNavigateToDashboard;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -256,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                 );
 
                 if (result == true) {
-                  widget.onNavigateToDashboard?.call();
+                  widget.onNavigateToDashboard?.call(program.id);
                 }
               },
             );

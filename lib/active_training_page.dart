@@ -404,8 +404,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
 
   _EffortState _effortValueToState(String? value) {
     switch (value) {
+      case 'trop facile':
       case 'positive':
         return _EffortState.positive;
+      case 'trop dur':
       case 'negative':
         return _EffortState.negative;
       default:
@@ -415,9 +417,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
 
   String _effortStateToValue(_EffortState state) {
     return switch (state) {
-      _EffortState.neutral => 'neutral',
-      _EffortState.positive => 'positive',
-      _EffortState.negative => 'negative',
+      _EffortState.neutral => 'parfait',
+      _EffortState.positive => 'trop facile',
+      _EffortState.negative => 'trop dur',
     };
   }
 
@@ -468,6 +470,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         _effortStates[index] = _EffortState.neutral;
       }
     });
+
+    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   void _handleBackspace(int index, String type) {
@@ -485,6 +489,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         _effortStates[index] = _EffortState.neutral;
       }
     });
+
+    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   Future<void> _handleClose(int index, String type) async {

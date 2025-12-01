@@ -317,30 +317,70 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           final row = _rows![index];
           return _ExerciseCard(
             row: row,
-            repository: _programRepository,
             onFocus: _handleFocus,
+            onUpdate: (reps, weights, efforts) =>
+                _handleRowUpdate(index, reps, weights, efforts),
           );
         },
       ),
     );
+  }
+
+  Future<void> _handleRowUpdate(
+    int index,
+    List<String> repetitions,
+    List<String> weights,
+    List<String> efforts,
+  ) async {
+    if (_rows == null) return;
+
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: oldRow.exercise,
+        series: oldRow.series,
+        repetitions: repetitions,
+        weights: weights,
+        efforts: efforts,
+        rest: oldRow.rest,
+        note: oldRow.note,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+      );
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(
+        _rows![index].id,
+        repetitions: repetitions,
+        weights: weights,
+        efforts: efforts,
+      );
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
   }
 }
 
 class _ExerciseCard extends StatefulWidget {
   const _ExerciseCard({
     required this.row,
-    required this.repository,
     required this.onFocus,
+    required this.onUpdate,
   });
 
   final TrainingRow row;
-  final ProgramRepository repository;
   final Function({
     required ValueChanged<String> onInput,
     required VoidCallback onBackspace,
     required VoidCallback onDecimal,
     required VoidCallback onClose,
   }) onFocus;
+  final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -371,8 +411,10 @@ class _ExerciseCardState extends State<_ExerciseCard> {
 
   _EffortState _effortValueToState(String? value) {
     switch (value) {
+      case 'trop facile':
       case 'positive':
         return _EffortState.positive;
+      case 'trop dur':
       case 'negative':
         return _EffortState.negative;
       default:
@@ -382,9 +424,9 @@ class _ExerciseCardState extends State<_ExerciseCard> {
 
   String _effortStateToValue(_EffortState state) {
     return switch (state) {
-      _EffortState.neutral => 'neutral',
-      _EffortState.positive => 'positive',
-      _EffortState.negative => 'negative',
+      _EffortState.neutral => 'parfait',
+      _EffortState.positive => 'trop facile',
+      _EffortState.negative => 'trop dur',
     };
   }
 
@@ -437,6 +479,8 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         _effortStates[index] = _EffortState.neutral;
       }
     });
+
+    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   void _handleBackspace(int index, String type) {
@@ -455,6 +499,8 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         _effortStates[index] = _EffortState.neutral;
       }
     });
+
+    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   Future<void> _handleClose(int index, String type) async {
@@ -463,20 +509,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       _activeWeightIndex = null;
     });
 
-    // Save to DB
-    if (type == 'reps') {
-      await widget.repository.updateTrainingRow(
-        widget.row.id,
-        repetitions: _repetitions,
-        efforts: _effortsAsStrings(),
-      );
-    } else {
-      await widget.repository.updateTrainingRow(
-        widget.row.id,
-        weights: _weights,
-        efforts: _effortsAsStrings(),
-      );
-    }
+    await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   Future<void> _launchVideoUrl() async {
@@ -677,10 +710,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       };
     });
 
-    await widget.repository.updateTrainingRow(
-      widget.row.id,
-      efforts: _effortsAsStrings(),
-    );
+    await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
   _EffortVisuals _visualsForState(_EffortState state) {
