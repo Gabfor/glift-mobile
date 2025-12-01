@@ -330,6 +330,8 @@ class _TrainingCard extends StatelessWidget {
                 children: [
                   Text(
                     training.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.quicksand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
