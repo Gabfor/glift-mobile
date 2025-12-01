@@ -209,28 +209,32 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
             ),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Entraînements',
-                style: GoogleFonts.quicksand(
-                  fontSize: 14,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  height: 1.86,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Entraînements',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    height: 1.86,
+                  ),
                 ),
-              ),
-              Text(
-                widget.training.name,
-                style: GoogleFonts.quicksand(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  height: 1.62,
+                Text(
+                  widget.training.name,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    height: 1.62,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
