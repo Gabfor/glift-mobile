@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
@@ -449,10 +450,26 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     }
   }
 
+  Future<void> _launchVideoUrl() async {
+    if (widget.row.videoUrl == null || widget.row.videoUrl!.isEmpty) return;
+
+    final uri = Uri.parse(widget.row.videoUrl!);
+
+    final launchedInApp =
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+
+    if (!launchedInApp) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
+    final hasLink =
+        widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -463,14 +480,28 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.row.exercise,
-            style: GoogleFonts.quicksand(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF7069FA),
-            ),
-          ),
+          hasLink
+              ? GestureDetector(
+                  onTap: _launchVideoUrl,
+                  child: Text(
+                    widget.row.exercise,
+                    style: GoogleFonts.quicksand(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF7069FA),
+                      decoration: TextDecoration.underline,
+                      decorationColor: const Color(0xFF7069FA),
+                    ),
+                  ),
+                )
+              : Text(
+                  widget.row.exercise,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF3A416F),
+                  ),
+                ),
           const SizedBox(height: 20),
 
           // Header Row

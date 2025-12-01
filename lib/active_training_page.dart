@@ -456,11 +456,15 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   }
 
   Future<void> _launchVideoUrl() async {
-    if (widget.row.videoUrl != null) {
-      final uri = Uri.parse(widget.row.videoUrl!);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      }
+    if (widget.row.videoUrl == null || widget.row.videoUrl!.isEmpty) return;
+
+    final uri = Uri.parse(widget.row.videoUrl!);
+
+    final launchedInApp =
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+
+    if (!launchedInApp) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
