@@ -359,6 +359,7 @@ class _TrainingCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 20),
             SvgPicture.asset(
               'assets/icons/good.svg',
               width: 20,
