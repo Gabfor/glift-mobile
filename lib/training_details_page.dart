@@ -625,7 +625,9 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                           color: visuals.backgroundColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: _activeRepsIndex == index ? const Color(0xFF7069FA) : const Color(0xFFECE9F1),
+                            color: _activeRepsIndex == index
+                                ? const Color(0xFFA1A5FD)
+                                : const Color(0xFFECE9F1),
                             width: _activeRepsIndex == index ? 2 : 1,
                           ),
                         ),
@@ -654,7 +656,9 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                           color: visuals.backgroundColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: _activeWeightIndex == index ? const Color(0xFF7069FA) : const Color(0xFFECE9F1),
+                            color: _activeWeightIndex == index
+                                ? const Color(0xFFA1A5FD)
+                                : const Color(0xFFECE9F1),
                             width: _activeWeightIndex == index ? 2 : 1,
                           ),
                         ),
