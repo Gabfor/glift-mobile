@@ -31,6 +31,7 @@ class DashboardPageState extends State<DashboardPage> {
   late final PageController _programPageController;
   late final ScrollController _programScrollController;
   final List<GlobalKey> _programKeys = [];
+  int _refreshToken = 0;
 
   List<Program> _programs = [];
   String? _selectedProgramId;
@@ -122,6 +123,7 @@ class DashboardPageState extends State<DashboardPage> {
       final exercises = await _repository.getDashboardExercises(trainingId);
       setState(() {
         _exercises = exercises;
+        _refreshToken++;
         _isLoading = false;
       });
     } catch (e) {
@@ -370,6 +372,7 @@ class DashboardPageState extends State<DashboardPage> {
                       exercise: exercise,
                       repository: _repository,
                       userId: widget.supabase.auth.currentUser!.id,
+                      refreshToken: _refreshToken,
                     ),
                     if (!isLast) const SizedBox(height: 20),
                   ],
@@ -463,12 +466,14 @@ class _ExerciseChartCard extends StatefulWidget {
   final TrainingRow exercise;
   final DashboardRepository repository;
   final String userId;
+  final int refreshToken;
 
   const _ExerciseChartCard({
     super.key,
     required this.exercise,
     required this.repository,
     required this.userId,
+    required this.refreshToken,
   });
 
   @override
@@ -494,8 +499,22 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     _loadHistory();
   }
 
+  @override
+  void didUpdateWidget(covariant _ExerciseChartCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.refreshToken != oldWidget.refreshToken ||
+        widget.exercise.id != oldWidget.exercise.id) {
+      _loadHistory();
+    }
+  }
+
   Future<void> _loadHistory() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
       final history = await widget.repository.getExerciseHistory(
         widget.exercise.id,
         widget.userId,
