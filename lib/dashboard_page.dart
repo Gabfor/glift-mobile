@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'repositories/dashboard_repository.dart';
 import 'models/program.dart';
 import 'models/training_row.dart';
+import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -305,7 +306,7 @@ class DashboardPageState extends State<DashboardPage> {
 
   Widget _buildProgramPager() {
     if (_isLoading && _programs.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const GliftLoader();
     }
 
     if (_programs.isEmpty) {
@@ -333,7 +334,7 @@ class DashboardPageState extends State<DashboardPage> {
         }
 
         if (_isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const GliftLoader();
         }
 
         return ListView(
@@ -647,7 +648,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           const SizedBox(height: 20),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const GliftLoader()
                 : _history.isEmpty
                 ? Center(
                     child: Text(

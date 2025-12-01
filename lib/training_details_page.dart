@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
+import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 
 import 'widgets/numeric_keypad.dart';
@@ -279,7 +280,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: GliftTheme.accent));
+      return const GliftLoader();
     }
 
     if (_error != null) {
