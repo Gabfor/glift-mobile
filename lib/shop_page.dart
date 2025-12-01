@@ -16,7 +16,11 @@ class ShopPage extends StatefulWidget {
   final SupabaseClient supabase;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
 
-  const ShopPage({super.key, required this.supabase, this.onNavigationVisibilityChanged});
+  const ShopPage({
+    super.key,
+    required this.supabase,
+    this.onNavigationVisibilityChanged,
+  });
 
   @override
   State<ShopPage> createState() => _ShopPageState();
@@ -26,7 +30,7 @@ class _ShopPageState extends State<ShopPage> {
   late final ShopRepository _repository;
   List<ShopOffer> _offers = [];
   bool _isLoading = true;
-  Set<String> _selectedTypes = {};
+  final Set<String> _selectedTypes = {};
   late String _selectedSort;
   Map<String, Set<String>> _filterOptionsBySection = {
     'Sexe': {'Femme', 'Homme'},
@@ -42,7 +46,7 @@ class _ShopPageState extends State<ShopPage> {
     super.initState();
     _repository = ShopRepository(widget.supabase);
     _selectedTypes.add('Tous');
-    
+
     // Initialize from service
     final filterService = FilterService();
     _selectedFiltersMap = Map.from(filterService.shopFilters);
@@ -111,7 +115,9 @@ class _ShopPageState extends State<ShopPage> {
 
     selectedFilters.forEach((section, values) {
       final options = _filterOptionsBySection[section];
-      final isFiltering = options == null ? values.isNotEmpty : values.length != options.length;
+      final isFiltering = options == null
+          ? values.isNotEmpty
+          : values.length != options.length;
       if (isFiltering) {
         activeFilters[section] = values;
       }
@@ -133,7 +139,9 @@ class _ShopPageState extends State<ShopPage> {
         // Boutique
         if (matches && activeFilters.containsKey('Boutique')) {
           final boutiques = activeFilters['Boutique']!;
-          if (boutiques.isEmpty || offer.shop == null || !boutiques.contains(offer.shop)) {
+          if (boutiques.isEmpty ||
+              offer.shop == null ||
+              !boutiques.contains(offer.shop)) {
             matches = false;
           }
         }
@@ -220,7 +228,9 @@ class _ShopPageState extends State<ShopPage> {
   bool get _hasActiveFilters {
     for (final entry in _selectedFiltersMap.entries) {
       final options = _filterOptionsBySection[entry.key];
-      final isFiltering = options == null ? entry.value.isNotEmpty : entry.value.length != options.length;
+      final isFiltering = options == null
+          ? entry.value.isNotEmpty
+          : entry.value.length != options.length;
       if (isFiltering) {
         return true;
       }
@@ -235,170 +245,190 @@ class _ShopPageState extends State<ShopPage> {
       child: GliftPageLayout(
         title: 'Glift Shop',
         subtitle: 'Offres régulièrement mises à jour',
-        padding: const EdgeInsets.only(top: 20, bottom: 30), // Remove horizontal padding
+        padding: const EdgeInsets.only(
+          top: 20,
+          bottom: 30,
+        ), // Remove horizontal padding
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _offers.isEmpty
-                ? Center(
-                    child: Text(
-                      'Aucune offre trouvée',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
-                        fontSize: 16,
-                      ),
-                    ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_availableFilters.length > 1) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+            ? Center(
+                child: Text(
+                  'Aucune offre trouvée',
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFF3A416F),
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_availableFilters.length > 1) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'Trier par',
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Row(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Text(
-                                  'Trier par',
-                                  style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF3A416F),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Container(
+                                  height: 40,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(5),
+                                    border: Border.all(
+                                      color: const Color(0xFFD7D4DC),
+                                    ),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedSort,
+                                      isExpanded: true,
+                                      icon: const SizedBox.shrink(),
+                                      items: [
+                                        DropdownMenuItem(
+                                          value: 'popularity',
+                                          child: Text(
+                                            'Pertinence',
+                                            style: GoogleFonts.quicksand(
+                                              color: const Color(0xFF3A416F),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'newest',
+                                          child: Text(
+                                            'Nouveauté',
+                                            style: GoogleFonts.quicksand(
+                                              color: const Color(0xFF3A416F),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'expiration',
+                                          child: Text(
+                                            'Expiration',
+                                            style: GoogleFonts.quicksand(
+                                              color: const Color(0xFF3A416F),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      onChanged: (value) {
+                                        if (value != null) {
+                                          setState(() {
+                                            _selectedSort = value;
+                                            FilterService().shopSort =
+                                                value; // Persist
+                                          });
+                                        }
+                                      },
+                                      selectedItemBuilder: (context) {
+                                        return [
+                                          'popularity',
+                                          'newest',
+                                          'expiration',
+                                        ].map((String value) {
+                                          return Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/icons/tri.svg',
+                                                width: 15,
+                                                height: 15,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                value == 'popularity'
+                                                    ? 'Pertinence'
+                                                    : value == 'newest'
+                                                    ? 'Nouveauté'
+                                                    : 'Expiration',
+                                                style: GoogleFonts.quicksand(
+                                                  color: const Color(
+                                                    0xFF3A416F,
+                                                  ),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }).toList();
+                                      },
+                                    ),
                                   ),
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      height: 40,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(color: const Color(0xFFD7D4DC)),
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          value: _selectedSort,
-                                          isExpanded: true,
-                                          icon: const SizedBox.shrink(),
-                                          items: [
-                                            DropdownMenuItem(
-                                              value: 'popularity',
-                                              child: Text(
-                                                'Pertinence',
-                                                style: GoogleFonts.quicksand(
-                                                  color: const Color(0xFF3A416F),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                            DropdownMenuItem(
-                                              value: 'newest',
-                                              child: Text(
-                                                'Nouveauté',
-                                                style: GoogleFonts.quicksand(
-                                                  color: const Color(0xFF3A416F),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                            DropdownMenuItem(
-                                              value: 'expiration',
-                                              child: Text(
-                                                'Expiration',
-                                                style: GoogleFonts.quicksand(
-                                                  color: const Color(0xFF3A416F),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                          onChanged: (value) {
-                                            if (value != null) {
-                                              setState(() {
-                                                _selectedSort = value;
-                                                FilterService().shopSort = value; // Persist
-                                              });
-                                            }
-                                          },
-                                          selectedItemBuilder: (context) {
-                                            return [
-                                              'popularity',
-                                              'newest',
-                                              'expiration'
-                                            ].map((String value) {
-                                              return Row(
-                                                children: [
-                                                  SvgPicture.asset('assets/icons/tri.svg', width: 15, height: 15),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    value == 'popularity' ? 'Pertinence' :
-                                                    value == 'newest' ? 'Nouveauté' : 'Expiration',
-                                                    style: GoogleFonts.quicksand(
-                                                      color: const Color(0xFF3A416F),
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            }).toList();
-                                          },
-                                        ),
-                                      ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  _showFilterModal();
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFFD7D4DC),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  GestureDetector(
-                                    onTap: () {
-                                      _showFilterModal();
-                                    },
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: const Color(0xFFD7D4DC)),
-                                      ),
-                                      padding: const EdgeInsets.all(10),
-                                      child: SvgPicture.asset(
-                                        _hasActiveFilters
-                                            ? 'assets/icons/filtre_green.svg'
-                                            : 'assets/icons/filtre_red.svg',
-                                        height: 16,
-                                        width: 16,
-                                      ),
-                                    ),
+                                  padding: const EdgeInsets.all(10),
+                                  child: SvgPicture.asset(
+                                    _hasActiveFilters
+                                        ? 'assets/icons/filtre_green.svg'
+                                        : 'assets/icons/filtre_red.svg',
+                                    height: 16,
+                                    width: 16,
                                   ),
-                                ],
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.only(bottom: 50),
-                          itemCount: _filteredOffers.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 20),
-                          itemBuilder: (context, index) {
-                            return _ShopOfferCard(offer: _filteredOffers[index]);
-                          },
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 50),
+                      itemCount: _filteredOffers.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 20),
+                      itemBuilder: (context, index) {
+                        return _ShopOfferCard(offer: _filteredOffers[index]);
+                      },
+                    ),
                   ),
+                ],
+              ),
       ),
     );
   }
@@ -471,7 +501,9 @@ class _FiltersRow extends StatelessWidget {
                   label: Text(
                     option,
                     style: GoogleFonts.quicksand(
-                      color: selected.contains(option) ? Colors.white : const Color(0xFF3A416F),
+                      color: selected.contains(option)
+                          ? Colors.white
+                          : const Color(0xFF3A416F),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -514,7 +546,9 @@ class _ShopOfferCard extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(8),
+                ),
                 child: Image.network(
                   offer.image,
                   height: 180,
@@ -542,7 +576,9 @@ class _ShopOfferCard extends StatelessWidget {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF5D6494).withValues(alpha: 0.25),
+                            color: const Color(
+                              0xFF5D6494,
+                            ).withValues(alpha: 0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
@@ -564,7 +600,10 @@ class _ShopOfferCard extends StatelessWidget {
                   top: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: const BoxDecoration(
                       color: Color(0xFF7069FA),
                       borderRadius: BorderRadius.only(
@@ -622,7 +661,7 @@ class _ShopOfferCard extends StatelessWidget {
                 _buildShippingInfo(offer.shipping),
 
                 const SizedBox(height: 15),
-                
+
                 // Button
                 SizedBox(
                   width: double.infinity,
@@ -707,7 +746,7 @@ class _ShopOfferCard extends StatelessWidget {
 
   Widget _buildShippingInfo(String? shipping) {
     if (shipping == null || shipping.isEmpty) {
-       return Row(
+      return Row(
         children: [
           _buildStatusIcon('assets/icons/check_grey.svg'),
           const SizedBox(width: 8),
@@ -724,7 +763,7 @@ class _ShopOfferCard extends StatelessWidget {
     }
 
     final shippingValue = double.tryParse(shipping.replaceAll(',', '.'));
-    
+
     if (shippingValue == 0) {
       return Row(
         children: [
@@ -782,11 +821,7 @@ class _ShopOfferCard extends StatelessWidget {
   }
 
   Widget _buildStatusIcon(String assetPath) {
-    return SvgPicture.asset(
-      assetPath,
-      width: 20,
-      height: 20,
-    );
+    return SvgPicture.asset(assetPath, width: 20, height: 20);
   }
 }
 
@@ -807,7 +842,10 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
   void initState() {
     super.initState();
     _calculateTimeLeft();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _calculateTimeLeft());
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _calculateTimeLeft(),
+    );
   }
 
   @override
@@ -836,7 +874,11 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
     if (widget.endDateStr == null) {
       return Row(
         children: [
-          SvgPicture.asset('assets/icons/check_green.svg', width: 20, height: 20),
+          SvgPicture.asset(
+            'assets/icons/check_green.svg',
+            width: 20,
+            height: 20,
+          ),
           const SizedBox(width: 8),
           Text(
             'Aucune date d\'expiration',

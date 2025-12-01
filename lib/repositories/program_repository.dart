@@ -1,6 +1,5 @@
 import 'package:supabase/supabase.dart';
 import '../models/program.dart';
-import '../models/training.dart';
 import '../models/training_row.dart';
 
 class ProgramRepository {
@@ -19,19 +18,23 @@ class ProgramRepository {
       try {
         final response = await _supabase
             .from('programs')
-            .select('id, name, position, dashboard, trainings(id, name, position, app, dashboard, program_id)')
+            .select(
+              'id, name, position, dashboard, trainings(id, name, position, app, dashboard, program_id)',
+            )
             .eq('user_id', userId)
             .order('position', ascending: true);
-        
+
         return _processProgramsResponse(response, userId);
       } catch (_) {
         // Fallback: fetch without dashboard column on trainings
         final response = await _supabase
             .from('programs')
-            .select('id, name, position, dashboard, trainings(id, name, position, app, program_id)')
+            .select(
+              'id, name, position, dashboard, trainings(id, name, position, app, program_id)',
+            )
             .eq('user_id', userId)
             .order('position', ascending: true);
-            
+
         return _processProgramsResponse(response, userId);
       }
     } catch (e) {
@@ -39,7 +42,10 @@ class ProgramRepository {
     }
   }
 
-  Future<List<Program>> _processProgramsResponse(List<dynamic> data, String userId) async {
+  Future<List<Program>> _processProgramsResponse(
+    List<dynamic> data,
+    String userId,
+  ) async {
     if (data.isEmpty) {
       // Create default program if none exists
       final newProgram = await _supabase
@@ -47,7 +53,7 @@ class ProgramRepository {
           .insert({'name': 'Nom du programme', 'user_id': userId})
           .select()
           .single();
-          
+
       return [
         Program(
           id: newProgram['id'],
@@ -55,33 +61,40 @@ class ProgramRepository {
           trainings: [],
           position: newProgram['position'],
           dashboard: newProgram['dashboard'] ?? true,
-        )
+        ),
       ];
     }
 
-    return data.map((json) {
-      final program = Program.fromJson(json as Map<String, dynamic>);
-      
-      // Filter trainings to only show those visible in app
-      final visibleTrainings = program.trainings.where((t) => t.app).toList();
-      
-      // Sort trainings by position
-      visibleTrainings.sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
+    return data
+        .map((json) {
+          final program = Program.fromJson(json as Map<String, dynamic>);
 
-      return Program(
-        id: program.id,
-        name: program.name,
-        trainings: visibleTrainings,
-        position: program.position,
-        dashboard: program.dashboard,
-      );
-    }).where((p) => p.trainings.isNotEmpty).toList();
+          // Filter trainings to only show those visible in app
+          final visibleTrainings = program.trainings
+              .where((t) => t.app)
+              .toList();
+
+          // Sort trainings by position
+          visibleTrainings.sort(
+            (a, b) => (a.position ?? 0).compareTo(b.position ?? 0),
+          );
+
+          return Program(
+            id: program.id,
+            name: program.name,
+            trainings: visibleTrainings,
+            position: program.position,
+            dashboard: program.dashboard,
+          );
+        })
+        .where((p) => p.trainings.isNotEmpty)
+        .toList();
   }
 
   Future<List<TrainingRow>> getTrainingDetails(String trainingId) async {
     try {
       final response = await _supabase
-          .from('training_rows') 
+          .from('training_rows')
           .select()
           .eq('training_id', trainingId)
           .order('order', ascending: true);
@@ -89,10 +102,17 @@ class ProgramRepository {
       final List<dynamic> data = response as List<dynamic>;
       return data.map((json) => TrainingRow.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Erreur lors du chargement du détail de l\'entraînement: $e');
+      throw Exception(
+        'Erreur lors du chargement du détail de l\'entraînement: $e',
+      );
     }
   }
-  Future<void> updateTrainingRow(String rowId, {List<String>? repetitions, List<String>? weights}) async {
+
+  Future<void> updateTrainingRow(
+    String rowId, {
+    List<String>? repetitions,
+    List<String>? weights,
+  }) async {
     try {
       final updates = <String, dynamic>{};
       if (repetitions != null) updates['repetitions'] = repetitions;
@@ -100,10 +120,7 @@ class ProgramRepository {
 
       if (updates.isEmpty) return;
 
-      await _supabase
-          .from('training_rows')
-          .update(updates)
-          .eq('id', rowId);
+      await _supabase.from('training_rows').update(updates).eq('id', rowId);
     } catch (e) {
       throw Exception('Erreur lors de la mise à jour de l\'exercice: $e');
     }
@@ -116,21 +133,29 @@ class ProgramRepository {
   }) async {
     try {
       // 1. Create session
-      final sessionResponse = await _supabase.from('training_sessions').insert({
-        'user_id': userId,
-        'training_id': trainingId,
-        'performed_at': DateTime.now().toUtc().toIso8601String(),
-      }).select().single();
+      final sessionResponse = await _supabase
+          .from('training_sessions')
+          .insert({
+            'user_id': userId,
+            'training_id': trainingId,
+            'performed_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .select()
+          .single();
 
       final sessionId = sessionResponse['id'];
 
       // 2. Create exercises and sets
       for (final row in completedRows) {
-        final exerciseResponse = await _supabase.from('training_session_exercises').insert({
-          'session_id': sessionId,
-          'training_row_id': row.id,
-          'exercise_name': row.exercise,
-        }).select().single();
+        final exerciseResponse = await _supabase
+            .from('training_session_exercises')
+            .insert({
+              'session_id': sessionId,
+              'training_row_id': row.id,
+              'exercise_name': row.exercise,
+            })
+            .select()
+            .single();
 
         final exerciseId = exerciseResponse['id'];
 
@@ -141,7 +166,8 @@ class ProgramRepository {
           final weight = i < row.weights.length ? row.weights[i] : '';
 
           // Parse repetitions safely (handle decimals like "10.0" by rounding)
-          final repsDouble = double.tryParse(repsStr.replaceAll(',', '.')) ?? 0.0;
+          final repsDouble =
+              double.tryParse(repsStr.replaceAll(',', '.')) ?? 0.0;
           final reps = repsDouble.round();
 
           // Only insert sets with valid repetitions (assuming check constraint requires > 0)
@@ -164,7 +190,9 @@ class ProgramRepository {
         }
       }
     } on PostgrestException catch (e) {
-      final errorDetails = StringBuffer('Erreur lors de la sauvegarde de la séance: ${e.message}');
+      final errorDetails = StringBuffer(
+        'Erreur lors de la sauvegarde de la séance: ${e.message}',
+      );
 
       if (e.details is String && (e.details as String).isNotEmpty) {
         errorDetails.write(' | Détails: ${e.details}');

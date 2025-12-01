@@ -153,29 +153,29 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(width: 20),
                 ..._programs!.asMap().entries.map((entry) {
-                final index = entry.key;
-                final program = entry.value;
-                final isSelected = program.id == _selectedProgramId;
-                return GestureDetector(
-                  onTap: () => _onProgramSelected(index),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 20),
-                    child: Container(
-                      key: _programKeys[index],
-                      child: Text(
-                        program.name,
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.5),
+                  final index = entry.key;
+                  final program = entry.value;
+                  final isSelected = program.id == _selectedProgramId;
+                  return GestureDetector(
+                    onTap: () => _onProgramSelected(index),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: Container(
+                        key: _programKeys[index],
+                        child: Text(
+                          program.name,
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.5),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }),
               ],
             ),
           ),
@@ -198,10 +198,7 @@ class _HomePageState extends State<HomePage> {
       return Center(
         child: Text(
           'Aucun programme disponible',
-          style: GoogleFonts.quicksand(
-            fontSize: 16,
-            color: GliftTheme.body,
-          ),
+          style: GoogleFonts.quicksand(fontSize: 16, color: GliftTheme.body),
         ),
       );
     }
@@ -241,18 +238,20 @@ class _HomePageState extends State<HomePage> {
                     ),
                     transitionsBuilder:
                         (_, animation, secondaryAnimation, child) {
-                      const begin = Offset(0, 1);
-                      const end = Offset.zero;
-                      const curve = Curves.ease;
+                          const begin = Offset(0, 1);
+                          const end = Offset.zero;
+                          const curve = Curves.ease;
 
-                      final tween = Tween(begin: begin, end: end)
-                          .chain(CurveTween(curve: curve));
+                          final tween = Tween(
+                            begin: begin,
+                            end: end,
+                          ).chain(CurveTween(curve: curve));
 
-                      return SlideTransition(
-                        position: animation.drive(tween),
-                        child: child,
-                      );
-                    },
+                          return SlideTransition(
+                            position: animation.drive(tween),
+                            child: child,
+                          );
+                        },
                   ),
                 );
 
@@ -360,11 +359,7 @@ class _TrainingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 20),
-            SvgPicture.asset(
-              'assets/icons/good.svg',
-              width: 20,
-              height: 20,
-            ),
+            SvgPicture.asset('assets/icons/good.svg', width: 20, height: 20),
           ],
         ),
       ),

@@ -7,7 +7,6 @@ import 'dashboard_page.dart';
 import 'store_page.dart';
 import 'shop_page.dart';
 import 'settings_page.dart';
-import 'theme/glift_theme.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key, required this.supabase});
@@ -79,20 +78,14 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (child, animation) {
           return SizeTransition(
             sizeFactor: animation,
             axisAlignment: -1,
-            child: FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
+            child: FadeTransition(opacity: animation, child: child),
           );
         },
         child: _isBottomNavVisible
@@ -101,10 +94,7 @@ class _MainPageState extends State<MainPage> {
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(
-                    top: BorderSide(
-                      color: Color(0xFFECE9F1),
-                      width: 1,
-                    ),
+                    top: BorderSide(color: Color(0xFFECE9F1), width: 1),
                   ),
                 ),
                 child: SafeArea(
@@ -131,7 +121,9 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildNavItem(int index, String label, String iconName) {
     final isSelected = _currentIndex == index;
-    final textColor = isSelected ? const Color(0xFF7069FA) : const Color(0xFFC2BFC6);
+    final textColor = isSelected
+        ? const Color(0xFF7069FA)
+        : const Color(0xFFC2BFC6);
     final iconPath = isSelected
         ? 'assets/icons/${iconName}_active.svg'
         : 'assets/icons/$iconName.svg';
@@ -145,11 +137,7 @@ class _MainPageState extends State<MainPage> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              iconPath,
-              width: 24,
-              height: 24,
-            ),
+            SvgPicture.asset(iconPath, width: 24, height: 24),
             const SizedBox(height: 4),
             Text(
               label,
