@@ -221,8 +221,8 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 12),
             const SizedBox(height: 8),
             _InputField(
-              label: 'Email',
-              hintText: 'john.doe@email.com',
+              label: 'Adresse e-mail',
+              hintText: 'prenom.nom@email.fr',
               controller: _emailController,
               focusNode: _emailFocusNode,
               isFocused: _emailFocused,
