@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'glift_loader.dart';
 
 /// Displays raster image data that is embedded inside an SVG asset as a
 /// `data:image/*;base64,` URI.
@@ -118,7 +119,7 @@ class EmbeddedRasterImage extends StatelessWidget {
           return SizedBox(
             width: width,
             height: height,
-            child: const Center(child: CircularProgressIndicator()),
+            child: const GliftLoader(),
           );
         }
 

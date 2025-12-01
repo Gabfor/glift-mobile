@@ -10,6 +10,7 @@ import 'models/training.dart';
 import 'repositories/program_repository.dart';
 import 'theme/glift_theme.dart';
 import 'training_details_page.dart';
+import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 
 class HomePage extends StatefulWidget {
@@ -187,7 +188,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const GliftLoader();
     }
 
     if (_error != null) {

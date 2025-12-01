@@ -8,6 +8,7 @@ import 'package:supabase/supabase.dart';
 
 import 'repositories/store_repository.dart';
 import 'models/store_program.dart';
+import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/filter_modal.dart';
 
@@ -215,7 +216,7 @@ class _StorePageState extends State<StorePage> {
         subtitle: 'Trouver votre prochain programme',
         padding: const EdgeInsets.only(top: 20, bottom: 30),
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const GliftLoader()
             : _programs.isEmpty
             ? Center(
                 child: Text(

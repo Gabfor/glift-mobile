@@ -7,6 +7,7 @@ import 'package:supabase/supabase.dart';
 
 import 'repositories/shop_repository.dart';
 import 'models/shop_offer.dart';
+import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/filter_modal.dart';
 
@@ -250,7 +251,7 @@ class _ShopPageState extends State<ShopPage> {
           bottom: 30,
         ), // Remove horizontal padding
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const GliftLoader()
             : _offers.isEmpty
             ? Center(
                 child: Text(
