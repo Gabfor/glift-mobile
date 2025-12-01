@@ -261,88 +261,100 @@ class _StorePageState extends State<StorePage> {
                                       color: const Color(0xFFD7D4DC),
                                     ),
                                   ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _selectedSort,
-                                      isExpanded: true,
-                                      icon: const SizedBox.shrink(),
-                                      items: [
-                                        DropdownMenuItem(
-                                          value: 'popularity',
-                                          child: Text(
-                                            'Pertinence',
-                                            style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'newest',
-                                          child: Text(
-                                            'Nouveauté',
-                                            style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'expiration',
-                                          child: Text(
-                                            'Expiration',
-                                            style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      onChanged: (value) {
-                                        if (value != null) {
-                                          setState(() {
-                                            _selectedSort = value;
-                                            FilterService().storeSort =
-                                                value; // Persist
-                                          });
-                                        }
-                                      },
-                                      selectedItemBuilder: (context) {
-                                        return [
-                                          'popularity',
-                                          'newest',
-                                          'expiration',
-                                        ].map((String value) {
-                                          return Row(
-                                            children: [
-                                              SvgPicture.asset(
-                                                'assets/icons/tri.svg',
-                                                width: 15,
-                                                height: 15,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                value == 'popularity'
-                                                    ? 'Pertinence'
-                                                    : value == 'newest'
-                                                    ? 'Nouveauté'
-                                                    : 'Expiration',
-                                                style: GoogleFonts.quicksand(
-                                                  color: const Color(
-                                                    0xFF3A416F,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<String>(
+                                            value: _selectedSort,
+                                            isExpanded: true,
+                                            icon: const SizedBox.shrink(),
+                                            items: [
+                                              DropdownMenuItem(
+                                                value: 'popularity',
+                                                child: Text(
+                                                  'Pertinence',
+                                                  style: GoogleFonts.quicksand(
+                                                    color: const Color(0xFF3A416F),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
                                                   ),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              DropdownMenuItem(
+                                                value: 'newest',
+                                                child: Text(
+                                                  'Nouveauté',
+                                                  style: GoogleFonts.quicksand(
+                                                    color: const Color(0xFF3A416F),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                              DropdownMenuItem(
+                                                value: 'expiration',
+                                                child: Text(
+                                                  'Expiration',
+                                                  style: GoogleFonts.quicksand(
+                                                    color: const Color(0xFF3A416F),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
                                                 ),
                                               ),
                                             ],
-                                          );
-                                        }).toList();
-                                      },
-                                    ),
+                                            onChanged: (value) {
+                                              if (value != null) {
+                                                setState(() {
+                                                  _selectedSort = value;
+                                                  FilterService().storeSort =
+                                                      value; // Persist
+                                                });
+                                              }
+                                            },
+                                            selectedItemBuilder: (context) {
+                                              return [
+                                                'popularity',
+                                                'newest',
+                                                'expiration',
+                                              ].map((String value) {
+                                                return Row(
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      'assets/icons/tri.svg',
+                                                      width: 15,
+                                                      height: 15,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      value == 'popularity'
+                                                          ? 'Pertinence'
+                                                          : value == 'newest'
+                                                          ? 'Nouveauté'
+                                                          : 'Expiration',
+                                                      style: GoogleFonts.quicksand(
+                                                        color: const Color(
+                                                          0xFF3A416F,
+                                                        ),
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              }).toList();
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      SvgPicture.asset(
+                                        'assets/icons/chevron.svg',
+                                        width: 9,
+                                        height: 7,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
