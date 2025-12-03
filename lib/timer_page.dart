@@ -240,7 +240,11 @@ class _TimerPageState extends State<TimerPage> {
                   children: [
                     SizedBox(
                       width: 100,
-                      child: _TimeDigit(value: minutes, label: 'Minutes'),
+                      child: _TimeDigit(
+                        value: minutes,
+                        label: 'Minutes',
+                        onTap: _editDuration,
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -259,7 +263,11 @@ class _TimerPageState extends State<TimerPage> {
                     ),
                     SizedBox(
                       width: 100,
-                      child: _TimeDigit(value: seconds, label: 'Secondes'),
+                      child: _TimeDigit(
+                        value: seconds,
+                        label: 'Secondes',
+                        onTap: _editDuration,
+                      ),
                     ),
                   ],
                 ),
@@ -320,41 +328,47 @@ class _TimeDigit extends StatelessWidget {
   const _TimeDigit({
     required this.value,
     required this.label,
+    this.onTap,
   });
 
   final String value;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 90,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              for (final digit in value.split(''))
-                SizedBox(
-                  width: 45,
-                  child: _SlidingDigit(digit: digit),
-                ),
-            ],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 90,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                for (final digit in value.split(''))
+                  SizedBox(
+                    width: 45,
+                    child: _SlidingDigit(digit: digit),
+                  ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 5), // Reduced spacing from 10px to 5px
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.quicksand(
-            fontSize: 16,
-            color: const Color(0xFFC2BFC6),
-            fontWeight: FontWeight.w600,
+          const SizedBox(height: 5), // Reduced spacing from 10px to 5px
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.quicksand(
+              fontSize: 16,
+              color: const Color(0xFFC2BFC6),
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
