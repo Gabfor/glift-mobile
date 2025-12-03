@@ -39,6 +39,7 @@ class _TimerPageState extends State<TimerPage> {
   bool _isModified = false;
   bool _isSaving = false;
   late int _lastEditedDuration;
+  late int _savedDuration;
 
   late final TextEditingController _minutesController;
   late final TextEditingController _secondsController;
@@ -52,6 +53,7 @@ class _TimerPageState extends State<TimerPage> {
     super.initState();
     _remainingSeconds = widget.durationInSeconds;
     _lastEditedDuration = widget.durationInSeconds;
+    _savedDuration = widget.durationInSeconds;
     _minutesController = TextEditingController();
     _secondsController = TextEditingController();
     _minutesFocusNode = FocusNode();
@@ -184,8 +186,8 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       _remainingSeconds = newMinutes * 60 + seconds;
       _isEditingMinutes = false;
-      _isModified = true;
       _lastEditedDuration = _remainingSeconds;
+      _isModified = _lastEditedDuration != _savedDuration;
     });
     _restartIfNeeded();
   }
@@ -196,8 +198,8 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       _remainingSeconds = minutes * 60 + newSeconds;
       _isEditingSeconds = false;
-      _isModified = true;
       _lastEditedDuration = _remainingSeconds;
+      _isModified = _lastEditedDuration != _savedDuration;
     });
     _restartIfNeeded();
   }
@@ -235,6 +237,7 @@ class _TimerPageState extends State<TimerPage> {
       if (mounted) {
         setState(() {
           _isSaving = false;
+          _savedDuration = _lastEditedDuration;
           _isModified = false;
         });
       }
