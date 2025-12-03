@@ -235,16 +235,16 @@ class _TimeDigit extends StatelessWidget {
             switchInCurve: Curves.easeOut,
             switchOutCurve: Curves.easeIn,
             transitionBuilder: (child, animation) {
-              final isIncoming = animation.status == AnimationStatus.forward;
+              final isIncoming = animation.status != AnimationStatus.reverse;
 
-              final tween = Tween<Offset>(
-                begin: isIncoming ? const Offset(0, 1) : Offset.zero,
-                end: isIncoming ? Offset.zero : const Offset(0, -1),
-              );
+              final slideAnimation = Tween<Offset>(
+                begin: isIncoming ? const Offset(0, -1) : Offset.zero,
+                end: isIncoming ? Offset.zero : const Offset(0, 1),
+              ).animate(animation);
 
               return ClipRect(
                 child: SlideTransition(
-                  position: tween.animate(animation),
+                  position: slideAnimation,
                   child: FadeTransition(
                     opacity: animation,
                     child: child,
