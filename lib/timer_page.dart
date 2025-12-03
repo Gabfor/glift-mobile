@@ -229,7 +229,7 @@ class _TimerPageState extends State<TimerPage> {
                   ),
                 ),
               ),
-          ),
+
           
           // Main Content
           Center(
@@ -239,11 +239,10 @@ class _TimerPageState extends State<TimerPage> {
                 // Timer Display
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      width: 100,
+                      width: 140,
                       child: _EditableTimeValue(
                         value: minutes,
                         label: 'Minutes',
@@ -254,23 +253,23 @@ class _TimerPageState extends State<TimerPage> {
                         maxLength: 2,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: SizedBox(
-                        width: 20,
-                        child: Text(
-                          ':',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.redHatText(
-                            fontSize: 80,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF3A416F),
-                          ),
+                    Container(
+                      width: 20,
+                      height: 90,
+                      alignment: Alignment.center,
+                      child: Text(
+                        ':',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.redHatText(
+                          fontSize: 80,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF3A416F),
+                          height: 1.0,
                         ),
                       ),
                     ),
                     SizedBox(
-                      width: 100,
+                      width: 140,
                       child: _EditableTimeValue(
                         value: seconds,
                         label: 'Secondes',
@@ -374,7 +373,7 @@ class _EditableTimeValue extends StatelessWidget {
                       ],
                       textAlign: TextAlign.center,
                       style: GoogleFonts.quicksand(
-                        fontSize: 48,
+                        fontSize: 80,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF3A416F),
                         height: 1.0,
@@ -382,21 +381,30 @@ class _EditableTimeValue extends StatelessWidget {
                       decoration: const InputDecoration(
                         isCollapsed: true,
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 6),
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                   )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      for (final digit in value.split(''))
-                        SizedBox(
-                          width: 45,
-                          child: _SlidingDigit(digit: digit),
-                        ),
-                    ],
+                : Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      value,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 80,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF3A416F),
+                        height: 1.0,
+                      ),
+                    ),
                   ),
           ),
         ),
@@ -411,58 +419,6 @@ class _EditableTimeValue extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SlidingDigit extends StatelessWidget {
-  const _SlidingDigit({required this.digit});
-
-  final String digit;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 220),
-      switchInCurve: Curves.easeOut,
-      switchOutCurve: Curves.easeIn,
-      transitionBuilder: (child, animation) {
-        final incomingSlide = Tween<Offset>(
-          begin: const Offset(0, 1),
-          end: Offset.zero,
-        ).animate(animation);
-
-        final outgoingSlide = Tween<Offset>(
-          begin: Offset.zero,
-          end: const Offset(0, -1),
-        ).animate(ReverseAnimation(animation));
-
-        final slideAnimation = animation.status == AnimationStatus.forward ||
-                animation.status == AnimationStatus.completed
-            ? incomingSlide
-            : outgoingSlide;
-
-        return ClipRect(
-          child: SlideTransition(
-            position: slideAnimation,
-            child: FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
-          ),
-        );
-      },
-      child: Text(
-        digit,
-        key: ValueKey(digit),
-        textAlign: TextAlign.center,
-        style: GoogleFonts.quicksand(
-          fontSize: 80,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF3A416F),
-          height: 1.0, // Reduce line height to minimize default padding
-        ),
-      ),
     );
   }
 }
