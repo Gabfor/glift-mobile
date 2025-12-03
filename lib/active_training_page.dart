@@ -700,7 +700,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: const Color(0xFFECE9F1)),
                         ),
