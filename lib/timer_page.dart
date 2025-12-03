@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:glift_mobile/services/notification_service.dart';
@@ -30,17 +31,35 @@ class _TimerPageState extends State<TimerPage> {
   late int _remainingSeconds;
   Timer? _timer;
   bool _isRunning = false;
+  bool _wasRunningBeforeEdit = false;
+
+  late final TextEditingController _minutesController;
+  late final TextEditingController _secondsController;
+  late final FocusNode _minutesFocusNode;
+  late final FocusNode _secondsFocusNode;
+  bool _isEditingMinutes = false;
+  bool _isEditingSeconds = false;
 
   @override
   void initState() {
     super.initState();
     _remainingSeconds = widget.durationInSeconds;
+    _minutesController = TextEditingController();
+    _secondsController = TextEditingController();
+    _minutesFocusNode = FocusNode();
+    _secondsFocusNode = FocusNode();
+    _minutesFocusNode.addListener(_handleMinutesFocusChange);
+    _secondsFocusNode.addListener(_handleSecondsFocusChange);
     _startTimer();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _minutesController.dispose();
+    _secondsController.dispose();
+    _minutesFocusNode.dispose();
+    _secondsFocusNode.dispose();
     super.dispose();
   }
 
@@ -104,6 +123,76 @@ class _TimerPageState extends State<TimerPage> {
     return '$minutes : $seconds';
   }
 
+  void _enterMinutesEdit() {
+    _pauseTimerForEdit();
+    _minutesController.text = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    setState(() {
+      _isEditingMinutes = true;
+      _isEditingSeconds = false;
+    });
+    _minutesFocusNode.requestFocus();
+  }
+
+  void _enterSecondsEdit() {
+    _pauseTimerForEdit();
+    _secondsController.text = (_remainingSeconds % 60).toString().padLeft(2, '0');
+    setState(() {
+      _isEditingSeconds = true;
+      _isEditingMinutes = false;
+    });
+    _secondsFocusNode.requestFocus();
+  }
+
+  void _pauseTimerForEdit() {
+    _wasRunningBeforeEdit = _isRunning;
+    _pauseTimer();
+  }
+
+  void _handleMinutesFocusChange() {
+    if (!_minutesFocusNode.hasFocus && _isEditingMinutes) {
+      _finishMinutesEdit();
+    }
+  }
+
+  void _handleSecondsFocusChange() {
+    if (!_secondsFocusNode.hasFocus && _isEditingSeconds) {
+      _finishSecondsEdit();
+    }
+  }
+
+  void _finishMinutesEdit() {
+    final newMinutes = (int.tryParse(_minutesController.text) ?? 0).clamp(0, 99);
+    final seconds = _remainingSeconds % 60;
+    setState(() {
+      _remainingSeconds = newMinutes * 60 + seconds;
+      _isEditingMinutes = false;
+    });
+    _restartIfNeeded();
+  }
+
+  void _finishSecondsEdit() {
+    final newSeconds = (int.tryParse(_secondsController.text) ?? 0).clamp(0, 59);
+    final minutes = _remainingSeconds ~/ 60;
+    setState(() {
+      _remainingSeconds = minutes * 60 + newSeconds;
+      _isEditingSeconds = false;
+    });
+    _restartIfNeeded();
+  }
+
+  void _restartIfNeeded() {
+    if (_wasRunningBeforeEdit) {
+      _startTimer();
+    }
+    _wasRunningBeforeEdit = false;
+  }
+
+  void _handleOutsideTap() {
+    if (_isEditingMinutes || _isEditingSeconds) {
+      FocusScope.of(context).unfocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
@@ -111,7 +200,10 @@ class _TimerPageState extends State<TimerPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: Stack(
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _handleOutsideTap,
+        child: Stack(
         children: [
           // Close Button
           Positioned(
@@ -151,7 +243,15 @@ class _TimerPageState extends State<TimerPage> {
                   children: [
                     SizedBox(
                       width: 100,
-                      child: _TimeDigit(value: minutes, label: 'Minutes'),
+                      child: _EditableTimeValue(
+                        value: minutes,
+                        label: 'Minutes',
+                        isEditing: _isEditingMinutes,
+                        controller: _minutesController,
+                        focusNode: _minutesFocusNode,
+                        onTap: _enterMinutesEdit,
+                        maxLength: 2,
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -170,7 +270,15 @@ class _TimerPageState extends State<TimerPage> {
                     ),
                     SizedBox(
                       width: 100,
-                      child: _TimeDigit(value: seconds, label: 'Secondes'),
+                      child: _EditableTimeValue(
+                        value: seconds,
+                        label: 'Secondes',
+                        isEditing: _isEditingSeconds,
+                        controller: _secondsController,
+                        focusNode: _secondsFocusNode,
+                        onTap: _enterSecondsEdit,
+                        maxLength: 2,
+                      ),
                     ),
                   ],
                 ),
@@ -215,35 +323,82 @@ class _TimerPageState extends State<TimerPage> {
   }
 }
 
-class _TimeDigit extends StatelessWidget {
-  const _TimeDigit({
+class _EditableTimeValue extends StatelessWidget {
+  const _EditableTimeValue({
     required this.value,
     required this.label,
+    required this.isEditing,
+    required this.controller,
+    required this.focusNode,
+    required this.onTap,
+    required this.maxLength,
   });
 
   final String value;
   final String label;
+  final bool isEditing;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onTap;
+  final int maxLength;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: 90,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              for (final digit in value.split(''))
-                SizedBox(
-                  width: 45,
-                  child: _SlidingDigit(digit: digit),
-                ),
-            ],
+        GestureDetector(
+          onTap: onTap,
+          child: SizedBox(
+            height: 90,
+            child: isEditing
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFA1A5FD),
+                        width: 2,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(maxLength),
+                      ],
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF3A416F),
+                        height: 1.0,
+                      ),
+                      decoration: const InputDecoration(
+                        isCollapsed: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 6),
+                      ),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      for (final digit in value.split(''))
+                        SizedBox(
+                          width: 45,
+                          child: _SlidingDigit(digit: digit),
+                        ),
+                    ],
+                  ),
           ),
         ),
-        const SizedBox(height: 5), // Reduced spacing from 10px to 5px
+        const SizedBox(height: 5),
         Text(
           label,
           textAlign: TextAlign.center,
