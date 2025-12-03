@@ -56,6 +56,8 @@ class _TimerPageState extends State<TimerPage> {
     _savedDuration = widget.durationInSeconds;
     _minutesController = TextEditingController();
     _secondsController = TextEditingController();
+    _minutesController.addListener(_handleMinutesTextChange);
+    _secondsController.addListener(_handleSecondsTextChange);
     _minutesFocusNode = FocusNode();
     _secondsFocusNode = FocusNode();
     _minutesFocusNode.addListener(_handleMinutesFocusChange);
@@ -68,6 +70,8 @@ class _TimerPageState extends State<TimerPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _minutesController.removeListener(_handleMinutesTextChange);
+    _secondsController.removeListener(_handleSecondsTextChange);
     _minutesController.dispose();
     _secondsController.dispose();
     _minutesFocusNode.dispose();
@@ -180,25 +184,61 @@ class _TimerPageState extends State<TimerPage> {
     }
   }
 
-  void _finishMinutesEdit() {
-    final newMinutes = (int.tryParse(_minutesController.text) ?? 0).clamp(0, 99);
-    final seconds = _remainingSeconds % 60;
+  int _clampInt(int value, int min, int max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
+  int _computePendingDuration({int? minutesOverride, int? secondsOverride}) {
+    final minutes = _clampInt(minutesOverride ?? (_remainingSeconds ~/ 60), 0, 99);
+    final seconds = _clampInt(secondsOverride ?? (_remainingSeconds % 60), 0, 59);
+    return minutes * 60 + seconds;
+  }
+
+  void _handleMinutesTextChange() {
+    if (!_isEditingMinutes) return;
+
+    final pendingMinutes = int.tryParse(_minutesController.text) ?? 0;
+    final pendingDuration = _computePendingDuration(minutesOverride: pendingMinutes);
+
     setState(() {
-      _remainingSeconds = newMinutes * 60 + seconds;
+      _lastEditedDuration = pendingDuration;
+      _isModified = _lastEditedDuration != _savedDuration;
+    });
+  }
+
+  void _handleSecondsTextChange() {
+    if (!_isEditingSeconds) return;
+
+    final pendingSeconds = int.tryParse(_secondsController.text) ?? 0;
+    final pendingDuration = _computePendingDuration(secondsOverride: pendingSeconds);
+
+    setState(() {
+      _lastEditedDuration = pendingDuration;
+      _isModified = _lastEditedDuration != _savedDuration;
+    });
+  }
+
+  void _finishMinutesEdit() {
+    final pendingDuration =
+        _computePendingDuration(minutesOverride: int.tryParse(_minutesController.text) ?? 0);
+    setState(() {
+      _remainingSeconds = pendingDuration;
       _isEditingMinutes = false;
-      _lastEditedDuration = _remainingSeconds;
+      _lastEditedDuration = pendingDuration;
       _isModified = _lastEditedDuration != _savedDuration;
     });
     _restartIfNeeded();
   }
 
   void _finishSecondsEdit() {
-    final newSeconds = (int.tryParse(_secondsController.text) ?? 0).clamp(0, 59);
-    final minutes = _remainingSeconds ~/ 60;
+    final pendingDuration =
+        _computePendingDuration(secondsOverride: int.tryParse(_secondsController.text) ?? 0);
     setState(() {
-      _remainingSeconds = minutes * 60 + newSeconds;
+      _remainingSeconds = pendingDuration;
       _isEditingSeconds = false;
-      _lastEditedDuration = _remainingSeconds;
+      _lastEditedDuration = pendingDuration;
       _isModified = _lastEditedDuration != _savedDuration;
     });
     _restartIfNeeded();
