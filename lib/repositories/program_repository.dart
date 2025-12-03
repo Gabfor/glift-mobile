@@ -130,6 +130,10 @@ class ProgramRepository {
     }
   }
 
+  Future<void> updateRestDuration(String rowId, int restInSeconds) async {
+    await updateTrainingRow(rowId, rest: restInSeconds.toString());
+  }
+
   Future<void> saveTrainingSession({
     required String userId,
     required String trainingId,
