@@ -280,8 +280,10 @@ class _SlidingDigit extends StatelessWidget {
           end: const Offset(0, 1),
         ).animate(ReverseAnimation(animation));
 
-        final slideAnimation =
-            animation.status == AnimationStatus.forward ? incomingSlide : outgoingSlide;
+        final slideAnimation = animation.status == AnimationStatus.forward ||
+                animation.status == AnimationStatus.completed
+            ? incomingSlide
+            : outgoingSlide;
 
         return ClipRect(
           child: SlideTransition(
