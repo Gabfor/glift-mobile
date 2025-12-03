@@ -198,36 +198,37 @@ class _TimerPageState extends State<TimerPage> {
     final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: _handleOutsideTap,
-        child: Stack(
-        children: [
-          // Close Button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            right: 20,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(8),
-                child: SvgPicture.asset(
-                  'assets/icons/croix_small.svg',
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFFC2BFC6),
-                    BlendMode.srcIn,
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _handleOutsideTap,
+          child: Stack(
+            children: [
+              // Close Button
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 20,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: SvgPicture.asset(
+                      'assets/icons/croix_small.svg',
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFFC2BFC6),
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
           ),
           
           // Main Content
@@ -317,7 +318,8 @@ class _TimerPageState extends State<TimerPage> {
               ],
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
