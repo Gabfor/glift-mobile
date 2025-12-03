@@ -153,40 +153,24 @@ class _TimerPageState extends State<TimerPage> {
                     // Pause Button (Left)
                     GestureDetector(
                       onTap: _isRunning ? _pauseTimer : null,
-                      child: Container(
+                      child: SizedBox(
                         width: 50,
                         height: 50,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFECE9F1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: SvgPicture.asset(
-                            'assets/icons/pause.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                        child: SvgPicture.asset(
+                          'assets/icons/pause.svg',
                         ),
                       ),
                     ),
                     const SizedBox(width: 20),
-                    
+
                     // Play/Stop Button (Right)
                     GestureDetector(
                       onTap: _isRunning ? _stopTimer : _startTimer,
-                      child: Container(
+                      child: SizedBox(
                         width: 50,
                         height: 50,
-                        decoration: BoxDecoration(
-                          color: _isRunning ? const Color(0xFFEB5757) : const Color(0xFF00D591),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: SvgPicture.asset(
-                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                        child: SvgPicture.asset(
+                          _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
                         ),
                       ),
                     ),
