@@ -271,13 +271,13 @@ class _SlidingDigit extends StatelessWidget {
       switchOutCurve: Curves.easeIn,
       transitionBuilder: (child, animation) {
         final incomingSlide = Tween<Offset>(
-          begin: const Offset(0, -1),
+          begin: const Offset(0, 1),
           end: Offset.zero,
         ).animate(animation);
 
         final outgoingSlide = Tween<Offset>(
           begin: Offset.zero,
-          end: const Offset(0, 1),
+          end: const Offset(0, -1),
         ).animate(ReverseAnimation(animation));
 
         final slideAnimation = animation.status == AnimationStatus.forward ||
