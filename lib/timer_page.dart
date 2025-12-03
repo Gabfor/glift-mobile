@@ -95,8 +95,6 @@ class _TimerPageState extends State<TimerPage> {
       await widget.alertService.playSound();
     }
 
-    await widget.alertService.showTimerCompletedNotification();
-
     _stopTimer();
   }
 
