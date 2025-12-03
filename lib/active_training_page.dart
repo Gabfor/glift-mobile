@@ -612,7 +612,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                             MaterialPageRoute(
                               builder: (context) => TimerPage(
                                 durationInSeconds: duration,
-                                autoStart: false,
+                                autoStart: true,
                                 onSave: widget.onRestUpdate,
                               ),
                             ),
