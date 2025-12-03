@@ -11,6 +11,7 @@ import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/numeric_keypad.dart';
 import '../theme/glift_theme.dart';
+import '../timer_page.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -567,10 +568,26 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     ),
               Row(
                 children: [
-                  SvgPicture.asset(
-                    hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
-                    width: 24,
-                    height: 24,
+                  GestureDetector(
+                    onTap: () {
+                      if (hasRest) {
+                        final duration = int.tryParse(widget.row.rest) ?? 0;
+                        if (duration > 0) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => TimerPage(
+                                durationInSeconds: duration,
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: SvgPicture.asset(
+                      hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
+                      width: 24,
+                      height: 24,
+                    ),
                   ),
                   const SizedBox(width: 20),
                   SvgPicture.asset(
