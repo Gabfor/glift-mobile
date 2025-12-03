@@ -230,39 +230,17 @@ class _TimeDigit extends StatelessWidget {
       children: [
         SizedBox(
           height: 90,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeIn,
-            transitionBuilder: (child, animation) {
-              final isIncoming = animation.status != AnimationStatus.reverse;
-
-              final slideAnimation = Tween<Offset>(
-                begin: isIncoming ? const Offset(0, -1) : Offset.zero,
-                end: isIncoming ? Offset.zero : const Offset(0, 1),
-              ).animate(animation);
-
-              return ClipRect(
-                child: SlideTransition(
-                  position: slideAnimation,
-                  child: FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              for (final digit in value.split(''))
+                SizedBox(
+                  width: 45,
+                  child: _SlidingDigit(digit: digit),
                 ),
-              );
-            },
-            child: Text(
-              value,
-              key: ValueKey(value),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.quicksand(
-                fontSize: 80,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF3A416F),
-                height: 1.0, // Reduce line height to minimize default padding
-              ),
-            ),
+            ],
           ),
         ),
         const SizedBox(height: 10), // Explicit 10px spacing
@@ -276,6 +254,56 @@ class _TimeDigit extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SlidingDigit extends StatelessWidget {
+  const _SlidingDigit({required this.digit});
+
+  final String digit;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) {
+        final incomingSlide = Tween<Offset>(
+          begin: const Offset(0, -1),
+          end: Offset.zero,
+        ).animate(animation);
+
+        final outgoingSlide = Tween<Offset>(
+          begin: Offset.zero,
+          end: const Offset(0, 1),
+        ).animate(ReverseAnimation(animation));
+
+        final slideAnimation =
+            animation.status == AnimationStatus.forward ? incomingSlide : outgoingSlide;
+
+        return ClipRect(
+          child: SlideTransition(
+            position: slideAnimation,
+            child: FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: Text(
+        digit,
+        key: ValueKey(digit),
+        textAlign: TextAlign.center,
+        style: GoogleFonts.quicksand(
+          fontSize: 80,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF3A416F),
+          height: 1.0, // Reduce line height to minimize default padding
+        ),
+      ),
     );
   }
 }
