@@ -230,14 +230,41 @@ class _TimeDigit extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.quicksand(
-            fontSize: 80,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF3A416F),
-            height: 1.0, // Reduce line height to minimize default padding
+        SizedBox(
+          height: 90,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) {
+              final isIncoming = animation.status == AnimationStatus.forward;
+
+              final tween = Tween<Offset>(
+                begin: isIncoming ? const Offset(0, 1) : Offset.zero,
+                end: isIncoming ? Offset.zero : const Offset(0, -1),
+              );
+
+              return ClipRect(
+                child: SlideTransition(
+                  position: tween.animate(animation),
+                  child: FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              value,
+              key: ValueKey(value),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.quicksand(
+                fontSize: 80,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF3A416F),
+                height: 1.0, // Reduce line height to minimize default padding
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 10), // Explicit 10px spacing
