@@ -15,6 +15,7 @@ import 'widgets/glift_page_layout.dart';
 import 'widgets/numeric_keypad.dart';
 import 'active_training_page.dart';
 import '../theme/glift_theme.dart';
+import '../timer_page.dart';
 
 class TrainingDetailsPage extends StatefulWidget {
   const TrainingDetailsPage({
@@ -321,10 +322,43 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             onFocus: _handleFocus,
             onUpdate: (reps, weights, efforts) =>
                 _handleRowUpdate(index, reps, weights, efforts),
+            onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
           );
         },
       ),
     );
+  }
+
+  Future<void> _handleRestUpdate(int index, int newDuration) async {
+    if (_rows == null) return;
+
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: oldRow.exercise,
+        series: oldRow.series,
+        repetitions: oldRow.repetitions,
+        weights: oldRow.weights,
+        efforts: oldRow.efforts,
+        rest: newDuration.toString(),
+        note: oldRow.note,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+      );
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(
+        _rows![index].id,
+        rest: newDuration.toString(),
+      );
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
   }
 
   Future<void> _handleRowUpdate(
@@ -372,6 +406,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.row,
     required this.onFocus,
     required this.onUpdate,
+    required this.onRestUpdate,
   });
 
   final TrainingRow row;
@@ -382,6 +417,7 @@ class _ExerciseCard extends StatefulWidget {
     required VoidCallback onClose,
   }) onFocus;
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
+  final Future<void> Function(int) onRestUpdate;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -530,6 +566,8 @@ class _ExerciseCardState extends State<_ExerciseCard> {
 
   @override
   Widget build(BuildContext context) {
+    final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
+    final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
     final hasLink =
         widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
 
@@ -543,28 +581,70 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          hasLink
-              ? GestureDetector(
-                  onTap: _launchVideoUrl,
-                  child: Text(
-                    widget.row.exercise,
-                    style: GoogleFonts.quicksand(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF7069FA),
-                      decoration: TextDecoration.underline,
-                      decorationColor: const Color(0xFF7069FA),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              hasLink
+                  ? GestureDetector(
+                      onTap: _launchVideoUrl,
+                      child: Text(
+                        widget.row.exercise,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF7069FA),
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFF7069FA),
+                        ),
+                      ),
+                    )
+                  : Text(
+                      widget.row.exercise,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                      ),
+                    ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (hasRest) {
+                        final duration = int.tryParse(widget.row.rest) ?? 0;
+                        if (duration > 0) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => TimerPage(
+                                durationInSeconds: duration,
+                                autoStart: false,
+                                onSave: widget.onRestUpdate,
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: SvgPicture.asset(
+                      hasRest
+                          ? 'assets/icons/timer_on.svg'
+                          : 'assets/icons/timer_off.svg',
+                      width: 24,
+                      height: 24,
                     ),
                   ),
-                )
-              : Text(
-                  widget.row.exercise,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                  const SizedBox(width: 20),
+                  SvgPicture.asset(
+                    hasNote
+                        ? 'assets/icons/note_on.svg'
+                        : 'assets/icons/note_off.svg',
+                    width: 24,
+                    height: 24,
                   ),
-                ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
 
           // Header Row

@@ -12,6 +12,8 @@ class TimerPage extends StatefulWidget {
     required this.durationInSeconds,
     this.enableVibration = true,
     this.enableSound = true,
+    this.autoStart = true,
+    this.onSave,
     TimerAlertService? alertService,
     VibrationService? vibrationService,
   })  : alertService = alertService ?? NotificationService.instance,
@@ -20,6 +22,8 @@ class TimerPage extends StatefulWidget {
   final int durationInSeconds;
   final bool enableVibration;
   final bool enableSound;
+  final bool autoStart;
+  final Future<void> Function(int)? onSave;
   final TimerAlertService alertService;
   final VibrationService vibrationService;
 
@@ -32,6 +36,9 @@ class _TimerPageState extends State<TimerPage> {
   Timer? _timer;
   bool _isRunning = false;
   bool _wasRunningBeforeEdit = false;
+  bool _isModified = false;
+  bool _isSaving = false;
+  late int _lastEditedDuration;
 
   late final TextEditingController _minutesController;
   late final TextEditingController _secondsController;
@@ -44,13 +51,16 @@ class _TimerPageState extends State<TimerPage> {
   void initState() {
     super.initState();
     _remainingSeconds = widget.durationInSeconds;
+    _lastEditedDuration = widget.durationInSeconds;
     _minutesController = TextEditingController();
     _secondsController = TextEditingController();
     _minutesFocusNode = FocusNode();
     _secondsFocusNode = FocusNode();
     _minutesFocusNode.addListener(_handleMinutesFocusChange);
     _secondsFocusNode.addListener(_handleSecondsFocusChange);
-    _startTimer();
+    if (widget.autoStart) {
+      _startTimer();
+    }
   }
 
   @override
@@ -124,6 +134,10 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void _enterMinutesEdit() {
+    // Save any pending seconds changes first
+    if (_isEditingSeconds) {
+      _finishSecondsEdit();
+    }
     _pauseTimerForEdit();
     _minutesController.text = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
     setState(() {
@@ -134,6 +148,10 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void _enterSecondsEdit() {
+    // Save any pending minutes changes first
+    if (_isEditingMinutes) {
+      _finishMinutesEdit();
+    }
     _pauseTimerForEdit();
     _secondsController.text = (_remainingSeconds % 60).toString().padLeft(2, '0');
     setState(() {
@@ -166,6 +184,8 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       _remainingSeconds = newMinutes * 60 + seconds;
       _isEditingMinutes = false;
+      _isModified = true;
+      _lastEditedDuration = _remainingSeconds;
     });
     _restartIfNeeded();
   }
@@ -176,6 +196,8 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       _remainingSeconds = minutes * 60 + newSeconds;
       _isEditingSeconds = false;
+      _isModified = true;
+      _lastEditedDuration = _remainingSeconds;
     });
     _restartIfNeeded();
   }
@@ -190,6 +212,34 @@ class _TimerPageState extends State<TimerPage> {
   void _handleOutsideTap() {
     if (_isEditingMinutes || _isEditingSeconds) {
       FocusScope.of(context).unfocus();
+    }
+  }
+
+  Future<void> _handleSave() async {
+    if (widget.onSave == null) return;
+    
+    // Finish any pending edits before saving
+    if (_isEditingMinutes) {
+      _finishMinutesEdit();
+    }
+    if (_isEditingSeconds) {
+      _finishSecondsEdit();
+    }
+    
+    // Unfocus to close keyboard
+    FocusScope.of(context).unfocus();
+    
+    setState(() => _isSaving = true);
+    try {
+      await widget.onSave!(_lastEditedDuration);
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _isModified = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -317,10 +367,52 @@ class _TimerPageState extends State<TimerPage> {
               ],
             ),
           ),
-          ],
+          
+          // Save Button
+          if (widget.onSave != null)
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: SafeArea(
+                child: GestureDetector(
+                  onTap: _isModified && !_isSaving ? _handleSave : null,
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _isModified
+                          ? const Color(0xFF7069FA)
+                          : const Color(0xFFECE9F1),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    alignment: Alignment.center,
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Sauvegarder ce temps de repos',
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: _isModified
+                                  ? Colors.white
+                                  : const Color(0xFFC2BFC6),
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 }
 
