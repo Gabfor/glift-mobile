@@ -140,6 +140,38 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     }
   }
 
+  Future<void> _handleRestUpdate(int index, int newDuration) async {
+    if (_rows == null) return;
+
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: oldRow.exercise,
+        series: oldRow.series,
+        repetitions: oldRow.repetitions,
+        weights: oldRow.weights,
+        efforts: oldRow.efforts,
+        rest: newDuration.toString(),
+        note: oldRow.note,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+      );
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(
+        _rows![index].id,
+        rest: newDuration.toString(),
+      );
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
+  }
+
   Future<void> _finishTraining() async {
     if (_rows == null) return;
 
@@ -338,6 +370,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           onIgnore: () => _ignoreRow(index),
           onUpdate: (reps, weights, efforts) =>
               _handleRowUpdate(index, reps, weights, efforts),
+          onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
         );
       },
     );
@@ -356,6 +389,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onComplete,
     required this.onIgnore,
     required this.onUpdate,
+    required this.onRestUpdate,
   });
 
   final TrainingRow row;
@@ -372,6 +406,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final VoidCallback onComplete;
   final VoidCallback onIgnore;
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
+  final Future<void> Function(int) onRestUpdate;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -577,6 +612,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                             MaterialPageRoute(
                               builder: (context) => TimerPage(
                                 durationInSeconds: duration,
+                                autoStart: false,
+                                onSave: widget.onRestUpdate,
                               ),
                             ),
                           );
