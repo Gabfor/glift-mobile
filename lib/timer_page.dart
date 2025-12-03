@@ -165,10 +165,6 @@ class _TimerPageState extends State<TimerPage> {
                             'assets/icons/pause.svg',
                             width: 24,
                             height: 24,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFFC2BFC6),
-                              BlendMode.srcIn,
-                            ),
                           ),
                         ),
                       ),
@@ -190,10 +186,6 @@ class _TimerPageState extends State<TimerPage> {
                             _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
                             width: 24,
                             height: 24,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.white,
-                              BlendMode.srcIn,
-                            ),
                           ),
                         ),
                       ),
