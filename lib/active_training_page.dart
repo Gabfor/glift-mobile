@@ -161,10 +161,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     });
 
     try {
-      await _programRepository.updateTrainingRow(
-        _rows![index].id,
-        rest: newDuration.toString(),
-      );
+      await _programRepository.updateRestDuration(_rows![index].id, newDuration);
     } catch (e) {
       setState(() {
         _error = e.toString();
