@@ -2,14 +2,25 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/services/notification_service.dart';
+import 'package:glift_mobile/services/vibration_service.dart';
 
 class TimerPage extends StatefulWidget {
-  const TimerPage({
+  TimerPage({
     super.key,
     required this.durationInSeconds,
-  });
+    this.enableVibration = true,
+    this.enableSound = true,
+    TimerAlertService? alertService,
+    VibrationService? vibrationService,
+  })  : alertService = alertService ?? NotificationService.instance,
+        vibrationService = vibrationService ?? const DeviceVibrationService();
 
   final int durationInSeconds;
+  final bool enableVibration;
+  final bool enableSound;
+  final TimerAlertService alertService;
+  final VibrationService vibrationService;
 
   @override
   State<TimerPage> createState() => _TimerPageState();
@@ -46,7 +57,9 @@ class _TimerPageState extends State<TimerPage> {
           _remainingSeconds--;
         });
       } else {
-        _stopTimer();
+        timer.cancel();
+        _timer = null;
+        _onTimerCompleted();
       }
     });
   }
@@ -66,6 +79,25 @@ class _TimerPageState extends State<TimerPage> {
       _isRunning = false;
       _remainingSeconds = widget.durationInSeconds;
     });
+  }
+
+  Future<void> _onTimerCompleted() async {
+    if (widget.enableVibration) {
+      final hasVibrator = await widget.vibrationService.hasVibrator();
+      if (hasVibrator) {
+        await widget.vibrationService.vibrate();
+      } else {
+        await widget.vibrationService.fallback();
+      }
+    }
+
+    if (widget.enableSound) {
+      await widget.alertService.playSound();
+    }
+
+    await widget.alertService.showTimerCompletedNotification();
+
+    _stopTimer();
   }
 
   String _formatTime(int totalSeconds) {

@@ -22,6 +22,9 @@ dependencies:
   intl: ^0.20.2
   local_auth: ^2.3.0
   flutter_secure_storage: ^9.2.2
+  flutter_local_notifications: ^17.2.1
+  flutter_ringtone_player: ^3.2.0
+  vibration: ^1.8.4
 
 dev_dependencies:
   flutter_test:
