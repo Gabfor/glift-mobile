@@ -27,6 +27,7 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
+  late int _initialDurationSeconds;
   late int _remainingSeconds;
   Timer? _timer;
   bool _isRunning = false;
@@ -34,6 +35,7 @@ class _TimerPageState extends State<TimerPage> {
   @override
   void initState() {
     super.initState();
+    _initialDurationSeconds = widget.durationInSeconds;
     _remainingSeconds = widget.durationInSeconds;
     _startTimer();
   }
@@ -77,8 +79,21 @@ class _TimerPageState extends State<TimerPage> {
     _timer = null;
     setState(() {
       _isRunning = false;
-      _remainingSeconds = widget.durationInSeconds;
+      _remainingSeconds = _initialDurationSeconds;
     });
+  }
+
+  void _updateDuration(int seconds, {bool restart = false}) {
+    _pauseTimer();
+    setState(() {
+      _initialDurationSeconds = seconds;
+      _remainingSeconds = seconds;
+      _isRunning = false;
+    });
+
+    if (restart) {
+      _startTimer();
+    }
   }
 
   Future<void> _onTimerCompleted() async {
@@ -102,6 +117,80 @@ class _TimerPageState extends State<TimerPage> {
     final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
     return '$minutes : $seconds';
+  }
+
+  Future<void> _editDuration() async {
+    final wasRunning = _isRunning;
+    _pauseTimer();
+
+    final minutesController = TextEditingController(
+      text: (_remainingSeconds ~/ 60).toString(),
+    );
+    final secondsController = TextEditingController(
+      text: (_remainingSeconds % 60).toString(),
+    );
+
+    final newDuration = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Modifier la durée'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: minutesController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Minutes',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: secondsController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Secondes',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final minutes = int.tryParse(minutesController.text) ?? 0;
+                final seconds = int.tryParse(secondsController.text) ?? 0;
+                final clampedSeconds = seconds.clamp(0, 59).toInt();
+                final newDurationSeconds = minutes * 60 + clampedSeconds;
+
+                Navigator.of(context).pop(newDurationSeconds > 0
+                    ? newDurationSeconds
+                    : _initialDurationSeconds);
+              },
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newDuration != null) {
+      _updateDuration(newDuration, restart: wasRunning);
+    } else if (wasRunning) {
+      _startTimer();
+    }
   }
 
   @override
@@ -173,6 +262,18 @@ class _TimerPageState extends State<TimerPage> {
                       child: _TimeDigit(value: seconds, label: 'Secondes'),
                     ),
                   ],
+                ),
+                TextButton.icon(
+                  onPressed: _editDuration,
+                  icon: const Icon(Icons.edit_outlined, color: Color(0xFF3A416F)),
+                  label: Text(
+                    'Modifier',
+                    style: GoogleFonts.quicksand(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF3A416F),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 25),
                 
