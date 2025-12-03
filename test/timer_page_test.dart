@@ -28,7 +28,6 @@ void main() {
     expect(vibrationService.vibrateCount, 1);
     expect(vibrationService.fallbackCount, 0);
     expect(alertService.playSoundCount, 1);
-    expect(alertService.notificationCount, 1);
   });
 
   testWidgets('uses fallback vibration when the device lacks a motor',
@@ -52,22 +51,15 @@ void main() {
     expect(vibrationService.vibrateCount, 0);
     expect(vibrationService.fallbackCount, 1);
     expect(alertService.playSoundCount, 1);
-    expect(alertService.notificationCount, 1);
   });
 }
 
 class _FakeAlertService implements TimerAlertService {
-  int notificationCount = 0;
   int playSoundCount = 0;
 
   @override
   Future<void> playSound() async {
     playSoundCount++;
-  }
-
-  @override
-  Future<void> showTimerCompletedNotification() async {
-    notificationCount++;
   }
 }
 
