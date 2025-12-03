@@ -174,7 +174,7 @@ class _TimerPageState extends State<TimerPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 25),
                 
                 // Controls
                 Row(
@@ -243,7 +243,7 @@ class _TimeDigit extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 10), // Explicit 10px spacing
+        const SizedBox(height: 5), // Reduced spacing from 10px to 5px
         Text(
           label,
           textAlign: TextAlign.center,
