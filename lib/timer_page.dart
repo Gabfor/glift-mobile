@@ -81,116 +81,129 @@ class _TimerPageState extends State<TimerPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              margin: const EdgeInsets.only(right: 20, top: 8),
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              padding: const EdgeInsets.all(8),
-              child: SvgPicture.asset(
-                'assets/icons/croix_small.svg',
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFFC2BFC6),
-                  BlendMode.srcIn,
+      body: Stack(
+        children: [
+          // Close Button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 20,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(8),
+                child: SvgPicture.asset(
+                  'assets/icons/croix_small.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFFC2BFC6),
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Timer Display
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                _TimeDigit(value: minutes, label: 'Minutes'),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    ':',
-                    style: GoogleFonts.redHatText(
-                      fontSize: 80,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF3A416F),
-                    ),
-                  ),
-                ),
-                _TimeDigit(value: seconds, label: 'Secondes'),
-              ],
-            ),
-            const SizedBox(height: 60),
-            
-            // Controls
-            Row(
+          
+          // Main Content
+          Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Play/Pause Button
-                GestureDetector(
-                  onTap: _isRunning ? _pauseTimer : _startTimer,
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: _isRunning ? const Color(0xFFECE9F1) : const Color(0xFF00D591),
-                      shape: BoxShape.circle,
+                // Timer Display
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: _TimeDigit(value: minutes, label: 'Minutes'),
                     ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        _isRunning ? 'assets/icons/pause.svg' : 'assets/icons/paly.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                          _isRunning ? const Color(0xFFC2BFC6) : Colors.white,
-                          BlendMode.srcIn,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: SizedBox(
+                        width: 20,
+                        child: Text(
+                          ':',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.redHatText(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF3A416F),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    SizedBox(
+                      width: 100,
+                      child: _TimeDigit(value: seconds, label: 'Secondes'),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 32),
+                const SizedBox(height: 30),
                 
-                // Stop Button
-                GestureDetector(
-                  onTap: _stopTimer,
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEB5757),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/stop.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.white,
-                          BlendMode.srcIn,
+                // Controls
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Pause Button (Left)
+                    GestureDetector(
+                      onTap: _isRunning ? _pauseTimer : null,
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFECE9F1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(
+                            'assets/icons/pause.svg',
+                            width: 24,
+                            height: 24,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFFC2BFC6),
+                              BlendMode.srcIn,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 20),
+                    
+                    // Play/Stop Button (Right)
+                    GestureDetector(
+                      onTap: _isRunning ? _stopTimer : _startTimer,
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: _isRunning ? const Color(0xFFEB5757) : const Color(0xFF00D591),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(
+                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                            width: 24,
+                            height: 24,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -211,14 +224,18 @@ class _TimeDigit extends StatelessWidget {
       children: [
         Text(
           value,
+          textAlign: TextAlign.center,
           style: GoogleFonts.quicksand(
             fontSize: 80,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF3A416F),
+            height: 1.0, // Reduce line height to minimize default padding
           ),
         ),
+        const SizedBox(height: 10), // Explicit 10px spacing
         Text(
           label,
+          textAlign: TextAlign.center,
           style: GoogleFonts.quicksand(
             fontSize: 16,
             color: const Color(0xFFC2BFC6),
