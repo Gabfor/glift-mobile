@@ -11,6 +11,7 @@ import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/note_modal.dart';
 
 import 'widgets/numeric_keypad.dart';
 import 'active_training_page.dart';
@@ -323,6 +324,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             onUpdate: (reps, weights, efforts) =>
                 _handleRowUpdate(index, reps, weights, efforts),
             onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
+            onNoteUpdate: (note) => _handleNoteUpdate(index, note),
           );
         },
       ),
@@ -396,6 +398,35 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       });
     }
   }
+
+  Future<void> _handleNoteUpdate(int index, String note) async {
+    if (_rows == null) return;
+
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: oldRow.exercise,
+        series: oldRow.series,
+        repetitions: oldRow.repetitions,
+        weights: oldRow.weights,
+        efforts: oldRow.efforts,
+        rest: oldRow.rest,
+        note: note,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+      );
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(_rows![index].id, note: note);
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
+  }
 }
 
 class _ExerciseCard extends StatefulWidget {
@@ -404,6 +435,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.onFocus,
     required this.onUpdate,
     required this.onRestUpdate,
+    required this.onNoteUpdate,
   });
 
   final TrainingRow row;
@@ -415,6 +447,7 @@ class _ExerciseCard extends StatefulWidget {
   }) onFocus;
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(int) onRestUpdate;
+  final Future<void> Function(String) onNoteUpdate;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -559,6 +592,18 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     }
   }
 
+  void _showNoteModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => NoteModal(
+        initialNote: widget.row.note,
+        onSave: widget.onNoteUpdate,
+      ),
+    );
+  }
+
 
 
   @override
@@ -631,12 +676,15 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  SvgPicture.asset(
-                    hasNote
-                        ? 'assets/icons/note_on.svg'
-                        : 'assets/icons/note_off.svg',
-                    width: 24,
-                    height: 24,
+                  GestureDetector(
+                    onTap: _showNoteModal,
+                    child: SvgPicture.asset(
+                      hasNote
+                          ? 'assets/icons/note_on.svg'
+                          : 'assets/icons/note_off.svg',
+                      width: 24,
+                      height: 24,
+                    ),
                   ),
                 ],
               ),

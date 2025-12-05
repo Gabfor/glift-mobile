@@ -114,6 +114,7 @@ class ProgramRepository {
     List<String>? weights,
     List<String>? efforts,
     String? rest,
+    String? note,
   }) async {
     try {
       final updates = <String, dynamic>{};
@@ -121,6 +122,7 @@ class ProgramRepository {
       if (weights != null) updates['poids'] = weights;
       if (efforts != null) updates['effort'] = efforts;
       if (rest != null) updates['repos'] = rest;
+      if (note != null) updates['note'] = note;
 
       if (updates.isEmpty) return;
 
