@@ -279,7 +279,7 @@ class _TrainingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine dynamic display info
-    String lastSessionText = 'Jamais';
+    String lastSessionText = '-';
     String averageTimeText = '-';
 
     if (training.lastSessionDate != null) {

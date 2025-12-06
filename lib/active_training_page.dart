@@ -627,48 +627,50 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              hasLink
-                  ? GestureDetector(
-                      onTap: _launchVideoUrl,
-                      child: Text(
+              Expanded(
+                child: hasLink
+                    ? GestureDetector(
+                        onTap: _launchVideoUrl,
+                        child: Text(
+                          widget.row.exercise,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF7069FA),
+                            decoration: TextDecoration.underline,
+                            decorationColor: const Color(0xFF7069FA),
+                          ),
+                        ),
+                      )
+                    : Text(
                         widget.row.exercise,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF7069FA),
-                          decoration: TextDecoration.underline,
-                          decorationColor: const Color(0xFF7069FA),
+                          color: const Color(0xFF3A416F),
                         ),
                       ),
-                    )
-                  : Text(
-                      widget.row.exercise,
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
-                      ),
-                    ),
+              ),
+              const SizedBox(width: 20),
               Row(
                 children: [
                   GestureDetector(
                     onTap: () {
-                      if (hasRest) {
-                        final duration = int.tryParse(widget.row.rest) ?? 0;
-                        if (duration > 0) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => TimerPage(
-                                durationInSeconds: duration,
-                                autoStart: true,
-                                onSave: widget.onRestUpdate,
-                              ),
-                            ),
-                          );
-                        }
-                      }
+                      final duration = int.tryParse(widget.row.rest) ?? 0;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => TimerPage(
+                            durationInSeconds: duration,
+                            autoStart: false,
+                            onSave: widget.onRestUpdate,
+                          ),
+                        ),
+                      );
                     },
                     child: SvgPicture.asset(
                       hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
