@@ -19,7 +19,7 @@ class ProgramRepository {
         final response = await _supabase
             .from('programs')
             .select(
-              'id, name, position, dashboard, trainings(id, name, position, app, dashboard, program_id)',
+      'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, program_id)',
             )
             .eq('user_id', userId)
             .order('position', ascending: true);
@@ -30,7 +30,7 @@ class ProgramRepository {
         final response = await _supabase
             .from('programs')
             .select(
-              'id, name, position, dashboard, trainings(id, name, position, app, program_id)',
+      'id, name, position, dashboard, trainings(id, name, position, app, program_id)',
             )
             .eq('user_id', userId)
             .order('position', ascending: true);
@@ -61,6 +61,7 @@ class ProgramRepository {
           trainings: [],
           position: newProgram['position'],
           dashboard: newProgram['dashboard'] ?? true,
+          app: newProgram['app'] ?? true,
         ),
       ];
     }
@@ -85,9 +86,10 @@ class ProgramRepository {
             trainings: visibleTrainings,
             position: program.position,
             dashboard: program.dashboard,
+            app: program.app,
           );
         })
-        .where((p) => p.trainings.isNotEmpty)
+        .where((p) => p.trainings.isNotEmpty && p.app)
         .toList();
   }
 

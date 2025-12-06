@@ -6,6 +6,7 @@ class Program {
   final List<Training> trainings;
   final int position;
   final bool dashboard;
+  final bool app;
 
   Program({
     required this.id,
@@ -13,6 +14,7 @@ class Program {
     required this.trainings,
     required this.position,
     required this.dashboard,
+    required this.app,
   });
 
   factory Program.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Program {
       trainings: trainingsList,
       position: json['position'] as int? ?? 0,
       dashboard: json['dashboard'] as bool? ?? true,
+      app: json['app'] as bool? ?? true,
     );
   }
 }

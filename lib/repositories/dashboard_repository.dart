@@ -11,7 +11,7 @@ class DashboardRepository {
     try {
       final response = await _supabase
           .from('programs')
-          .select('id, name, position, dashboard, trainings(id)')
+          .select('id, name, position, dashboard, app, trainings(id)')
           .eq('user_id', userId)
           .order('position', ascending: true);
 
@@ -30,6 +30,7 @@ class DashboardRepository {
           trainings: [], // We don't need full trainings here, just the program info
           position: json['position'],
           dashboard: json['dashboard'] ?? true,
+          app: json['app'] ?? true,
         );
       }).whereType<Program>().toList();
     } catch (e) {
