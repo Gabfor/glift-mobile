@@ -163,7 +163,7 @@ class _NoteModalState extends State<NoteModal> {
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'Ajoutez votre note ici',
+                            hintText: 'Ajoutez vos notes ici',
                             hintStyle: GoogleFonts.quicksand(
                               fontSize: 16, // 16px
                               fontWeight: FontWeight.w600, // Semibold
