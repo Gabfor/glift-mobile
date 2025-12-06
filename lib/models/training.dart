@@ -5,6 +5,8 @@ class Training {
   final bool dashboard;
   final int position;
   final String? programId;
+  final DateTime? lastSessionDate;
+  final int? averageDurationMinutes;
 
   Training({
     required this.id,
@@ -13,6 +15,8 @@ class Training {
     required this.dashboard,
     required this.position,
     this.programId,
+    this.lastSessionDate,
+    this.averageDurationMinutes,
   });
 
   factory Training.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class Training {
       dashboard: json['dashboard'] as bool? ?? true,
       position: json['position'] as int? ?? 0,
       programId: json['program_id']?.toString(),
+      // These are not in the 'trainings' table, so they remain null by default
+      // and will be populated by the repository logic
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:supabase/supabase.dart';
 import '../models/program.dart';
+import '../models/training.dart';
 import '../models/training_row.dart';
 
 class ProgramRepository {
@@ -24,7 +25,15 @@ class ProgramRepository {
             .eq('user_id', userId)
             .order('position', ascending: true);
 
-        return _processProgramsResponse(response, userId);
+        // Fetch sessions for stats
+        final sessionsResponse = await _supabase
+            .from('training_sessions')
+            .select('training_id, performed_at, duration')
+            .eq('user_id', userId);
+
+        final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+
+        return _processProgramsResponse(response, userId, sessions);
       } catch (_) {
         // Fallback: fetch without dashboard column on trainings
         final response = await _supabase
@@ -35,7 +44,17 @@ class ProgramRepository {
             .eq('user_id', userId)
             .order('position', ascending: true);
 
-        return _processProgramsResponse(response, userId);
+
+
+        // Fetch sessions even in fallback
+        final sessionsResponse = await _supabase
+            .from('training_sessions')
+            .select('training_id, performed_at, duration')
+            .eq('user_id', userId);
+
+        final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+
+        return _processProgramsResponse(response, userId, sessions);
       }
     } catch (e) {
       throw Exception('Erreur lors du chargement des programmes: $e');
@@ -45,6 +64,7 @@ class ProgramRepository {
   Future<List<Program>> _processProgramsResponse(
     List<dynamic> data,
     String userId,
+    List<Map<String, dynamic>> sessions,
   ) async {
     if (data.isEmpty) {
       // Create default program if none exists
@@ -75,15 +95,64 @@ class ProgramRepository {
               .where((t) => t.app)
               .toList();
 
-          // Sort trainings by position
-          visibleTrainings.sort(
-            (a, b) => (a.position ?? 0).compareTo(b.position ?? 0),
-          );
+          // Calculate stats for each visible training
+          final visibleTrainingsWithStats = visibleTrainings.map((t) {
+            final trainingSessions = sessions.where((s) => s['training_id'].toString() == t.id).toList();
+            
+            DateTime? lastDate;
+            int? avgDuration;
+
+            if (trainingSessions.isNotEmpty) {
+              // Calculate last session date
+              trainingSessions.sort((a, b) {
+                final dateA = DateTime.tryParse(a['performed_at'] as String) ?? DateTime(0);
+                final dateB = DateTime.tryParse(b['performed_at'] as String) ?? DateTime(0);
+                return dateB.compareTo(dateA); // Descending
+              });
+              lastDate = DateTime.tryParse(trainingSessions.first['performed_at'] as String);
+
+              // Calculate average duration
+              final durations = trainingSessions
+                  .map((s) => s['duration'] as int?)
+                  .where((d) => d != null)
+                  .toList();
+              
+              if (durations.isNotEmpty) {
+                final totalcheck = durations.fold<int>(0, (sum, d) => sum + d!);
+                avgDuration = (totalcheck / durations.length).round();
+              }
+            }
+
+            return Training(
+              id: t.id,
+              name: t.name,
+              app: t.app,
+              dashboard: t.dashboard,
+              position: t.position,
+              programId: t.programId,
+              lastSessionDate: lastDate,
+              averageDurationMinutes: avgDuration,
+            );
+          }).toList();
+
+           // Sort trainings: least recently done FIRST
+          visibleTrainingsWithStats.sort((a, b) {
+            final dateA = a.lastSessionDate;
+            final dateB = b.lastSessionDate;
+
+            if (dateA == null && dateB == null) {
+              return a.position.compareTo(b.position); // Default to manual order
+            }
+            if (dateA == null) return -1; // Never done comes first
+            if (dateB == null) return 1;
+
+            return dateA.compareTo(dateB); // Oldest date (smaller timestamp) comes first
+          });
 
           return Program(
             id: program.id,
             name: program.name,
-            trainings: visibleTrainings,
+            trainings: visibleTrainingsWithStats,
             position: program.position,
             dashboard: program.dashboard,
             app: program.app,
@@ -142,6 +211,7 @@ class ProgramRepository {
     required String userId,
     required String trainingId,
     required List<TrainingRow> completedRows,
+    required int duration,
   }) async {
     try {
       // 1. Create session
@@ -151,6 +221,7 @@ class ProgramRepository {
             'user_id': userId,
             'training_id': trainingId,
             'performed_at': DateTime.now().toUtc().toIso8601String(),
+            'duration': duration,
           })
           .select()
           .single();

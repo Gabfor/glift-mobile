@@ -40,10 +40,14 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   VoidCallback? _currentDecimalHandler;
   VoidCallback? _currentCloseHandler;
 
+  DateTime? _startTime;
+
   @override
   void initState() {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
+    // Initialize with a default value, it will be reset if needed but good to have
+    _startTime = DateTime.now(); 
     _fetchDetails();
   }
 
@@ -53,6 +57,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       if (mounted) {
         setState(() {
           _rows = rows;
+          // Set start time when data is loaded, or keep the initial one
+          // Keeping initial one is safer to capture time spent loading
           _isLoading = false;
         });
       }
@@ -211,11 +217,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       if (completedRowsData.isNotEmpty) {
         final userId = widget.supabase.auth.currentUser?.id;
         if (userId != null) {
+          final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
           // Save history
           await _programRepository.saveTrainingSession(
             userId: userId,
             trainingId: widget.training.id,
             completedRows: completedRowsData,
+            duration: duration > 0 ? duration : 1, // Minimum 1 min
           );
         }
 

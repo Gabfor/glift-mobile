@@ -257,6 +257,8 @@ class _HomePageState extends State<HomePage> {
                 );
 
                 if (result == true) {
+                  // Reload programs to refresh stats (last session, average time)
+                  _fetchPrograms();
                   widget.onNavigateToDashboard?.call(program.id);
                 }
               },
@@ -274,37 +276,26 @@ class _TrainingCard extends StatelessWidget {
   final Training training;
   final VoidCallback onTap;
 
-  static const _defaultDisplay = _TrainingDisplayInfo(
-    lastSession: 'il y a 6 jours',
-    averageTime: '45 min',
-  );
-
-  static const Map<String, _TrainingDisplayInfo> _trainingDisplayData = {
-    'Biceps & triceps': _TrainingDisplayInfo(
-      lastSession: 'il y a 6 jours',
-      averageTime: '45 min',
-    ),
-    'Pectoraux': _TrainingDisplayInfo(
-      lastSession: 'il y a 5 jours',
-      averageTime: '60 min',
-    ),
-    'Epaules': _TrainingDisplayInfo(
-      lastSession: 'il y a 3 jours',
-      averageTime: '40 min',
-    ),
-    'Dos': _TrainingDisplayInfo(
-      lastSession: 'il y a 2 jours',
-      averageTime: '45 min',
-    ),
-    'Jambes': _TrainingDisplayInfo(
-      lastSession: 'il y a 13 heures',
-      averageTime: '1h15 min',
-    ),
-  };
-
   @override
   Widget build(BuildContext context) {
-    final displayInfo = _trainingDisplayData[training.name] ?? _defaultDisplay;
+    // Determine dynamic display info
+    String lastSessionText = 'Jamais';
+    String averageTimeText = '-';
+
+    if (training.lastSessionDate != null) {
+      lastSessionText = _formatRelativeTime(training.lastSessionDate!);
+    }
+    
+    if (training.averageDurationMinutes != null) {
+      final hours = training.averageDurationMinutes! ~/ 60;
+      final minutes = training.averageDurationMinutes! % 60;
+      
+      if (hours > 0) {
+        averageTimeText = '${hours}h${minutes.toString().padLeft(2, '0')} min';
+      } else {
+        averageTimeText = '$minutes min';
+      }
+    }
 
     return GestureDetector(
       onTap: onTap,
@@ -340,7 +331,7 @@ class _TrainingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Dernière séance : ${displayInfo.lastSession}',
+                    'Dernière séance : $lastSessionText',
                     style: GoogleFonts.quicksand(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -349,7 +340,7 @@ class _TrainingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Temps moyen : ${displayInfo.averageTime}',
+                    'Temps moyen : $averageTimeText',
                     style: GoogleFonts.quicksand(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -366,14 +357,19 @@ class _TrainingCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _TrainingDisplayInfo {
-  const _TrainingDisplayInfo({
-    required this.lastSession,
-    required this.averageTime,
-  });
+  String _formatRelativeTime(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
 
-  final String lastSession;
-  final String averageTime;
+    if (difference.inDays > 0) {
+      return 'il y a ${difference.inDays} jours';
+    } else if (difference.inHours > 0) {
+      return 'il y a ${difference.inHours} heures';
+    } else if (difference.inMinutes > 0) {
+      return 'il y a ${difference.inMinutes} minutes';
+    } else {
+      return 'à l\'instant';
+    }
+  }
 }
