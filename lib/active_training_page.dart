@@ -717,118 +717,124 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onVerticalDragUpdate: (details) => widget.onDrag(details.delta.dy),
-      child: Container(
-        width: _InlineRestTimer.width,
-        height: _InlineRestTimer.height,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0x33FFFFFF)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1A011E30),
-              blurRadius: 18,
-              offset: Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => widget.onReturnToFull(_currentData()),
-                  child: SizedBox(
-                    width: 34,
-                    height: 34,
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/screen_big.svg',
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    _stopTimer();
-                    widget.onClose();
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/close.svg',
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                  ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: _InlineRestTimer.width,
+            height: _InlineRestTimer.height,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.4)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1A011E30),
+                  blurRadius: 18,
+                  offset: Offset(0, 12),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Center(
-              child: SizedBox(
-                height: 72,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
                   children: [
-                    _buildTimeSegment(minutes),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(
-                        ':',
-                        style: _timerTextStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    _buildTimeSegment(seconds),
-                    const SizedBox(width: 16),
                     GestureDetector(
-                      onTap: _isRunning ? _pauseTimer : null,
                       behavior: HitTestBehavior.opaque,
+                      onTap: () => widget.onReturnToFull(_currentData()),
                       child: SizedBox(
-                        width: 44,
-                        height: 44,
+                        width: 34,
+                        height: 34,
                         child: Center(
                           child: SvgPicture.asset(
-                            'assets/icons/pause.svg',
-                            width: 38,
-                            height: 38,
+                            'assets/icons/screen_big.svg',
+                            width: 30,
+                            height: 30,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const Spacer(),
                     GestureDetector(
-                      onTap: _isRunning ? _stopTimer : _startTimer,
+                      onTap: () {
+                        _stopTimer();
+                        widget.onClose();
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: SizedBox(
-                        width: 44,
-                        height: 44,
+                        width: 36,
+                        height: 36,
                         child: Center(
                           child: SvgPicture.asset(
-                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                            width: 38,
-                            height: 38,
+                            'assets/icons/close.svg',
+                            width: 30,
+                            height: 30,
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                Center(
+                  child: SizedBox(
+                    height: 72,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildTimeSegment(minutes),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Text(
+                            ':',
+                            style: _timerTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        _buildTimeSegment(seconds),
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: _isRunning ? _pauseTimer : null,
+                          behavior: HitTestBehavior.opaque,
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/pause.svg',
+                                width: 38,
+                                height: 38,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: _isRunning ? _stopTimer : _startTimer,
+                          behavior: HitTestBehavior.opaque,
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                                width: 38,
+                                height: 38,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
