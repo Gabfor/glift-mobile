@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,6 +15,8 @@ import 'widgets/numeric_keypad.dart';
 import '../theme/glift_theme.dart';
 import '../timer_page.dart';
 import 'widgets/note_modal.dart';
+import '../services/notification_service.dart';
+import '../services/vibration_service.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -33,6 +37,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   List<TrainingRow>? _rows;
   bool _isLoading = true;
   String? _error;
+  InlineTimerData? _inlineTimerData;
+  double? _inlineTimerTop;
+  int? _activeTimerRowIndex;
 
   // Keypad state
   ValueChanged<String>? _currentInputHandler;
@@ -84,6 +91,45 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       _currentDecimalHandler = onDecimal;
       _currentCloseHandler = onClose;
     });
+  }
+
+  double _defaultInlineTop(MediaQueryData mediaQuery) {
+    return mediaQuery.size.height - _InlineRestTimer.height - mediaQuery.padding.bottom - 32;
+  }
+
+  void _activateInlineTimer(InlineTimerData data) {
+    final mediaQuery = MediaQuery.of(context);
+    setState(() {
+      _inlineTimerData = data;
+      _inlineTimerTop ??= _defaultInlineTop(mediaQuery);
+    });
+  }
+
+  void _closeInlineTimer() {
+    setState(() {
+      _inlineTimerData = null;
+      _activeTimerRowIndex = null;
+    });
+  }
+
+  void _updateInlineTimerTop(double deltaY) {
+    if (_inlineTimerData == null) return;
+
+    final mediaQuery = MediaQuery.of(context);
+    final minTop = mediaQuery.padding.top;
+    final maxTop = mediaQuery.size.height - _InlineRestTimer.height - mediaQuery.padding.bottom;
+    final currentTop = _inlineTimerTop ?? _defaultInlineTop(mediaQuery);
+
+    setState(() {
+      _inlineTimerTop = (currentTop + deltaY).clamp(minTop, maxTop) as double;
+    });
+  }
+
+  Future<void> _returnInlineToFullPage(InlineTimerData data) async {
+    final rowIndex = _activeTimerRowIndex ?? 0;
+
+    _closeInlineTimer();
+    await _openTimerForRow(rowIndex, data.durationInSeconds, inlineData: data);
   }
 
   void _closeKeypad() {
@@ -206,6 +252,33 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     }
   }
 
+  Future<void> _openTimerForRow(
+    int index,
+    int duration, {
+    InlineTimerData? inlineData,
+  }) async {
+    _activeTimerRowIndex = index;
+
+    final result = await Navigator.of(context).push<InlineTimerData>(
+      MaterialPageRoute(
+        builder: (context) => TimerPage(
+          durationInSeconds: inlineData?.durationInSeconds ?? duration,
+          initialRemainingSeconds: inlineData?.remainingSeconds,
+          enableSound: inlineData?.enableSound ?? true,
+          enableVibration: inlineData?.enableVibration ?? true,
+          autoStart: inlineData?.isRunning ?? false,
+          isActiveTraining: true,
+          onSave: (value) => _handleRestUpdate(index, value),
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    if (result != null) {
+      _activateInlineTimer(result);
+    }
+  }
+
   Future<void> _handleNoteUpdate(int index, String note) async {
     if (_rows == null) return;
 
@@ -308,8 +381,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final allProcessed = _rows != null && 
+    final allProcessed = _rows != null &&
         (_completedRows.length + _ignoredRows.length == _rows!.length);
+    final mediaQuery = MediaQuery.of(context);
 
     return GliftPageLayout(
       resizeToAvoidBottomInset: false,
@@ -385,6 +459,17 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
                 onBackspace: _currentBackspaceHandler!,
                 onDecimal: _currentDecimalHandler!,
                 onClose: _closeKeypad,
+              ),
+            ),
+          if (_inlineTimerData != null)
+            Positioned(
+              left: (mediaQuery.size.width - _InlineRestTimer.width) / 2,
+              top: _inlineTimerTop ?? _defaultInlineTop(mediaQuery),
+              child: _InlineRestTimer(
+                data: _inlineTimerData!,
+                onClose: _closeInlineTimer,
+                onDrag: _updateInlineTimerTop,
+                onReturnToFull: _returnInlineToFullPage,
               ),
             ),
         ],
@@ -481,6 +566,238 @@ class _ActiveExerciseCard extends StatefulWidget {
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
+}
+
+class _InlineRestTimer extends StatefulWidget {
+  const _InlineRestTimer({
+    required this.data,
+    required this.onClose,
+    required this.onDrag,
+    required this.onReturnToFull,
+  });
+
+  static const double width = 308;
+  static const double height = 76;
+
+  final InlineTimerData data;
+  final VoidCallback onClose;
+  final ValueChanged<double> onDrag;
+  final ValueChanged<InlineTimerData> onReturnToFull;
+
+  @override
+  State<_InlineRestTimer> createState() => _InlineRestTimerState();
+}
+
+class _InlineRestTimerState extends State<_InlineRestTimer> {
+  late int _remainingSeconds;
+  late bool _isRunning;
+  Timer? _timer;
+
+  late final TimerAlertService _alertService;
+  late final VibrationService _vibrationService;
+
+  @override
+  void initState() {
+    super.initState();
+    _remainingSeconds = widget.data.remainingSeconds;
+    _isRunning = widget.data.isRunning;
+    _alertService = NotificationService.instance;
+    _vibrationService = const DeviceVibrationService();
+
+    if (_isRunning) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    if (_timer != null) return;
+
+    setState(() {
+      _isRunning = true;
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        timer.cancel();
+        _timer = null;
+        _onTimerCompleted();
+      }
+    });
+  }
+
+  void _pauseTimer() {
+    _timer?.cancel();
+    _timer = null;
+    setState(() {
+      _isRunning = false;
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+    setState(() {
+      _isRunning = false;
+      _remainingSeconds = widget.data.durationInSeconds;
+    });
+  }
+
+  Future<void> _onTimerCompleted() async {
+    if (widget.data.enableVibration) {
+      final hasVibrator = await _vibrationService.hasVibrator();
+      if (hasVibrator) {
+        await _vibrationService.vibrate();
+      } else {
+        await _vibrationService.fallback();
+      }
+    }
+
+    if (widget.data.enableSound) {
+      await _alertService.playSound();
+    }
+
+    _stopTimer();
+  }
+
+  InlineTimerData _currentData() {
+    return InlineTimerData(
+      remainingSeconds: _remainingSeconds,
+      isRunning: _isRunning,
+      durationInSeconds: widget.data.durationInSeconds,
+      enableSound: widget.data.enableSound,
+      enableVibration: widget.data.enableVibration,
+    );
+  }
+
+  String get _formattedTime {
+    final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanUpdate: (details) => widget.onDrag(details.delta.dy),
+      child: Container(
+        width: _InlineRestTimer.width,
+        height: _InlineRestTimer.height,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFECE9F1)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1A011E30),
+              blurRadius: 18,
+              offset: Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => widget.onReturnToFull(_currentData()),
+              child: SvgPicture.asset(
+                'assets/icons/screen_big.svg',
+                width: 24,
+                height: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              _formattedTime,
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFF3A416F),
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: _isRunning ? _pauseTimer : null,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECE9F1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 3,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD7D4DC),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 3,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD7D4DC),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _isRunning ? _stopTimer : _startTimer,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF00D591),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                    width: 18,
+                    height: 18,
+                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () {
+                _stopTimer();
+                widget.onClose();
+              },
+              child: SvgPicture.asset(
+                'assets/icons/close.svg',
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(Color(0xFF9EA0AA), BlendMode.srcIn),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with AutomaticKeepAliveClientMixin {
@@ -697,16 +1014,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   GestureDetector(
                     onTap: () {
                       final duration = int.tryParse(widget.row.rest) ?? 0;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => TimerPage(
-                            durationInSeconds: duration,
-                            autoStart: false,
-                            isActiveTraining: true,
-                            onSave: widget.onRestUpdate,
-                          ),
-                        ),
-                      );
+                      _openTimerForRow(widget.index, duration);
                     },
                     child: SvgPicture.asset(
                       hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
