@@ -6,10 +6,27 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:glift_mobile/services/notification_service.dart';
 import 'package:glift_mobile/services/vibration_service.dart';
 
+class InlineTimerData {
+  InlineTimerData({
+    required this.remainingSeconds,
+    required this.isRunning,
+    required this.durationInSeconds,
+    required this.enableSound,
+    required this.enableVibration,
+  });
+
+  final int remainingSeconds;
+  final bool isRunning;
+  final int durationInSeconds;
+  final bool enableSound;
+  final bool enableVibration;
+}
+
 class TimerPage extends StatefulWidget {
   TimerPage({
     super.key,
     required this.durationInSeconds,
+    this.initialRemainingSeconds,
     this.enableVibration = true,
     this.enableSound = true,
     this.autoStart = true,
@@ -21,6 +38,7 @@ class TimerPage extends StatefulWidget {
         vibrationService = vibrationService ?? const DeviceVibrationService();
 
   final int durationInSeconds;
+  final int? initialRemainingSeconds;
   final bool enableVibration;
   final bool enableSound;
   final bool autoStart;
@@ -42,8 +60,6 @@ class _TimerPageState extends State<TimerPage> {
   bool _isSaving = false;
   late int _lastEditedDuration;
   late int _savedDuration;
-  bool _isInlineMode = false;
-  Offset? _inlinePosition;
 
   late final TextEditingController _minutesController;
   late final TextEditingController _secondsController;
@@ -55,7 +71,7 @@ class _TimerPageState extends State<TimerPage> {
   @override
   void initState() {
     super.initState();
-    _remainingSeconds = widget.durationInSeconds;
+    _remainingSeconds = widget.initialRemainingSeconds ?? widget.durationInSeconds;
     _lastEditedDuration = widget.durationInSeconds;
     _savedDuration = widget.durationInSeconds;
     _minutesController = TextEditingController();
@@ -116,7 +132,7 @@ class _TimerPageState extends State<TimerPage> {
     _timer = null;
     setState(() {
       _isRunning = false;
-      _remainingSeconds = widget.durationInSeconds;
+      _remainingSeconds = _lastEditedDuration;
     });
   }
 
@@ -135,12 +151,6 @@ class _TimerPageState extends State<TimerPage> {
     }
 
     _stopTimer();
-  }
-
-  String _formatTime(int totalSeconds) {
-    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes : $seconds';
   }
 
   void _enterMinutesEdit() {
@@ -256,11 +266,6 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void _enterInlineMode() {
-    final mediaQuery = MediaQuery.of(context);
-    const inlineSize = Size(353, 142);
-    final left = (mediaQuery.size.width - inlineSize.width) / 2;
-    final top = (mediaQuery.size.height - inlineSize.height - mediaQuery.padding.bottom) - 40;
-
     if (_isEditingMinutes) {
       _finishMinutesEdit();
     } else if (_isEditingSeconds) {
@@ -269,36 +274,18 @@ class _TimerPageState extends State<TimerPage> {
       _handleOutsideTap();
     }
 
-    setState(() {
-      _inlinePosition = Offset(left, top.clamp(mediaQuery.padding.top, mediaQuery.size.height));
-      _isInlineMode = true;
-    });
-  }
+    _timer?.cancel();
+    _timer = null;
 
-  void _exitInlineMode() {
-    setState(() {
-      _isInlineMode = false;
-    });
-  }
-
-  void _updateInlinePosition(Offset delta) {
-    final mediaQuery = MediaQuery.of(context);
-    const inlineSize = Size(353, 142);
-
-    final current = _inlinePosition ?? Offset.zero;
-    final tentative = current + delta;
-
-    final minX = 0.0;
-    final maxX = mediaQuery.size.width - inlineSize.width;
-    final minY = mediaQuery.padding.top;
-    final maxY = mediaQuery.size.height - inlineSize.height - mediaQuery.padding.bottom;
-
-    setState(() {
-      _inlinePosition = Offset(
-        tentative.dx.clamp(minX, maxX),
-        tentative.dy.clamp(minY, maxY),
-      );
-    });
+    Navigator.of(context).pop(
+      InlineTimerData(
+        remainingSeconds: _remainingSeconds,
+        isRunning: _isRunning,
+        durationInSeconds: _lastEditedDuration,
+        enableSound: widget.enableSound,
+        enableVibration: widget.enableVibration,
+      ),
+    );
   }
 
   void _handleOutsideTap() {
@@ -368,167 +355,143 @@ class _TimerPageState extends State<TimerPage> {
                 top: MediaQuery.of(context).padding.top + 8,
                 left: 20,
                 child: GestureDetector(
-                  onTap: _isInlineMode ? _exitInlineMode : _enterInlineMode,
+                  onTap: _enterInlineMode,
                   child: SvgPicture.asset(
-                    _isInlineMode
-                        ? 'assets/icons/screen_big.svg'
-                        : 'assets/icons/screen_small.svg',
+                    'assets/icons/screen_small.svg',
                     width: 30,
                     height: 30,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF7069FA),
-                      BlendMode.srcIn,
-                    ),
                   ),
                 ),
               ),
 
-            if (!_isInlineMode) ...[
-              // Main Content
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Timer Display
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 140,
-                          child: _EditableTimeValue(
-                            value: minutes,
-                            label: 'Minutes',
-                            isEditing: _isEditingMinutes,
-                            controller: _minutesController,
-                            focusNode: _minutesFocusNode,
-                            onTap: _enterMinutesEdit,
-                            maxLength: 2,
-                          ),
+            // Main Content
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Timer Display
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        child: _EditableTimeValue(
+                          value: minutes,
+                          label: 'Minutes',
+                          isEditing: _isEditingMinutes,
+                          controller: _minutesController,
+                          focusNode: _minutesFocusNode,
+                          onTap: _enterMinutesEdit,
+                          maxLength: 2,
                         ),
-                        Container(
-                          width: 20,
-                          height: 90,
-                          alignment: Alignment.center,
-                          child: Text(
-                            ':',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.redHatText(
-                              fontSize: 80,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF3A416F),
-                              height: 1.0,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 140,
-                          child: _EditableTimeValue(
-                            value: seconds,
-                            label: 'Secondes',
-                            isEditing: _isEditingSeconds,
-                            controller: _secondsController,
-                            focusNode: _secondsFocusNode,
-                            onTap: _enterSecondsEdit,
-                            maxLength: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 25),
-
-                    // Controls
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Pause Button (Left)
-                        GestureDetector(
-                          onTap: _isRunning ? _pauseTimer : null,
-                          child: SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: SvgPicture.asset(
-                              'assets/icons/pause.svg',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-
-                        // Play/Stop Button (Right)
-                        GestureDetector(
-                          onTap: _isRunning ? _stopTimer : _startTimer,
-                          child: SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: SvgPicture.asset(
-                              _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Save Button
-              if (widget.onSave != null)
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: SafeArea(
-                    child: GestureDetector(
-                      onTap: _isModified && !_isSaving ? _handleSave : null,
-                      child: Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: _isModified
-                              ? const Color(0xFF7069FA)
-                              : const Color(0xFFECE9F1),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        alignment: Alignment.center,
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                'Sauvegarder ce temps de repos',
-                                style: GoogleFonts.quicksand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: _isModified
-                                      ? Colors.white
-                                      : const Color(0xFFC2BFC6),
-                                ),
-                              ),
                       ),
+                      Container(
+                        width: 20,
+                        height: 90,
+                        alignment: Alignment.center,
+                        child: Text(
+                          ':',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.redHatText(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF3A416F),
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 140,
+                        child: _EditableTimeValue(
+                          value: seconds,
+                          label: 'Secondes',
+                          isEditing: _isEditingSeconds,
+                          controller: _secondsController,
+                          focusNode: _secondsFocusNode,
+                          onTap: _enterSecondsEdit,
+                          maxLength: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Controls
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Pause Button (Left)
+                      GestureDetector(
+                        onTap: _isRunning ? _pauseTimer : null,
+                        child: SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: SvgPicture.asset(
+                            'assets/icons/pause.svg',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+
+                      // Play/Stop Button (Right)
+                      GestureDetector(
+                        onTap: _isRunning ? _stopTimer : _startTimer,
+                        child: SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: SvgPicture.asset(
+                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Save Button
+            if (widget.onSave != null)
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: SafeArea(
+                  child: GestureDetector(
+                    onTap: _isModified && !_isSaving ? _handleSave : null,
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: _isModified
+                            ? const Color(0xFF7069FA)
+                            : const Color(0xFFECE9F1),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      alignment: Alignment.center,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Sauvegarder ce temps de repos',
+                              style: GoogleFonts.quicksand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: _isModified
+                                    ? Colors.white
+                                    : const Color(0xFFC2BFC6),
+                              ),
+                            ),
                     ),
                   ),
                 ),
-            ] else if (_inlinePosition != null) ...[
-              Positioned(
-                left: _inlinePosition!.dx,
-                top: _inlinePosition!.dy,
-                child: GestureDetector(
-                  onPanUpdate: (details) => _updateInlinePosition(details.delta),
-                  child: _InlineTimer(
-                    minutes: minutes,
-                    seconds: seconds,
-                    isRunning: _isRunning,
-                    onToggleScreen: _exitInlineMode,
-                    onPause: _isRunning ? _pauseTimer : null,
-                    onPlayOrStop: _isRunning ? _stopTimer : _startTimer,
-                  ),
-                ),
               ),
-            ],
           ],
         ),
       ),
@@ -631,183 +594,6 @@ class _EditableTimeValue extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _InlineTimer extends StatelessWidget {
-  const _InlineTimer({
-    required this.minutes,
-    required this.seconds,
-    required this.isRunning,
-    required this.onToggleScreen,
-    required this.onPause,
-    required this.onPlayOrStop,
-  });
-
-  final String minutes;
-  final String seconds;
-  final bool isRunning;
-  final VoidCallback onToggleScreen;
-  final VoidCallback? onPause;
-  final VoidCallback onPlayOrStop;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 353,
-      height: 142,
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(
-            width: 1,
-            color: Color(0xFFECE9F1),
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 16,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: onToggleScreen,
-              child: SvgPicture.asset(
-                'assets/icons/screen_big.svg',
-                width: 30,
-                height: 30,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF7069FA),
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    minutes,
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 60,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
-                  ),
-                  Text(
-                    ':',
-                    style: GoogleFonts.redHatText(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 60,
-                      fontWeight: FontWeight.w500,
-                      height: 1.0,
-                    ),
-                  ),
-                  Text(
-                    seconds,
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 60,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            GestureDetector(
-              onTap: onPause,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: const ShapeDecoration(
-                  color: Color(0xFFECE9F1),
-                  shape: OvalBorder(),
-                ),
-                child: Center(
-                  child: _PauseGlyph(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: onPlayOrStop,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: ShapeDecoration(
-                  color: _playColor,
-                  shape: const OvalBorder(),
-                ),
-                child: Center(
-                  child: _InlinePlayIcon(isRunning: isRunning),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color get _playColor => const Color(0xFF00D591);
-}
-
-class _PauseGlyph extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 3.12,
-          height: 12.16,
-          decoration: BoxDecoration(
-            color: const Color(0xFFD7D4DC),
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Container(
-          width: 3.12,
-          height: 12.16,
-          decoration: BoxDecoration(
-            color: const Color(0xFFD7D4DC),
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _InlinePlayIcon extends StatelessWidget {
-  const _InlinePlayIcon({required this.isRunning});
-
-  final bool isRunning;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: SvgPicture.asset(
-        isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-      ),
     );
   }
 }
