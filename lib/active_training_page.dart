@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -719,21 +720,16 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
             Row(
               children: [
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () => widget.onReturnToFull(_currentData()),
-                  child: Container(
+                  child: SizedBox(
                     width: 34,
                     height: 34,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5FF),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFECE9F1)),
-                    ),
                     child: Center(
                       child: SvgPicture.asset(
                         'assets/icons/screen_small.svg',
-                        width: 16,
-                        height: 16,
-                        colorFilter: const ColorFilter.mode(Color(0xFFA1A5FD), BlendMode.srcIn),
+                        width: 24,
+                        height: 24,
                       ),
                     ),
                   ),
@@ -744,20 +740,15 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                     _stopTimer();
                     widget.onClose();
                   },
-                  child: Container(
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF7F7FB),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFECE9F1)),
-                    ),
                     child: Center(
                       child: SvgPicture.asset(
                         'assets/icons/close.svg',
-                        width: 14,
-                        height: 14,
-                        colorFilter: const ColorFilter.mode(Color(0xFFA1A5FD), BlendMode.srcIn),
+                        width: 24,
+                        height: 24,
                       ),
                     ),
                   ),
@@ -772,30 +763,31 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      _formattedTime,
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
-                        fontSize: 60,
-                        fontWeight: FontWeight.w700,
+                    SizedBox(
+                      width: 150,
+                      child: Text(
+                        _formattedTime,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 60,
+                          fontWeight: FontWeight.w700,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 20),
                     GestureDetector(
                       onTap: _isRunning ? _pauseTimer : null,
-                      child: Container(
+                      behavior: HitTestBehavior.opaque,
+                      child: SizedBox(
                         width: 44,
                         height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFECE9F1),
-                          shape: BoxShape.circle,
-                        ),
                         child: Center(
                           child: SvgPicture.asset(
                             'assets/icons/pause.svg',
-                            width: 18,
-                            height: 18,
-                            colorFilter: const ColorFilter.mode(Color(0xFFBAB6C0), BlendMode.srcIn),
+                            width: 34,
+                            height: 34,
                           ),
                         ),
                       ),
@@ -803,19 +795,15 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: _isRunning ? _stopTimer : _startTimer,
-                      child: Container(
+                      behavior: HitTestBehavior.opaque,
+                      child: SizedBox(
                         width: 44,
                         height: 44,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00D591),
-                          shape: BoxShape.circle,
-                        ),
                         child: Center(
                           child: SvgPicture.asset(
                             _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                            width: 18,
-                            height: 18,
-                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                            width: 34,
+                            height: 34,
                           ),
                         ),
                       ),
