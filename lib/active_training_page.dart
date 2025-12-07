@@ -727,9 +727,9 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                     height: 34,
                     child: Center(
                       child: SvgPicture.asset(
-                        'assets/icons/screen_small.svg',
-                        width: 24,
-                        height: 24,
+                        'assets/icons/screen_big.svg',
+                        width: 30,
+                        height: 30,
                       ),
                     ),
                   ),
@@ -747,8 +747,8 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                     child: Center(
                       child: SvgPicture.asset(
                         'assets/icons/close.svg',
-                        width: 24,
-                        height: 24,
+                        width: 30,
+                        height: 30,
                       ),
                     ),
                   ),
@@ -764,7 +764,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 150,
+                      width: 190,
                       child: Text(
                         _formattedTime,
                         textAlign: TextAlign.center,
@@ -786,8 +786,8 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                         child: Center(
                           child: SvgPicture.asset(
                             'assets/icons/pause.svg',
-                            width: 34,
-                            height: 34,
+                            width: 38,
+                            height: 38,
                           ),
                         ),
                       ),
@@ -802,8 +802,8 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                         child: Center(
                           child: SvgPicture.asset(
                             _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                            width: 34,
-                            height: 34,
+                            width: 38,
+                            height: 38,
                           ),
                         ),
                       ),
