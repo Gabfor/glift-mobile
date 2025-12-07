@@ -266,7 +266,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           initialRemainingSeconds: inlineData?.remainingSeconds,
           enableSound: inlineData?.enableSound ?? true,
           enableVibration: inlineData?.enableVibration ?? true,
-          autoStart: inlineData?.isRunning ?? false,
+          autoStart: inlineData?.isRunning ?? true,
           isActiveTraining: true,
           onSave: (value) => _handleRestUpdate(index, value),
         ),
