@@ -313,7 +313,7 @@ class _TimerPageState extends State<TimerPage> {
                     ),
                     padding: const EdgeInsets.all(8),
                     child: SvgPicture.asset(
-                      'assets/icons/croix_small.svg',
+                      'assets/icons/close.svg',
                       colorFilter: const ColorFilter.mode(
                         Color(0xFFC2BFC6),
                         BlendMode.srcIn,
