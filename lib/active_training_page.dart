@@ -694,7 +694,8 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanUpdate: (details) => widget.onDrag(details.delta.dy),
+      behavior: HitTestBehavior.opaque,
+      onVerticalDragUpdate: (details) => widget.onDrag(details.delta.dy),
       child: Container(
         width: _InlineRestTimer.width,
         height: _InlineRestTimer.height,
