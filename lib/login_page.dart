@@ -457,6 +457,7 @@ class _InputFieldState extends State<_InputField> {
           onExit: (_) => setState(() => _isHovered = false),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
+            height: 48, // Fixed total height to prevent layout jump
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(
@@ -465,8 +466,7 @@ class _InputFieldState extends State<_InputField> {
               ),
               borderRadius: BorderRadius.circular(5),
             ),
-            child: SizedBox(
-              height: 45,
+            child: Center(
               child: TextField(
                 controller: widget.controller,
                 focusNode: widget.focusNode,
@@ -484,7 +484,10 @@ class _InputFieldState extends State<_InputField> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                  contentPadding: EdgeInsets.only(
+                    left: widget.isFocused ? 14.5 : 15, // Compensate 0.5px border
+                    right: widget.isFocused ? 14.5 : 15,
+                  ),
                 ),
                 onChanged: widget.onChanged,
               ),
@@ -557,6 +560,7 @@ class _PasswordField extends StatelessWidget {
         const SizedBox(height: 5),
         AnimatedContainer(
           duration: const Duration(milliseconds: 150),
+          height: 48, // Fixed total height
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
@@ -565,39 +569,41 @@ class _PasswordField extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(5),
           ),
-          child: SizedBox(
-            height: 45,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: TextField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    obscureText: obscureText,
-                    obscuringCharacter: '●',
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF5D6494),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: '••••••••',
-                      hintStyle: GoogleFonts.quicksand(
-                        color: const Color(0xFFD7D4DC),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-                    ),
-                    onChanged: onChanged,
-                    onSubmitted: onSubmitted,
+          child: Stack(
+            children: [
+              Center(
+                child: TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  obscureText: obscureText,
+                  obscuringCharacter: '●',
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFF5D6494),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '••••••••',
+                    hintStyle: GoogleFonts.quicksand(
+                      color: const Color(0xFFD7D4DC),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    contentPadding: EdgeInsets.only(
+                      left: isFocused ? 14.5 : 15, // Compensate 0.5px border
+                      right: 40 + (isFocused ? 14.5 : 15), // Right padding for icon + shift
+                    ),
+                  ),
+                  onChanged: onChanged,
+                  onSubmitted: onSubmitted,
                 ),
-                Positioned(
-                  right: 10,
-                  top: 10,
-                  bottom: 10,
+              ),
+              Positioned(
+                right: 10,
+                top: 0,
+                bottom: 0,
+                child: Center(
                   child: GestureDetector(
                     onTapDown: (_) => focusNode.requestFocus(),
                     onTap: onToggleVisibility,
@@ -610,8 +616,8 @@ class _PasswordField extends StatelessWidget {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         if (isError) ...[

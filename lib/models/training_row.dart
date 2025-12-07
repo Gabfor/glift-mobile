@@ -9,6 +9,7 @@ class TrainingRow {
   final String rest;
   final String? videoUrl;
   final String? note;
+  final String? material;
   final int order;
 
   TrainingRow({
@@ -21,6 +22,7 @@ class TrainingRow {
     required this.efforts,
     required this.rest,
     this.note,
+    this.material,
     this.videoUrl,
     required this.order,
   });
@@ -36,6 +38,7 @@ class TrainingRow {
       efforts: List<String>.from(json['effort'] ?? []),
       rest: json['repos'] as String,
       note: json['note'] as String?,
+      material: json['materiel'] as String?,
       // Some databases use `link` instead of `video_url`. Use whichever is present
       // to ensure the app displays clickable exercise names when a link exists.
       videoUrl: (json['video_url'] ?? json['link']) as String?,

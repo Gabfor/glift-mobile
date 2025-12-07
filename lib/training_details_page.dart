@@ -325,6 +325,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                 _handleRowUpdate(index, reps, weights, efforts),
             onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
             onNoteUpdate: (note) => _handleNoteUpdate(index, note),
+            onMaterialUpdate: (material) => _handleMaterialUpdate(index, material),
           );
         },
       ),
@@ -380,6 +381,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         efforts: efforts,
         rest: oldRow.rest,
         note: oldRow.note,
+        material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
       );
@@ -393,9 +395,38 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         efforts: efforts,
       );
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
+      debugPrint('Error updating rest: $e');
+    }
+  }
+
+  Future<void> _handleMaterialUpdate(int index, String material) async {
+    if (_rows == null) return;
+    
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: oldRow.exercise,
+        series: oldRow.series,
+        repetitions: oldRow.repetitions,
+        weights: oldRow.weights,
+        efforts: oldRow.efforts,
+        rest: oldRow.rest,
+        note: oldRow.note,
+        material: material,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+      );
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(
+        _rows![index].id,
+        material: material,
+      );
+    } catch (e) {
+      debugPrint('Error updating material: $e');
     }
   }
 
@@ -436,6 +467,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.onUpdate,
     required this.onRestUpdate,
     required this.onNoteUpdate,
+    required this.onMaterialUpdate,
   });
 
   final TrainingRow row;
@@ -448,6 +480,7 @@ class _ExerciseCard extends StatefulWidget {
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
+  final Future<void> Function(String) onMaterialUpdate;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -599,11 +632,12 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       backgroundColor: Colors.transparent,
       builder: (context) => NoteModal(
         initialNote: widget.row.note,
+        initialMaterial: widget.row.material,
         onSave: widget.onNoteUpdate,
+        onSaveMaterial: widget.onMaterialUpdate,
       ),
     );
   }
-
 
 
   @override
