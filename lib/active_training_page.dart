@@ -385,6 +385,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     final allProcessed = _rows != null &&
         (_completedRows.length + _ignoredRows.length == _rows!.length);
     final mediaQuery = MediaQuery.of(context);
+    final inlineTimerWidth = mediaQuery.size.width - 40;
 
     return GliftPageLayout(
       resizeToAvoidBottomInset: false,
@@ -436,9 +437,10 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       padding: EdgeInsets.zero,
       overlay: _inlineTimerData != null
           ? Positioned(
-              left: (mediaQuery.size.width - _InlineRestTimer.width) / 2,
+              left: (mediaQuery.size.width - inlineTimerWidth) / 2,
               top: _inlineTimerTop ?? _defaultInlineTop(mediaQuery),
               child: _InlineRestTimer(
+                width: inlineTimerWidth,
                 data: _inlineTimerData!,
                 onClose: _closeInlineTimer,
                 onDrag: _updateInlineTimerTop,
@@ -579,14 +581,15 @@ class _ActiveExerciseCard extends StatefulWidget {
 class _InlineRestTimer extends StatefulWidget {
   const _InlineRestTimer({
     required this.data,
+    required this.width,
     required this.onClose,
     required this.onDrag,
     required this.onReturnToFull,
   });
 
-  static const double width = 380;
   static const double height = 156;
 
+  final double width;
   final InlineTimerData data;
   final VoidCallback onClose;
   final ValueChanged<double> onDrag;
@@ -718,7 +721,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
       behavior: HitTestBehavior.opaque,
       onVerticalDragUpdate: (details) => widget.onDrag(details.delta.dy),
       child: Container(
-        width: _InlineRestTimer.width,
+        width: widget.width,
         height: _InlineRestTimer.height,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
