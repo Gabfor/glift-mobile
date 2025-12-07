@@ -94,7 +94,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   }
 
   double _defaultInlineTop(MediaQueryData mediaQuery) {
-    return mediaQuery.padding.top + 16;
+    return mediaQuery.padding.top + 8;
   }
 
   void _activateInlineTimer(InlineTimerData data) {
@@ -433,6 +433,18 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       ),
       scrollable: false,
       padding: EdgeInsets.zero,
+      overlay: _inlineTimerData != null
+          ? Positioned(
+              left: (mediaQuery.size.width - _InlineRestTimer.width) / 2,
+              top: _inlineTimerTop ?? _defaultInlineTop(mediaQuery),
+              child: _InlineRestTimer(
+                data: _inlineTimerData!,
+                onClose: _closeInlineTimer,
+                onDrag: _updateInlineTimerTop,
+                onReturnToFull: _returnInlineToFullPage,
+              ),
+            )
+          : null,
       child: Stack(
         children: [
           GestureDetector(
@@ -459,17 +471,6 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
                 onBackspace: _currentBackspaceHandler!,
                 onDecimal: _currentDecimalHandler!,
                 onClose: _closeKeypad,
-              ),
-            ),
-          if (_inlineTimerData != null)
-            Positioned(
-              left: (mediaQuery.size.width - _InlineRestTimer.width) / 2,
-              top: _inlineTimerTop ?? _defaultInlineTop(mediaQuery),
-              child: _InlineRestTimer(
-                data: _inlineTimerData!,
-                onClose: _closeInlineTimer,
-                onDrag: _updateInlineTimerTop,
-                onReturnToFull: _returnInlineToFullPage,
               ),
             ),
         ],

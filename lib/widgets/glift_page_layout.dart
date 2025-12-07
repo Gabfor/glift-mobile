@@ -19,6 +19,7 @@ class GliftPageLayout extends StatelessWidget {
     this.resizeToAvoidBottomInset = true,
     this.fullPageScroll = true,
     this.headerPadding,
+    this.overlay,
   });
 
   final String? title;
@@ -35,6 +36,7 @@ class GliftPageLayout extends StatelessWidget {
 
   final bool fullPageScroll;
   final EdgeInsetsGeometry? headerPadding;
+  final Widget? overlay;
 
   @override
   Widget build(BuildContext context) {
@@ -113,27 +115,40 @@ class GliftPageLayout extends StatelessWidget {
       );
     }
 
+    Widget withOverlay(Widget body) {
+      if (overlay == null) return body;
+
+      return Stack(
+        children: [
+          body,
+          overlay!,
+        ],
+      );
+    }
+
     if (fullPageScroll) {
       return Scaffold(
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         backgroundColor: GliftTheme.accent,
-        body: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverToBoxAdapter(
-                child: Container(
-                  width: double.infinity,
-                  color: GliftTheme.accent,
-                  padding: EdgeInsets.only(top: mediaQuery.padding.top),
-                  child: Padding(
-                    padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                    child: headerContent,
+        body: withOverlay(
+          NestedScrollView(
+            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              return <Widget>[
+                SliverToBoxAdapter(
+                  child: Container(
+                    width: double.infinity,
+                    color: GliftTheme.accent,
+                    padding: EdgeInsets.only(top: mediaQuery.padding.top),
+                    child: Padding(
+                      padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                      child: headerContent,
+                    ),
                   ),
                 ),
-              ),
-            ];
-          },
-          body: buildBody(child: child),
+              ];
+            },
+            body: buildBody(child: child),
+          ),
         ),
         bottomSheet: footer != null
             ? Padding(
@@ -152,35 +167,37 @@ class GliftPageLayout extends StatelessWidget {
       backgroundColor: GliftTheme.accent,
       body: SafeArea(
         bottom: false,
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: GliftTheme.accent,
+        child: withOverlay(
+          Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: GliftTheme.accent,
+                    child: Padding(
+                      padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                      child: headerContent,
+                    ),
+                  ),
+                  Expanded(
+                    child: buildBody(child: child),
+                  ),
+                ],
+              ),
+              if (footer != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: footerInset,
                   child: Padding(
-                    padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                    child: headerContent,
+                    padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
+                    child: footer!,
                   ),
                 ),
-                Expanded(
-                  child: buildBody(child: child),
-                ),
-              ],
-            ),
-            if (footer != null)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: footerInset,
-                child: Padding(
-                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
-                  child: footer!,
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
