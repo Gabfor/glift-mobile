@@ -687,14 +687,30 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
     );
   }
 
-  String get _formattedTime {
-    final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+  TextStyle get _timerTextStyle => GoogleFonts.quicksand(
+        color: const Color(0xFF3A416F),
+        fontSize: 60,
+        fontWeight: FontWeight.w700,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
+
+  Widget _buildTimeSegment(String value) {
+    return SizedBox(
+      width: 70,
+      child: Text(
+        value,
+        textAlign: TextAlign.center,
+        textWidthBasis: TextWidthBasis.parent,
+        style: _timerTextStyle,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onVerticalDragUpdate: (details) => widget.onDrag(details.delta.dy),
@@ -763,20 +779,17 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 190,
+                    _buildTimeSegment(minutes),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Text(
-                        _formattedTime,
+                        ':',
+                        style: _timerTextStyle,
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 60,
-                          fontWeight: FontWeight.w700,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
                       ),
                     ),
-                    const SizedBox(width: 20),
+                    _buildTimeSegment(seconds),
+                    const SizedBox(width: 16),
                     GestureDetector(
                       onTap: _isRunning ? _pauseTimer : null,
                       behavior: HitTestBehavior.opaque,
