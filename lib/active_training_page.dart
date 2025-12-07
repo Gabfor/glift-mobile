@@ -690,7 +690,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
   TextStyle get _timerTextStyle => GoogleFonts.quicksand(
         color: const Color(0xFF3A416F),
         fontSize: 60,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         height: 1.0,
         fontFeatures: const [FontFeature.tabularFigures()],
       );
