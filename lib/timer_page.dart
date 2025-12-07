@@ -270,7 +270,7 @@ class _TimerPageState extends State<TimerPage> {
     }
 
     setState(() {
-      _inlinePosition ??= Offset(left, top.clamp(mediaQuery.padding.top, mediaQuery.size.height));
+      _inlinePosition = Offset(left, top.clamp(mediaQuery.padding.top, mediaQuery.size.height));
       _isInlineMode = true;
     });
   }
@@ -375,6 +375,10 @@ class _TimerPageState extends State<TimerPage> {
                         : 'assets/icons/screen_small.svg',
                     width: 30,
                     height: 30,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF7069FA),
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
               ),
@@ -654,14 +658,21 @@ class _InlineTimer extends StatelessWidget {
       width: 353,
       height: 142,
       decoration: ShapeDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
+          side: const BorderSide(
             width: 1,
-            color: Colors.white.withOpacity(0.2),
+            color: Color(0xFFECE9F1),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
+        shadows: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -673,6 +684,10 @@ class _InlineTimer extends StatelessWidget {
                 'assets/icons/screen_big.svg',
                 width: 30,
                 height: 30,
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF7069FA),
+                  BlendMode.srcIn,
+                ),
               ),
             ),
             const SizedBox(width: 16),
