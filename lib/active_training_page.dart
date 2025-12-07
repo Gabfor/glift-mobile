@@ -510,6 +510,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
         return _ActiveExerciseCard(
           key: ValueKey(row.id),
+          index: index,
           row: row,
           onFocus: _handleFocus,
           isLast: isLast,
@@ -523,6 +524,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
           onNoteUpdate: (note) => _handleNoteUpdate(index, note),
           onMaterialUpdate: (material) => _handleMaterialUpdate(index, material),
+          onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
         );
       },
     );
@@ -532,6 +534,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 class _ActiveExerciseCard extends StatefulWidget {
   const _ActiveExerciseCard({
     super.key,
+    required this.index,
     required this.row,
     required this.onFocus,
     required this.isLast,
@@ -544,8 +547,10 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onRestUpdate,
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
+    required this.onOpenTimer,
   });
 
+  final int index;
   final TrainingRow row;
   final Function({
     required ValueChanged<String> onInput,
@@ -563,6 +568,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
+  final Future<void> Function(int index, int duration) onOpenTimer;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -1014,7 +1020,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   GestureDetector(
                     onTap: () {
                       final duration = int.tryParse(widget.row.rest) ?? 0;
-                      _openTimerForRow(widget.index, duration);
+                      widget.onOpenTimer(widget.index, duration);
                     },
                     child: SvgPicture.asset(
                       hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
