@@ -780,7 +780,8 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                 height: 72,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
                   children: [
                     _buildTimeSegment(minutes),
                     Padding(
