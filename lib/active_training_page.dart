@@ -583,8 +583,8 @@ class _InlineRestTimer extends StatefulWidget {
     required this.onReturnToFull,
   });
 
-  static const double width = 308;
-  static const double height = 76;
+  static const double width = 353;
+  static const double height = 142;
 
   final InlineTimerData data;
   final VoidCallback onClose;
@@ -700,11 +700,11 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
       child: Container(
         width: _InlineRestTimer.width,
         height: _InlineRestTimer.height,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFECE9F1)),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0x33FFFFFF)),
           boxShadow: const [
             BoxShadow(
               color: Color(0x1A011E30),
@@ -713,92 +713,128 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GestureDetector(
-              onTap: () => widget.onReturnToFull(_currentData()),
-              child: SvgPicture.asset(
-                'assets/icons/screen_big.svg',
-                width: 24,
-                height: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              _formattedTime,
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: _isRunning ? _pauseTimer : null,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFECE9F1),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 3,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD7D4DC),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => widget.onReturnToFull(_currentData()),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5FF),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFECE9F1)),
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/icons/screen_small.svg',
+                        width: 16,
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(Color(0xFFA1A5FD), BlendMode.srcIn),
                       ),
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 3,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD7D4DC),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: _isRunning ? _stopTimer : _startTimer,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00D591),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                    width: 18,
-                    height: 18,
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    _stopTimer();
+                    widget.onClose();
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF7F7FB),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFECE9F1)),
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/icons/close.svg',
+                        width: 14,
+                        height: 14,
+                        colorFilter: const ColorFilter.mode(Color(0xFFA1A5FD), BlendMode.srcIn),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: () {
-                _stopTimer();
-                widget.onClose();
-              },
-              child: SvgPicture.asset(
-                'assets/icons/close.svg',
-                width: 24,
-                height: 24,
-                colorFilter: const ColorFilter.mode(Color(0xFF9EA0AA), BlendMode.srcIn),
+            const SizedBox(height: 12),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    _formattedTime,
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF3A416F),
+                      fontSize: 60,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  GestureDetector(
+                    onTap: _isRunning ? _pauseTimer : null,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECE9F1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 3,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD7D4DC),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              width: 3,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD7D4DC),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: _isRunning ? _stopTimer : _startTimer,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00D591),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                          width: 18,
+                          height: 18,
+                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
