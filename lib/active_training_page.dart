@@ -584,7 +584,7 @@ class _InlineRestTimer extends StatefulWidget {
     required this.onReturnToFull,
   });
 
-  static const double width = 353;
+  static const double width = 380;
   static const double height = 156;
 
   final InlineTimerData data;
@@ -699,7 +699,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
     final displayValue = value.padLeft(2, '0');
 
     return SizedBox(
-      width: 70,
+      width: 80,
       child: Text(
         displayValue,
         textAlign: TextAlign.center,
@@ -780,8 +780,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
                 height: 72,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildTimeSegment(minutes),
                     Padding(
