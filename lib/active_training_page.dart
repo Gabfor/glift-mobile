@@ -702,6 +702,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           builder: (context) => TimerPage(
                             durationInSeconds: duration,
                             autoStart: false,
+                            isActiveTraining: true,
                             onSave: widget.onRestUpdate,
                           ),
                         ),

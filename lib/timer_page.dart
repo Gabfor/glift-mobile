@@ -13,6 +13,7 @@ class TimerPage extends StatefulWidget {
     this.enableVibration = true,
     this.enableSound = true,
     this.autoStart = true,
+    this.isActiveTraining = false,
     this.onSave,
     TimerAlertService? alertService,
     VibrationService? vibrationService,
@@ -23,6 +24,7 @@ class TimerPage extends StatefulWidget {
   final bool enableVibration;
   final bool enableSound;
   final bool autoStart;
+  final bool isActiveTraining;
   final Future<void> Function(int)? onSave;
   final TimerAlertService alertService;
   final VibrationService vibrationService;
@@ -304,26 +306,27 @@ class _TimerPageState extends State<TimerPage> {
                 right: 20,
                 child: GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    padding: const EdgeInsets.all(8),
-                    child: SvgPicture.asset(
-                      'assets/icons/close.svg',
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFFC2BFC6),
-                        BlendMode.srcIn,
-                      ),
-                    ),
+                  child: SvgPicture.asset(
+                    'assets/icons/close.svg',
+                    width: 30,
+                    height: 30,
                   ),
                 ),
               ),
 
           
+              // Screen Icon (Active Training Only)
+              if (widget.isActiveTraining)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 20,
+                  child: SvgPicture.asset(
+                    'assets/icons/screen_small.svg',
+                    width: 30,
+                    height: 30,
+                  ),
+                ),
+
           // Main Content
           Center(
             child: Column(
