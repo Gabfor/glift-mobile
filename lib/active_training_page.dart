@@ -691,14 +691,17 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
         color: const Color(0xFF3A416F),
         fontSize: 60,
         fontWeight: FontWeight.w700,
+        height: 1.0,
         fontFeatures: const [FontFeature.tabularFigures()],
       );
 
   Widget _buildTimeSegment(String value) {
+    final displayValue = value.padLeft(2, '0');
+
     return SizedBox(
       width: 70,
       child: Text(
-        value,
+        displayValue,
         textAlign: TextAlign.center,
         textWidthBasis: TextWidthBasis.parent,
         style: _timerTextStyle,
