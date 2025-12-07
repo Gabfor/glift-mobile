@@ -726,7 +726,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
             height: _InlineRestTimer.height,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withOpacity(0.16),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withOpacity(0.4)),
               boxShadow: const [
