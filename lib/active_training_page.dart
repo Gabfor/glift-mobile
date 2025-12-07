@@ -94,7 +94,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   }
 
   double _defaultInlineTop(MediaQueryData mediaQuery) {
-    return mediaQuery.size.height - _InlineRestTimer.height - mediaQuery.padding.bottom - 32;
+    return mediaQuery.padding.top + 16;
   }
 
   void _activateInlineTimer(InlineTimerData data) {
