@@ -584,7 +584,7 @@ class _InlineRestTimer extends StatefulWidget {
   });
 
   static const double width = 353;
-  static const double height = 142;
+  static const double height = 156;
 
   final InlineTimerData data;
   final VoidCallback onClose;
@@ -765,76 +765,63 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
               ],
             ),
             const SizedBox(height: 12),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    _formattedTime,
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 60,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  GestureDetector(
-                    onTap: _isRunning ? _pauseTimer : null,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECE9F1),
-                        shape: BoxShape.circle,
+            Center(
+              child: SizedBox(
+                height: 72,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      _formattedTime,
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF3A416F),
+                        fontSize: 60,
+                        fontWeight: FontWeight.w700,
                       ),
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 3,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD7D4DC),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              width: 3,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD7D4DC),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ],
+                    ),
+                    const SizedBox(width: 20),
+                    GestureDetector(
+                      onTap: _isRunning ? _pauseTimer : null,
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECE9F1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(
+                            'assets/icons/pause.svg',
+                            width: 18,
+                            height: 18,
+                            colorFilter: const ColorFilter.mode(Color(0xFFBAB6C0), BlendMode.srcIn),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: _isRunning ? _stopTimer : _startTimer,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF00D591),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                          width: 18,
-                          height: 18,
-                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: _isRunning ? _stopTimer : _startTimer,
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF00D591),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(
+                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                            width: 18,
+                            height: 18,
+                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
