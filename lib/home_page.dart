@@ -362,12 +362,19 @@ class _TrainingCard extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(date);
 
+    String formatUnit(int value, String singular, String plural) {
+      return value == 1 ? singular : plural;
+    }
+
     if (difference.inDays > 0) {
-      return 'il y a ${difference.inDays} jours';
+      final days = difference.inDays;
+      return 'il y a $days ${formatUnit(days, 'jour', 'jours')}';
     } else if (difference.inHours > 0) {
-      return 'il y a ${difference.inHours} heures';
+      final hours = difference.inHours;
+      return 'il y a $hours ${formatUnit(hours, 'heure', 'heures')}';
     } else if (difference.inMinutes > 0) {
-      return 'il y a ${difference.inMinutes} minutes';
+      final minutes = difference.inMinutes;
+      return 'il y a $minutes ${formatUnit(minutes, 'minute', 'minutes')}';
     } else {
       return 'à l\'instant';
     }
