@@ -357,9 +357,15 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   final Set<String> _completedRows = {};
   final Set<String> _ignoredRows = {};
 
+  bool _isRowCompleted(String rowId) => _completedRows.contains(rowId);
+
+  bool _isRowIgnored(String rowId) => _ignoredRows.contains(rowId);
+
+  bool _isRowProcessed(String rowId) => _isRowCompleted(rowId) || _isRowIgnored(rowId);
+
   Future<void> _completeRow(int index) async {
     if (_rows == null) return;
-    
+
     final row = _rows![index];
     
     setState(() {
@@ -503,42 +509,138 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       );
     }
 
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, allProcessed ? 100 : 20),
-      itemCount: _rows!.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 20),
-      itemBuilder: (context, index) {
-        final row = _rows![index];
-        final isLast = index == _rows!.length - 1;
-        final isCompleted = _completedRows.contains(row.id);
-        final isIgnored = _ignoredRows.contains(row.id);
+    final activeRows = _rows!.where((row) => !_isRowProcessed(row.id)).toList();
+    final completedRows = _rows!.where((row) => _isRowProcessed(row.id)).toList();
+    final hasCompletedRows = completedRows.isNotEmpty;
 
-        return _ActiveExerciseCard(
-          key: ValueKey(row.id),
-          index: index,
-          row: row,
-          onFocus: _handleFocus,
-          initialCompletedSets:
-              _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
-          onSetCompletionChanged: (completedSets) {
-            setState(() {
-              _setCompletionStates[row.id] = List<bool>.from(completedSets);
-            });
-          },
-          isLast: isLast,
-          isCompleted: isCompleted,
-          isIgnored: isIgnored,
-          onMoveDown: () => _moveRowDown(index),
-          onComplete: () => _completeRow(index),
-          onIgnore: () => _ignoreRow(index),
-          onUpdate: (reps, weights, efforts) =>
-              _handleRowUpdate(index, reps, weights, efforts),
-          onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
-          onNoteUpdate: (note) => _handleNoteUpdate(index, note),
-          onMaterialUpdate: (material) => _handleMaterialUpdate(index, material),
-          onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
+    final totalItems = activeRows.length + (hasCompletedRows ? 1 + completedRows.length : 0);
+
+    return ListView.builder(
+      padding: EdgeInsets.fromLTRB(20, 20, 20, allProcessed ? 100 : 20),
+      itemCount: totalItems,
+      itemBuilder: (context, index) {
+        if (index < activeRows.length) {
+          final row = activeRows[index];
+          final rowIndex = _rows!.indexOf(row);
+          return _TrainingListItem(
+            isLastItem: index == totalItems - 1,
+            child: _ActiveExerciseCard(
+              key: ValueKey(row.id),
+              index: rowIndex,
+              row: row,
+              onFocus: _handleFocus,
+              initialCompletedSets:
+                  _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
+              onSetCompletionChanged: (completedSets) {
+                setState(() {
+                  _setCompletionStates[row.id] = List<bool>.from(completedSets);
+                });
+              },
+              isLast: rowIndex == _rows!.length - 1,
+              isCompleted: _isRowCompleted(row.id),
+              isIgnored: _isRowIgnored(row.id),
+              onMoveDown: () => _moveRowDown(rowIndex),
+              onComplete: () => _completeRow(rowIndex),
+              onIgnore: () => _ignoreRow(rowIndex),
+              onUpdate: (reps, weights, efforts) =>
+                  _handleRowUpdate(rowIndex, reps, weights, efforts),
+              onRestUpdate: (newDuration) => _handleRestUpdate(rowIndex, newDuration),
+              onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+              onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
+              onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
+            ),
+          );
+        }
+
+        if (hasCompletedRows && index == activeRows.length) {
+          return _TrainingListItem(
+            isLastItem: index == totalItems - 1,
+            child: const _CompletedExercisesSeparator(),
+          );
+        }
+
+        final completedIndex = index - activeRows.length - 1;
+        final row = completedRows[completedIndex];
+        final rowIndex = _rows!.indexOf(row);
+
+        return _TrainingListItem(
+          isLastItem: index == totalItems - 1,
+          child: _ActiveExerciseCard(
+            key: ValueKey(row.id),
+            index: rowIndex,
+            row: row,
+            onFocus: _handleFocus,
+            initialCompletedSets:
+                _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
+            onSetCompletionChanged: (completedSets) {
+              setState(() {
+                _setCompletionStates[row.id] = List<bool>.from(completedSets);
+              });
+            },
+            isLast: rowIndex == _rows!.length - 1,
+            isCompleted: _isRowCompleted(row.id),
+            isIgnored: _isRowIgnored(row.id),
+            onMoveDown: () => _moveRowDown(rowIndex),
+            onComplete: () => _completeRow(rowIndex),
+            onIgnore: () => _ignoreRow(rowIndex),
+            onUpdate: (reps, weights, efforts) =>
+                _handleRowUpdate(rowIndex, reps, weights, efforts),
+            onRestUpdate: (newDuration) => _handleRestUpdate(rowIndex, newDuration),
+            onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+            onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
+            onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
+          ),
         );
       },
+    );
+  }
+}
+
+class _TrainingListItem extends StatelessWidget {
+  const _TrainingListItem({required this.child, required this.isLastItem});
+
+  final Widget child;
+  final bool isLastItem;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLastItem ? 0 : 20),
+      child: child,
+    );
+  }
+}
+
+class _CompletedExercisesSeparator extends StatelessWidget {
+  const _CompletedExercisesSeparator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 1,
+            color: const Color(0xFFD7D4DC),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          'Exercices terminés',
+          style: GoogleFonts.quicksand(
+            fontSize: 14,
+            color: const Color(0xFFC2BFC6),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: const Color(0xFFD7D4DC),
+          ),
+        ),
+      ],
     );
   }
 }
