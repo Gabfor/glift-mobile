@@ -540,6 +540,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     final activeRows = _rows!.where((row) => !_isRowProcessed(row.id)).toList();
     final completedRows = _rows!.where((row) => _isRowProcessed(row.id)).toList();
     final hasCompletedRows = completedRows.isNotEmpty;
+    final hasActiveRows = activeRows.isNotEmpty;
 
     final items = <Widget>[];
 
@@ -572,7 +573,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       ));
     }
 
-    if (hasCompletedRows) {
+    if (hasCompletedRows && hasActiveRows) {
       items.add(const _CompletedExercisesSeparator());
     }
 
