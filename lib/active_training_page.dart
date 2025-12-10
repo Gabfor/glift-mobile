@@ -42,6 +42,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   double? _inlineTimerTop;
   int? _activeTimerRowIndex;
   final Map<String, List<bool>> _setCompletionStates = {};
+  final ScrollController _scrollController = ScrollController();
 
   // Keypad state
   ValueChanged<String>? _currentInputHandler;
@@ -144,6 +145,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       _currentDecimalHandler = null;
       _currentCloseHandler = null;
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   // Interaction handlers
@@ -421,6 +428,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         (_completedRows.length + _ignoredRows.length == _rows!.length);
     final mediaQuery = MediaQuery.of(context);
     final inlineTimerWidth = mediaQuery.size.width - 40;
+    final isKeypadVisible = _currentInputHandler != null;
 
     return GliftPageLayout(
       resizeToAvoidBottomInset: false,
@@ -488,7 +496,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           GestureDetector(
             onTap: _closeKeypad,
             behavior: HitTestBehavior.translucent,
-            child: _buildBody(allProcessed),
+            child: _buildBody(allProcessed, isKeypadVisible),
           ),
           if (allProcessed)
             Positioned(
@@ -516,7 +524,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     );
   }
 
-  Widget _buildBody(bool allProcessed) {
+  Widget _buildBody(bool allProcessed, bool isKeypadVisible) {
     if (_isLoading) {
       return const GliftLoader();
     }
@@ -606,8 +614,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       ));
     }
 
+    final baseBottomPadding = allProcessed ? 100.0 : 20.0;
+    final keypadPadding = isKeypadVisible ? 320.0 : 0.0;
+
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, allProcessed ? 100 : 20),
+      controller: _scrollController,
+      padding: EdgeInsets.fromLTRB(20, 20, 20, baseBottomPadding + keypadPadding),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final child = items[index];
