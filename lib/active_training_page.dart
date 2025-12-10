@@ -367,11 +367,25 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     if (_rows == null) return;
 
     final row = _rows![index];
-    
+
     setState(() {
-      _completedRows.add(row.id);
-      final item = _rows!.removeAt(index);
-      _rows!.add(item);
+      if (_isRowCompleted(row.id)) {
+        _completedRows.remove(row.id);
+        final item = _rows!.removeAt(index);
+        final firstProcessedIndex =
+            _rows!.indexWhere((element) => _isRowProcessed(element.id));
+
+        if (firstProcessedIndex == -1) {
+          _rows!.insert(0, item);
+        } else {
+          _rows!.insert(firstProcessedIndex, item);
+        }
+      } else {
+        _completedRows.add(row.id);
+        _ignoredRows.remove(row.id);
+        final item = _rows!.removeAt(index);
+        _rows!.add(item);
+      }
     });
   }
 
@@ -394,6 +408,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         }
       } else {
         _ignoredRows.add(row.id);
+        _completedRows.remove(row.id);
         final item = _rows!.removeAt(index);
         _rows!.add(item);
       }
@@ -1381,8 +1396,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 icon: 'assets/icons/croix_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
-                color: widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6),
-                backgroundColor: widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                color: widget.isCompleted
+                    ? const Color(0xFFECE9F1)
+                    : (widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6)),
+                backgroundColor:
+                    widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                isDisabled: widget.isCompleted,
                 onTap: widget.onIgnore,
               ),
               _ActionButton(
@@ -1391,6 +1410,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 iconWidth: 12,
                 iconHeight: 12,
                 color: widget.isLast ? const Color(0xFFECE9F1) : const Color(0xFFC2BFC6),
+                isDisabled: widget.isLast,
                 onTap: widget.isLast ? () {} : widget.onMoveDown,
               ),
               _ActionButton(
@@ -1398,9 +1418,13 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 icon: 'assets/icons/check_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
-                color: widget.isCompleted ? Colors.white : const Color(0xFF00D591),
-                backgroundColor: widget.isCompleted ? const Color(0xFF00D591) : Colors.white,
+                color: widget.isIgnored
+                    ? const Color(0xFFECE9F1)
+                    : (widget.isCompleted ? Colors.white : const Color(0xFF00D591)),
+                backgroundColor:
+                    widget.isCompleted ? const Color(0xFF00D591) : Colors.white,
                 isPrimary: true,
+                isDisabled: widget.isIgnored,
                 onTap: widget.onComplete,
               ),
             ],
@@ -1536,6 +1560,7 @@ class _ActionButton extends StatefulWidget {
   final Color color;
   final Color backgroundColor;
   final bool isPrimary;
+  final bool isDisabled;
   final double iconWidth;
   final double iconHeight;
   final VoidCallback onTap;
@@ -1546,6 +1571,7 @@ class _ActionButton extends StatefulWidget {
     required this.color,
     this.backgroundColor = Colors.white,
     this.isPrimary = false,
+    this.isDisabled = false,
     this.iconWidth = 16,
     this.iconHeight = 16,
     required this.onTap,
@@ -1559,6 +1585,8 @@ class _ActionButtonState extends State<_ActionButton> {
   bool _isPressed = false;
 
   Future<void> _handleTap() async {
+    if (widget.isDisabled) return;
+
     HapticFeedback.lightImpact();
 
     setState(() => _isPressed = true);
@@ -1577,22 +1605,30 @@ class _ActionButtonState extends State<_ActionButton> {
   @override
   Widget build(BuildContext context) {
     final overlayColor = Colors.black.withOpacity(0.05);
-    final usePrimaryPressedStyle =
-        widget.isPrimary && widget.backgroundColor == Colors.white && _isPressed;
+    final usePrimaryPressedStyle = widget.isPrimary &&
+        widget.backgroundColor == Colors.white &&
+        _isPressed &&
+        !widget.isDisabled;
 
-    final backgroundColor = usePrimaryPressedStyle
-        ? widget.color
-        : (_isPressed
-            ? Color.lerp(widget.backgroundColor, overlayColor, 0.35)!
-            : widget.backgroundColor);
+    final baseColor = widget.isDisabled ? const Color(0xFFE0DFE5) : widget.color;
 
-    final contentColor = usePrimaryPressedStyle ? Colors.white : widget.color;
+    final backgroundColor = widget.isDisabled
+        ? Color.lerp(widget.backgroundColor, Colors.white, 0.45)!
+        : (usePrimaryPressedStyle
+            ? baseColor
+            : (_isPressed
+                ? Color.lerp(widget.backgroundColor, overlayColor, 0.35)!
+                : widget.backgroundColor));
+
+    final contentColor = widget.isDisabled
+        ? const Color(0xFFE0DFE5)
+        : (usePrimaryPressedStyle ? Colors.white : baseColor);
 
     return GestureDetector(
-      onTap: _handleTap,
+      onTap: widget.isDisabled ? null : _handleTap,
       child: AnimatedScale(
         duration: const Duration(milliseconds: 140),
-        scale: _isPressed ? 0.97 : 1,
+        scale: widget.isDisabled || !_isPressed ? 1 : 0.97,
         curve: Curves.easeOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
@@ -1602,7 +1638,7 @@ class _ActionButtonState extends State<_ActionButton> {
             borderRadius: BorderRadius.circular(25),
             border: Border.all(
               color: widget.isPrimary && backgroundColor == Colors.white
-                  ? widget.color
+                  ? baseColor
                   : (!widget.isPrimary && backgroundColor == Colors.white
                       ? const Color(0xFFECE9F1)
                       : Colors.transparent),
