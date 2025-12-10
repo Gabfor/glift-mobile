@@ -41,6 +41,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   InlineTimerData? _inlineTimerData;
   double? _inlineTimerTop;
   int? _activeTimerRowIndex;
+  final Map<String, List<bool>> _setCompletionStates = {};
 
   // Keypad state
   ValueChanged<String>? _currentInputHandler;
@@ -517,6 +518,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
           index: index,
           row: row,
           onFocus: _handleFocus,
+          initialCompletedSets:
+              _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
+          onSetCompletionChanged: (completedSets) {
+            setState(() {
+              _setCompletionStates[row.id] = List<bool>.from(completedSets);
+            });
+          },
           isLast: isLast,
           isCompleted: isCompleted,
           isIgnored: isIgnored,
@@ -541,6 +549,8 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.index,
     required this.row,
     required this.onFocus,
+    required this.initialCompletedSets,
+    required this.onSetCompletionChanged,
     required this.isLast,
     required this.isCompleted,
     required this.isIgnored,
@@ -562,6 +572,8 @@ class _ActiveExerciseCard extends StatefulWidget {
     required VoidCallback onDecimal,
     required VoidCallback onClose,
   }) onFocus;
+  final List<bool> initialCompletedSets;
+  final ValueChanged<List<bool>> onSetCompletionChanged;
   final bool isLast;
   final bool isCompleted;
   final bool isIgnored;
@@ -862,7 +874,25 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     );
     _repetitions = List<String>.from(widget.row.repetitions);
     _weights = List<String>.from(widget.row.weights);
-    _completedSets = List<bool>.filled(widget.row.series, false);
+    _completedSets = _normalizedCompletion(widget.initialCompletedSets);
+  }
+
+  List<bool> _normalizedCompletion(List<bool> values) {
+    if (values.length >= widget.row.series) {
+      return values.take(widget.row.series).toList();
+    }
+
+    return List<bool>.from(values)
+      ..addAll(List<bool>.filled(widget.row.series - values.length, false));
+  }
+
+  @override
+  void didUpdateWidget(covariant _ActiveExerciseCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCompletedSets != widget.initialCompletedSets ||
+        oldWidget.row.series != widget.row.series) {
+      _completedSets = _normalizedCompletion(widget.initialCompletedSets);
+    }
   }
 
   _EffortState _effortValueToState(String? value) {
@@ -970,6 +1000,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     setState(() {
       _completedSets[index] = !_completedSets[index];
     });
+
+    widget.onSetCompletionChanged(List<bool>.from(_completedSets));
   }
 
   Future<void> _launchVideoUrl() async {
