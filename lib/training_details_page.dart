@@ -533,7 +533,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
   List<String> _effortsAsStrings() =>
       _effortStates.map((state) => _effortStateToValue(state)).toList();
 
-  void _activateCell(int index, String type) {
+  void _activateCell(int index, String type, BuildContext cellContext) {
     setState(() {
       if (type == 'reps') {
         _activeRepsIndex = index;
@@ -551,6 +551,15 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       onDecimal: () => _handleInput(index, type, '.'),
       onClose: () => _handleClose(index, type),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Scrollable.ensureVisible(
+        cellContext,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        alignment: 0.2,
+      );
+    });
   }
 
   void _handleInput(int index, String type, String value) {
@@ -777,27 +786,29 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                   // Reps
                   Expanded(
                     flex: 86,
-                    child: GestureDetector(
-                      onTap: () => _activateCell(index, 'reps'),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _activeRepsIndex == index
-                                ? const Color(0xFFA1A5FD)
-                                : const Color(0xFFECE9F1),
-                            width: _activeRepsIndex == index ? 2 : 1,
+                    child: Builder(
+                      builder: (cellContext) => GestureDetector(
+                        onTap: () => _activateCell(index, 'reps', cellContext),
+                        child: Container(
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: visuals.backgroundColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _activeRepsIndex == index
+                                  ? const Color(0xFFA1A5FD)
+                                  : const Color(0xFFECE9F1),
+                              width: _activeRepsIndex == index ? 2 : 1,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          reps,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: visuals.textColor,
+                          child: Text(
+                            reps,
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: visuals.textColor,
+                            ),
                           ),
                         ),
                       ),
@@ -808,27 +819,29 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                   // Weight
                   Expanded(
                     flex: 86,
-                    child: GestureDetector(
-                      onTap: () => _activateCell(index, 'weight'),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _activeWeightIndex == index
-                                ? const Color(0xFFA1A5FD)
-                                : const Color(0xFFECE9F1),
-                            width: _activeWeightIndex == index ? 2 : 1,
+                    child: Builder(
+                      builder: (cellContext) => GestureDetector(
+                        onTap: () => _activateCell(index, 'weight', cellContext),
+                        child: Container(
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: visuals.backgroundColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _activeWeightIndex == index
+                                  ? const Color(0xFFA1A5FD)
+                                  : const Color(0xFFECE9F1),
+                              width: _activeWeightIndex == index ? 2 : 1,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          weight,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: visuals.textColor,
+                          child: Text(
+                            weight,
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: visuals.textColor,
+                            ),
                           ),
                         ),
                       ),
