@@ -519,6 +519,15 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     _loadHistory();
   }
 
+  @override
+  void didUpdateWidget(covariant _ExerciseChartCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.exercise != oldWidget.exercise ||
+        widget.userId != oldWidget.userId) {
+      _loadHistory();
+    }
+  }
+
   Future<void> _loadHistory() async {
     try {
       final history = await widget.repository.getExerciseHistory(
