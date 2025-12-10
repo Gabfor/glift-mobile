@@ -377,13 +377,26 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
   void _ignoreRow(int index) {
     if (_rows == null) return;
-    
+
     final row = _rows![index];
-    
+
     setState(() {
-      _ignoredRows.add(row.id);
-      final item = _rows!.removeAt(index);
-      _rows!.add(item);
+      if (_isRowIgnored(row.id)) {
+        _ignoredRows.remove(row.id);
+        final item = _rows!.removeAt(index);
+        final firstProcessedIndex =
+            _rows!.indexWhere((element) => _isRowProcessed(element.id));
+
+        if (firstProcessedIndex == -1) {
+          _rows!.insert(0, item);
+        } else {
+          _rows!.insert(firstProcessedIndex, item);
+        }
+      } else {
+        _ignoredRows.add(row.id);
+        final item = _rows!.removeAt(index);
+        _rows!.add(item);
+      }
     });
   }
 
