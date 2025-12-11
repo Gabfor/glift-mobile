@@ -94,18 +94,24 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   VoidCallback? _currentBackspaceHandler;
   VoidCallback? _currentDecimalHandler;
   VoidCallback? _currentCloseHandler;
+  final ScrollController _scrollController = ScrollController();
 
   void _handleFocus({
     required ValueChanged<String> onInput,
     required VoidCallback onBackspace,
     required VoidCallback onDecimal,
     required VoidCallback onClose,
+    required BuildContext focusContext,
   }) {
     setState(() {
       _currentInputHandler = onInput;
       _currentBackspaceHandler = onBackspace;
       _currentDecimalHandler = onDecimal;
       _currentCloseHandler = onClose;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollIntoView(focusContext);
     });
   }
 
@@ -277,6 +283,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   @override
   void dispose() {
     _scrollEndTimer?.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -312,8 +319,10 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         return false;
       },
       child: ListView.separated(
-        padding:
-            const EdgeInsets.fromLTRB(20, 20, 20, 100), // Bottom padding for button
+        controller: _scrollController,
+        padding: EdgeInsets.fromLTRB(
+            20, 20, 20, _currentInputHandler != null ? 360 : 100),
+        // Bottom padding for button and keypad when visible
         itemCount: _rows!.length,
         separatorBuilder: (context, index) => const SizedBox(height: 20),
         itemBuilder: (context, index) {
@@ -330,6 +339,34 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         },
       ),
     );
+  }
+
+  void _scrollIntoView(BuildContext focusContext) {
+    if (!_scrollController.hasClients) return;
+
+    final renderObject = focusContext.findRenderObject();
+    if (renderObject is! RenderBox) return;
+
+    final objectOffset = renderObject.localToGlobal(Offset.zero);
+    final objectHeight = renderObject.size.height;
+    const keypadHeight = 320.0; // Approximate height of the custom numeric keypad
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final availableHeight = screenHeight - keypadHeight - 40; // Extra space for safety
+    final objectBottom = objectOffset.dy + objectHeight;
+
+    if (objectBottom > availableHeight) {
+      final scrollAmount = objectBottom - availableHeight;
+      final targetOffset = (_scrollController.offset + scrollAmount)
+          .clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent)
+          as double;
+
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> _handleRestUpdate(int index, int newDuration) async {
@@ -476,6 +513,7 @@ class _ExerciseCard extends StatefulWidget {
     required VoidCallback onBackspace,
     required VoidCallback onDecimal,
     required VoidCallback onClose,
+    required BuildContext focusContext,
   }) onFocus;
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(int) onRestUpdate;
@@ -533,7 +571,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
   List<String> _effortsAsStrings() =>
       _effortStates.map((state) => _effortStateToValue(state)).toList();
 
-  void _activateCell(int index, String type) {
+  void _activateCell(BuildContext focusContext, int index, String type) {
     setState(() {
       if (type == 'reps') {
         _activeRepsIndex = index;
@@ -550,6 +588,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
       onBackspace: () => _handleBackspace(index, type),
       onDecimal: () => _handleInput(index, type, '.'),
       onClose: () => _handleClose(index, type),
+      focusContext: focusContext,
     );
   }
 
@@ -778,7 +817,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                   Expanded(
                     flex: 86,
                     child: GestureDetector(
-                      onTap: () => _activateCell(index, 'reps'),
+                      onTap: () => _activateCell(context, index, 'reps'),
                       child: Container(
                         height: 40,
                         alignment: Alignment.center,
@@ -809,7 +848,7 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                   Expanded(
                     flex: 86,
                     child: GestureDetector(
-                      onTap: () => _activateCell(index, 'weight'),
+                      onTap: () => _activateCell(context, index, 'weight'),
                       child: Container(
                         height: 40,
                         alignment: Alignment.center,
