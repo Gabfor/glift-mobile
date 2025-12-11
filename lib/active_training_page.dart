@@ -606,8 +606,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       ));
     }
 
+    final bottomPadding = _currentInputHandler != null
+        ? 340.0
+        : (allProcessed ? 100.0 : 20.0);
+
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, allProcessed ? 100 : 20),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPadding),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final child = items[index];
@@ -1046,6 +1050,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       _effortStates.map((state) => _effortStateToValue(state)).toList();
 
   void _activateCell(int index, String type) {
+    Scrollable.ensureVisible(
+      context,
+      alignment: 0.2,
+      duration: const Duration(milliseconds: 250),
+    );
+
     setState(() {
       if (type == 'reps') {
         _activeRepsIndex = index;
@@ -1294,7 +1304,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           color: visuals.backgroundColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: _activeRepsIndex == index ? const Color(0xFF7069FA) : const Color(0xFFECE9F1),
+                            color: _activeRepsIndex == index
+                                ? const Color(0xFFA1A5FD)
+                                : const Color(0xFFECE9F1),
                             width: _activeRepsIndex == index ? 2 : 1,
                           ),
                         ),
@@ -1323,7 +1335,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           color: visuals.backgroundColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: _activeWeightIndex == index ? const Color(0xFF7069FA) : const Color(0xFFECE9F1),
+                            color: _activeWeightIndex == index
+                                ? const Color(0xFFA1A5FD)
+                                : const Color(0xFFECE9F1),
                             width: _activeWeightIndex == index ? 2 : 1,
                           ),
                         ),
