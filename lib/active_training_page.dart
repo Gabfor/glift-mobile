@@ -42,6 +42,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   double? _inlineTimerTop;
   int? _activeTimerRowIndex;
   final Map<String, List<bool>> _setCompletionStates = {};
+  final ScrollController _scrollController = ScrollController();
 
   // Keypad state
   ValueChanged<String>? _currentInputHandler;
@@ -86,12 +87,17 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     required VoidCallback onBackspace,
     required VoidCallback onDecimal,
     required VoidCallback onClose,
+    required BuildContext focusContext,
   }) {
     setState(() {
       _currentInputHandler = onInput;
       _currentBackspaceHandler = onBackspace;
       _currentDecimalHandler = onDecimal;
       _currentCloseHandler = onClose;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollIntoView(focusContext);
     });
   }
 
@@ -144,6 +150,34 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       _currentDecimalHandler = null;
       _currentCloseHandler = null;
     });
+  }
+
+  void _scrollIntoView(BuildContext focusContext) {
+    if (!_scrollController.hasClients) return;
+
+    final renderObject = focusContext.findRenderObject();
+    if (renderObject is! RenderBox) return;
+
+    final objectOffset = renderObject.localToGlobal(Offset.zero);
+    final objectHeight = renderObject.size.height;
+    const keypadHeight = 320.0;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final availableHeight = screenHeight - keypadHeight - 40;
+    final objectBottom = objectOffset.dy + objectHeight;
+
+    if (objectBottom > availableHeight) {
+      final scrollAmount = objectBottom - availableHeight;
+      final targetOffset = (_scrollController.offset + scrollAmount)
+          .clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent)
+          as double;
+
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   // Interaction handlers
@@ -611,6 +645,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         : (allProcessed ? 100.0 : 20.0);
 
     return ListView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPadding),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -621,6 +656,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }
 
@@ -701,6 +742,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     required VoidCallback onBackspace,
     required VoidCallback onDecimal,
     required VoidCallback onClose,
+    required BuildContext focusContext,
   }) onFocus;
   final List<bool> initialCompletedSets;
   final ValueChanged<List<bool>> onSetCompletionChanged;
@@ -1049,13 +1091,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   List<String> _effortsAsStrings() =>
       _effortStates.map((state) => _effortStateToValue(state)).toList();
 
-  void _activateCell(int index, String type) {
-    Scrollable.ensureVisible(
-      context,
-      alignment: 0.2,
-      duration: const Duration(milliseconds: 250),
-    );
-
+  void _activateCell(BuildContext focusContext, int index, String type) {
     setState(() {
       if (type == 'reps') {
         _activeRepsIndex = index;
@@ -1072,6 +1108,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       onBackspace: () => _handleBackspace(index, type),
       onDecimal: () => _handleInput(index, type, '.'),
       onClose: () => _handleClose(index, type),
+      focusContext: focusContext,
     );
   }
 
@@ -1296,7 +1333,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   Expanded(
                     flex: 86,
                     child: GestureDetector(
-                      onTap: () => _activateCell(index, 'reps'),
+                      onTap: () => _activateCell(context, index, 'reps'),
                       child: Container(
                         height: 40,
                         alignment: Alignment.center,
@@ -1327,7 +1364,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   Expanded(
                     flex: 86,
                     child: GestureDetector(
-                      onTap: () => _activateCell(index, 'weight'),
+                      onTap: () => _activateCell(context, index, 'weight'),
                       child: Container(
                         height: 40,
                         alignment: Alignment.center,
