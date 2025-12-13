@@ -120,12 +120,13 @@ class _ActionButtonState extends State<ActionButton> {
   @override
   Widget build(BuildContext context) {
     final baseColor = widget.isDisabled ? const Color(0xFFECE9F1) : widget.color;
-    final contentColor = widget.isPrimary && !widget.isDisabled
-        ? Colors.white
-        : baseColor;
     final backgroundColor = widget.isPrimary && !widget.isDisabled
         ? widget.backgroundColor
         : Colors.white;
+    final contentColor =
+        widget.isPrimary && !widget.isDisabled && backgroundColor != Colors.white
+            ? Colors.white
+            : baseColor;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
