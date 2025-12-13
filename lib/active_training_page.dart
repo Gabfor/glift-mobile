@@ -34,7 +34,8 @@ class ActiveTrainingPage extends StatefulWidget {
   State<ActiveTrainingPage> createState() => _ActiveTrainingPageState();
 }
 
-class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
+class _ActiveTrainingPageState extends State<ActiveTrainingPage>
+    with SingleTickerProviderStateMixin {
   late final ProgramRepository _programRepository;
   List<TrainingRow>? _rows;
   bool _isLoading = true;
@@ -44,6 +45,10 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   int? _activeTimerRowIndex;
   final Map<String, List<bool>> _setCompletionStates = {};
   final ScrollController _scrollController = ScrollController();
+
+  late final AnimationController _inlineTimerAnimationController;
+  Animation<double>? _inlineTimerAnimation;
+  VoidCallback? _inlineTimerAnimationListener;
 
   // Keypad state
   ValueChanged<String>? _currentInputHandler;
@@ -57,8 +62,12 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   void initState() {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
+    _inlineTimerAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 220),
+      vsync: this,
+    );
     // Initialize with a default value, it will be reset if needed but good to have
-    _startTime = DateTime.now(); 
+    _startTime = DateTime.now();
     _fetchDetails();
   }
 
@@ -123,6 +132,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   void _updateInlineTimerTop(double deltaY) {
     if (_inlineTimerData == null) return;
 
+    _inlineTimerAnimationController.stop();
+
     final mediaQuery = MediaQuery.of(context);
     final minTop = mediaQuery.padding.top;
     final maxTop = mediaQuery.size.height - _InlineRestTimer.height - mediaQuery.padding.bottom;
@@ -131,6 +142,56 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     setState(() {
       _inlineTimerTop = (currentTop + deltaY).clamp(minTop, maxTop) as double;
     });
+  }
+
+  void _animateInlineTimerTo(double targetTop) {
+    final mediaQuery = MediaQuery.of(context);
+    final minTop = mediaQuery.padding.top;
+    final maxTop = mediaQuery.size.height - _InlineRestTimer.height - mediaQuery.padding.bottom;
+    final currentTop = _inlineTimerTop ?? _defaultInlineTop(mediaQuery);
+
+    _inlineTimerAnimationController.stop();
+    _inlineTimerAnimation?.removeListener(_inlineTimerAnimationListener ?? () {});
+
+    final animation = Tween<double>(
+      begin: currentTop,
+      end: targetTop.clamp(minTop, maxTop) as double,
+    ).animate(
+      CurvedAnimation(
+        parent: _inlineTimerAnimationController,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    _inlineTimerAnimationListener = () {
+      if (!mounted) return;
+      setState(() {
+        _inlineTimerTop = animation.value;
+      });
+    };
+
+    animation.addListener(_inlineTimerAnimationListener!);
+    _inlineTimerAnimation = animation;
+    _inlineTimerAnimationController.forward(from: 0);
+  }
+
+  void _snapInlineTimer(DragEndDetails details) {
+    if (_inlineTimerData == null) return;
+
+    final mediaQuery = MediaQuery.of(context);
+    final minTop = mediaQuery.padding.top;
+    final maxTop = mediaQuery.size.height - _InlineRestTimer.height - mediaQuery.padding.bottom;
+    final currentTop = _inlineTimerTop ?? _defaultInlineTop(mediaQuery);
+    final velocityY = details.primaryVelocity ?? 0;
+
+    const velocityThreshold = 150.0;
+    final midpoint = (minTop + maxTop) / 2;
+
+    final targetTop = velocityY.abs() > velocityThreshold
+        ? (velocityY > 0 ? maxTop : minTop)
+        : (currentTop >= midpoint ? maxTop : minTop);
+
+    _animateInlineTimerTo(targetTop);
   }
 
   Future<void> _returnInlineToFullPage(InlineTimerData data) async {
@@ -568,6 +629,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
                 data: _inlineTimerData!,
                 onClose: _closeInlineTimer,
                 onDrag: _updateInlineTimerTop,
+                onDragEnd: _snapInlineTimer,
                 onReturnToFull: _returnInlineToFullPage,
               ),
             )
@@ -755,6 +817,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
   @override
   void dispose() {
+    _inlineTimerAnimation?.removeListener(_inlineTimerAnimationListener ?? () {});
+    _inlineTimerAnimationController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -869,6 +933,7 @@ class _InlineRestTimer extends StatefulWidget {
     required this.width,
     required this.onClose,
     required this.onDrag,
+    required this.onDragEnd,
     required this.onReturnToFull,
   });
 
@@ -878,6 +943,7 @@ class _InlineRestTimer extends StatefulWidget {
   final InlineTimerData data;
   final VoidCallback onClose;
   final ValueChanged<double> onDrag;
+  final GestureDragEndCallback onDragEnd;
   final ValueChanged<InlineTimerData> onReturnToFull;
 
   @override
@@ -1005,6 +1071,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onVerticalDragUpdate: (details) => widget.onDrag(details.delta.dy),
+      onVerticalDragEnd: widget.onDragEnd,
       child: Container(
         width: widget.width,
         height: _InlineRestTimer.height,
