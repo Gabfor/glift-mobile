@@ -917,9 +917,9 @@ class _ExerciseCardState extends State<_ExerciseCard> {
         child: content,
       );
     }
-    
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       child: content,
     );
   }
