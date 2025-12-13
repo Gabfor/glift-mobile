@@ -27,8 +27,21 @@ class Training {
       dashboard: json['dashboard'] as bool? ?? true,
       position: json['position'] as int? ?? 0,
       programId: json['program_id']?.toString(),
-      // These are not in the 'trainings' table, so they remain null by default
-      // and will be populated by the repository logic
+      lastSessionDate: json['lastSessionDate'] != null 
+          ? DateTime.tryParse(json['lastSessionDate']) 
+          : null,
+      averageDurationMinutes: json['averageDurationMinutes'],
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'app': app,
+    'dashboard': dashboard,
+    'position': position,
+    'program_id': programId,
+    'lastSessionDate': lastSessionDate?.toIso8601String(),
+    'averageDurationMinutes': averageDurationMinutes,
+  };
 }

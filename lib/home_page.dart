@@ -13,6 +13,8 @@ import 'training_details_page.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 
+enum SyncStatus { loading, synced, notSynced }
+
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -35,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   List<Program>? _programs;
   String? _selectedProgramId;
   bool _isLoading = true;
+  SyncStatus _syncStatus = SyncStatus.loading;
   String? _error;
 
   @override
@@ -54,6 +57,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchPrograms() async {
+    // 1. Load local cache first
+    try {
+      final localPrograms = await _programRepository.getLocalPrograms();
+      if (mounted && localPrograms.isNotEmpty) {
+        setState(() {
+          _programs = localPrograms;
+          _programKeys
+            ..clear()
+            ..addAll(List.generate(localPrograms.length, (_) => GlobalKey()));
+          if (_selectedProgramId == null) {
+            _selectedProgramId = localPrograms.first.id;
+          }
+          _isLoading = false; // Show content immediately from cache
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading local programs: $e');
+    }
+
+    // 2. Fetch remote data (Background Sync)
+    if (mounted) {
+      setState(() {
+        _syncStatus = SyncStatus.loading;
+      });
+    }
+
     try {
       final programs = await _programRepository.getPrograms();
       if (mounted) {
@@ -62,17 +91,22 @@ class _HomePageState extends State<HomePage> {
           _programKeys
             ..clear()
             ..addAll(List.generate(programs.length, (_) => GlobalKey()));
-          if (programs.isNotEmpty) {
-            _selectedProgramId = programs.first.id;
+            
+          // If we had no selection or selection is invalid, select first
+          if (_selectedProgramId == null || !programs.any((p) => p.id == _selectedProgramId)) {
+             if (programs.isNotEmpty) _selectedProgramId = programs.first.id;
           }
+          
           _isLoading = false;
+          _syncStatus = SyncStatus.synced;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = _programs == null ? e.toString() : null; // Only show full error if no cache
           _isLoading = false;
+          _syncStatus = SyncStatus.notSynced;
         });
       }
     }
@@ -230,6 +264,7 @@ class _HomePageState extends State<HomePage> {
             final training = program.trainings[itemIndex - 1];
             return _TrainingCard(
               training: training,
+              syncStatus: _syncStatus,
               onTap: () async {
                 final result = await Navigator.of(context).push(
                   PageRouteBuilder(
@@ -271,10 +306,15 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _TrainingCard extends StatelessWidget {
-  const _TrainingCard({required this.training, required this.onTap});
+  const _TrainingCard({
+    required this.training,
+    required this.onTap,
+    required this.syncStatus,
+  });
 
   final Training training;
   final VoidCallback onTap;
+  final SyncStatus syncStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -351,11 +391,34 @@ class _TrainingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 20),
-            SvgPicture.asset('assets/icons/good.svg', width: 20, height: 20),
+            _buildStatusIcon(),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatusIcon() {
+    switch (syncStatus) {
+      case SyncStatus.loading:
+        return const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00D591)),
+          ),
+        );
+      case SyncStatus.synced:
+        return SvgPicture.asset('assets/icons/good.svg', width: 20, height: 20);
+      case SyncStatus.notSynced:
+        return SvgPicture.asset(
+          'assets/icons/croix_small.svg',
+          width: 20,
+          height: 20,
+          colorFilter: const ColorFilter.mode(Color(0xFFEF4F4E), BlendMode.srcIn),
+        );
+    }
   }
 
   String _formatRelativeTime(DateTime date) {

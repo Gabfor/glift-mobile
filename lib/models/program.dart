@@ -37,4 +37,13 @@ class Program {
       app: json['app'] as bool? ?? true,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'trainings': trainings.map((t) => t.toJson()).toList(),
+    'position': position,
+    'dashboard': dashboard,
+    'app': app,
+  };
 }

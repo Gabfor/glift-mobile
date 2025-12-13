@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:supabase/supabase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/program.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
@@ -7,6 +9,33 @@ class ProgramRepository {
   final SupabaseClient _supabase;
 
   ProgramRepository(this._supabase);
+
+  static const String _programsCacheKey = 'cached_programs';
+
+  Future<List<Program>> getLocalPrograms() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? programsJson = prefs.getString(_programsCacheKey);
+      
+      if (programsJson != null) {
+        final List<dynamic> decoded = jsonDecode(programsJson);
+        return decoded.map((json) => Program.fromJson(json)).toList();
+      }
+    } catch (e) {
+      // Ignore cache errors
+    }
+    return [];
+  }
+
+  Future<void> saveLocalPrograms(List<Program> programs) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String encoded = jsonEncode(programs.map((p) => p.toJson()).toList());
+      await prefs.setString(_programsCacheKey, encoded);
+    } catch (e) {
+      // Ignore cache errors
+    }
+  }
 
   Future<List<Program>> getPrograms() async {
     try {
@@ -33,7 +62,9 @@ class ProgramRepository {
 
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
 
-        return _processProgramsResponse(response, userId, sessions);
+        final programs = await _processProgramsResponse(response, userId, sessions);
+        await saveLocalPrograms(programs);
+        return programs;
       } catch (_) {
         // Fallback: fetch without dashboard column on trainings
         final response = await _supabase
@@ -54,7 +85,9 @@ class ProgramRepository {
 
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
 
-        return _processProgramsResponse(response, userId, sessions);
+        final programs = await _processProgramsResponse(response, userId, sessions);
+        await saveLocalPrograms(programs);
+        return programs;
       }
     } catch (e) {
       throw Exception('Erreur lors du chargement des programmes: $e');
