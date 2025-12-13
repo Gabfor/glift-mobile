@@ -164,6 +164,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeader() {
+    final programCount = _programs?.length ?? 0;
+    final programTitle = programCount == 1 ? 'Programme' : 'Programmes';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -171,7 +174,7 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
           child: Text(
-            'Programmes',
+            programTitle,
             style: GoogleFonts.quicksand(
               color: Colors.white,
               fontSize: 14,
