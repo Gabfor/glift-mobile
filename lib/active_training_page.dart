@@ -1580,9 +1580,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       ],
     );
 
+    final padding = EdgeInsets.fromLTRB(20, 20, 20, widget.showActions ? 15 : 5);
+
     if (widget.showDecoration) {
       return Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+        padding: padding,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
@@ -1593,7 +1595,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+      padding: padding,
       child: content,
     );
   }
