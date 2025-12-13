@@ -405,12 +405,7 @@ class _TrainingCard extends StatelessWidget {
       case SyncStatus.synced:
         return SvgPicture.asset('assets/icons/good.svg', width: 20, height: 20);
       case SyncStatus.notSynced:
-        return SvgPicture.asset(
-          'assets/icons/croix_small.svg',
-          width: 20,
-          height: 20,
-          colorFilter: const ColorFilter.mode(Color(0xFFEF4F4E), BlendMode.srcIn),
-        );
+        return SvgPicture.asset('assets/icons/notgood.svg', width: 20, height: 20);
     }
   }
 
