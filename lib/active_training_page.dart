@@ -1201,6 +1201,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   int? _activeRepsIndex;
   int? _activeWeightIndex;
   bool _isFirstInput = true;
+  bool _isCompleting = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -1629,20 +1630,20 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 isDisabled: widget.isLast,
                 onTap: widget.isLast ? () {} : widget.onMoveDown,
               ),
-              ActionButton(
-                label: 'Terminé',
-                icon: 'assets/icons/check_small.svg',
-                iconWidth: 12,
-                iconHeight: 12,
-                color: widget.isIgnored
-                    ? const Color(0xFFECE9F1)
-                    : (widget.isCompleted ? Colors.white : const Color(0xFF00D591)),
-                backgroundColor:
-                    widget.isCompleted ? const Color(0xFF00D591) : Colors.white,
-                isPrimary: true,
-                isDisabled: widget.isIgnored,
-                onTap: widget.onComplete,
-              ),
+                ActionButton(
+                  label: 'Terminé',
+                  icon: 'assets/icons/check_small.svg',
+                  iconWidth: 12,
+                  iconHeight: 12,
+                  color: widget.isIgnored
+                      ? const Color(0xFFECE9F1)
+                      : ((widget.isCompleted || _isCompleting) ? Colors.white : const Color(0xFF00D591)),
+                  backgroundColor:
+                      (widget.isCompleted || _isCompleting) ? const Color(0xFF00D591) : Colors.white,
+                  isPrimary: true,
+                  isDisabled: widget.isIgnored,
+                  onTap: _handleComplete,
+                ),
             ],
           ),
         ],
@@ -1701,6 +1702,26 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
           textColor: Color(0xFFEF4F4E),
           iconPath: 'assets/icons/smiley_rouge.png',
         );
+    }
+  }
+  Future<void> _handleComplete() async {
+    // Immediate feedback
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isCompleting = true;
+    });
+
+    // Small delay to let the user see the visual change
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Call parent action
+    widget.onComplete();
+
+    // Reset state (though widget might move/dispose)
+    if (mounted) {
+      setState(() {
+        _isCompleting = false;
+      });
     }
   }
 }

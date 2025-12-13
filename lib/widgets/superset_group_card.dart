@@ -1,9 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SupersetGroupCard extends StatelessWidget {
+class SupersetGroupCard extends StatefulWidget {
   final List<Widget> children;
   final VoidCallback onComplete;
   final VoidCallback onIgnore;
@@ -24,7 +25,38 @@ class SupersetGroupCard extends StatelessWidget {
   });
 
   @override
+  State<SupersetGroupCard> createState() => _SupersetGroupCardState();
+}
+
+class _SupersetGroupCardState extends State<SupersetGroupCard> {
+  bool _isCompleting = false;
+
+  Future<void> _handleComplete() async {
+    // Immediate feedback
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isCompleting = true;
+    });
+
+    // Small delay to let the user see the visual change
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Call parent action
+    widget.onComplete();
+
+    // Reset state (though widget might move/dispose)
+    if (mounted) {
+      setState(() {
+        _isCompleting = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // effectively completed if parent says so OR we are in the process of completing
+    final effectiveIsCompleted = widget.isCompleted || _isCompleting;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -34,7 +66,7 @@ class SupersetGroupCard extends StatelessWidget {
         foregroundPainter: DashedBorderPainter(color: const Color(0xFF7069FA)),
         child: Column(
           children: [
-            ...children,
+            ...widget.children,
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
               child: Row(
@@ -45,36 +77,36 @@ class SupersetGroupCard extends StatelessWidget {
                     icon: 'assets/icons/croix_small.svg',
                     iconWidth: 12,
                     iconHeight: 12,
-                    color: isCompleted
+                    color: effectiveIsCompleted
                         ? const Color(0xFFECE9F1)
-                        : (isIgnored ? Colors.white : const Color(0xFFC2BFC6)),
+                        : (widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                     backgroundColor:
-                        isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                    isDisabled: isCompleted,
-                    onTap: onIgnore,
+                        widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                    isDisabled: effectiveIsCompleted,
+                    onTap: widget.onIgnore,
                   ),
                   ActionButton(
                     label: 'Déplacer',
                     icon: 'assets/icons/arrow_small.svg',
                     iconWidth: 12,
                     iconHeight: 12,
-                    color: isLast ? const Color(0xFFECE9F1) : const Color(0xFFC2BFC6),
-                    isDisabled: isLast,
-                    onTap: isLast ? () {} : onMoveDown,
+                    color: widget.isLast ? const Color(0xFFECE9F1) : const Color(0xFFC2BFC6),
+                    isDisabled: widget.isLast,
+                    onTap: widget.isLast ? () {} : widget.onMoveDown,
                   ),
                   ActionButton(
                     label: 'Terminé',
                     icon: 'assets/icons/check_small.svg',
                     iconWidth: 12,
                     iconHeight: 12,
-                    color: isIgnored
+                    color: widget.isIgnored
                         ? const Color(0xFFECE9F1)
-                        : (isCompleted ? Colors.white : const Color(0xFF00D591)),
+                        : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
                     backgroundColor:
-                        isCompleted ? const Color(0xFF00D591) : Colors.white,
+                        effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
                     isPrimary: true,
-                    isDisabled: isIgnored,
-                    onTap: onComplete,
+                    isDisabled: widget.isIgnored,
+                    onTap: _handleComplete,
                   ),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:supabase/supabase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/program.dart';
@@ -61,8 +62,9 @@ class ProgramRepository {
             .eq('user_id', userId);
 
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+        final localPrograms = await getLocalPrograms();
 
-        final programs = await _processProgramsResponse(response, userId, sessions);
+        final programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         await saveLocalPrograms(programs);
         return programs;
       } catch (_) {
@@ -84,8 +86,9 @@ class ProgramRepository {
             .eq('user_id', userId);
 
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+        final localPrograms = await getLocalPrograms();
 
-        final programs = await _processProgramsResponse(response, userId, sessions);
+        final programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         await saveLocalPrograms(programs);
         return programs;
       }
@@ -98,6 +101,7 @@ class ProgramRepository {
     List<dynamic> data,
     String userId,
     List<Map<String, dynamic>> sessions,
+    List<Program> localPrograms,
   ) async {
     if (data.isEmpty) {
       // Create default program if none exists
@@ -167,6 +171,54 @@ class ProgramRepository {
               averageDurationMinutes: avgDuration,
             );
           }).toList();
+
+          // MERGING STRATEGY:
+          // Check against local cache. If local cache has a NEWER date for a training, keep it.
+          // This prevents the UI from jumping back if the remote sync is slightly stale.
+          if (localPrograms.isNotEmpty) {
+            // Find the corresponding local program
+            final localProgram = localPrograms.firstWhere(
+              (lp) => lp.id == program.id,
+              orElse: () => Program(
+                  id: '-1',
+                  name: '',
+                  trainings: [],
+                  position: 0,
+                  dashboard: false,
+                  app: false),
+            );
+
+            if (localProgram.id != '-1') {
+              for (var i = 0; i < visibleTrainingsWithStats.length; i++) {
+                 final remoteTraining = visibleTrainingsWithStats[i];
+                 final localTraining = localProgram.trainings.firstWhere(
+                   (lt) => lt.id == remoteTraining.id,
+                   orElse: () => remoteTraining, // fallback to remote if not found
+                 );
+
+                 // If local training is the same ID (it should be) and has a date
+                 if (localTraining.id == remoteTraining.id && localTraining.lastSessionDate != null) {
+                   final remoteDate = remoteTraining.lastSessionDate;
+                   final localDate = localTraining.lastSessionDate!;
+
+                   // Stabilized Merge: prefer Local if it's newer OR relatively close (within 1 min) to remote.
+                   // This covers cases where local is "just now" and remote is "just now" (but maybe slightly skewed or lagged).
+                   // It assumes local is the source of truth for immediate actions.
+                   final isLocalNewerOrClose = remoteDate == null || 
+                       localDate.isAfter(remoteDate.subtract(const Duration(minutes: 1)));
+
+                   if (isLocalNewerOrClose) {
+                      // Use local stats
+                      // debugPrint('Using local stats for ${remoteTraining.name} because local date ($localDate) is newer/close to remote ($remoteDate)');
+                      visibleTrainingsWithStats[i] = remoteTraining.copyWith(
+                        lastSessionDate: localDate,
+                        averageDurationMinutes: localTraining.averageDurationMinutes,
+                      );
+                   }
+                 }
+              }
+            }
+          }
 
            // Sort trainings: least recently done FIRST
           visibleTrainingsWithStats.sort((a, b) {
@@ -242,6 +294,57 @@ class ProgramRepository {
     await updateTrainingRow(rowId, rest: restInSeconds.toString());
   }
 
+  Future<void> _updateLocalTrainingStats(String trainingId, int duration, DateTime performedAt) async {
+    try {
+      final programs = await getLocalPrograms();
+      bool changed = false;
+
+      for (var i = 0; i < programs.length; i++) {
+        final program = programs[i];
+        final trainingIndex = program.trainings.indexWhere((t) => t.id == trainingId);
+
+        if (trainingIndex != -1) {
+          final training = program.trainings[trainingIndex];
+          
+          final newAverage = training.averageDurationMinutes != null 
+              ? ((training.averageDurationMinutes! + duration) / 2).round() 
+              : duration;
+
+          final updatedTraining = training.copyWith(
+            lastSessionDate: performedAt,
+            averageDurationMinutes: newAverage,
+          );
+
+          program.trainings[trainingIndex] = updatedTraining;
+
+          // Re-sort trainings: least recently done FIRST
+          program.trainings.sort((a, b) {
+            final dateA = a.lastSessionDate;
+            final dateB = b.lastSessionDate;
+
+            if (dateA == null && dateB == null) {
+              return a.position.compareTo(b.position);
+            }
+            if (dateA == null) return -1;
+            if (dateB == null) return 1;
+
+            return dateA.compareTo(dateB);
+          });
+
+          changed = true;
+          break; // Found and updated, no need to continue
+        }
+      }
+
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      // Ignore errors in local cache update, it's just an optimization
+      debugPrint('Error updating local stats: $e');
+    }
+  }
+
   Future<void> saveTrainingSession({
     required String userId,
     required String trainingId,
@@ -249,13 +352,15 @@ class ProgramRepository {
     required int duration,
   }) async {
     try {
+      final performedAt = DateTime.now().toUtc();
+      
       // 1. Create session
       final sessionResponse = await _supabase
           .from('training_sessions')
           .insert({
             'user_id': userId,
             'training_id': trainingId,
-            'performed_at': DateTime.now().toUtc().toIso8601String(),
+            'performed_at': performedAt.toIso8601String(),
             'duration': duration,
           })
           .select()
@@ -307,6 +412,10 @@ class ProgramRepository {
           await _supabase.from('training_session_sets').insert(setsData);
         }
       }
+
+      // 4. Update local cache immediately to prevent UI jump
+      await _updateLocalTrainingStats(trainingId, duration, performedAt);
+
     } on PostgrestException catch (e) {
       final errorDetails = StringBuffer(
         'Erreur lors de la sauvegarde de la séance: ${e.message}',

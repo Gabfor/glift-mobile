@@ -23,9 +23,6 @@ class Program {
       trainingsList = (json['trainings'] as List)
           .map((t) => Training.fromJson(t as Map<String, dynamic>))
           .toList();
-      
-      // Sort trainings by position
-      trainingsList.sort((a, b) => a.position.compareTo(b.position));
     }
 
     return Program(

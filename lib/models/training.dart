@@ -44,4 +44,27 @@ class Training {
     'lastSessionDate': lastSessionDate?.toIso8601String(),
     'averageDurationMinutes': averageDurationMinutes,
   };
+
+  Training copyWith({
+    String? id,
+    String? name,
+    bool? app,
+    bool? dashboard,
+    int? position,
+    String? programId,
+    DateTime? lastSessionDate,
+    int? averageDurationMinutes,
+  }) {
+    return Training(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      app: app ?? this.app,
+      dashboard: dashboard ?? this.dashboard,
+      position: position ?? this.position,
+      programId: programId ?? this.programId,
+      lastSessionDate: lastSessionDate ?? this.lastSessionDate,
+      averageDurationMinutes:
+          averageDurationMinutes ?? this.averageDurationMinutes,
+    );
+  }
 }
