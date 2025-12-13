@@ -16,6 +16,7 @@ import 'widgets/numeric_keypad.dart';
 import '../theme/glift_theme.dart';
 import '../timer_page.dart';
 import 'widgets/note_modal.dart';
+import 'widgets/superset_group_card.dart';
 import '../services/notification_service.dart';
 import '../services/vibration_service.dart';
 
@@ -67,8 +68,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
       if (mounted) {
         setState(() {
           _rows = rows;
-          // Set start time when data is loaded, or keep the initial one
-          // Keeping initial one is safer to capture time spent loading
+          // Set start time when data is loaded, time spent loading
           _isLoading = false;
         });
       }
@@ -153,8 +153,14 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
   }
 
   void _scrollIntoView(BuildContext focusContext) {
-    if (!_scrollController.hasClients) return;
-
+    final controller = PrimaryScrollController.of(context);
+    // If no primary scroll controller found, try using _scrollController if attached (fallback)
+    // But since we removed it from ListView, it won't be attached unless we attached it elsewhere.
+    // In NestedScrollView scenarios, PrimaryScrollController should be available.
+    
+    // Safety check just in case
+    // Note: PrimaryScrollController.of(context) might return null on some versions, but usually returns a controller.
+    
     final renderObject = focusContext.findRenderObject();
     if (renderObject is! RenderBox) return;
 
@@ -168,15 +174,18 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
 
     if (objectBottom > availableHeight) {
       final scrollAmount = objectBottom - availableHeight;
-      final targetOffset = (_scrollController.offset + scrollAmount)
-          .clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent)
-          as double;
+      // We need the scroll offset. PrimaryScrollController usually has it.
+      if (controller.hasClients) {
+          final targetOffset = (controller.offset + scrollAmount)
+              .clamp(controller.position.minScrollExtent, controller.position.maxScrollExtent)
+              as double;
 
-      _scrollController.animateTo(
-        targetOffset,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-      );
+          controller.animateTo(
+            targetOffset,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+          );
+      }
     }
   }
 
@@ -213,6 +222,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -247,6 +257,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         note: oldRow.note,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -275,6 +286,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         material: material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -332,6 +344,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         note: note,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -446,6 +459,48 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
         final item = _rows!.removeAt(index);
         _rows!.add(item);
       }
+    });
+  }
+
+  void _completeBlock(int startIndex, int count) {
+     for (int i = 0; i < count; i++) {
+       _completeRow(startIndex);
+     }
+  }
+
+  void _ignoreBlock(int startIndex, int count) {
+     for (int i = 0; i < count; i++) {
+       _ignoreRow(startIndex);
+     }
+  }
+  
+  int _getGroupEndIndex(List<TrainingRow> rows, int startIndex) {
+    final startRow = rows[startIndex];
+    if (startRow.supersetId == null) return startIndex;
+    
+    int currentIndex = startIndex;
+    while (currentIndex + 1 < rows.length && 
+           rows[currentIndex + 1].supersetId == startRow.supersetId) {
+      currentIndex++;
+    }
+    return currentIndex;
+  }
+
+  void _moveBlockDown(int startIndex) {
+    if (_rows == null) return;
+    final endIndex = _getGroupEndIndex(_rows!, startIndex);
+    
+    if (endIndex >= _rows!.length - 1) return;
+    
+    // Find next block
+    final nextBlockStartIndex = endIndex + 1;
+    final nextBlockEndIndex = _getGroupEndIndex(_rows!, nextBlockStartIndex);
+    
+    setState(() {
+      final block1 = _rows!.sublist(startIndex, endIndex + 1);
+      final block2 = _rows!.sublist(nextBlockStartIndex, nextBlockEndIndex + 1);
+      
+      _rows!.replaceRange(startIndex, nextBlockEndIndex + 1, [...block2, ...block1]);
     });
   }
 
@@ -576,76 +631,116 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage> {
     final hasCompletedRows = completedRows.isNotEmpty;
     final hasActiveRows = activeRows.isNotEmpty;
 
+    List<Widget> buildRowItems(List<TrainingRow> rowSubset) {
+      final items = <Widget>[];
+      int i = 0;
+      while (i < rowSubset.length) {
+        final row = rowSubset[i];
+        final rowIndex = _rows!.indexOf(row);
+
+        if (row.supersetId != null) {
+          final group = <TrainingRow>[row];
+          int j = i + 1;
+          while (j < rowSubset.length && rowSubset[j].supersetId == row.supersetId) {
+            group.add(rowSubset[j]);
+            j++;
+          }
+
+          final isCompleted = _isRowCompleted(row.id);
+          final isIgnored = _isRowIgnored(row.id);
+          // Check if it is effectively the last block
+          final isLast = rowIndex + group.length >= _rows!.length;
+
+          items.add(SupersetGroupCard(
+            isCompleted: isCompleted,
+            isIgnored: isIgnored,
+            isLast: isLast,
+            onComplete: () => _completeBlock(rowIndex, group.length),
+            onIgnore: () => _ignoreBlock(rowIndex, group.length),
+            onMoveDown: () => _moveBlockDown(rowIndex),
+            children: group.map((r) {
+              final rIndex = _rows!.indexOf(r);
+              return _ActiveExerciseCard(
+                key: ValueKey(r.id),
+                index: rIndex,
+                row: r,
+                onFocus: _handleFocus,
+                initialCompletedSets:
+                    _setCompletionStates[r.id] ?? List<bool>.filled(r.series, false),
+                onSetCompletionChanged: (completedSets) {
+                  setState(() {
+                    _setCompletionStates[r.id] = List<bool>.from(completedSets);
+                  });
+                },
+                isLast: rIndex == _rows!.length - 1,
+                isCompleted: _isRowCompleted(r.id),
+                isIgnored: _isRowIgnored(r.id),
+                onMoveDown: () {},
+                onComplete: () {},
+                onIgnore: () {},
+                onUpdate: (reps, weights, efforts) =>
+                    _handleRowUpdate(rIndex, reps, weights, efforts),
+                onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
+                onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
+                onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+                onOpenTimer: (idx, duration) => _openTimerForRow(idx, duration),
+                showDecoration: false,
+                showActions: false,
+                showTimer: group.indexOf(r) == 0,
+              );
+            }).toList(),
+          ));
+          i = j;
+        } else {
+          items.add(_ActiveExerciseCard(
+            key: ValueKey(row.id),
+            index: rowIndex,
+            row: row,
+            onFocus: _handleFocus,
+            initialCompletedSets:
+                _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
+            onSetCompletionChanged: (completedSets) {
+              setState(() {
+                _setCompletionStates[row.id] = List<bool>.from(completedSets);
+              });
+            },
+            isLast: rowIndex == _rows!.length - 1,
+            isCompleted: _isRowCompleted(row.id),
+            isIgnored: _isRowIgnored(row.id),
+            onMoveDown: () => _moveRowDown(rowIndex),
+            onComplete: () => _completeRow(rowIndex),
+            onIgnore: () => _ignoreRow(rowIndex),
+            onUpdate: (reps, weights, efforts) =>
+                _handleRowUpdate(rowIndex, reps, weights, efforts),
+            onRestUpdate: (newDuration) => _handleRestUpdate(rowIndex, newDuration),
+            onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+            onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
+            onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
+            showDecoration: true,
+            showActions: true,
+            showTimer: true,
+          ));
+          i++;
+        }
+      }
+      return items;
+    }
+
     final items = <Widget>[];
 
-    for (final row in activeRows) {
-      final rowIndex = _rows!.indexOf(row);
-      items.add(_ActiveExerciseCard(
-        key: ValueKey(row.id),
-        index: rowIndex,
-        row: row,
-        onFocus: _handleFocus,
-        initialCompletedSets:
-            _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
-        onSetCompletionChanged: (completedSets) {
-          setState(() {
-            _setCompletionStates[row.id] = List<bool>.from(completedSets);
-          });
-        },
-        isLast: rowIndex == _rows!.length - 1,
-        isCompleted: _isRowCompleted(row.id),
-        isIgnored: _isRowIgnored(row.id),
-        onMoveDown: () => _moveRowDown(rowIndex),
-        onComplete: () => _completeRow(rowIndex),
-        onIgnore: () => _ignoreRow(rowIndex),
-        onUpdate: (reps, weights, efforts) =>
-            _handleRowUpdate(rowIndex, reps, weights, efforts),
-        onRestUpdate: (newDuration) => _handleRestUpdate(rowIndex, newDuration),
-        onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
-        onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
-        onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
-      ));
-    }
+    items.addAll(buildRowItems(activeRows));
 
     if (hasCompletedRows && hasActiveRows) {
       items.add(const _CompletedExercisesSeparator());
     }
 
-    for (final row in completedRows) {
-      final rowIndex = _rows!.indexOf(row);
-      items.add(_ActiveExerciseCard(
-        key: ValueKey(row.id),
-        index: rowIndex,
-        row: row,
-        onFocus: _handleFocus,
-        initialCompletedSets:
-            _setCompletionStates[row.id] ?? List<bool>.filled(row.series, false),
-        onSetCompletionChanged: (completedSets) {
-          setState(() {
-            _setCompletionStates[row.id] = List<bool>.from(completedSets);
-          });
-        },
-        isLast: rowIndex == _rows!.length - 1,
-        isCompleted: _isRowCompleted(row.id),
-        isIgnored: _isRowIgnored(row.id),
-        onMoveDown: () => _moveRowDown(rowIndex),
-        onComplete: () => _completeRow(rowIndex),
-        onIgnore: () => _ignoreRow(rowIndex),
-        onUpdate: (reps, weights, efforts) =>
-            _handleRowUpdate(rowIndex, reps, weights, efforts),
-        onRestUpdate: (newDuration) => _handleRestUpdate(rowIndex, newDuration),
-        onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
-        onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
-        onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
-      ));
-    }
+    items.addAll(buildRowItems(completedRows));
 
     final bottomPadding = _currentInputHandler != null
         ? 340.0
         : (allProcessed ? 100.0 : 20.0);
 
     return ListView.builder(
-      controller: _scrollController,
       padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPadding),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -733,6 +828,9 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
     required this.onOpenTimer,
+    this.showDecoration = true,
+    this.showActions = true,
+    this.showTimer = true,
   });
 
   final int index;
@@ -757,6 +855,9 @@ class _ActiveExerciseCard extends StatefulWidget {
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
   final Future<void> Function(int index, int duration) onOpenTimer;
+  final bool showDecoration;
+  final bool showActions;
+  final bool showTimer;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -1211,49 +1312,43 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
     final hasLink = widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: hasLink
-                    ? GestureDetector(
-                        onTap: _launchVideoUrl,
-                        child: Text(
-                          widget.row.exercise,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF7069FA),
-                            decoration: TextDecoration.underline,
-                            decorationColor: const Color(0xFF7069FA),
-                          ),
-                        ),
-                      )
-                    : Text(
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: hasLink
+                  ? GestureDetector(
+                      onTap: _launchVideoUrl,
+                      child: Text(
                         widget.row.exercise,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: const Color(0xFF7069FA),
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFF7069FA),
                         ),
                       ),
-              ),
-              const SizedBox(width: 20),
-              Row(
-                children: [
+                    )
+                  : Text(
+                      widget.row.exercise,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 20),
+            Row(
+              children: [
+                if (widget.showTimer) ...[
                   GestureDetector(
                     onTap: () {
                       final duration = int.tryParse(widget.row.rest) ?? 0;
@@ -1266,179 +1361,181 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     ),
                   ),
                   const SizedBox(width: 20),
-                  GestureDetector(
-                    onTap: _showNoteModal,
-                    child: SvgPicture.asset(
-                      hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg',
-                      width: 24,
-                      height: 24,
+                ],
+                GestureDetector(
+                  onTap: _showNoteModal,
+                  child: SvgPicture.asset(
+                    hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Header Row
+        Row(
+          children: [
+            _GridHeader('Sets', flex: 40),
+            const SizedBox(width: 10),
+            _GridHeader('Reps.', flex: 86),
+            const SizedBox(width: 10),
+            _GridHeader('Poids', flex: 86),
+            const SizedBox(width: 10),
+            _GridHeader('Effort', flex: 68),
+            const SizedBox(width: 10),
+            _GridHeader('Suivi', flex: 40),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        // Sets Rows
+        ...List.generate(widget.row.series, (index) {
+          final reps = index < _repetitions.length ? _repetitions[index] : '-';
+          final weight = index < _weights.length ? _weights[index] : '-';
+          final visuals = _visualsForState(_effortStates[index]);
+          final isCompleted = _completedSets[index];
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              children: [
+                // Set Number
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FA),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+                ),
+                const SizedBox(width: 10),
 
-          // Header Row
-          Row(
-            children: [
-              _GridHeader('Sets', flex: 40),
-              const SizedBox(width: 10),
-              _GridHeader('Reps.', flex: 86),
-              const SizedBox(width: 10),
-              _GridHeader('Poids', flex: 86),
-              const SizedBox(width: 10),
-              _GridHeader('Effort', flex: 68),
-              const SizedBox(width: 10),
-              _GridHeader('Suivi', flex: 40),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Sets Rows
-          ...List.generate(widget.row.series, (index) {
-            final reps = index < _repetitions.length ? _repetitions[index] : '-';
-            final weight = index < _weights.length ? _weights[index] : '-';
-            final visuals = _visualsForState(_effortStates[index]);
-            final isCompleted = _completedSets[index];
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  // Set Number
-                  SizedBox(
-                    width: 40,
-                    height: 40,
+                // Reps
+                Expanded(
+                  flex: 86,
+                  child: GestureDetector(
+                    onTap: () => _activateCell(context, index, 'reps'),
                     child: Container(
+                      height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FA),
+                        color: visuals.backgroundColor,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _activeRepsIndex == index
+                              ? const Color(0xFFA1A5FD)
+                              : const Color(0xFFECE9F1),
+                          width: _activeRepsIndex == index ? 2 : 1,
+                        ),
                       ),
                       child: Text(
-                        '${index + 1}',
+                        reps,
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: visuals.textColor,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                ),
+                const SizedBox(width: 10),
 
-                  // Reps
-                  Expanded(
-                    flex: 86,
-                    child: GestureDetector(
-                      onTap: () => _activateCell(context, index, 'reps'),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _activeRepsIndex == index
-                                ? const Color(0xFFA1A5FD)
-                                : const Color(0xFFECE9F1),
-                            width: _activeRepsIndex == index ? 2 : 1,
-                          ),
+                // Weight
+                Expanded(
+                  flex: 86,
+                  child: GestureDetector(
+                    onTap: () => _activateCell(context, index, 'weight'),
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: visuals.backgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _activeWeightIndex == index
+                              ? const Color(0xFFA1A5FD)
+                              : const Color(0xFFECE9F1),
+                          width: _activeWeightIndex == index ? 2 : 1,
                         ),
-                        child: Text(
-                          reps,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: visuals.textColor,
-                          ),
+                      ),
+                      child: Text(
+                        weight,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: visuals.textColor,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                ),
+                const SizedBox(width: 10),
 
-                  // Weight
-                  Expanded(
-                    flex: 86,
-                    child: GestureDetector(
-                      onTap: () => _activateCell(context, index, 'weight'),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _activeWeightIndex == index
-                                ? const Color(0xFFA1A5FD)
-                                : const Color(0xFFECE9F1),
-                            width: _activeWeightIndex == index ? 2 : 1,
-                          ),
-                        ),
-                        child: Text(
-                          weight,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: visuals.textColor,
-                          ),
-                        ),
+                // Effort toggle
+                Expanded(
+                  flex: 68,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => _cycleEffortState(index),
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFECE9F1)),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-
-                  // Effort toggle
-                  Expanded(
-                    flex: 68,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => _cycleEffortState(index),
-                      child: Container(
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFECE9F1)),
-                        ),
-                        alignment: Alignment.center,
-                        child: Image.asset(
-                          visuals.iconPath,
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-
-                  // Suivi (Completion)
-                  Expanded(
-                    flex: 40,
-                    child: GestureDetector(
-                      onTap: () => _toggleSetCompletion(index),
-                      child: SvgPicture.asset(
-                        isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg',
+                      alignment: Alignment.center,
+                      child: Image.asset(
+                        visuals.iconPath,
                         width: 24,
                         height: 24,
                       ),
                     ),
                   ),
-                ],
-              ),
-            );
-          }),
+                ),
+                const SizedBox(width: 10),
 
+                // Suivi (Completion)
+                Expanded(
+                  flex: 40,
+                  child: GestureDetector(
+                    onTap: () => _toggleSetCompletion(index),
+                    child: SvgPicture.asset(
+                      isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg',
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        if (widget.showActions) ...[
           const SizedBox(height: 5),
 
           // Action Buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _ActionButton(
+              ActionButton(
                 label: 'Ignorer',
                 icon: 'assets/icons/croix_small.svg',
                 iconWidth: 12,
@@ -1451,7 +1548,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 isDisabled: widget.isCompleted,
                 onTap: widget.onIgnore,
               ),
-              _ActionButton(
+              ActionButton(
                 label: 'Déplacer',
                 icon: 'assets/icons/arrow_small.svg',
                 iconWidth: 12,
@@ -1460,7 +1557,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 isDisabled: widget.isLast,
                 onTap: widget.isLast ? () {} : widget.onMoveDown,
               ),
-              _ActionButton(
+              ActionButton(
                 label: 'Terminé',
                 icon: 'assets/icons/check_small.svg',
                 iconWidth: 12,
@@ -1477,7 +1574,24 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             ],
           ),
         ],
-      ),
+      ],
+    );
+
+    if (widget.showDecoration) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
+        ),
+        child: content,
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+      child: content,
     );
   }
 
@@ -1600,131 +1714,3 @@ class _GridHeader extends StatelessWidget {
     );
   }
 }
-
-class _ActionButton extends StatefulWidget {
-  final String label;
-  final String icon;
-  final Color color;
-  final Color backgroundColor;
-  final bool isPrimary;
-  final bool isDisabled;
-  final double iconWidth;
-  final double iconHeight;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    this.backgroundColor = Colors.white,
-    this.isPrimary = false,
-    this.isDisabled = false,
-    this.iconWidth = 16,
-    this.iconHeight = 16,
-    required this.onTap,
-  });
-
-  @override
-  State<_ActionButton> createState() => _ActionButtonState();
-}
-
-class _ActionButtonState extends State<_ActionButton> {
-  bool _isPressed = false;
-
-  Future<void> _handleTap() async {
-    if (widget.isDisabled) return;
-
-    HapticFeedback.lightImpact();
-
-    setState(() => _isPressed = true);
-
-    await Future.delayed(const Duration(milliseconds: 140));
-
-    if (!mounted) return;
-
-    widget.onTap();
-
-    if (!mounted) return;
-
-    setState(() => _isPressed = false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final overlayColor = Colors.black.withOpacity(0.05);
-    final usePrimaryPressedStyle = widget.isPrimary &&
-        widget.backgroundColor == Colors.white &&
-        _isPressed &&
-        !widget.isDisabled;
-
-    final baseColor = widget.isDisabled ? const Color(0xFFE0DFE5) : widget.color;
-
-    final backgroundColor = widget.isDisabled
-        ? Color.lerp(widget.backgroundColor, Colors.white, 0.45)!
-        : (usePrimaryPressedStyle
-            ? baseColor
-            : (_isPressed
-                ? Color.lerp(widget.backgroundColor, overlayColor, 0.35)!
-                : widget.backgroundColor));
-
-    final contentColor = widget.isDisabled
-        ? const Color(0xFFE0DFE5)
-        : (usePrimaryPressedStyle ? Colors.white : baseColor);
-
-    return GestureDetector(
-      onTap: widget.isDisabled ? null : _handleTap,
-      child: AnimatedScale(
-        duration: const Duration(milliseconds: 140),
-        scale: widget.isDisabled || !_isPressed ? 1 : 0.97,
-        curve: Curves.easeOut,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: widget.isPrimary && backgroundColor == Colors.white
-                  ? baseColor
-                  : (!widget.isPrimary && backgroundColor == Colors.white
-                      ? const Color(0xFFECE9F1)
-                      : Colors.transparent),
-            ),
-            boxShadow: _isPressed
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Row(
-            children: [
-              SvgPicture.asset(
-                widget.icon,
-                width: widget.iconWidth,
-                height: widget.iconHeight,
-                colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                widget.label,
-                style: GoogleFonts.quicksand(
-                  color: contentColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-
-

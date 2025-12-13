@@ -11,6 +11,7 @@ class TrainingRow {
   final String? note;
   final String? material;
   final int order;
+  final String? supersetId;
 
   TrainingRow({
     required this.id,
@@ -25,6 +26,7 @@ class TrainingRow {
     this.material,
     this.videoUrl,
     required this.order,
+    this.supersetId,
   });
 
   factory TrainingRow.fromJson(Map<String, dynamic> json) {
@@ -43,6 +45,7 @@ class TrainingRow {
       // to ensure the app displays clickable exercise names when a link exists.
       videoUrl: (json['video_url'] ?? json['link']) as String?,
       order: json['order'] as int,
+      supersetId: json['superset_id'] as String?,
     );
   }
 }

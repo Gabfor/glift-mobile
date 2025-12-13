@@ -12,7 +12,7 @@ import '../repositories/program_repository.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/note_modal.dart';
-
+import 'widgets/superset_group_card.dart';
 import 'widgets/numeric_keypad.dart';
 import 'active_training_page.dart';
 import '../theme/glift_theme.dart';
@@ -71,25 +71,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
-  void _onKeypadInput(String value) {
-    if (_activeRowIndex == null || _activeSeriesIndex == null || _activeFieldType == null) return;
-    // This will be handled by the _ExerciseCard via a callback or by lifting state up.
-    // Given the structure, it's better to lift the active state to the page level 
-    // OR pass the keypad events down to the active card.
-    // Actually, since the keypad is at page level (in the Stack), the page needs to know which card is active.
-    // But the data is inside _ExerciseCard (local state).
-    // We need to refactor so _ExerciseCard exposes its state or accepts updates.
-    // EASIER APPROACH: The Page holds the keypad, but the _ExerciseCard handles the tap and "registers" itself as the listener.
-    // But the keypad is in the Page's build method.
-    // Let's make the Page manage the active state and pass a callback to _ExerciseCard to "request focus".
-    // When "focused", the Page shows the keypad. When keypad emits, Page calls a callback provided by the Card.
-  }
-  
-  // New approach:
-  // The Page manages the visibility of the keypad.
-  // We pass a `onFocus` callback to `_ExerciseCard`.
-  // When a cell is tapped, `_ExerciseCard` calls `onFocus` with a callback to handle input.
-  
   ValueChanged<String>? _currentInputHandler;
   VoidCallback? _currentBackspaceHandler;
   VoidCallback? _currentDecimalHandler;
@@ -308,6 +289,53 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       );
     }
 
+    final items = <Widget>[];
+    int i = 0;
+    while (i < _rows!.length) {
+      final row = _rows![i];
+      if (row.supersetId != null) {
+        final group = <TrainingRow>[row];
+        int j = i + 1;
+        while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {
+          group.add(_rows![j]);
+          j++;
+        }
+
+        items.add(_SupersetGroupContainer(
+          children: group.map((r) {
+            final rIndex = _rows!.indexOf(r);
+            return _ExerciseCard(
+              key: ValueKey(r.id), // Add key for efficient updates
+              row: r,
+              onFocus: _handleFocus,
+              onUpdate: (reps, weights, efforts) =>
+                  _handleRowUpdate(rIndex, reps, weights, efforts),
+              onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
+              onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
+              onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+              showDecoration: false,
+              showTimer: group.indexOf(r) == 0,
+            );
+          }).toList(),
+        ));
+        i = j;
+      } else {
+        items.add(_ExerciseCard(
+          key: ValueKey(row.id),
+          row: row,
+          onFocus: _handleFocus,
+          onUpdate: (reps, weights, efforts) =>
+              _handleRowUpdate(i, reps, weights, efforts),
+          onRestUpdate: (newDuration) => _handleRestUpdate(i, newDuration),
+          onNoteUpdate: (note) => _handleNoteUpdate(i, note),
+          onMaterialUpdate: (material) => _handleMaterialUpdate(i, material),
+          showDecoration: true,
+          showTimer: true,
+        ));
+        i++;
+      }
+    }
+
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         if (notification is ScrollUpdateNotification ||
@@ -322,21 +350,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         controller: _scrollController,
         padding: EdgeInsets.fromLTRB(
             20, 20, 20, _currentInputHandler != null ? 360 : 100),
-        // Bottom padding for button and keypad when visible
-        itemCount: _rows!.length,
+        itemCount: items.length,
         separatorBuilder: (context, index) => const SizedBox(height: 20),
-        itemBuilder: (context, index) {
-          final row = _rows![index];
-          return _ExerciseCard(
-            row: row,
-            onFocus: _handleFocus,
-            onUpdate: (reps, weights, efforts) =>
-                _handleRowUpdate(index, reps, weights, efforts),
-            onRestUpdate: (newDuration) => _handleRestUpdate(index, newDuration),
-            onNoteUpdate: (note) => _handleNoteUpdate(index, note),
-            onMaterialUpdate: (material) => _handleMaterialUpdate(index, material),
-          );
-        },
+        itemBuilder: (context, index) => items[index],
       ),
     );
   }
@@ -499,12 +515,15 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
 class _ExerciseCard extends StatefulWidget {
   const _ExerciseCard({
+    super.key,
     required this.row,
     required this.onFocus,
     required this.onUpdate,
     required this.onRestUpdate,
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
+    this.showDecoration = true,
+    this.showTimer = true,
   });
 
   final TrainingRow row;
@@ -519,6 +538,8 @@ class _ExerciseCard extends StatefulWidget {
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
+  final bool showDecoration;
+  final bool showTimer;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -678,7 +699,6 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
@@ -686,49 +706,43 @@ class _ExerciseCardState extends State<_ExerciseCard> {
     final hasLink =
         widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: hasLink
-                    ? GestureDetector(
-                        onTap: _launchVideoUrl,
-                        child: Text(
-                          widget.row.exercise,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF7069FA),
-                            decoration: TextDecoration.underline,
-                            decorationColor: const Color(0xFF7069FA),
-                          ),
-                        ),
-                      )
-                    : Text(
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: hasLink
+                  ? GestureDetector(
+                      onTap: _launchVideoUrl,
+                      child: Text(
                         widget.row.exercise,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: const Color(0xFF7069FA),
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFF7069FA),
                         ),
                       ),
-              ),
-              const SizedBox(width: 20),
-              Row(
-                children: [
+                    )
+                  : Text(
+                      widget.row.exercise,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 20),
+            Row(
+              children: [
+                if (widget.showTimer) ...[
                   GestureDetector(
                     onTap: () {
                       final duration = int.tryParse(widget.row.rest) ?? 0;
@@ -751,158 +765,162 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  GestureDetector(
-                    onTap: _showNoteModal,
-                    child: SvgPicture.asset(
-                      hasNote
-                          ? 'assets/icons/note_on.svg'
-                          : 'assets/icons/note_off.svg',
-                      width: 24,
-                      height: 24,
+                ],
+                GestureDetector(
+                  onTap: _showNoteModal,
+                  child: SvgPicture.asset(
+                    hasNote
+                        ? 'assets/icons/note_on.svg'
+                        : 'assets/icons/note_off.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            const _GridHeader('Sets', flex: 40),
+            const SizedBox(width: 10),
+            const _GridHeader('Reps.', flex: 86),
+            const SizedBox(width: 10),
+            const _GridHeader('Poids', flex: 86),
+            const SizedBox(width: 10),
+            const _GridHeader('Effort', flex: 68),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ...List.generate(widget.row.series, (index) {
+          final reps = index < _repetitions.length ? _repetitions[index] : '-';
+          final weight = index < _weights.length ? _weights[index] : '-';
+          final visuals = _visualsForState(_effortStates[index]);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FA),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Header Row
-          Row(
-            children: [
-              _GridHeader('Sets', flex: 40),
-              const SizedBox(width: 10),
-              _GridHeader('Reps.', flex: 86),
-              const SizedBox(width: 10),
-              _GridHeader('Poids', flex: 86),
-              const SizedBox(width: 10),
-              _GridHeader('Effort', flex: 68),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Sets Rows
-          ...List.generate(widget.row.series, (index) {
-            final reps = index < _repetitions.length ? _repetitions[index] : '-';
-            final weight = index < _weights.length ? _weights[index] : '-';
-            final visuals = _visualsForState(_effortStates[index]);
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  // Set Number
-                  SizedBox(
-                    width: 40,
-                    height: 40,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 86,
+                  child: GestureDetector(
+                    onTap: () => _activateCell(context, index, 'reps'),
                     child: Container(
+                      height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FA),
+                        color: visuals.backgroundColor,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _activeRepsIndex == index
+                              ? const Color(0xFFA1A5FD)
+                              : const Color(0xFFECE9F1),
+                          width: _activeRepsIndex == index ? 2 : 1,
+                        ),
                       ),
                       child: Text(
-                        '${index + 1}',
+                        reps,
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: visuals.textColor,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 86,
+                  child: GestureDetector(
+                    onTap: () => _activateCell(context, index, 'weight'),
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: visuals.backgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _activeWeightIndex == index
+                              ? const Color(0xFFA1A5FD)
+                              : const Color(0xFFECE9F1),
+                          width: _activeWeightIndex == index ? 2 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        weight,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: visuals.textColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 68,
+                  child: GestureDetector(
+                    onTap: () => _cycleEffortState(index),
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: visuals.backgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Image.asset(
+                        visuals.iconPath,
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
 
-                  // Reps
-                  Expanded(
-                    flex: 86,
-                    child: GestureDetector(
-                      onTap: () => _activateCell(context, index, 'reps'),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _activeRepsIndex == index
-                                ? const Color(0xFFA1A5FD)
-                                : const Color(0xFFECE9F1),
-                            width: _activeRepsIndex == index ? 2 : 1,
-                          ),
-                        ),
-                        child: Text(
-                          reps,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: visuals.textColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-
-                  // Weight
-                  Expanded(
-                    flex: 86,
-                    child: GestureDetector(
-                      onTap: () => _activateCell(context, index, 'weight'),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _activeWeightIndex == index
-                                ? const Color(0xFFA1A5FD)
-                                : const Color(0xFFECE9F1),
-                            width: _activeWeightIndex == index ? 2 : 1,
-                          ),
-                        ),
-                        child: Text(
-                          weight,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: visuals.textColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-
-                  // Effort toggle
-                  Expanded(
-                    flex: 68,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => _cycleEffortState(index),
-                      child: Container(
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFECE9F1)),
-                        ),
-                        alignment: Alignment.center,
-                        child: Image.asset(
-                          visuals.iconPath,
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
+    if (widget.showDecoration) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
+        ),
+        child: content,
+      );
+    }
+    
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: content,
     );
   }
 
@@ -1080,5 +1098,27 @@ class _GridHeader extends StatelessWidget {
         ),
       );
     }
+  }
+}
+
+class _SupersetGroupContainer extends StatelessWidget {
+  final List<Widget> children;
+
+  const _SupersetGroupContainer({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: CustomPaint(
+        foregroundPainter: DashedBorderPainter(color: const Color(0xFF7069FA)),
+        child: Column(
+          children: children,
+        ),
+      ),
+    );
   }
 }
