@@ -401,14 +401,7 @@ class _TrainingCard extends StatelessWidget {
   Widget _buildStatusIcon() {
     switch (syncStatus) {
       case SyncStatus.loading:
-        return const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00D591)),
-          ),
-        );
+        return const _RotatingLoader();
       case SyncStatus.synced:
         return SvgPicture.asset('assets/icons/good.svg', width: 20, height: 20);
       case SyncStatus.notSynced:
@@ -441,5 +434,44 @@ class _TrainingCard extends StatelessWidget {
     } else {
       return 'à l\'instant';
     }
+  }
+}
+
+class _RotatingLoader extends StatefulWidget {
+  const _RotatingLoader();
+
+  @override
+  State<_RotatingLoader> createState() => _RotatingLoaderState();
+}
+
+class _RotatingLoaderState extends State<_RotatingLoader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller,
+      child: SvgPicture.asset(
+        'assets/icons/loader.svg',
+        width: 20,
+        height: 20,
+      ),
+    );
   }
 }
