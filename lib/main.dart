@@ -14,6 +14,7 @@ import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/widgets/connect_button.dart';
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
+import 'package:glift_mobile/main_page.dart';
 
 import 'supabase_credentials.dart';
 import 'package:supabase/supabase.dart';
@@ -97,18 +98,49 @@ class SplashToOnboarding extends StatefulWidget {
 
 class _SplashToOnboardingState extends State<SplashToOnboarding> {
   bool _showSplash = true;
+  bool _isCheckingSession = true;
+  bool _splashElapsed = false;
 
   @override
   void initState() {
     super.initState();
     debugPrint('Supabase client ready: $supabaseUrl');
-    Future<void>.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _showSplash = false;
-        });
-      }
+    _startSplashDelay();
+    _tryRestoreSession();
+  }
+
+  Future<void> _startSplashDelay() async {
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    setState(() {
+      _splashElapsed = true;
+      _updateSplashVisibility();
     });
+  }
+
+  Future<void> _tryRestoreSession() async {
+    try {
+      final session = await widget.biometricAuthService.restorePersistedSession();
+
+      if (session != null && mounted) {
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => MainPage(supabase: widget.supabase),
+          ),
+        );
+        return;
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isCheckingSession = false;
+        _updateSplashVisibility();
+      });
+    }
+  }
+
+  void _updateSplashVisibility() {
+    _showSplash = !(_splashElapsed && !_isCheckingSession);
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supabase/supabase.dart';
 
 import 'auth/biometric_auth_service.dart';
@@ -33,6 +34,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -79,9 +81,12 @@ class _LoginPageState extends State<LoginPage> {
       (_hasSubmitted && !_isPasswordValid) ||
       (_passwordTouched && !_passwordFocused && !_isPasswordValid);
 
+  static const _lastEmailKey = 'last_email';
+
   @override
   void initState() {
     super.initState();
+    _prefillEmail();
     _emailFocusNode.addListener(() {
       setState(() {
         _emailFocused = _emailFocusNode.hasFocus;
@@ -148,6 +153,10 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      await _secureStorage.write(
+        key: _lastEmailKey,
+        value: _emailController.text.trim(),
+      );
       await widget.biometricAuthService.persistSession(session);
       if (!mounted) return;
       await Navigator.of(context).pushReplacement(
@@ -173,6 +182,17 @@ class _LoginPageState extends State<LoginPage> {
         _errorMessage =
             'Une erreur est survenue. Veuillez réessayer plus tard.';
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _prefillEmail() async {
+    final storedEmail = await _secureStorage.read(key: _lastEmailKey);
+
+    if (storedEmail != null && storedEmail.isNotEmpty && mounted) {
+      setState(() {
+        _emailController.text = storedEmail;
+        _emailTouched = true;
       });
     }
   }

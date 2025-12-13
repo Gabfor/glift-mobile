@@ -51,6 +51,31 @@ class BiometricAuthService {
     }
   }
 
+  Future<Session?> restorePersistedSession() async {
+    final refreshToken = await _secureStorage.read(key: _refreshTokenKey);
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return null;
+    }
+
+    try {
+      final response = await _supabase.auth.refreshSession(refreshToken);
+      final newRefreshToken = response.session?.refreshToken;
+
+      if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+        await _secureStorage.write(
+          key: _refreshTokenKey,
+          value: newRefreshToken,
+        );
+      }
+
+      return response.session;
+    } on AuthException catch (_) {
+      await _secureStorage.delete(key: _refreshTokenKey);
+      return null;
+    }
+  }
+
   Future<AuthResponse> signInWithBiometrics() async {
     final refreshToken = await _secureStorage.read(key: _refreshTokenKey);
 
