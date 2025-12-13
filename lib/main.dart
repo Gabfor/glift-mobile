@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:glift_mobile/login_page.dart';
 import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
+import 'package:glift_mobile/widgets/connect_button.dart';
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
 
@@ -284,40 +285,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     totalPages: _pages.length,
                   ),
                   const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed:
-                          _isConnecting ? null : () => _handleConnect(context),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                      ),
-                      child: _isConnecting
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color(0xFFD7D4DC),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Text(
-                                  'En cours...',
-                                  style: TextStyle(
-                                    color: Color(0xFFD7D4DC),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : const Text('Se connecter'),
-                    ),
+                  ConnectButton(
+                    isEnabled: true,
+                    isLoading: _isConnecting,
+                    onPressed: () => _handleConnect(context),
                   ),
                   const SizedBox(height: 24),
                   Center(
