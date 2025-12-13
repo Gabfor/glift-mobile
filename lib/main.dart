@@ -216,6 +216,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   Future<void> _handleConnect(BuildContext context) async {
+    HapticFeedback.lightImpact();
     setState(() {
       _isConnecting = true;
     });
@@ -307,7 +308,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                                   ),
                                 ),
                                 SizedBox(width: 12),
-                                Text('En cours'),
+                                Text(
+                                  'En cours...',
+                                  style: TextStyle(
+                                    color: Color(0xFFD7D4DC),
+                                  ),
+                                ),
                               ],
                             )
                           : const Text('Se connecter'),
