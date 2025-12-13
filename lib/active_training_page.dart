@@ -185,12 +185,14 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final velocityY = details.primaryVelocity ?? 0;
 
     const velocityThreshold = 150.0;
-    final midpoint = (minTop + maxTop) / 2;
+    if (velocityY.abs() <= velocityThreshold) {
+      setState(() {
+        _inlineTimerTop = currentTop.clamp(minTop, maxTop) as double;
+      });
+      return;
+    }
 
-    final targetTop = velocityY.abs() > velocityThreshold
-        ? (velocityY > 0 ? maxTop : minTop)
-        : (currentTop >= midpoint ? maxTop : minTop);
-
+    final targetTop = velocityY > 0 ? maxTop : minTop;
     _animateInlineTimerTo(targetTop);
   }
 
