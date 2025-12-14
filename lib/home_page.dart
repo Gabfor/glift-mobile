@@ -247,63 +247,133 @@ class _HomePageState extends State<HomePage> {
       itemCount: _programs!.length,
       itemBuilder: (context, index) {
         final program = _programs![index];
-        return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
-          itemCount: program.trainings.length + 1,
-          separatorBuilder: (context, separatorIndex) =>
-              SizedBox(height: separatorIndex == 0 ? 10 : 16),
-          itemBuilder: (context, itemIndex) {
-            if (itemIndex == 0) {
-              return Text(
-                'Entraînement',
-                style: GoogleFonts.quicksand(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: GliftTheme.title,
+        return _TrainingList(
+          program: program,
+          syncStatus: _syncStatus,
+          onTrainingTap: (training) async {
+            final result = await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => TrainingDetailsPage(
+                  training: training,
+                  supabase: widget.supabase,
                 ),
-              );
-            }
+                transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                  const begin = Offset(0, 1);
+                  const end = Offset.zero;
+                  const curve = Curves.ease;
 
-            final training = program.trainings[itemIndex - 1];
-            return _TrainingCard(
-              training: training,
-              syncStatus: _syncStatus,
-              onTap: () async {
-                final result = await Navigator.of(context).push(
-                  PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => TrainingDetailsPage(
-                      training: training,
-                      supabase: widget.supabase,
-                    ),
-                    transitionsBuilder:
-                        (_, animation, secondaryAnimation, child) {
-                          const begin = Offset(0, 1);
-                          const end = Offset.zero;
-                          const curve = Curves.ease;
+                  final tween = Tween(
+                    begin: begin,
+                    end: end,
+                  ).chain(CurveTween(curve: curve));
 
-                          final tween = Tween(
-                            begin: begin,
-                            end: end,
-                          ).chain(CurveTween(curve: curve));
-
-                          return SlideTransition(
-                            position: animation.drive(tween),
-                            child: child,
-                          );
-                        },
-                  ),
-                );
-
-                if (result == true) {
-                  // Reload programs to refresh stats (last session, average time)
-                  _fetchPrograms();
-                  widget.onNavigateToDashboard?.call(program.id);
-                }
-              },
+                  return SlideTransition(
+                    position: animation.drive(tween),
+                    child: child,
+                  );
+                },
+              ),
             );
+
+            if (result == true) {
+              // Reload programs to refresh stats (last session, average time)
+              _fetchPrograms();
+              widget.onNavigateToDashboard?.call(program.id);
+            }
           },
         );
       },
+    );
+  }
+}
+
+class _TrainingList extends StatefulWidget {
+  const _TrainingList({
+    required this.program,
+    required this.syncStatus,
+    required this.onTrainingTap,
+  });
+
+  final Program program;
+  final SyncStatus syncStatus;
+  final ValueChanged<Training> onTrainingTap;
+
+  @override
+  State<_TrainingList> createState() => _TrainingListState();
+}
+
+class _TrainingListState extends State<_TrainingList> {
+  late final ScrollController _scrollController;
+  bool _canScroll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollAbility());
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrainingList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollAbility());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _handleMetricsChange(ScrollMetricsNotification notification) {
+    _updateScrollAbility();
+    return false;
+  }
+
+  void _updateScrollAbility() {
+    if (!_scrollController.hasClients) return;
+
+    final canScroll = _scrollController.position.maxScrollExtent > 0;
+    if (canScroll != _canScroll) {
+      setState(() {
+        _canScroll = canScroll;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: _handleMetricsChange,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+        controller: _scrollController,
+        physics: _canScroll
+            ? const BouncingScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
+        itemCount: widget.program.trainings.length + 1,
+        separatorBuilder: (context, separatorIndex) =>
+            SizedBox(height: separatorIndex == 0 ? 10 : 16),
+        itemBuilder: (context, itemIndex) {
+          if (itemIndex == 0) {
+            return Text(
+              'Entraînement',
+              style: GoogleFonts.quicksand(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: GliftTheme.title,
+              ),
+            );
+          }
+
+          final training = widget.program.trainings[itemIndex - 1];
+          return _TrainingCard(
+            training: training,
+            syncStatus: widget.syncStatus,
+            onTap: () => widget.onTrainingTap(training),
+          );
+        },
+      ),
     );
   }
 }
