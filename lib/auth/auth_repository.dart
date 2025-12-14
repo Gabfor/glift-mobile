@@ -37,6 +37,10 @@ class SupabaseAuthRepository implements AuthRepository {
 
       return session;
     } on AuthException catch (error) {
+      if (error.message == 'Invalid login credentials') {
+        throw const AuthException('Email ou mot de passe incorrect');
+      }
+
       throw AuthException(
         error.message.isNotEmpty
             ? error.message
