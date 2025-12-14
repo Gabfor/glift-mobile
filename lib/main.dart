@@ -223,7 +223,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     });
 
     // Allow the UI to display the loading state before navigating away
-    await Future.delayed(Duration.zero);
+    await Future.delayed(const Duration(milliseconds: 150));
 
     try {
       await Navigator.of(context).push(
