@@ -230,7 +230,6 @@ class _LoginPageState extends State<LoginPage> {
               focusNode: _emailFocusNode,
               isFocused: _emailFocused,
               isError: _showEmailError,
-              message: _emailMessage,
               fieldKey: const Key('emailInput'),
               onChanged: (_) {
                 setState(() {
@@ -239,7 +238,10 @@ class _LoginPageState extends State<LoginPage> {
                 });
               },
             ),
-            const SizedBox(height: 30),
+            _FieldMessageSpacing(
+              message: _emailMessage,
+              isVisible: _showEmailError,
+            ),
             _PasswordField(
               controller: _passwordController,
               focusNode: _passwordFocusNode,
@@ -347,7 +349,6 @@ class _InputField extends StatefulWidget {
   final FocusNode focusNode;
   final bool isFocused;
   final bool isError;
-  final String message;
   final ValueChanged<String>? onChanged;
   final Key? fieldKey;
 
@@ -358,7 +359,6 @@ class _InputField extends StatefulWidget {
     required this.focusNode,
     required this.isFocused,
     required this.isError,
-    required this.message,
     this.fieldKey,
     this.hintText,
     this.onChanged,
@@ -375,11 +375,6 @@ class _InputFieldState extends State<_InputField> {
     if (widget.isError) return const Color(0xFFEF4444);
     if (widget.isFocused) return const Color(0xFFA1A5FD);
     return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
-  }
-
-  Color _messageColor() {
-    if (widget.isError) return const Color(0xFFEF4444);
-    return const Color(0xFF5D6494);
   }
 
   @override
@@ -439,18 +434,40 @@ class _InputFieldState extends State<_InputField> {
             ),
           ),
         ),
-        if (widget.isError) ...[
-          const SizedBox(height: 5),
-          Text(
-            widget.message,
-            style: GoogleFonts.quicksand(
-              color: _messageColor(),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ],
+    );
+  }
+}
+
+class _FieldMessageSpacing extends StatelessWidget {
+  final String message;
+  final bool isVisible;
+
+  const _FieldMessageSpacing({
+    required this.message,
+    required this.isVisible,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 30,
+      child: isVisible && message.isNotEmpty
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 5),
+                Text(
+                  message,
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
     );
   }
 }
