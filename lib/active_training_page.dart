@@ -695,7 +695,22 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final hasCompletedRows = completedRows.isNotEmpty;
     final hasActiveRows = activeRows.isNotEmpty;
 
-    List<Widget> buildRowItems(List<TrainingRow> rowSubset) {
+    final lastActiveRowIds = <int>{};
+    if (activeRows.isNotEmpty) {
+      final lastActiveRow = activeRows.last;
+      if (lastActiveRow.supersetId != null) {
+        final lastSupersetId = lastActiveRow.supersetId;
+        lastActiveRowIds.addAll(
+          activeRows
+              .where((row) => row.supersetId == lastSupersetId)
+              .map((row) => row.id),
+        );
+      } else {
+        lastActiveRowIds.add(lastActiveRow.id);
+      }
+    }
+
+    List<Widget> buildRowItems(List<TrainingRow> rowSubset, {required bool isActiveSubset}) {
       final items = <Widget>[];
       int i = 0;
       while (i < rowSubset.length) {
@@ -713,7 +728,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           final isCompleted = _isRowCompleted(row.id);
           final isIgnored = _isRowIgnored(row.id);
           // Check if it is effectively the last block
-          final isLast = rowIndex + group.length >= _rows!.length;
+          final isLast = rowIndex + group.length >= _rows!.length ||
+              (isActiveSubset && group.any((r) => lastActiveRowIds.contains(r.id)));
 
           items.add(SupersetGroupCard(
             isCompleted: isCompleted,
@@ -736,7 +752,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                     _setCompletionStates[r.id] = List<bool>.from(completedSets);
                   });
                 },
-                isLast: rIndex == _rows!.length - 1,
+                isLast: rIndex == _rows!.length - 1 ||
+                    (isActiveSubset && lastActiveRowIds.contains(r.id)),
                 isCompleted: _isRowCompleted(r.id),
                 isIgnored: _isRowIgnored(r.id),
                 onMoveDown: () {},
@@ -768,7 +785,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 _setCompletionStates[row.id] = List<bool>.from(completedSets);
               });
             },
-            isLast: rowIndex == _rows!.length - 1,
+            isLast: rowIndex == _rows!.length - 1 ||
+                (isActiveSubset && lastActiveRowIds.contains(row.id)),
             isCompleted: _isRowCompleted(row.id),
             isIgnored: _isRowIgnored(row.id),
             onMoveDown: () => _moveRowDown(rowIndex),
@@ -792,13 +810,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     final items = <Widget>[];
 
-    items.addAll(buildRowItems(activeRows));
+    items.addAll(buildRowItems(activeRows, isActiveSubset: true));
 
     if (hasCompletedRows && hasActiveRows) {
       items.add(const _CompletedExercisesSeparator());
     }
 
-    items.addAll(buildRowItems(completedRows));
+    items.addAll(buildRowItems(completedRows, isActiveSubset: false));
 
     final bottomPadding = _currentInputHandler != null
         ? 340.0
