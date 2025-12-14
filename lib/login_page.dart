@@ -68,8 +68,7 @@ class _LoginPageState extends State<LoginPage> {
   bool get _showEmailError {
     final hasText = _emailController.text.trim().isNotEmpty;
     if (!hasText) return false;
-    return (_hasSubmitted && !_isEmailValid) ||
-        (_emailTouched && !_emailFocused && !_isEmailValid);
+    return !_emailFocused && !_isEmailValid && (_hasSubmitted || _emailTouched);
   }
 
   bool get _showPasswordSuccess =>
