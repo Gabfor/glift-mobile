@@ -122,14 +122,14 @@ void main() {
     expect(find.text('Veuillez saisir votre mot de passe.'), findsNothing);
   });
 
-  testWidgets('Invalid email shows validation message on submit',
+  testWidgets('Invalid email shows validation message after leaving field',
       (tester) async {
     final repository = FakeAuthRepository();
 
     await tester.pumpWidget(_buildLogin(repository));
 
     await tester.enterText(find.byKey(const Key('emailInput')), 'invalid-email');
-    await tester.tap(find.byKey(const Key('loginButton')));
+    await tester.tap(find.byKey(const Key('passwordInput')));
     await tester.pump();
 
     expect(find.text('Veuillez saisir un email valide.'), findsOneWidget);
