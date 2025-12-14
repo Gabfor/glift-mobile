@@ -49,14 +49,17 @@ class _MainPageState extends State<MainPage> {
     ];
   }
 
-  void _navigateToDashboard([String? programId]) {
+  void _navigateToDashboard({String? programId, String? trainingId}) {
     setState(() {
       _currentIndex = 0;
       _isBottomNavVisible = true;
     });
     // Slight delay to ensure the widget is built/visible before refreshing
     Future.delayed(const Duration(milliseconds: 100), () {
-      _dashboardKey.currentState?.refresh(programId);
+      _dashboardKey.currentState?.refresh(
+        programId: programId,
+        trainingId: trainingId,
+      );
     });
   }
 

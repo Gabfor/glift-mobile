@@ -23,7 +23,8 @@ class HomePage extends StatefulWidget {
   });
 
   final SupabaseClient supabase;
-  final void Function(String?)? onNavigateToDashboard;
+  final void Function({String? programId, String? trainingId})?
+      onNavigateToDashboard;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -297,7 +298,10 @@ class _HomePageState extends State<HomePage> {
                 if (result == true) {
                   // Reload programs to refresh stats (last session, average time)
                   _fetchPrograms();
-                  widget.onNavigateToDashboard?.call(program.id);
+                  widget.onNavigateToDashboard?.call(
+                    programId: program.id,
+                    trainingId: training.id,
+                  );
                 }
               },
             );
