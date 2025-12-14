@@ -155,9 +155,7 @@ class _ActionButtonState extends State<ActionButton> {
   @override
   Widget build(BuildContext context) {
     final baseColor = widget.isDisabled ? const Color(0xFFECE9F1) : widget.color;
-    final backgroundColor = widget.isPrimary && !widget.isDisabled
-        ? widget.backgroundColor
-        : Colors.white;
+    final backgroundColor = widget.isDisabled ? Colors.white : widget.backgroundColor;
     final contentColor =
         widget.isPrimary && !widget.isDisabled && backgroundColor != Colors.white
             ? Colors.white
