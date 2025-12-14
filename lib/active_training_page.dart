@@ -526,15 +526,69 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   }
 
   void _completeBlock(int startIndex, int count) {
-     for (int i = 0; i < count; i++) {
-       _completeRow(startIndex);
-     }
+    if (_rows == null) return;
+
+    setState(() {
+      final isCompleting = !_isRowCompleted(_rows![startIndex].id);
+      final block = _rows!.sublist(startIndex, startIndex + count);
+
+      for (final row in block) {
+        if (isCompleting) {
+          _completedRows.add(row.id);
+          _ignoredRows.remove(row.id);
+        } else {
+          _completedRows.remove(row.id);
+        }
+      }
+
+      _rows!.removeRange(startIndex, startIndex + count);
+
+      if (isCompleting) {
+        _rows!.addAll(block);
+      } else {
+        final firstProcessedIndex =
+            _rows!.indexWhere((element) => _isRowProcessed(element.id));
+
+        if (firstProcessedIndex == -1) {
+          _rows!.insertAll(0, block);
+        } else {
+          _rows!.insertAll(firstProcessedIndex, block);
+        }
+      }
+    });
   }
 
   void _ignoreBlock(int startIndex, int count) {
-     for (int i = 0; i < count; i++) {
-       _ignoreRow(startIndex);
-     }
+    if (_rows == null) return;
+
+    setState(() {
+      final isIgnoring = !_isRowIgnored(_rows![startIndex].id);
+      final block = _rows!.sublist(startIndex, startIndex + count);
+
+      for (final row in block) {
+        if (isIgnoring) {
+          _ignoredRows.add(row.id);
+          _completedRows.remove(row.id);
+        } else {
+          _ignoredRows.remove(row.id);
+        }
+      }
+
+      _rows!.removeRange(startIndex, startIndex + count);
+
+      if (isIgnoring) {
+        _rows!.addAll(block);
+      } else {
+        final firstProcessedIndex =
+            _rows!.indexWhere((element) => _isRowProcessed(element.id));
+
+        if (firstProcessedIndex == -1) {
+          _rows!.insertAll(0, block);
+        } else {
+          _rows!.insertAll(firstProcessedIndex, block);
+        }
+      }
+    });
   }
   
   int _getGroupEndIndex(List<TrainingRow> rows, int startIndex) {
