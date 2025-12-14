@@ -250,7 +250,7 @@ class _LoginPageState extends State<LoginPage> {
                 });
               },
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
             _PasswordField(
               controller: _passwordController,
               focusNode: _passwordFocusNode,
