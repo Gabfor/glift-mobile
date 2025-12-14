@@ -110,8 +110,7 @@ void main() {
     expect(textField.obscureText, isFalse);
   });
 
-  testWidgets('Validation errors appear on submit when fields empty',
-      (tester) async {
+  testWidgets('Email error is hidden when submitted empty', (tester) async {
     final repository = FakeAuthRepository();
 
     await tester.pumpWidget(_buildLogin(repository));
@@ -119,8 +118,21 @@ void main() {
     await tester.tap(find.byKey(const Key('loginButton')));
     await tester.pump();
 
-    expect(find.text('Veuillez saisir un email valide.'), findsOneWidget);
+    expect(find.text('Veuillez saisir un email valide.'), findsNothing);
     expect(find.text('Veuillez saisir votre mot de passe.'), findsNothing);
+  });
+
+  testWidgets('Invalid email shows validation message on submit',
+      (tester) async {
+    final repository = FakeAuthRepository();
+
+    await tester.pumpWidget(_buildLogin(repository));
+
+    await tester.enterText(find.byKey(const Key('emailInput')), 'invalid-email');
+    await tester.tap(find.byKey(const Key('loginButton')));
+    await tester.pump();
+
+    expect(find.text('Veuillez saisir un email valide.'), findsOneWidget);
   });
 
   testWidgets('Password field is not marked as error when left empty',

@@ -54,21 +54,23 @@ class _LoginPageState extends State<LoginPage> {
 
   bool get _isPasswordValid => _passwordController.text.trim().isNotEmpty;
 
-  String get _emailMessage => _isEmailValid
-      ? ''
-      : 'Veuillez saisir un email valide.';
+  String get _emailMessage {
+    final trimmed = _emailController.text.trim();
+    if (trimmed.isEmpty) return '';
+    return _isEmailValid ? '' : 'Veuillez saisir un email valide.';
+  }
 
   String get _passwordMessage => '';
 
   bool get _showEmailSuccess =>
       _isEmailValid && (_hasSubmitted || (_emailTouched && !_emailFocused));
 
-  bool get _showEmailError =>
-      (_hasSubmitted && !_isEmailValid) ||
-      (_emailTouched &&
-          !_emailFocused &&
-          !_isEmailValid &&
-          _emailController.text.trim().isNotEmpty);
+  bool get _showEmailError {
+    final hasText = _emailController.text.trim().isNotEmpty;
+    if (!hasText) return false;
+    return (_hasSubmitted && !_isEmailValid) ||
+        (_emailTouched && !_emailFocused && !_isEmailValid);
+  }
 
   bool get _showPasswordSuccess =>
       _isPasswordValid && (_hasSubmitted || (_passwordTouched && !_passwordFocused));
