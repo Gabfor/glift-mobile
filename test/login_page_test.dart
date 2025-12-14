@@ -123,6 +123,27 @@ void main() {
     expect(find.text('Veuillez saisir votre mot de passe.'), findsNothing);
   });
 
+  testWidgets('Password field is not marked as error when left empty',
+      (tester) async {
+    final repository = FakeAuthRepository();
+
+    await tester.pumpWidget(_buildLogin(repository));
+
+    await tester.tap(find.byKey(const Key('loginButton')));
+    await tester.pump();
+
+    final passwordContainer = find.ancestor(
+      of: find.byKey(const Key('passwordInput')),
+      matching: find.byType(AnimatedContainer),
+    );
+
+    final decoration = tester
+        .widget<AnimatedContainer>(passwordContainer)
+        .decoration as BoxDecoration;
+
+    expect(decoration.border?.top.color, const Color(0xFFD7D4DC));
+  });
+
   testWidgets('Supabase auth error is displayed', (tester) async {
     final repository = FakeAuthRepository()
       ..shouldThrowAuth = true
