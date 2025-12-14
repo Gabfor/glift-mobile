@@ -439,17 +439,22 @@ class _InputFieldState extends State<_InputField> {
             ),
           ),
         ),
-        if (widget.isError) ...[
-          const SizedBox(height: 5),
-          Text(
-            widget.message,
-            style: GoogleFonts.quicksand(
-              color: _messageColor(),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+        const SizedBox(height: 5),
+        SizedBox(
+          height: 18,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 150),
+            opacity: widget.isError && widget.message.isNotEmpty ? 1 : 0,
+            child: Text(
+              widget.message,
+              style: GoogleFonts.quicksand(
+                color: _messageColor(),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        ],
+        ),
       ],
     );
   }
