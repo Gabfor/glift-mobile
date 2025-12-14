@@ -650,7 +650,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Entraînements',
+                  'Entraînement',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     color: Colors.white,
