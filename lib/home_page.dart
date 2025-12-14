@@ -255,7 +255,7 @@ class _HomePageState extends State<HomePage> {
           itemBuilder: (context, itemIndex) {
             if (itemIndex == 0) {
               return Text(
-                'Entraînements',
+                'Entraînement',
                 style: GoogleFonts.quicksand(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
