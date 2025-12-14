@@ -222,20 +222,22 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       _isConnecting = true;
     });
 
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => LoginPage(
-          authRepository: widget.authRepository,
-          supabase: widget.supabase,
-          biometricAuthService: widget.biometricAuthService,
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => LoginPage(
+            authRepository: widget.authRepository,
+            supabase: widget.supabase,
+            biometricAuthService: widget.biometricAuthService,
+          ),
         ),
-      ),
-    );
-
-    if (!mounted) return;
-    setState(() {
-      _isConnecting = false;
-    });
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isConnecting = false;
+      });
+    }
   }
 
   Future<void> _openSignup() async {
@@ -286,7 +288,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   ),
                   const SizedBox(height: 30),
                   ConnectButton(
-                    isEnabled: true,
+                    isEnabled: !_isConnecting,
                     isLoading: _isConnecting,
                     onPressed: () => _handleConnect(context),
                   ),
