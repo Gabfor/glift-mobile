@@ -174,49 +174,21 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   Widget build(BuildContext context) {
     return GliftPageLayout(
       resizeToAvoidBottomInset: false, // Prevent resize
-      header: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.chevron_left, color: Color(0xFF7069FA)),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Entraînements',
-                  style: GoogleFonts.quicksand(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    height: 1.86,
-                  ),
-                ),
-                Text(
-                  widget.training.name,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    height: 1.62,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
+      header: AnimatedSize(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 150),
+          switchInCurve: Curves.easeIn,
+          switchOutCurve: Curves.easeOut,
+          child: _isScrolling
+              ? const SizedBox.shrink()
+              : _buildHeaderContent(),
+        ),
       ),
+      headerPadding: _isScrolling
+          ? const EdgeInsets.fromLTRB(20, 0, 20, 0)
+          : const EdgeInsets.fromLTRB(20, 10, 20, 20),
       scrollable: false,
       padding: EdgeInsets.zero,
       child: Stack(
@@ -265,6 +237,53 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   void dispose() {
     _scrollEndTimer?.cancel();
     super.dispose();
+  }
+
+  Widget _buildHeaderContent() {
+    return Row(
+      key: const ValueKey('training_details_header'),
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.chevron_left, color: Color(0xFF7069FA)),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Entraînements',
+                style: GoogleFonts.quicksand(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  height: 1.86,
+                ),
+              ),
+              Text(
+                widget.training.name,
+                style: GoogleFonts.quicksand(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  height: 1.62,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildBody() {
