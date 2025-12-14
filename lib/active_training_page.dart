@@ -390,6 +390,24 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     }
   }
 
+  void _startInlineTimerForRow(int index, int durationInSeconds) {
+    if (durationInSeconds <= 0) return;
+
+    final mediaQuery = MediaQuery.of(context);
+
+    setState(() {
+      _activeTimerRowIndex = index;
+      _inlineTimerData = InlineTimerData(
+        remainingSeconds: durationInSeconds,
+        isRunning: true,
+        durationInSeconds: durationInSeconds,
+        enableSound: true,
+        enableVibration: true,
+      );
+      _inlineTimerTop ??= _defaultInlineTop(mediaQuery);
+    });
+  }
+
   Future<void> _handleNoteUpdate(int index, String note) async {
     if (_rows == null) return;
 
@@ -819,6 +837,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
                 onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
                 onOpenTimer: (idx, duration) => _openTimerForRow(idx, duration),
+                onAutoStartTimer: _startInlineTimerForRow,
                 showDecoration: false,
                 showActions: false,
                 showTimer: group.indexOf(r) == 0,
@@ -852,6 +871,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
             onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
             onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
+            onAutoStartTimer: _startInlineTimerForRow,
             showDecoration: true,
             showActions: true,
             showTimer: true,
@@ -966,6 +986,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
     required this.onOpenTimer,
+    required this.onAutoStartTimer,
     this.showDecoration = true,
     this.showActions = true,
     this.showTimer = true,
@@ -993,6 +1014,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
   final Future<void> Function(int index, int duration) onOpenTimer;
+  final void Function(int rowIndex, int durationInSeconds) onAutoStartTimer;
   final bool showDecoration;
   final bool showActions;
   final bool showTimer;
@@ -1269,6 +1291,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   late List<String> _repetitions;
   late List<String> _weights;
   late List<bool> _completedSets;
+
+  late final VibrationService _vibrationService;
   
   int? _activeRepsIndex;
   int? _activeWeightIndex;
@@ -1290,6 +1314,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     _repetitions = List<String>.from(widget.row.repetitions);
     _weights = List<String>.from(widget.row.weights);
     _completedSets = _normalizedCompletion(widget.initialCompletedSets);
+    _vibrationService = const DeviceVibrationService();
   }
 
   List<bool> _normalizedCompletion(List<bool> values) {
@@ -1412,12 +1437,38 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
   }
 
-  void _toggleSetCompletion(int index) {
+  Future<void> _toggleSetCompletion(int index) async {
+    final isNowCompleted = !_completedSets[index];
+
     setState(() {
-      _completedSets[index] = !_completedSets[index];
+      _completedSets[index] = isNowCompleted;
     });
 
     widget.onSetCompletionChanged(List<bool>.from(_completedSets));
+
+    if (!isNowCompleted) return;
+
+    await _vibrateLightly();
+    _startRestTimerIfNeeded(index);
+  }
+
+  Future<void> _vibrateLightly() async {
+    final hasVibrator = await _vibrationService.hasVibrator();
+
+    if (hasVibrator) {
+      await _vibrationService.vibrate();
+    } else {
+      await _vibrationService.fallback();
+    }
+  }
+
+  void _startRestTimerIfNeeded(int setIndex) {
+    final restDuration = int.tryParse(widget.row.rest) ?? 0;
+    final isLastSet = setIndex >= widget.row.series - 1;
+
+    if (restDuration <= 0 || isLastSet || !widget.showTimer) return;
+
+    widget.onAutoStartTimer(widget.index, restDuration);
   }
 
   Future<void> _launchVideoUrl() async {
