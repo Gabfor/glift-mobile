@@ -75,7 +75,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   VoidCallback? _currentBackspaceHandler;
   VoidCallback? _currentDecimalHandler;
   VoidCallback? _currentCloseHandler;
-  final ScrollController _scrollController = ScrollController();
+  ScrollController? _scrollController;
 
   void _handleFocus({
     required ValueChanged<String> onInput,
@@ -264,7 +264,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   @override
   void dispose() {
     _scrollEndTimer?.cancel();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -336,6 +335,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       }
     }
 
+    final controller = PrimaryScrollController.of(context);
+    if (controller != null) {
+      _scrollController = controller;
+    }
+
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         if (notification is ScrollUpdateNotification ||
@@ -347,7 +351,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         return false;
       },
       child: ListView.separated(
-        controller: _scrollController,
+        controller: controller,
         padding: EdgeInsets.fromLTRB(
             20, 20, 20, _currentInputHandler != null ? 360 : 100),
         itemCount: items.length,
@@ -358,7 +362,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   void _scrollIntoView(BuildContext focusContext) {
-    if (!_scrollController.hasClients) return;
+    if (_scrollController == null || !_scrollController!.hasClients) return;
 
     final renderObject = focusContext.findRenderObject();
     if (renderObject is! RenderBox) return;
@@ -373,11 +377,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     if (objectBottom > availableHeight) {
       final scrollAmount = objectBottom - availableHeight;
-      final targetOffset = (_scrollController.offset + scrollAmount)
-          .clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent)
+      final targetOffset = (_scrollController!.offset + scrollAmount)
+          .clamp(_scrollController!.position.minScrollExtent, _scrollController!.position.maxScrollExtent)
           as double;
 
-      _scrollController.animateTo(
+      _scrollController!.animateTo(
         targetOffset,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
