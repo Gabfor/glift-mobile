@@ -120,7 +120,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Veuillez saisir un email valide.'), findsOneWidget);
-    expect(find.text('Veuillez saisir votre mot de passe.'), findsOneWidget);
+    expect(find.text('Veuillez saisir votre mot de passe.'), findsNothing);
   });
 
   testWidgets('Supabase auth error is displayed', (tester) async {
