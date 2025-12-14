@@ -695,7 +695,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final hasCompletedRows = completedRows.isNotEmpty;
     final hasActiveRows = activeRows.isNotEmpty;
 
-    final lastActiveRowIds = <int>{};
+    final lastActiveRowIds = <String>{};
     if (activeRows.isNotEmpty) {
       final lastActiveRow = activeRows.last;
       if (lastActiveRow.supersetId != null) {
