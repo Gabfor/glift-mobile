@@ -58,9 +58,7 @@ class _LoginPageState extends State<LoginPage> {
       ? ''
       : 'Veuillez saisir un email valide.';
 
-  String get _passwordMessage => _isPasswordValid
-      ? 'Mot de passe valide'
-      : 'Veuillez saisir votre mot de passe.';
+  String get _passwordMessage => '';
 
   bool get _showEmailSuccess =>
       _isEmailValid && (_hasSubmitted || (_emailTouched && !_emailFocused));
@@ -557,7 +555,7 @@ class _PasswordField extends StatelessWidget {
             ],
           ),
         ),
-        if (isError) ...[
+        if (isError && message.isNotEmpty) ...[
           const SizedBox(height: 5),
           Text(
             message,
