@@ -15,8 +15,9 @@ class ConnectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isEnabled ? const Color(0xFF7069FA) : const Color(0xFFF2F1F6);
-    final textColor = isEnabled ? Colors.white : const Color(0xFFD7D4DC);
+    final isInteractive = isEnabled && !isLoading;
+    final color = isInteractive ? const Color(0xFF7069FA) : const Color(0xFFF2F1F6);
+    final textColor = isInteractive ? Colors.white : const Color(0xFFD7D4DC);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -27,7 +28,7 @@ class ConnectButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
       ),
       child: ElevatedButton(
-        onPressed: isEnabled && !isLoading ? onPressed : null,
+        onPressed: isInteractive ? onPressed : null,
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: color,
@@ -47,7 +48,7 @@ class ConnectButton extends StatelessWidget {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                      valueColor: AlwaysStoppedAnimation<Color>(textColor),
                     ),
                   ),
                   const SizedBox(width: 12),
