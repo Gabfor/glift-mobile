@@ -1381,6 +1381,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
     final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
     final hasLink = widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
+    final effectiveIsCompleted = widget.isCompleted || _isCompleting;
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1613,12 +1614,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 icon: 'assets/icons/croix_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
-                color: widget.isCompleted
+                color: effectiveIsCompleted
                     ? const Color(0xFFECE9F1)
                     : (widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                 backgroundColor:
                     widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                isDisabled: widget.isCompleted,
+                isDisabled: effectiveIsCompleted,
                 onTap: widget.onIgnore,
               ),
               ActionButton(
@@ -1626,9 +1627,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 icon: 'assets/icons/arrow_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
-                color: widget.isLast ? const Color(0xFFECE9F1) : const Color(0xFFC2BFC6),
-                isDisabled: widget.isLast,
-                onTap: widget.isLast ? () {} : widget.onMoveDown,
+                color: (widget.isLast || effectiveIsCompleted)
+                    ? const Color(0xFFECE9F1)
+                    : const Color(0xFFC2BFC6),
+                isDisabled: widget.isLast || effectiveIsCompleted,
+                onTap: (widget.isLast || effectiveIsCompleted) ? () {} : widget.onMoveDown,
               ),
                 ActionButton(
                   label: 'Terminé',
@@ -1637,9 +1640,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   iconHeight: 12,
                   color: widget.isIgnored
                       ? const Color(0xFFECE9F1)
-                      : ((widget.isCompleted || _isCompleting) ? Colors.white : const Color(0xFF00D591)),
+                      : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
                   backgroundColor:
-                      (widget.isCompleted || _isCompleting) ? const Color(0xFF00D591) : Colors.white,
+                      effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
                   isPrimary: true,
                   isDisabled: widget.isIgnored,
                   onTap: _handleComplete,
