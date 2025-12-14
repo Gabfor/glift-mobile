@@ -222,6 +222,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       _isConnecting = true;
     });
 
+    // Allow the UI to display the loading state before navigating away
+    await Future.delayed(Duration.zero);
+
     try {
       await Navigator.of(context).push(
         MaterialPageRoute(
