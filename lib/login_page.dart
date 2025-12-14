@@ -74,8 +74,9 @@ class _LoginPageState extends State<LoginPage> {
       _isPasswordValid && (_hasSubmitted || (_passwordTouched && !_passwordFocused));
 
   bool get _showPasswordError =>
-      (_hasSubmitted && !_isPasswordValid) ||
-      (_passwordTouched && !_passwordFocused && !_isPasswordValid);
+      _passwordController.text.trim().isNotEmpty &&
+      ((_hasSubmitted && !_isPasswordValid) ||
+          (_passwordTouched && !_passwordFocused && !_isPasswordValid));
 
   @override
   void initState() {
@@ -229,6 +230,7 @@ class _LoginPageState extends State<LoginPage> {
               isFocused: _emailFocused,
               isError: _showEmailError,
               message: _emailMessage,
+              fieldKey: const Key('emailInput'),
               onChanged: (_) {
                 setState(() {
                   _emailTouched = true;
@@ -252,6 +254,8 @@ class _LoginPageState extends State<LoginPage> {
               isError: _showPasswordError,
               onSubmitted: (_) => _submit(),
               message: _passwordMessage,
+              textFieldKey: const Key('passwordInput'),
+              toggleKey: const Key('passwordToggle'),
             ),
             const SizedBox(height: 30),
             if (_errorMessage != null) ...[
@@ -266,6 +270,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 16),
             ],
             ConnectButton(
+              key: const Key('loginButton'),
               isEnabled: _isFormValid,
               isLoading: _isLoading,
               onPressed: _submit,
@@ -343,14 +348,17 @@ class _InputField extends StatefulWidget {
   final bool isError;
   final String message;
   final ValueChanged<String>? onChanged;
+  final Key? fieldKey;
 
   const _InputField({
+    super.key,
     required this.label,
     required this.controller,
     required this.focusNode,
     required this.isFocused,
     required this.isError,
     required this.message,
+    this.fieldKey,
     this.hintText,
     this.onChanged,
   });
@@ -403,6 +411,7 @@ class _InputFieldState extends State<_InputField> {
             ),
             child: Center(
               child: TextField(
+                key: widget.fieldKey,
                 controller: widget.controller,
                 focusNode: widget.focusNode,
                 keyboardType: TextInputType.emailAddress,
@@ -455,8 +464,11 @@ class _PasswordField extends StatelessWidget {
   final ValueChanged<String> onSubmitted;
   final String message;
   final bool isFocused;
+  final Key? textFieldKey;
+  final Key? toggleKey;
 
   const _PasswordField({
+    super.key,
     required this.controller,
     required this.focusNode,
     required this.obscureText,
@@ -466,6 +478,8 @@ class _PasswordField extends StatelessWidget {
     required this.onSubmitted,
     required this.message,
     required this.isFocused,
+    this.textFieldKey,
+    this.toggleKey,
   });
 
   Color _borderColor() {
@@ -508,6 +522,7 @@ class _PasswordField extends StatelessWidget {
             children: [
               Center(
                 child: TextField(
+                  key: textFieldKey,
                   controller: controller,
                   focusNode: focusNode,
                   obscureText: obscureText,
@@ -540,6 +555,7 @@ class _PasswordField extends StatelessWidget {
                 bottom: 0,
                 child: Center(
                   child: GestureDetector(
+                    key: toggleKey,
                     onTapDown: (_) => focusNode.requestFocus(),
                     onTap: onToggleVisibility,
                     child: SvgPicture.asset(
