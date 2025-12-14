@@ -128,20 +128,19 @@ class _LoginPageState extends State<LoginPage> {
       _emailTouched = true;
       _passwordTouched = true;
       _errorMessage = null;
+      _isLoading = true;
     });
 
     if (!_isFormValid) {
+      setState(() {
+        _isLoading = false;
+      });
       _focusFirstError(
         emailError: _isEmailValid ? null : 'Format d’adresse invalide',
         passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
       );
       return;
     }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
 
     try {
       final session = await widget.authRepository.signInWithPassword(
