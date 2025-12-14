@@ -612,7 +612,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
       if (minV - snappedMin < interval * 0.2) {
         snappedMin -= interval;
       }
-      realMinY = snappedMin;
+      realMinY = max(0, snappedMin);
 
       // Recalculate interval to ensure we cover the max value
       // We have fixed number of lines starting from realMinY
