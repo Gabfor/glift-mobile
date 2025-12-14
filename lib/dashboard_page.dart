@@ -513,6 +513,15 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   Timer? _tooltipDelayTimer;
   Timer? _tooltipHideTimer;
 
+  String _formatWeight(double value) {
+    final text = value.toString();
+    if (!text.contains('.')) return text;
+
+    return text
+        .replaceFirst(RegExp(r'\.0+$'), '')
+        .replaceFirst(RegExp(r'(\.\d*?)0+$'), r'$1');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -963,7 +972,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 child: _TooltipWithArrow(
                                   backgroundColor: const Color(0xFF2D2E32),
                                   label:
-                                      '${(_touchedSpot!.y + realMinY).toInt()} kg',
+                                      '${_formatWeight(_history[_touchedSpot!.x.toInt()]['value'] as double)} kg',
                                 ),
                               ),
                             ),
