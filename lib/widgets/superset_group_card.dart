@@ -90,9 +90,12 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     icon: 'assets/icons/arrow_small.svg',
                     iconWidth: 12,
                     iconHeight: 12,
-                    color: widget.isLast ? const Color(0xFFECE9F1) : const Color(0xFFC2BFC6),
-                    isDisabled: widget.isLast,
-                    onTap: widget.isLast ? () {} : widget.onMoveDown,
+                    color: (widget.isLast || effectiveIsCompleted)
+                        ? const Color(0xFFECE9F1)
+                        : const Color(0xFFC2BFC6),
+                    isDisabled: widget.isLast || effectiveIsCompleted,
+                    onTap:
+                        (widget.isLast || effectiveIsCompleted) ? () {} : widget.onMoveDown,
                   ),
                   ActionButton(
                     label: 'Terminé',
