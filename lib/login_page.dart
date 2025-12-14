@@ -222,6 +222,17 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: 12),
+            if (_errorMessage != null) ...[
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFFE74C3C),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             const SizedBox(height: 8),
             _InputField(
               label: 'Email',
@@ -259,17 +270,6 @@ class _LoginPageState extends State<LoginPage> {
               toggleKey: const Key('passwordToggle'),
             ),
             const SizedBox(height: 30),
-            if (_errorMessage != null) ...[
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFFE74C3C),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
             ConnectButton(
               key: const Key('loginButton'),
               isEnabled: _isFormValid,
@@ -439,17 +439,22 @@ class _InputFieldState extends State<_InputField> {
             ),
           ),
         ),
-        if (widget.isError) ...[
-          const SizedBox(height: 5),
-          Text(
-            widget.message,
-            style: GoogleFonts.quicksand(
-              color: _messageColor(),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+        const SizedBox(height: 5),
+        SizedBox(
+          height: 18,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 150),
+            opacity: widget.isError && widget.message.isNotEmpty ? 1 : 0,
+            child: Text(
+              widget.message,
+              style: GoogleFonts.quicksand(
+                color: _messageColor(),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        ],
+        ),
       ],
     );
   }
