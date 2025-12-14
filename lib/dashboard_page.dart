@@ -63,12 +63,12 @@ class DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
-  Future<void> refresh([String? programId]) async {
+  Future<void> refresh({String? programId, String? trainingId}) async {
     setState(() => _isLoading = true);
-    await _loadData(programId);
+    await _loadData(programId: programId, trainingId: trainingId);
   }
 
-  Future<void> _loadData([String? programId]) async {
+  Future<void> _loadData({String? programId, String? trainingId}) async {
     try {
       final userId = widget.supabase.auth.currentUser?.id;
       if (userId == null) return;
@@ -103,7 +103,7 @@ class DashboardPageState extends State<DashboardPage> {
         });
       }
 
-      await _loadTrainings(_selectedProgramId!);
+      await _loadTrainings(_selectedProgramId!, trainingId: trainingId);
       
       // Scroll to selected program if needed
       if (_selectedProgramId != null) {
@@ -118,7 +118,7 @@ class DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  Future<void> _loadTrainings(String programId) async {
+  Future<void> _loadTrainings(String programId, {String? trainingId}) async {
     try {
       final trainings = await _repository.getDashboardTrainings(programId);
       if (trainings.isEmpty) {
@@ -132,10 +132,16 @@ class DashboardPageState extends State<DashboardPage> {
 
       setState(() {
         _trainings = trainings;
-        _selectedTrainingIndex = 0;
+        _selectedTrainingIndex = trainingId != null
+            ? trainings.indexWhere((training) => training['id'] == trainingId)
+            : 0;
+        if (_selectedTrainingIndex < 0 ||
+            _selectedTrainingIndex >= trainings.length) {
+          _selectedTrainingIndex = 0;
+        }
       });
 
-      await _loadExercises(trainings[0]['id']);
+      await _loadExercises(trainings[_selectedTrainingIndex]['id']);
     } catch (e) {
       debugPrint('Error loading trainings: $e');
       setState(() => _isLoading = false);
