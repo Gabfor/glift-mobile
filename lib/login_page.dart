@@ -222,6 +222,17 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: 12),
+            if (_errorMessage != null) ...[
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFFE74C3C),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             const SizedBox(height: 8),
             _InputField(
               label: 'Email',
@@ -259,17 +270,6 @@ class _LoginPageState extends State<LoginPage> {
               toggleKey: const Key('passwordToggle'),
             ),
             const SizedBox(height: 30),
-            if (_errorMessage != null) ...[
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFFE74C3C),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
             ConnectButton(
               key: const Key('loginButton'),
               isEnabled: _isFormValid,
