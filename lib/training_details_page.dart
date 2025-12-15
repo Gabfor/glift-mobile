@@ -420,7 +420,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     List<String> weights,
     List<String> efforts,
   ) async {
-    if (_rows == null) return;
+    if (_rows == null || index < 0 || index >= _rows!.length) return;
 
     setState(() {
       final oldRow = _rows![index];
