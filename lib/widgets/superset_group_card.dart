@@ -174,7 +174,7 @@ class ActionButton extends StatefulWidget {
   final Color backgroundColor;
   final bool isDisabled;
   final bool isPrimary;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   State<ActionButton> createState() => _ActionButtonState();
@@ -196,7 +196,7 @@ class _ActionButtonState extends State<ActionButton> {
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.isDisabled ? null : widget.onTap,
+      onTap: widget.isDisabled || widget.onTap == null ? null : widget.onTap,
       child: AnimatedScale(
         duration: const Duration(milliseconds: 140),
         scale: widget.isDisabled || !_isPressed ? 1 : 0.97,
