@@ -30,6 +30,29 @@ class SupersetGroupCard extends StatefulWidget {
 
 class _SupersetGroupCardState extends State<SupersetGroupCard> {
   bool _isCompleting = false;
+  bool _isIgnoring = false;
+
+  Future<void> _handleIgnore() async {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isIgnoring = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    widget.onIgnore();
+
+    if (mounted) {
+      setState(() {
+        _isIgnoring = false;
+      });
+    }
+  }
+
+  void _handleMoveDown() {
+    HapticFeedback.lightImpact();
+    widget.onMoveDown();
+  }
 
   Future<void> _handleComplete() async {
     // Immediate feedback
@@ -56,6 +79,7 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
   Widget build(BuildContext context) {
     // effectively completed if parent says so OR we are in the process of completing
     final effectiveIsCompleted = widget.isCompleted || _isCompleting;
+    final effectiveIsIgnored = widget.isIgnored || _isIgnoring;
 
     return Container(
       decoration: BoxDecoration(
@@ -79,11 +103,11 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     iconHeight: 12,
                     color: effectiveIsCompleted
                         ? const Color(0xFFECE9F1)
-                        : (widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6)),
+                        : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                     backgroundColor:
-                        widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                    isDisabled: effectiveIsCompleted,
-                    onTap: widget.onIgnore,
+                        effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                    isDisabled: effectiveIsCompleted || _isIgnoring,
+                    onTap: effectiveIsCompleted ? null : _handleIgnore,
                   ),
                   ActionButton(
                     label: 'Déplacer',
@@ -93,22 +117,23 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     color: (widget.isLast || effectiveIsCompleted)
                         ? const Color(0xFFECE9F1)
                         : const Color(0xFFC2BFC6),
-                    isDisabled: widget.isLast || effectiveIsCompleted,
-                    onTap:
-                        (widget.isLast || effectiveIsCompleted) ? () {} : widget.onMoveDown,
+                    isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring,
+                    onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring)
+                        ? null
+                        : _handleMoveDown,
                   ),
                   ActionButton(
                     label: 'Terminé',
                     icon: 'assets/icons/check_small.svg',
                     iconWidth: 12,
                     iconHeight: 12,
-                    color: widget.isIgnored
+                    color: effectiveIsIgnored
                         ? const Color(0xFFECE9F1)
                         : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
                     backgroundColor:
                         effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
                     isPrimary: true,
-                    isDisabled: widget.isIgnored,
+                    isDisabled: effectiveIsIgnored,
                     onTap: _handleComplete,
                   ),
                 ],

@@ -1274,6 +1274,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   int? _activeWeightIndex;
   bool _isFirstInput = true;
   bool _isCompleting = false;
+  bool _isIgnoring = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -1454,6 +1455,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
     final hasLink = widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
     final effectiveIsCompleted = widget.isCompleted || _isCompleting;
+    final effectiveIsIgnored = widget.isIgnored || _isIgnoring;
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1688,11 +1690,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 iconHeight: 12,
                 color: effectiveIsCompleted
                     ? const Color(0xFFECE9F1)
-                    : (widget.isIgnored ? Colors.white : const Color(0xFFC2BFC6)),
+                    : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                 backgroundColor:
-                    widget.isIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                isDisabled: effectiveIsCompleted,
-                onTap: widget.onIgnore,
+                    effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                isDisabled: effectiveIsCompleted || _isIgnoring,
+                onTap: effectiveIsCompleted ? null : _handleIgnore,
               ),
               ActionButton(
                 label: 'Déplacer',
@@ -1702,21 +1704,23 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 color: (widget.isLast || effectiveIsCompleted)
                     ? const Color(0xFFECE9F1)
                     : const Color(0xFFC2BFC6),
-                isDisabled: widget.isLast || effectiveIsCompleted,
-                onTap: (widget.isLast || effectiveIsCompleted) ? () {} : widget.onMoveDown,
+                isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring,
+                onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring)
+                    ? null
+                    : _handleMoveDown,
               ),
                 ActionButton(
                   label: 'Terminé',
                   icon: 'assets/icons/check_small.svg',
                   iconWidth: 12,
                   iconHeight: 12,
-                  color: widget.isIgnored
+                  color: effectiveIsIgnored
                       ? const Color(0xFFECE9F1)
                       : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
                   backgroundColor:
                       effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
                   isPrimary: true,
-                  isDisabled: widget.isIgnored,
+                  isDisabled: effectiveIsIgnored,
                   onTap: _handleComplete,
                 ),
             ],
@@ -1779,6 +1783,29 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         );
     }
   }
+
+  Future<void> _handleIgnore() async {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isIgnoring = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    widget.onIgnore();
+
+    if (mounted) {
+      setState(() {
+        _isIgnoring = false;
+      });
+    }
+  }
+
+  void _handleMoveDown() {
+    HapticFeedback.lightImpact();
+    widget.onMoveDown();
+  }
+
   Future<void> _handleComplete() async {
     // Immediate feedback
     HapticFeedback.lightImpact();
