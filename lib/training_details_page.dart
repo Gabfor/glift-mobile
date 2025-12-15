@@ -398,8 +398,10 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         efforts: oldRow.efforts,
         rest: newDuration.toString(),
         note: oldRow.note,
+        material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -435,6 +437,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -468,6 +471,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         material: material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -496,8 +500,10 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         efforts: oldRow.efforts,
         rest: oldRow.rest,
         note: note,
+        material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
+        supersetId: oldRow.supersetId,
       );
     });
 
@@ -543,7 +549,11 @@ class _ExerciseCard extends StatefulWidget {
   State<_ExerciseCard> createState() => _ExerciseCardState();
 }
 
-class _ExerciseCardState extends State<_ExerciseCard> {
+class _ExerciseCardState extends State<_ExerciseCard>
+    with AutomaticKeepAliveClientMixin<_ExerciseCard> {
+  @override
+  bool get wantKeepAlive => true;
+
   late final List<_EffortState> _effortStates;
   late List<String> _repetitions;
   late List<String> _weights;
@@ -699,6 +709,8 @@ class _ExerciseCardState extends State<_ExerciseCard> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
     final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
     final hasLink =
