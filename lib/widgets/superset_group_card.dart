@@ -106,8 +106,8 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                         : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                     backgroundColor:
                         effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                    isDisabled: effectiveIsCompleted || _isIgnoring,
-                    onTap: effectiveIsCompleted
+                    isDisabled: effectiveIsCompleted,
+                    onTap: (effectiveIsCompleted || effectiveIsIgnored)
                         ? null
                         : () {
                             _handleIgnore();
@@ -174,7 +174,7 @@ class ActionButton extends StatefulWidget {
   final Color backgroundColor;
   final bool isDisabled;
   final bool isPrimary;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   State<ActionButton> createState() => _ActionButtonState();

@@ -1693,8 +1693,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                 backgroundColor:
                     effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                isDisabled: effectiveIsCompleted || _isIgnoring,
-                onTap: effectiveIsCompleted
+                isDisabled: effectiveIsCompleted,
+                onTap: (effectiveIsCompleted || effectiveIsIgnored)
                     ? null
                     : () {
                         _handleIgnore();
