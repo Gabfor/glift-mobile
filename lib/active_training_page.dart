@@ -1694,7 +1694,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 backgroundColor:
                     effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
                 isDisabled: effectiveIsCompleted || _isIgnoring,
-                onTap: effectiveIsCompleted ? null : _handleIgnore,
+                onTap: effectiveIsCompleted
+                    ? null
+                    : () {
+                        _handleIgnore();
+                      },
               ),
               ActionButton(
                 label: 'Déplacer',
@@ -1707,7 +1711,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring,
                 onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring)
                     ? null
-                    : _handleMoveDown,
+                    : () {
+                        _handleMoveDown();
+                      },
               ),
                 ActionButton(
                   label: 'Terminé',
