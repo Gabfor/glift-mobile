@@ -10,6 +10,7 @@ import 'models/shop_offer.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/filter_modal.dart';
+import 'widgets/glift_sort_dropdown.dart';
 
 import 'services/filter_service.dart';
 
@@ -28,6 +29,12 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
+  static const List<Map<String, String>> _sortOptions = [
+    {'value': 'popularity', 'label': 'Popularité'},
+    {'value': 'newest', 'label': 'Nouveauté'},
+    {'value': 'expiration', 'label': 'Expiration'},
+  ];
+
   late final ShopRepository _repository;
   List<ShopOffer> _offers = [];
   bool _isLoading = true;
@@ -294,124 +301,15 @@ class _ShopPageState extends State<ShopPage> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Container(
-                                      height: 40,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: DropdownButtonHideUnderline(
-                                              child: DropdownButton<String>(
-                                                value: _selectedSort,
-                                                isExpanded: true,
-                                                icon: const SizedBox.shrink(),
-                                                items: [
-                                                  DropdownMenuItem(
-                                                    value: 'popularity',
-                                                    child: Text(
-                                                      'Pertinence',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
-                                                        ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'newest',
-                                                    child: Text(
-                                                      'Nouveauté',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
-                                                        ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'expiration',
-                                                    child: Text(
-                                                      'Expiration',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
-                                                        ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                                onChanged: (value) {
-                                                  if (value != null) {
-                                                    setState(() {
-                                                      _selectedSort = value;
-                                                      FilterService().shopSort =
-                                                          value; // Persist
-                                                    });
-                                                  }
-                                                },
-                                                selectedItemBuilder: (context) {
-                                                  return [
-                                                    'popularity',
-                                                    'newest',
-                                                    'expiration',
-                                                  ].map((String value) {
-                                                    return Row(
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          'assets/icons/tri.svg',
-                                                          width: 15,
-                                                          height: 15,
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Text(
-                                                          value == 'popularity'
-                                                              ? 'Pertinence'
-                                                              : value ==
-                                                                      'newest'
-                                                                  ? 'Nouveauté'
-                                                                  : 'Expiration',
-                                                          style: GoogleFonts
-                                                              .quicksand(
-                                                            color: const Color(
-                                                              0xFF3A416F,
-                                                            ),
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  }).toList();
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          SvgPicture.asset(
-                                            'assets/icons/chevron.svg',
-                                            width: 9,
-                                            height: 7,
-                                          ),
-                                        ],
-                                      ),
+                                    child: GliftSortDropdown(
+                                      options: _sortOptions,
+                                      selectedValue: _selectedSort,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedSort = value;
+                                          FilterService().shopSort = value;
+                                        });
+                                      },
                                     ),
                                   ),
                                   const SizedBox(width: 10),

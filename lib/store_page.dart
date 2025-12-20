@@ -11,6 +11,7 @@ import 'models/store_program.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/filter_modal.dart';
+import 'widgets/glift_sort_dropdown.dart';
 
 import 'services/filter_service.dart';
 
@@ -39,12 +40,6 @@ class _StorePageState extends State<StorePage> {
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
   late String _selectedSort;
-  final FocusNode _sortFocusNode = FocusNode();
-  bool _isSortFocused = false;
-  OverlayEntry? _sortOverlayEntry;
-  final LayerLink _sortFieldLink = LayerLink();
-  double? _sortFieldWidth;
-  bool _isSortMenuOpen = false;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -83,8 +78,6 @@ class _StorePageState extends State<StorePage> {
   @override
   void dispose() {
     _navigationRevealTimer?.cancel();
-    _removeSortOverlay();
-    _sortFocusNode.dispose();
     super.dispose();
   }
 
@@ -328,129 +321,14 @@ class _StorePageState extends State<StorePage> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        _sortFieldWidth = constraints.maxWidth;
-
-                                        return CompositedTransformTarget(
-                                          link: _sortFieldLink,
-                                          child: AnimatedContainer(
-                                            key: const ValueKey('sort-field'),
-                                            height: 44,
-                                            duration:
-                                                const Duration(milliseconds: 180),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: _isSortFocused
-                                                    ? const Color(0xFF7069FA)
-                                                    : const Color(0xFFD7D4DC),
-                                                width: 1.2,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: const Color(0x26000000)
-                                                      .withOpacity(_isSortFocused
-                                                          ? 0.16
-                                                          : 0.08),
-                                                  offset: const Offset(0, 6),
-                                                  blurRadius: 16,
-                                                ),
-                                              ],
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Focus(
-                                                    focusNode: _sortFocusNode,
-                                                    onFocusChange: (hasFocus) {
-                                                      setState(() {
-                                                        _isSortFocused = hasFocus;
-                                                      });
-
-                                                      if (!hasFocus) {
-                                                        _removeSortOverlay();
-                                                      }
-                                                    },
-                                                    child: GestureDetector(
-                                                      behavior:
-                                                          HitTestBehavior.opaque,
-                                                      onTap: () {
-                                                        if (_isSortMenuOpen) {
-                                                          _removeSortOverlay();
-                                                        } else {
-                                                          _sortFocusNode
-                                                              .requestFocus();
-                                                          _showSortOverlay();
-                                                        }
-                                                      },
-                                                      child: Row(
-                                                        children: [
-                                                          Container(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(6),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: const Color(
-                                                                  0xFFF4F4FF),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8),
-                                                            ),
-                                                            child:
-                                                                SvgPicture.asset(
-                                                              'assets/icons/tri.svg',
-                                                              width: 15,
-                                                              height: 15,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Text(
-                                                            _sortOptions
-                                                                    .firstWhere(
-                                                                      (option) =>
-                                                                          option[
-                                                                              'value'] ==
-                                                                          _selectedSort,
-                                                                      orElse: () =>
-                                                                          _sortOptions
-                                                                              .first,
-                                                                    )['label'] ??
-                                                                '',
-                                                            style: GoogleFonts
-                                                                .quicksand(
-                                                              color:
-                                                                  const Color(
-                                                                      0xFF3A416F),
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SvgPicture.asset(
-                                                  'assets/icons/chevron.svg',
-                                                  width: 9,
-                                                  height: 7,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
+                                    child: GliftSortDropdown(
+                                      options: _sortOptions,
+                                      selectedValue: _selectedSort,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedSort = value;
+                                          FilterService().storeSort = value;
+                                        });
                                       },
                                     ),
                                   ),
@@ -520,137 +398,6 @@ class _StorePageState extends State<StorePage> {
                   ),
       ),
     );
-  }
-
-  void _showSortOverlay() {
-    if (_sortOverlayEntry != null) return;
-
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    _sortOverlayEntry = OverlayEntry(
-      builder: (context) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: _removeSortOverlay,
-                onPanDown: (_) => _removeSortOverlay(),
-              ),
-            ),
-            CompositedTransformFollower(
-              link: _sortFieldLink,
-              showWhenUnlinked: false,
-              targetAnchor: Alignment.bottomLeft,
-              followerAnchor: Alignment.topLeft,
-              offset: const Offset(0, 8),
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: _sortFieldWidth ?? 0,
-                  constraints: const BoxConstraints(maxHeight: 260),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE8E7EC)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0x26000000)
-                            .withOpacity(_isSortFocused ? 0.16 : 0.08),
-                        offset: const Offset(0, 6),
-                        blurRadius: 16,
-                      ),
-                    ],
-                  ),
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    shrinkWrap: true,
-                    children: _sortOptions.map((option) {
-                      final isSelected = _selectedSort == option['value'];
-
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectedSort = option['value']!;
-                            FilterService().storeSort = _selectedSort;
-                          });
-
-                          _removeSortOverlay();
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFFF4F4FF)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFF7069FA)
-                                  : const Color(0xFFE8E7EC),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              if (isSelected)
-                                SvgPicture.asset(
-                                  'assets/icons/check_green.svg',
-                                  width: 16,
-                                  height: 16,
-                                )
-                              else
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                ),
-                              const SizedBox(width: 10),
-                              Text(
-                                option['label']!,
-                                style: GoogleFonts.quicksand(
-                                  color: isSelected
-                                      ? const Color(0xFF3A416F)
-                                      : const Color(0xFF6F6B7A),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    overlay.insert(_sortOverlayEntry!);
-    setState(() => _isSortMenuOpen = true);
-  }
-
-  void _removeSortOverlay() {
-    _sortOverlayEntry?.remove();
-    _sortOverlayEntry = null;
-
-    if (mounted) {
-      setState(() => _isSortMenuOpen = false);
-    }
-
-    if (_sortFocusNode.hasFocus) {
-      _sortFocusNode.unfocus();
-    }
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
