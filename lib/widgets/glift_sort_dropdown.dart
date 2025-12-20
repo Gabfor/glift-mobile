@@ -64,8 +64,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color:
-                        _isMenuOpen ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
+                    color: const Color(0xFFA1A5FD),
                     width: 1.1,
                   ),
                   boxShadow: const [],
@@ -180,11 +179,10 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                         child: Container(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 10,
-                            vertical: 4,
                           ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
-                            vertical: 12,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white,
