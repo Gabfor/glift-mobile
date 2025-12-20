@@ -33,6 +33,8 @@ class _StorePageState extends State<StorePage> {
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
   late String _selectedSort;
+  final FocusNode _sortFocusNode = FocusNode();
+  bool _isSortFocused = false;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -71,6 +73,7 @@ class _StorePageState extends State<StorePage> {
   @override
   void dispose() {
     _navigationRevealTimer?.cancel();
+    _sortFocusNode.dispose();
     super.dispose();
   }
 
@@ -323,106 +326,111 @@ class _StorePageState extends State<StorePage> {
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                          color: _isSortFocused
+                                              ? const Color(0xFFA1A5FD)
+                                              : const Color(0xFFD7D4DC),
                                         ),
                                       ),
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            child: DropdownButtonHideUnderline(
-                                              child: DropdownButton<String>(
-                                                value: _selectedSort,
-                                                isExpanded: true,
-                                                icon: const SizedBox.shrink(),
-                                                items: [
-                                                  DropdownMenuItem(
-                                                    value: 'popularity',
-                                                    child: Text(
-                                                      'Pertinence',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
+                                            child: Focus(
+                                              focusNode: _sortFocusNode,
+                                              onFocusChange: (hasFocus) {
+                                                setState(() {
+                                                  _isSortFocused = hasFocus;
+                                                });
+                                              },
+                                              child: DropdownButtonHideUnderline(
+                                                child: DropdownButton<String>(
+                                                  value: _selectedSort,
+                                                  isExpanded: true,
+                                                  icon: const SizedBox.shrink(),
+                                                  dropdownColor: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  elevation: 9,
+                                                  items: const [
+                                                    {
+                                                      'value': 'popularity',
+                                                      'label': 'Popularité'
+                                                    },
+                                                    {
+                                                      'value': 'newest',
+                                                      'label': 'Nouveauté'
+                                                    },
+                                                    {
+                                                      'value': 'expiration',
+                                                      'label': 'Ancienneté'
+                                                    },
+                                                  ].map((Map<String, String> option) {
+                                                    return DropdownMenuItem(
+                                                      value: option['value']!,
+                                                      child: Text(
+                                                        option['label']!,
+                                                        style: GoogleFonts.quicksand(
+                                                          color: (_selectedSort ==
+                                                                  option['value'])
+                                                              ? const Color(
+                                                                  0xFF7069FA,
+                                                                )
+                                                              : const Color(
+                                                                  0xFF3A416F,
+                                                                ),
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
                                                       ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'newest',
-                                                    child: Text(
-                                                      'Nouveauté',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
-                                                        ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'expiration',
-                                                    child: Text(
-                                                      'Expiration',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
-                                                        ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                                onChanged: (value) {
-                                                  if (value != null) {
-                                                    setState(() {
-                                                      _selectedSort = value;
-                                                      FilterService()
-                                                              .storeSort =
-                                                          value; // Persist
-                                                    });
-                                                  }
-                                                },
-                                                selectedItemBuilder: (context) {
-                                                  return [
-                                                    'popularity',
-                                                    'newest',
-                                                    'expiration',
-                                                  ].map((String value) {
-                                                    return Row(
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          'assets/icons/tri.svg',
-                                                          width: 15,
-                                                          height: 15,
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Text(
-                                                          value == 'popularity'
-                                                              ? 'Pertinence'
-                                                              : value ==
-                                                                      'newest'
-                                                                  ? 'Nouveauté'
-                                                                  : 'Expiration',
-                                                          style: GoogleFonts
-                                                              .quicksand(
-                                                            color: const Color(
-                                                              0xFF3A416F,
-                                                            ),
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                          ),
-                                                        ),
-                                                      ],
                                                     );
-                                                  }).toList();
-                                                },
+                                                  }).toList(),
+                                                  onChanged: (value) {
+                                                    if (value != null) {
+                                                      setState(() {
+                                                        _selectedSort = value;
+                                                        FilterService()
+                                                                .storeSort =
+                                                            value; // Persist
+                                                      });
+                                                    }
+                                                    _sortFocusNode.unfocus();
+                                                  },
+                                                  selectedItemBuilder: (context) {
+                                                    return [
+                                                      'popularity',
+                                                      'newest',
+                                                      'expiration',
+                                                    ].map((String value) {
+                                                      return Row(
+                                                        children: [
+                                                          SvgPicture.asset(
+                                                            'assets/icons/tri.svg',
+                                                            width: 15,
+                                                            height: 15,
+                                                          ),
+                                                          const SizedBox(width: 8),
+                                                          Text(
+                                                            value == 'popularity'
+                                                                ? 'Popularité'
+                                                                : value ==
+                                                                        'newest'
+                                                                    ? 'Nouveauté'
+                                                                    : 'Ancienneté',
+                                                            style: GoogleFonts
+                                                                .quicksand(
+                                                              color: const Color(
+                                                                0xFF7069FA,
+                                                              ),
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    }).toList();
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           ),
