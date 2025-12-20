@@ -368,6 +368,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     int duration, {
     InlineTimerData? inlineData,
   }) async {
+    if (_inlineTimerData != null && inlineData == null) {
+      return;
+    }
     _activeTimerRowIndex = index;
 
     final result = await Navigator.of(context).push<InlineTimerData>(
@@ -452,6 +455,14 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       }
 
       if (mounted) {
+        const vibrationService = DeviceVibrationService();
+        final hasVibrator = await vibrationService.hasVibrator();
+        if (hasVibrator) {
+          await vibrationService.vibrate();
+        } else {
+          await vibrationService.fallback();
+        }
+
         Navigator.of(context).pop(true);
       }
     } catch (e) {
@@ -493,6 +504,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       } else {
         _completedRows.add(row.id);
         _ignoredRows.remove(row.id);
+        _closeInlineTimer();
         final item = _rows!.removeAt(index);
         _rows!.add(item);
       }
@@ -536,6 +548,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         if (isCompleting) {
           _completedRows.add(row.id);
           _ignoredRows.remove(row.id);
+          _closeInlineTimer();
         } else {
           _completedRows.remove(row.id);
         }
@@ -1308,6 +1321,19 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     if (oldWidget.initialCompletedSets != widget.initialCompletedSets ||
         oldWidget.row.series != widget.row.series) {
       _completedSets = _normalizedCompletion(widget.initialCompletedSets);
+    }
+    
+    if (oldWidget.row != widget.row) {
+      setState(() {
+        _repetitions = List<String>.from(widget.row.repetitions);
+        _weights = List<String>.from(widget.row.weights);
+        _effortStates = List<_EffortState>.generate(
+          widget.row.series,
+          (index) => index < widget.row.efforts.length
+              ? _effortValueToState(widget.row.efforts[index])
+              : _EffortState.neutral,
+        );
+      });
     }
   }
 
