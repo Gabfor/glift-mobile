@@ -273,11 +273,40 @@ class ProgramRepository {
     String? note,
     String? material,
   }) async {
+    List<num?>? _prepareNumericValues(List<String>? values) {
+      if (values == null) return null;
+
+      return values
+          .map((value) {
+            final normalized = value.trim();
+            if (normalized.isEmpty || normalized == '-') return null;
+
+            final parsed = num.tryParse(normalized.replaceAll(',', '.'));
+            return parsed;
+          })
+          .toList();
+    }
+
+    List<String>? _prepareEfforts(List<String>? values) {
+      if (values == null) return null;
+
+      return values
+          .map((value) {
+            final normalized = value.trim();
+            return normalized.isEmpty ? 'parfait' : normalized;
+          })
+          .toList();
+    }
+
     try {
       final updates = <String, dynamic>{};
-      if (repetitions != null) updates['repetitions'] = repetitions;
-      if (weights != null) updates['poids'] = weights;
-      if (efforts != null) updates['effort'] = efforts;
+      final preparedRepetitions = _prepareNumericValues(repetitions);
+      final preparedWeights = _prepareNumericValues(weights);
+      final preparedEfforts = _prepareEfforts(efforts);
+
+      if (preparedRepetitions != null) updates['repetitions'] = preparedRepetitions;
+      if (preparedWeights != null) updates['poids'] = preparedWeights;
+      if (preparedEfforts != null) updates['effort'] = preparedEfforts;
       if (rest != null) updates['repos'] = rest;
       if (note != null) updates['note'] = note;
       if (material != null) updates['materiel'] = material;
