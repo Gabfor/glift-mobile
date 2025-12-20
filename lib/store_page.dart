@@ -308,15 +308,15 @@ class _StorePageState extends State<StorePage> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Focus(
-                                      focusNode: _sortFocusNode,
-                                      onFocusChange: (hasFocus) {
-                                        setState(() {
-                                          _isSortFocused = hasFocus;
-                                        });
-                                      },
-                                      child: Container(
-                                        height: 40,
+                                      child: Focus(
+                                        focusNode: _sortFocusNode,
+                                        onFocusChange: (hasFocus) {
+                                          setState(() {
+                                            _isSortFocused = hasFocus;
+                                          });
+                                        },
+                                        child: Container(
+                                          height: 40,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                         ),
@@ -335,7 +335,6 @@ class _StorePageState extends State<StorePage> {
                                             Expanded(
                                               child: DropdownButtonHideUnderline(
                                                 child: DropdownButton<String>(
-                                                  focusNode: _sortFocusNode,
                                                   value: _selectedSort,
                                                   isExpanded: true,
                                                   elevation: 9,
@@ -487,7 +486,8 @@ class _StorePageState extends State<StorePage> {
                         const SizedBox(height: 20),
                       ],
                       if (_filteredPrograms.isEmpty)
-                        Expanded(
+                        Padding(
+                          padding: const EdgeInsets.only(top: 40, bottom: 20),
                           child: Center(
                             child: Text(
                               'Aucun programme disponible',
