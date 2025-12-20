@@ -103,30 +103,62 @@ class _StorePageState extends State<StorePage> {
       filtered = filtered.where((program) {
         bool matches = true;
 
-        // Catégorie (Goal)
-      if (selectedFilters.containsKey('Catégorie')) {
-        if (selectedFilters['Catégorie']!.isEmpty) {
-          matches = false;
-        } else if (!selectedFilters['Catégorie']!.contains(program.goal)) {
-          matches = false;
+        // Objectif (formerly Catégorie)
+        if (selectedFilters.containsKey('Objectif')) {
+          if (selectedFilters['Objectif']!.isEmpty) {
+            matches = false;
+          } else if (!selectedFilters['Objectif']!.contains(program.goal)) {
+            matches = false;
+          }
         }
-      }
 
-      // Boutique (Partner)
-      if (matches && selectedFilters.containsKey('Boutique')) {
-        if (selectedFilters['Boutique']!.isEmpty) {
-          matches = false;
-        } else if (program.partnerName == null ||
-            !selectedFilters['Boutique']!.contains(program.partnerName)) {
-          matches = false;
+        // Partenaire (formerly Boutique)
+        if (matches && selectedFilters.containsKey('Partenaire')) {
+          if (selectedFilters['Partenaire']!.isEmpty) {
+            matches = false;
+          } else if (program.partnerName == null ||
+              !selectedFilters['Partenaire']!.contains(program.partnerName)) {
+            matches = false;
+          }
         }
-      }
 
-      // Sexe (Gender)
-      if (matches && selectedFilters.containsKey('Sexe')) {
-        if (selectedFilters['Sexe']!.isEmpty) {
-          matches = false;
-        } else if (!selectedFilters['Sexe']!.contains(program.gender)) {
+        // Niveau
+        if (matches && selectedFilters.containsKey('Niveau')) {
+          if (selectedFilters['Niveau']!.isEmpty) {
+            matches = false;
+          } else if (!selectedFilters['Niveau']!.contains(program.level)) {
+            matches = false;
+          }
+        }
+
+        // Durée max.
+        if (matches && selectedFilters.containsKey('Durée max.')) {
+          if (selectedFilters['Durée max.']!.isEmpty) {
+            matches = false;
+          } else {
+            final programDurationWithUnit = '${program.duration} minutes';
+            if (!selectedFilters['Durée max.']!
+                .contains(programDurationWithUnit)) {
+              matches = false;
+            }
+          }
+        }
+
+        // Lieu
+        if (matches && selectedFilters.containsKey('Lieu')) {
+          if (selectedFilters['Lieu']!.isEmpty) {
+            matches = false;
+          } else if (program.location == null ||
+              !selectedFilters['Lieu']!.contains(program.location)) {
+            matches = false;
+          }
+        }
+
+        // Sexe
+        if (matches && selectedFilters.containsKey('Sexe')) {
+          if (selectedFilters['Sexe']!.isEmpty) {
+            matches = false;
+          } else if (!selectedFilters['Sexe']!.contains(program.gender)) {
             matches = false;
           }
         }
@@ -164,26 +196,53 @@ class _StorePageState extends State<StorePage> {
   void _showFilterModal() {
     final goals = <String>{};
     final partners = <String>{};
+    final levels = <String>{};
+    final durations = <String>{};
     final genders = <String>{};
+    final locations = <String>{};
 
     for (final program in _programs) {
       if (program.goal.isNotEmpty) goals.add(program.goal);
       if (program.partnerName != null && program.partnerName!.isNotEmpty) {
         partners.add(program.partnerName!);
       }
+      if (program.level.isNotEmpty) levels.add(program.level);
+      if (program.duration.isNotEmpty) {
+        durations.add('${program.duration} minutes');
+      }
       if (program.gender.isNotEmpty && program.gender != 'Tous') {
         genders.add(program.gender);
+      }
+      if (program.location != null && program.location!.isNotEmpty) {
+        locations.add(program.location!);
       }
     }
 
     final sections = [
       FilterSection(title: 'Sexe', options: genders.toList()..sort()),
       FilterSection(
-        title: 'Catégorie', // Using Goal as Category
+        title: 'Niveau',
+        options: levels.toList()..sort(),
+      ),
+      FilterSection(
+        title: 'Lieu',
+        options: locations.toList()..sort(),
+      ),
+      FilterSection(
+        title: 'Objectif', // Formerly Catégorie
         options: goals.toList()..sort(),
       ),
       FilterSection(
-        title: 'Boutique', // Using Partner as Boutique
+        title: 'Durée max.',
+        options: durations.toList()..sort((a, b) {
+          // Extract numbers for correct sorting
+          final intA = int.tryParse(a.split(' ')[0]) ?? 0;
+          final intB = int.tryParse(b.split(' ')[0]) ?? 0;
+          return intA.compareTo(intB);
+        }),
+      ),
+      FilterSection(
+        title: 'Partenaire', // Formerly Boutique
         options: partners.toList()..sort(),
       ),
     ];
