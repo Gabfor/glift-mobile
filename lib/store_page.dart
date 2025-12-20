@@ -171,7 +171,9 @@ class _StorePageState extends State<StorePage> {
       if (program.partnerName != null && program.partnerName!.isNotEmpty) {
         partners.add(program.partnerName!);
       }
-      if (program.gender.isNotEmpty) genders.add(program.gender);
+      if (program.gender.isNotEmpty && program.gender != 'Tous') {
+        genders.add(program.gender);
+      }
     }
 
     final sections = [
