@@ -33,6 +33,8 @@ class _StorePageState extends State<StorePage> {
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
   late String _selectedSort;
+  late final FocusNode _sortFocusNode;
+  bool _isSortFocused = false;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -43,10 +45,15 @@ class _StorePageState extends State<StorePage> {
     super.initState();
     _repository = StoreRepository(widget.supabase);
 
+    _sortFocusNode = FocusNode();
+
     // Initialize from service
     final filterService = FilterService();
     _selectedFiltersMap = Map.from(filterService.storeFilters);
-    _selectedSort = filterService.storeSort;
+    _selectedSort = ['popularity', 'newest', 'oldest']
+            .contains(filterService.storeSort)
+        ? filterService.storeSort
+        : 'newest';
 
     _loadPrograms();
   }
@@ -71,6 +78,7 @@ class _StorePageState extends State<StorePage> {
   @override
   void dispose() {
     _navigationRevealTimer?.cancel();
+    _sortFocusNode.dispose();
     super.dispose();
   }
 
@@ -170,21 +178,7 @@ class _StorePageState extends State<StorePage> {
     // Sort
     switch (_selectedSort) {
       case 'newest':
-        // Assuming there is a date field, otherwise fallback to default or title
-        // For now, let's sort by title as a placeholder if no date exists
-        // Or if StoreProgram has a date, use it.
-        // Checking StoreProgram definition (implied): it has title, sessions, duration, etc.
-        // If no date, maybe just keep default order or sort by title?
-        // Let's assume default order for 'newest' if no date is available, or add a TODO.
-        // Actually, ShopPage used startDate. StoreProgram might not have it.
-        // Let's check StoreProgram structure later if needed. For now, I'll just leave it as is or sort by title?
-        // Let's just implement the switch but keep default for now if fields are missing.
-        break;
-      case 'expiration':
-        // Store programs usually don't expire?
-        // Maybe 'popularity' (e.g. number of downloads/sessions)?
-        // I'll implement the structure but maybe just return filtered for now until I know the fields.
-        break;
+      case 'oldest':
       case 'popularity':
       default:
         break;
@@ -314,124 +308,149 @@ class _StorePageState extends State<StorePage> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Container(
-                                      height: 40,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                    child: Focus(
+                                      focusNode: _sortFocusNode,
+                                      onFocusChange: (hasFocus) {
+                                        setState(() {
+                                          _isSortFocused = hasFocus;
+                                        });
+                                      },
+                                      child: Container(
+                                        height: 40,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
                                         ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: DropdownButtonHideUnderline(
-                                              child: DropdownButton<String>(
-                                                value: _selectedSort,
-                                                isExpanded: true,
-                                                icon: const SizedBox.shrink(),
-                                                items: [
-                                                  DropdownMenuItem(
-                                                    value: 'popularity',
-                                                    child: Text(
-                                                      'Pertinence',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(
+                                            color: _isSortFocused
+                                                ? const Color(0xFFA1A5FD)
+                                                : const Color(0xFFD7D4DC),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: DropdownButtonHideUnderline(
+                                                child: DropdownButton<String>(
+                                                  focusNode: _sortFocusNode,
+                                                  value: _selectedSort,
+                                                  isExpanded: true,
+                                                  elevation: 9,
+                                                  borderRadius: BorderRadius.circular(5),
+                                                  dropdownColor: Colors.white,
+                                                  icon: const SizedBox.shrink(),
+                                                  items: [
+                                                    DropdownMenuItem(
+                                                      value: 'popularity',
+                                                      child: Text(
+                                                        'Popularité',
+                                                        style: GoogleFonts
+                                                            .quicksand(
+                                                          color: const Color(
+                                                            0xFF3A416F,
+                                                          ),
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
                                                       ),
                                                     ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'newest',
-                                                    child: Text(
-                                                      'Nouveauté',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
+                                                    DropdownMenuItem(
+                                                      value: 'newest',
+                                                      child: Text(
+                                                        'Nouveauté',
+                                                        style: GoogleFonts
+                                                            .quicksand(
+                                                          color: const Color(
+                                                            0xFF3A416F,
+                                                          ),
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
                                                       ),
                                                     ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'expiration',
-                                                    child: Text(
-                                                      'Expiration',
-                                                      style: GoogleFonts.quicksand(
-                                                        color: const Color(
-                                                          0xFF3A416F,
+                                                    DropdownMenuItem(
+                                                      value: 'oldest',
+                                                      child: Text(
+                                                        'Ancienneté',
+                                                        style: GoogleFonts
+                                                            .quicksand(
+                                                          color: const Color(
+                                                            0xFF3A416F,
+                                                          ),
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                                onChanged: (value) {
-                                                  if (value != null) {
-                                                    setState(() {
-                                                      _selectedSort = value;
-                                                      FilterService()
-                                                              .storeSort =
-                                                          value; // Persist
-                                                    });
-                                                  }
-                                                },
-                                                selectedItemBuilder: (context) {
-                                                  return [
-                                                    'popularity',
-                                                    'newest',
-                                                    'expiration',
-                                                  ].map((String value) {
-                                                    return Row(
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          'assets/icons/tri.svg',
-                                                          width: 15,
-                                                          height: 15,
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Text(
+                                                  ],
+                                                  onChanged: (value) {
+                                                    if (value != null) {
+                                                      setState(() {
+                                                        _selectedSort = value;
+                                                        FilterService().storeSort =
+                                                            value; // Persist
+                                                      });
+                                                    }
+                                                  },
+                                                  selectedItemBuilder: (context) {
+                                                    return [
+                                                      'popularity',
+                                                      'newest',
+                                                      'oldest',
+                                                    ].map((String value) {
+                                                      final displayLabel =
                                                           value == 'popularity'
-                                                              ? 'Pertinence'
+                                                              ? 'Popularité'
                                                               : value ==
                                                                       'newest'
                                                                   ? 'Nouveauté'
-                                                                  : 'Expiration',
-                                                          style: GoogleFonts
-                                                              .quicksand(
-                                                            color: const Color(
-                                                              0xFF3A416F,
-                                                            ),
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight.w600,
+                                                                  : 'Ancienneté';
+
+                                                      return Row(
+                                                        children: [
+                                                          SvgPicture.asset(
+                                                            'assets/icons/tri.svg',
+                                                            width: 15,
+                                                            height: 15,
                                                           ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  }).toList();
-                                                },
+                                                          const SizedBox(
+                                                              width: 8),
+                                                          Text(
+                                                            displayLabel,
+                                                            style: GoogleFonts
+                                                                .quicksand(
+                                                              color: value ==
+                                                                      _selectedSort
+                                                                  ? const Color(
+                                                                      0xFF7069FA)
+                                                                  : const Color(
+                                                                      0xFF3A416F),
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    }).toList();
+                                                  },
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          SvgPicture.asset(
-                                            'assets/icons/chevron.svg',
-                                            width: 9,
-                                            height: 7,
-                                          ),
-                                        ],
+                                            SvgPicture.asset(
+                                              'assets/icons/chevron.svg',
+                                              width: 9,
+                                              height: 7,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
