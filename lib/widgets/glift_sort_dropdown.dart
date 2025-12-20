@@ -24,6 +24,8 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
   OverlayEntry? _overlayEntry;
   double? _fieldWidth;
 
+  bool get _isMenuOpen => _overlayEntry != null;
+
   @override
   void dispose() {
     _removeOverlay();
@@ -57,7 +59,8 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: const Color(0xFFD7D4DC),
+                    color:
+                        _isMenuOpen ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
                     width: 1.1,
                   ),
                   boxShadow: const [],
@@ -185,53 +188,17 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFFF5F4FF)
-                                : Colors.white,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
                             children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                curve: Curves.easeOut,
-                                height: 22,
-                                width: 22,
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? const Color(0xFF7069FA)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(11),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFF7069FA)
-                                        : const Color(0xFFE6E4ED),
-                                    width: 1.1,
-                                  ),
-                                  boxShadow: isSelected
-                                      ? const [
-                                          BoxShadow(
-                                            color: Color(0x337069FA),
-                                            offset: Offset(0, 6),
-                                            blurRadius: 14,
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                child: isSelected
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 14,
-                                        color: Colors.white,
-                                      )
-                                    : null,
-                              ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 4),
                               Text(
                                 option['label']!,
                                 style: GoogleFonts.quicksand(
                                   color: isSelected
-                                      ? const Color(0xFF3A416F)
+                                      ? const Color(0xFF7069FA)
                                       : const Color(0xFF6F6B7A),
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -250,6 +217,8 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
         );
       },
     );
+
+    setState(() {});
 
     overlay.insert(_overlayEntry!);
   }
