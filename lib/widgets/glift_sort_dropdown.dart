@@ -23,7 +23,6 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
   final FocusNode _focusNode = FocusNode();
   OverlayEntry? _overlayEntry;
   double? _fieldWidth;
-  bool _isFocused = false;
 
   @override
   void dispose() {
@@ -40,45 +39,32 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
 
         return CompositedTransformTarget(
           link: _fieldLink,
-          child: AnimatedContainer(
-            height: 40,
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: _isFocused
-                    ? const Color(0xFF7069FA)
-                    : const Color(0xFFE4E2EA),
-                width: 1.1,
-              ),
-              boxShadow: const [],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Focus(
-                    focusNode: _focusNode,
-                    onFocusChange: (hasFocus) {
-                      setState(() {
-                        _isFocused = hasFocus;
-                      });
-
-                      if (!hasFocus) {
-                        _removeOverlay();
-                      }
-                    },
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        if (_overlayEntry != null) {
-                          _removeOverlay();
-                        } else {
-                          _focusNode.requestFocus();
-                          _showOverlay();
-                        }
-                      },
+          child: Focus(
+            focusNode: _focusNode,
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) {
+                _removeOverlay();
+              }
+            },
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _toggleOverlay,
+              child: AnimatedContainer(
+                height: 40,
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: const Color(0xFFD7D4DC),
+                    width: 1.1,
+                  ),
+                  boxShadow: const [],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
                       child: Row(
                         children: [
                           SizedBox(
@@ -103,30 +89,39 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                                 '',
                             style: GoogleFonts.quicksand(
                               color: const Color(0xFF3A416F),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
+                    SvgPicture.asset(
+                      'assets/icons/chevron.svg',
+                      width: 9,
+                      height: 7,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF3A416F),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ],
                 ),
-                SvgPicture.asset(
-                  'assets/icons/chevron.svg',
-                  width: 9,
-                  height: 7,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFF7069FA),
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );
       },
     );
+  }
+
+  void _toggleOverlay() {
+    if (_overlayEntry != null) {
+      _removeOverlay();
+    } else {
+      _focusNode.requestFocus();
+      _showOverlay();
+    }
   }
 
   void _showOverlay() {
@@ -257,14 +252,13 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
     );
 
     overlay.insert(_overlayEntry!);
-    setState(() => _isFocused = true);
   }
 
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
     if (mounted) {
-      setState(() => _isFocused = false);
+      setState(() {});
     }
   }
 }
