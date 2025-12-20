@@ -39,6 +39,11 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
       builder: (context, constraints) {
         _fieldWidth = constraints.maxWidth;
 
+        final selectedOption = widget.options.firstWhere(
+          (option) => option['value'] == widget.selectedValue,
+          orElse: () => widget.options.first,
+        );
+
         return CompositedTransformTarget(
           link: _fieldLink,
           child: Focus(
@@ -83,15 +88,9 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            widget.options
-                                    .firstWhere(
-                                      (option) =>
-                                          option['value'] == widget.selectedValue,
-                                      orElse: () => widget.options.first,
-                                    )['label'] ??
-                                '',
+                            selectedOption['label'] ?? '',
                             style: GoogleFonts.quicksand(
-                              color: const Color(0xFF3A416F),
+                              color: const Color(0xFF7069FA),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -199,9 +198,9 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                                 style: GoogleFonts.quicksand(
                                   color: isSelected
                                       ? const Color(0xFF7069FA)
-                                      : const Color(0xFF6F6B7A),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
+                                      : const Color(0xFF3A416F),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -226,6 +225,9 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+    if (_focusNode.hasFocus) {
+      _focusNode.unfocus();
+    }
     if (mounted) {
       setState(() {});
     }
