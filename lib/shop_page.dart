@@ -255,12 +255,17 @@ class _ShopPageState extends State<ShopPage> {
             : _offers.isEmpty
             ? Center(
                 child: Text(
-                  'Aucune offre trouvée',
+                  'Aucun offre disponible',
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
+                    color: const Color(0xFFC2BFC6),
                     fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              )
+            : _hasActiveFilters && _filteredOffers.isEmpty
+            ? const _EmptyFilteredResultsMessage(
+                message: 'Aucun offre disponible',
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,6 +539,34 @@ class _FiltersRow extends StatelessWidget {
             )
             .toList(),
       ),
+    );
+  }
+}
+
+class _EmptyFilteredResultsMessage extends StatelessWidget {
+  const _EmptyFilteredResultsMessage({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SizedBox(
+          height: constraints.maxHeight,
+          width: double.infinity,
+          child: Center(
+            child: Text(
+              message,
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFFC2BFC6),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
