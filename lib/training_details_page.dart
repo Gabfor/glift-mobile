@@ -621,7 +621,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
     );
   }
 
-  void _handleInput(int index, String type, String value) {
+  void _handleInput(int index, String type, String value) async {
     setState(() {
       List<String> list = type == 'reps' ? _repetitions : _weights;
       if (index >= list.length) {
@@ -648,10 +648,14 @@ class _ExerciseCardState extends State<_ExerciseCard>
       }
     });
 
-    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    try {
+      await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    } catch (e) {
+      debugPrint('Error saving input: $e');
+    }
   }
 
-  void _handleBackspace(int index, String type) {
+  void _handleBackspace(int index, String type) async {
     setState(() {
       List<String> list = type == 'reps' ? _repetitions : _weights;
       if (index < list.length) {
@@ -668,7 +672,11 @@ class _ExerciseCardState extends State<_ExerciseCard>
       }
     });
 
-    widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    try {
+      await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    } catch (e) {
+      debugPrint('Error saving backspace: $e');
+    }
   }
 
   Future<void> _handleClose(int index, String type) async {
