@@ -41,27 +41,19 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
         return CompositedTransformTarget(
           link: _fieldLink,
           child: AnimatedContainer(
-            height: 42,
+            height: 40,
             duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: _isFocused
                     ? const Color(0xFF7069FA)
                     : const Color(0xFFE4E2EA),
                 width: 1.1,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0x33000000)
-                      .withOpacity(_isFocused ? 0.18 : 0.12),
-                  offset: const Offset(0, 10),
-                  blurRadius: 28,
-                  spreadRadius: 0,
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: Row(
               children: [
@@ -89,13 +81,9 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                       },
                       child: Row(
                         children: [
-                          Container(
+                          SizedBox(
                             height: 30,
                             width: 30,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F4FF),
-                              borderRadius: BorderRadius.circular(9),
-                            ),
                             child: Center(
                               child: SvgPicture.asset(
                                 'assets/icons/tri.svg',
