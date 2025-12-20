@@ -29,6 +29,12 @@ class StorePage extends StatefulWidget {
 }
 
 class _StorePageState extends State<StorePage> {
+  static const List<Map<String, String>> _sortOptions = [
+    {'value': 'popularity', 'label': 'Popularité'},
+    {'value': 'newest', 'label': 'Nouveauté'},
+    {'value': 'expiration', 'label': 'Ancienneté'},
+  ];
+
   late final StoreRepository _repository;
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
@@ -317,19 +323,30 @@ class _StorePageState extends State<StorePage> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Container(
-                                      height: 40,
+                                    child: AnimatedContainer(
+                                      height: 44,
+                                      duration: const Duration(milliseconds: 180),
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
+                                        horizontal: 14,
                                       ),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
+                                        borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: _isSortFocused
-                                              ? const Color(0xFFA1A5FD)
+                                              ? const Color(0xFF7069FA)
                                               : const Color(0xFFD7D4DC),
+                                          width: 1.2,
                                         ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0x26000000)
+                                                .withOpacity(
+                                                    _isSortFocused ? 0.16 : 0.08),
+                                            offset: const Offset(0, 6),
+                                            blurRadius: 16,
+                                          ),
+                                        ],
                                       ),
                                       child: Row(
                                         children: [
@@ -348,38 +365,74 @@ class _StorePageState extends State<StorePage> {
                                                   icon: const SizedBox.shrink(),
                                                   dropdownColor: Colors.white,
                                                   borderRadius:
-                                                      BorderRadius.circular(5),
-                                                  elevation: 9,
-                                                  items: const [
-                                                    {
-                                                      'value': 'popularity',
-                                                      'label': 'Popularité'
-                                                    },
-                                                    {
-                                                      'value': 'newest',
-                                                      'label': 'Nouveauté'
-                                                    },
-                                                    {
-                                                      'value': 'expiration',
-                                                      'label': 'Ancienneté'
-                                                    },
-                                                  ].map((Map<String, String> option) {
+                                                      BorderRadius.circular(12),
+                                                  elevation: 10,
+                                                  menuMaxHeight: 260,
+                                                  itemHeight: 60,
+                                                  items: _sortOptions
+                                                      .map((Map<String, String> option) {
+                                                    final isSelected =
+                                                        _selectedSort ==
+                                                            option['value'];
+
                                                     return DropdownMenuItem(
                                                       value: option['value']!,
-                                                      child: Text(
-                                                        option['label']!,
-                                                        style: GoogleFonts.quicksand(
-                                                          color: (_selectedSort ==
-                                                                  option['value'])
+                                                      child: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: isSelected
                                                               ? const Color(
-                                                                  0xFF7069FA,
-                                                                )
-                                                              : const Color(
-                                                                  0xFF3A416F,
-                                                                ),
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600,
+                                                                  0xFFF4F4FF)
+                                                              : Colors.white,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10),
+                                                          border: Border.all(
+                                                            color: isSelected
+                                                                ? const Color(
+                                                                    0xFF7069FA)
+                                                                : const Color(
+                                                                    0xFFE8E7EC),
+                                                          ),
+                                                        ),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 12,
+                                                        ),
+                                                        child: Row(
+                                                          children: [
+                                                            if (isSelected)
+                                                              SvgPicture.asset(
+                                                                'assets/icons/check_green.svg',
+                                                                width: 16,
+                                                                height: 16,
+                                                              )
+                                                            else
+                                                              const SizedBox(
+                                                                width: 16,
+                                                                height: 16,
+                                                              ),
+                                                            const SizedBox(
+                                                              width: 10,
+                                                            ),
+                                                            Text(
+                                                              option['label']!,
+                                                              style: GoogleFonts
+                                                                  .quicksand(
+                                                                color: isSelected
+                                                                    ? const Color(
+                                                                        0xFF3A416F)
+                                                                    : const Color(
+                                                                        0xFF6F6B7A),
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     );
@@ -396,34 +449,44 @@ class _StorePageState extends State<StorePage> {
                                                     _sortFocusNode.unfocus();
                                                   },
                                                   selectedItemBuilder: (context) {
-                                                    return [
-                                                      'popularity',
-                                                      'newest',
-                                                      'expiration',
-                                                    ].map((String value) {
+                                                    return _sortOptions
+                                                        .map((option) {
                                                       return Row(
                                                         children: [
-                                                          SvgPicture.asset(
-                                                            'assets/icons/tri.svg',
-                                                            width: 15,
-                                                            height: 15,
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(6),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: const Color(
+                                                                  0xFFF4F4FF),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8),
+                                                            ),
+                                                            child:
+                                                                SvgPicture.asset(
+                                                              'assets/icons/tri.svg',
+                                                              width: 15,
+                                                              height: 15,
+                                                            ),
                                                           ),
-                                                          const SizedBox(width: 8),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
                                                           Text(
-                                                            value == 'popularity'
-                                                                ? 'Popularité'
-                                                                : value ==
-                                                                        'newest'
-                                                                    ? 'Nouveauté'
-                                                                    : 'Ancienneté',
+                                                            option['label']!,
                                                             style: GoogleFonts
                                                                 .quicksand(
-                                                              color: const Color(
-                                                                0xFF7069FA,
-                                                              ),
-                                                              fontSize: 16,
+                                                              color:
+                                                                  const Color(
+                                                                      0xFF3A416F),
+                                                              fontSize: 15,
                                                               fontWeight:
-                                                                  FontWeight.w600,
+                                                                  FontWeight
+                                                                      .w700,
                                                             ),
                                                           ),
                                                         ],
