@@ -112,50 +112,55 @@ class _ShopPageState extends State<ShopPage> {
   List<ShopOffer> _applyFilters(Map<String, Set<String>> selectedFilters) {
     var filtered = List<ShopOffer>.from(_offers);
 
-    final activeFilters = <String, Set<String>>{};
-
-    selectedFilters.forEach((section, values) {
-      final options = _filterOptionsBySection[section];
-      final isFiltering = options == null
-          ? values.isNotEmpty
-          : values.length != options.length;
-      if (isFiltering) {
-        activeFilters[section] = values;
-      }
-    });
-
     // Filter
-    if (activeFilters.isNotEmpty) {
+    if (selectedFilters.isNotEmpty) {
       filtered = filtered.where((offer) {
         bool matches = true;
 
-        // Catégorie
-        if (activeFilters.containsKey('Catégorie')) {
-          final categories = activeFilters['Catégorie']!;
-          if (categories.isEmpty || !offer.type.any(categories.contains)) {
+        // General logic for all filters:
+        // If the filter key is present in selectedFilters, it implies the filter is ACTIVE.
+        // If the set of selected values for that filter is EMPTY, it means "Match MUST be in {}", which is impossible.
+        // So, if key exists && value is empty => match = false.
+
+        // Sexe
+        if (selectedFilters.containsKey('Sexe')) {
+          if (selectedFilters['Sexe']!.isEmpty) {
+            matches = false;
+          } else if (!offer.type
+              .any((type) => selectedFilters['Sexe']!.contains(type))) {
             matches = false;
           }
         }
 
-        // Boutique
-        if (matches && activeFilters.containsKey('Boutique')) {
-          final boutiques = activeFilters['Boutique']!;
-          if (boutiques.isEmpty ||
-              offer.shop == null ||
-              !boutiques.contains(offer.shop)) {
+        // Catégorie
+        if (matches && selectedFilters.containsKey('Catégorie')) {
+          if (selectedFilters['Catégorie']!.isEmpty) {
+            matches = false;
+          } else if (!offer.type
+              .any((type) => selectedFilters['Catégorie']!.contains(type))) {
             matches = false;
           }
         }
 
         // Sport
-        if (matches && activeFilters.containsKey('Sport')) {
-          final sports = activeFilters['Sport']!;
-          if (sports.isEmpty || !offer.type.any(sports.contains)) {
+        if (matches && selectedFilters.containsKey('Sport')) {
+          if (selectedFilters['Sport']!.isEmpty) {
+            matches = false;
+          } else if (!offer.type
+              .any((type) => selectedFilters['Sport']!.contains(type))) {
             matches = false;
           }
         }
 
-        // Sexe - ShopOffer doesn't have gender, so skip unless data supports it
+        // Boutique
+        if (matches && selectedFilters.containsKey('Boutique')) {
+          if (selectedFilters['Boutique']!.isEmpty) {
+            matches = false;
+          } else if (offer.shop == null ||
+              !selectedFilters['Boutique']!.contains(offer.shop)) {
+            matches = false;
+          }
+        }
 
         return matches;
       }).toList();

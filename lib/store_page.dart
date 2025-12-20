@@ -104,29 +104,29 @@ class _StorePageState extends State<StorePage> {
         bool matches = true;
 
         // Catégorie (Goal)
-        if (selectedFilters.containsKey('Catégorie') &&
-            selectedFilters['Catégorie']!.isNotEmpty) {
-          if (!selectedFilters['Catégorie']!.contains(program.goal)) {
-            matches = false;
-          }
+      if (selectedFilters.containsKey('Catégorie')) {
+        if (selectedFilters['Catégorie']!.isEmpty) {
+          matches = false;
+        } else if (!selectedFilters['Catégorie']!.contains(program.goal)) {
+          matches = false;
         }
+      }
 
-        // Boutique (Partner)
-        if (matches &&
-            selectedFilters.containsKey('Boutique') &&
-            selectedFilters['Boutique']!.isNotEmpty) {
-          if (program.partnerName == null ||
-              !selectedFilters['Boutique']!.contains(program.partnerName)) {
-            matches = false;
-          }
+      // Boutique (Partner)
+      if (matches && selectedFilters.containsKey('Boutique')) {
+        if (selectedFilters['Boutique']!.isEmpty) {
+          matches = false;
+        } else if (program.partnerName == null ||
+            !selectedFilters['Boutique']!.contains(program.partnerName)) {
+          matches = false;
         }
+      }
 
-        // Sexe
-        if (matches &&
-            selectedFilters.containsKey('Sexe') &&
-            selectedFilters['Sexe']!.isNotEmpty) {
-          if (!selectedFilters['Sexe']!.contains(program.gender)) {
-            // Handle 'Tous' or specific gender logic if needed, but assuming exact match for now
+      // Sexe (Gender)
+      if (matches && selectedFilters.containsKey('Sexe')) {
+        if (selectedFilters['Sexe']!.isEmpty) {
+          matches = false;
+        } else if (!selectedFilters['Sexe']!.contains(program.gender)) {
             matches = false;
           }
         }

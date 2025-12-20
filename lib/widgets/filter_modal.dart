@@ -53,9 +53,6 @@ class _FilterModalState extends State<FilterModal> {
     // Ensure all checkboxes are selected by default
     for (final section in widget.sections) {
       _tempSelectedFilters[section.title] ??= section.options.toSet();
-      if (_tempSelectedFilters[section.title]!.isEmpty) {
-        _tempSelectedFilters[section.title]!.addAll(section.options);
-      }
     }
 
     _currentResults = widget.computeResults(_tempSelectedFilters);
