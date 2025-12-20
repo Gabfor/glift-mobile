@@ -32,7 +32,6 @@ class _StorePageState extends State<StorePage> {
   late final StoreRepository _repository;
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
-  final String _selectedGoal = 'Tous';
   late String _selectedSort;
 
   bool _isNavigationVisible = true;
@@ -62,7 +61,7 @@ class _StorePageState extends State<StorePage> {
         });
       }
     } catch (e) {
-      print('Error loading store programs: $e');
+      debugPrint('Error loading store programs: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -209,136 +208,76 @@ class _StorePageState extends State<StorePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isScrollable = !_isLoading && _programs.isNotEmpty && _filteredPrograms.isNotEmpty;
+
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
       child: GliftPageLayout(
+        scrollable: isScrollable,
         title: 'Glift Store',
         subtitle: 'Trouver votre prochain programme',
         padding: const EdgeInsets.only(top: 20, bottom: 30),
         child: _isLoading
             ? const GliftLoader()
             : _programs.isEmpty
-            ? Center(
-                child: Text(
-                  'Aucun programme disponible',
-                  style: GoogleFonts.quicksand(
-                    color: const Color(0xFFC2BFC6),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )
-            : _hasActiveFilters && _filteredPrograms.isEmpty
-            ? const _EmptyFilteredResultsMessage(
-                message: 'Aucun programme disponible',
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_availableGoals.length > 1) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              'Trier par',
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Row(
+                ? Center(
+                    child: Text(
+                      'Aucun programme disponible',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFFC2BFC6),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_availableGoals.length > 1) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Container(
-                                  height: 40,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  'Trier par',
+                                  style: GoogleFonts.quicksand(
+                                    color: const Color(0xFF3A416F),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(5),
-                                    border: Border.all(
-                                      color: const Color(0xFFD7D4DC),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<String>(
-                                            value: _selectedSort,
-                                            isExpanded: true,
-                                            icon: const SizedBox.shrink(),
-                                            items: [
-                                              DropdownMenuItem(
-                                                value: 'popularity',
-                                                child: Text(
-                                                  'Pertinence',
-                                                  style: GoogleFonts.quicksand(
-                                                    color: const Color(0xFF3A416F),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                              DropdownMenuItem(
-                                                value: 'newest',
-                                                child: Text(
-                                                  'Nouveauté',
-                                                  style: GoogleFonts.quicksand(
-                                                    color: const Color(0xFF3A416F),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                              DropdownMenuItem(
-                                                value: 'expiration',
-                                                child: Text(
-                                                  'Expiration',
-                                                  style: GoogleFonts.quicksand(
-                                                    color: const Color(0xFF3A416F),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                            onChanged: (value) {
-                                              if (value != null) {
-                                                setState(() {
-                                                  _selectedSort = value;
-                                                  FilterService().storeSort =
-                                                      value; // Persist
-                                                });
-                                              }
-                                            },
-                                            selectedItemBuilder: (context) {
-                                              return [
-                                                'popularity',
-                                                'newest',
-                                                'expiration',
-                                              ].map((String value) {
-                                                return Row(
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      'assets/icons/tri.svg',
-                                                      width: 15,
-                                                      height: 15,
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      value == 'popularity'
-                                                          ? 'Pertinence'
-                                                          : value == 'newest'
-                                                          ? 'Nouveauté'
-                                                          : 'Expiration',
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: const Color(0xFFD7D4DC),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                value: _selectedSort,
+                                                isExpanded: true,
+                                                icon: const SizedBox.shrink(),
+                                                items: [
+                                                  DropdownMenuItem(
+                                                    value: 'popularity',
+                                                    child: Text(
+                                                      'Pertinence',
                                                       style: GoogleFonts.quicksand(
                                                         color: const Color(
                                                           0xFF3A416F,
@@ -348,72 +287,157 @@ class _StorePageState extends State<StorePage> {
                                                             FontWeight.w600,
                                                       ),
                                                     ),
-                                                  ],
-                                                );
-                                              }).toList();
-                                            },
+                                                  ),
+                                                  DropdownMenuItem(
+                                                    value: 'newest',
+                                                    child: Text(
+                                                      'Nouveauté',
+                                                      style: GoogleFonts.quicksand(
+                                                        color: const Color(
+                                                          0xFF3A416F,
+                                                        ),
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  DropdownMenuItem(
+                                                    value: 'expiration',
+                                                    child: Text(
+                                                      'Expiration',
+                                                      style: GoogleFonts.quicksand(
+                                                        color: const Color(
+                                                          0xFF3A416F,
+                                                        ),
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                                onChanged: (value) {
+                                                  if (value != null) {
+                                                    setState(() {
+                                                      _selectedSort = value;
+                                                      FilterService()
+                                                              .storeSort =
+                                                          value; // Persist
+                                                    });
+                                                  }
+                                                },
+                                                selectedItemBuilder: (context) {
+                                                  return [
+                                                    'popularity',
+                                                    'newest',
+                                                    'expiration',
+                                                  ].map((String value) {
+                                                    return Row(
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          'assets/icons/tri.svg',
+                                                          width: 15,
+                                                          height: 15,
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        Text(
+                                                          value == 'popularity'
+                                                              ? 'Pertinence'
+                                                              : value ==
+                                                                      'newest'
+                                                                  ? 'Nouveauté'
+                                                                  : 'Expiration',
+                                                          style: GoogleFonts
+                                                              .quicksand(
+                                                            color: const Color(
+                                                              0xFF3A416F,
+                                                            ),
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }).toList();
+                                                },
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          SvgPicture.asset(
+                                            'assets/icons/chevron.svg',
+                                            width: 9,
+                                            height: 7,
+                                          ),
+                                        ],
                                       ),
-                                      SvgPicture.asset(
-                                        'assets/icons/chevron.svg',
-                                        width: 9,
-                                        height: 7,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () {
-                                  _showFilterModal();
-                                },
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFFD7D4DC),
                                     ),
                                   ),
-                                  padding: const EdgeInsets.all(10),
-                                  child: SvgPicture.asset(
-                                    _hasActiveFilters
-                                        ? 'assets/icons/filtre_green.svg'
-                                        : 'assets/icons/filtre_red.svg',
-                                    height: 16,
-                                    width: 16,
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: () {
+                                      _showFilterModal();
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFFD7D4DC),
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.all(10),
+                                      child: SvgPicture.asset(
+                                        _hasActiveFilters
+                                            ? 'assets/icons/filtre_green.svg'
+                                            : 'assets/icons/filtre_red.svg',
+                                        height: 16,
+                                        width: 16,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 50),
-                      itemCount: _filteredPrograms.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 20),
-                      itemBuilder: (context, index) {
-                        return _StoreProgramCard(
-                          program: _filteredPrograms[index],
-                        );
-                      },
-                    ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                      if (_filteredPrograms.isEmpty)
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Aucun programme disponible',
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFFC2BFC6),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: const EdgeInsets.only(bottom: 50),
+                            itemCount: _filteredPrograms.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                            itemBuilder: (context, index) {
+                              return _StoreProgramCard(
+                                program: _filteredPrograms[index],
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ),
-                ],
-              ),
       ),
     );
   }
@@ -461,78 +485,7 @@ class _StorePageState extends State<StorePage> {
   }
 }
 
-class _FiltersRow extends StatelessWidget {
-  const _FiltersRow({
-    required this.options,
-    required this.selected,
-    required this.onSelected,
-  });
 
-  final List<String> options;
-  final String selected;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: options
-            .map(
-              (option) => Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: ChoiceChip(
-                  label: Text(
-                    option,
-                    style: GoogleFonts.quicksand(
-                      color: selected == option
-                          ? Colors.white
-                          : const Color(0xFF3A416F),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  selected: selected == option,
-                  selectedColor: const Color(0xFF7069FA),
-                  backgroundColor: const Color(0xFFF2F1F6),
-                  showCheckmark: false,
-                  onSelected: (_) => onSelected(option),
-                ),
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _EmptyFilteredResultsMessage extends StatelessWidget {
-  const _EmptyFilteredResultsMessage({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: constraints.maxHeight,
-          width: double.infinity,
-          child: Center(
-            child: Text(
-              message,
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFFC2BFC6),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
 
 class _StoreProgramCard extends StatelessWidget {
   final StoreProgram program;
