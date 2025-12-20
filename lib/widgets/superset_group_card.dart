@@ -161,7 +161,7 @@ class ActionButton extends StatefulWidget {
     this.backgroundColor = Colors.white,
     this.isDisabled = false,
     this.isPrimary = false,
-    required this.onTap,
+    this.onTap,
     this.iconWidth = 24,
     this.iconHeight = 24,
   });

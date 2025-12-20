@@ -714,13 +714,13 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           getDrawingHorizontalLine: (value) {
                                             return const FlLine(
                                               color: Color(0xFFECE9F1),
-                                      strokeWidth: 1,
-                                    );
-                                  },
-                                  checkToShowHorizontalLine: (value) {
-                                    return true;
-                                  },
-                                ),
+                                              strokeWidth: 1,
+                                            );
+                                          },
+                                          checkToShowHorizontalLine: (value) {
+                                            return true;
+                                          },
+                                        ),
                                 titlesData: FlTitlesData(
                                   show: true,
                                   rightTitles: const AxisTitles(
