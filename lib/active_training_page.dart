@@ -1066,6 +1066,12 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
 
   void _startTimer() {
     if (_timer != null) return;
+    if (_remainingSeconds <= 0) {
+      setState(() {
+        _isRunning = false;
+      });
+      return;
+    }
 
     setState(() {
       _isRunning = true;
