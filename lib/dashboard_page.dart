@@ -658,66 +658,62 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFD7D4DC)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Text(
-            widget.exercise.exercise,
-            style: GoogleFonts.quicksand(
-              color: const Color(0xFF3A416F),
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _isLoading
-                ? const GliftLoader()
-                : _history.isEmpty
-                ? Center(
-                    child: Text(
-                      'Aucune donnée disponible',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFFC2BFC6),
-                      ),
-                    ),
-                  )
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      double? tooltipLeft;
-                      double? tooltipTop;
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.exercise.exercise,
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF3A416F),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: _isLoading
+                    ? const GliftLoader()
+                    : _history.isEmpty
+                        ? const SizedBox.shrink()
+                        : LayoutBuilder(
+                            builder: (context, constraints) {
+                              double? tooltipLeft;
+                              double? tooltipTop;
 
-                      if (_touchedSpot != null) {
-                        final spot = _touchedSpot!;
-                        final chartWidth = constraints.maxWidth - 40;
-                        final chartHeight = constraints.maxHeight - 60;
+                              if (_touchedSpot != null) {
+                                final spot = _touchedSpot!;
+                                final chartWidth = constraints.maxWidth - 40;
+                                final chartHeight = constraints.maxHeight - 60;
 
-                        // Calculate xPercent based on the fixed view range (minX to maxX)
-                        final xPercent = (spot.x - minX) / (maxX - minX);
+                                // Calculate xPercent based on the fixed view range (minX to maxX)
+                                final xPercent =
+                                    (spot.x - minX) / (maxX - minX);
 
-                        final yPercent = spot.y / chartMaxY;
+                                final yPercent = spot.y / chartMaxY;
 
-                        final spotPxX = 40 + xPercent * chartWidth;
-                        final spotPxY = chartHeight * (1 - yPercent);
+                                final spotPxX = 40 + xPercent * chartWidth;
+                                final spotPxY = chartHeight * (1 - yPercent);
 
-                        tooltipLeft = spotPxX;
-                        tooltipTop =
-                            spotPxY - 16; // 10px spacing + 6px dot radius
-                      }
+                                tooltipLeft = spotPxX;
+                                tooltipTop = spotPxY -
+                                    16; // 10px spacing + 6px dot radius
+                              }
 
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          SizedBox.expand(
-                            child: LineChart(
-                              LineChartData(
-                                gridData: FlGridData(
-                                  show: true,
-                                  drawVerticalLine: false,
-                                  horizontalInterval: interval,
-                                  getDrawingHorizontalLine: (value) {
-                                    return const FlLine(
-                                      color: Color(0xFFECE9F1),
+                              return Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  SizedBox.expand(
+                                    child: LineChart(
+                                      LineChartData(
+                                        gridData: FlGridData(
+                                          show: true,
+                                          drawVerticalLine: false,
+                                          horizontalInterval: interval,
+                                          getDrawingHorizontalLine: (value) {
+                                            return const FlLine(
+                                              color: Color(0xFFECE9F1),
                                       strokeWidth: 1,
                                     );
                                   },
@@ -987,6 +983,18 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                     },
                   ),
           ),
+          if (!_isLoading && _history.isEmpty)
+            Positioned.fill(
+              child: Center(
+                child: Text(
+                  'Aucune donnée disponible',
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFFC2BFC6),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
