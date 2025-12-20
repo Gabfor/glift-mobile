@@ -30,14 +30,25 @@ class TrainingRow {
   });
 
   factory TrainingRow.fromJson(Map<String, dynamic> json) {
+    List<String> _toDisplayStrings(String fieldName) {
+      final raw = json[fieldName] as List<dynamic>? ?? [];
+      return raw
+          .map((value) {
+            if (value == null) return '-';
+            final stringValue = value.toString();
+            return stringValue.isEmpty ? '-' : stringValue;
+          })
+          .toList();
+    }
+
     return TrainingRow(
       id: json['id'] as String,
       trainingId: json['training_id'] as String,
       exercise: json['exercice'] as String,
       series: json['series'] as int,
-      repetitions: List<String>.from(json['repetitions'] ?? []),
-      weights: List<String>.from(json['poids'] ?? []),
-      efforts: List<String>.from(json['effort'] ?? []),
+      repetitions: _toDisplayStrings('repetitions'),
+      weights: _toDisplayStrings('poids'),
+      efforts: _toDisplayStrings('effort'),
       rest: json['repos'] as String,
       note: json['note'] as String?,
       material: json['materiel'] as String?,
