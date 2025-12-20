@@ -64,7 +64,9 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: const Color(0xFFA1A5FD),
+                    color: _isMenuOpen
+                        ? const Color(0xFFA1A5FD)
+                        : const Color(0xFFD7D4DC),
                     width: 1.1,
                   ),
                   boxShadow: const [],
@@ -89,7 +91,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                           Text(
                             selectedOption['label'] ?? '',
                             style: GoogleFonts.quicksand(
-                              color: const Color(0xFF7069FA),
+                              color: const Color(0xFF3A416F),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -137,7 +139,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
           children: [
             Positioned.fill(
               child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
+                behavior: HitTestBehavior.opaque,
                 onTap: _removeOverlay,
                 onPanDown: (_) => _removeOverlay(),
               ),
@@ -182,7 +184,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                           ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
-                            vertical: 4,
+                            vertical: 10,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white,
