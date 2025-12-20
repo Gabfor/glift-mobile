@@ -983,6 +983,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                     },
                   ),
           ),
+            ],
+          ),
           if (!_isLoading && _history.isEmpty)
             Positioned.fill(
               child: Center(
