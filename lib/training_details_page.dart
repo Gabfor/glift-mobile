@@ -318,15 +318,18 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         ));
         i = j;
       } else {
+        final rowIndex = i;
         items.add(_ExerciseCard(
           key: ValueKey(row.id),
           row: row,
           onFocus: _handleFocus,
           onUpdate: (reps, weights, efforts) =>
-              _handleRowUpdate(i, reps, weights, efforts),
-          onRestUpdate: (newDuration) => _handleRestUpdate(i, newDuration),
-          onNoteUpdate: (note) => _handleNoteUpdate(i, note),
-          onMaterialUpdate: (material) => _handleMaterialUpdate(i, material),
+              _handleRowUpdate(rowIndex, reps, weights, efforts),
+          onRestUpdate: (newDuration) =>
+              _handleRestUpdate(rowIndex, newDuration),
+          onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+          onMaterialUpdate: (material) =>
+              _handleMaterialUpdate(rowIndex, material),
           showDecoration: true,
           showTimer: true,
         ));
