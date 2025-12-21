@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
@@ -388,8 +389,11 @@ class _StorePageState extends State<StorePage> {
                             separatorBuilder: (context, index) =>
                                 const SizedBox(height: 20),
                             itemBuilder: (context, index) {
+                              final isAuthenticated =
+                                  widget.supabase.auth.currentUser != null;
                               return _StoreProgramCard(
                                 program: _filteredPrograms[index],
+                                isAuthenticated: isAuthenticated,
                               );
                             },
                           ),
@@ -447,8 +451,14 @@ class _StorePageState extends State<StorePage> {
 
 class _StoreProgramCard extends StatelessWidget {
   final StoreProgram program;
+  final bool isAuthenticated;
 
-  const _StoreProgramCard({required this.program});
+  const _StoreProgramCard({
+    required this.program,
+    required this.isAuthenticated,
+  });
+
+  bool get _isDownloadable => isAuthenticated && program.linkedProgramId != null;
 
   @override
   Widget build(BuildContext context) {
@@ -564,30 +574,50 @@ class _StoreProgramCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF2F1F6),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.lock,
-                              size: 16,
-                              color: Color(0xFFD7D4DC),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Télécharger',
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFFD7D4DC),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                      child: GestureDetector(
+                        onTap: _isDownloadable
+                            ? () {
+                                HapticFeedback.lightImpact();
+                                // TODO: Implement download logic
+                              }
+                            : null,
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: _isDownloadable
+                                ? const Color(0xFF7069FA)
+                                : const Color(0xFFF2F1F6),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                _isDownloadable
+                                    ? 'assets/icons/download.svg'
+                                    : 'assets/icons/locked.svg',
+                                width: _isDownloadable ? 20 : 15,
+                                height: _isDownloadable ? 20 : 15,
+                                colorFilter: ColorFilter.mode(
+                                  _isDownloadable
+                                      ? Colors.white
+                                      : const Color(0xFFD7D4DC),
+                                  BlendMode.srcIn,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                'Télécharger',
+                                style: GoogleFonts.quicksand(
+                                  color: _isDownloadable
+                                      ? Colors.white
+                                      : const Color(0xFFD7D4DC),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -223,6 +223,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
   }
 
   void _removeOverlay({bool rebuild = true}) {
+    if (!mounted) return;
     _overlayEntry?.remove();
     _overlayEntry = null;
     if (_focusNode.hasFocus) {
