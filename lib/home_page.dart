@@ -399,7 +399,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return AnimatedSize(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      vsync: this,
       child: SizedBox(
         height: isLoading ? 48 : 0,
         child: isLoading
