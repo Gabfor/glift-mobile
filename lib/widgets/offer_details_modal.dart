@@ -42,6 +42,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
   void _handleCopy() async {
     if (widget.offer.code == null) return;
     await Clipboard.setData(ClipboardData(text: widget.offer.code!));
+    HapticFeedback.lightImpact();
     if (mounted) {
       setState(() => _copied = true);
       Future.delayed(const Duration(seconds: 2), () {
@@ -96,7 +97,8 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      alignment: Alignment.bottomCenter,
+      insetPadding: const EdgeInsets.fromLTRB(20, 40, 20, 60),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
@@ -112,17 +114,13 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
               children: [
                 // Header with close button
                 Align(
-                  alignment: Alignment.topLeft,
+                  alignment: Alignment.topRight,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: SvgPicture.asset(
-                      'assets/icons/croix_small.svg',
-                      width: 20,
-                      height: 20,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF3A416F),
-                        BlendMode.srcIn,
-                      ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Color(0xFF3A416F),
+                      size: 24,
                     ),
                   ),
                 ),
@@ -225,8 +223,10 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                               _copied ? 'assets/icons/check.svg' : 'assets/icons/copy.svg',
                               width: 20,
                               height: 20,
-                              colorFilter: const ColorFilter.mode(
-                                Color(0xFFA1A5FD),
+                              colorFilter: ColorFilter.mode(
+                                _copied
+                                    ? const Color(0xFF00D591)
+                                    : const Color(0xFFA1A5FD),
                                 BlendMode.srcIn,
                               ),
                             ),
