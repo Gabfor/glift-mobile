@@ -314,17 +314,18 @@ class HomePageState extends State<HomePage> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _handleRefresh,
-      color: GliftTheme.accent,
-      child: PageView.builder(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        itemCount: _programs!.length,
-        itemBuilder: (context, index) {
-          final program = _programs![index];
-          return ListView.separated(
+    return PageView.builder(
+      controller: _pageController,
+      onPageChanged: _onPageChanged,
+      itemCount: _programs!.length,
+      itemBuilder: (context, index) {
+        final program = _programs![index];
+        return RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: GliftTheme.accent,
+          child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+            physics: const AlwaysScrollableScrollPhysics(),
             itemCount: program.trainings.length + 1,
             separatorBuilder: (context, separatorIndex) =>
                 SizedBox(height: separatorIndex == 0 ? 10 : 16),
@@ -381,9 +382,9 @@ class HomePageState extends State<HomePage> {
                 },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
