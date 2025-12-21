@@ -196,7 +196,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                 const SizedBox(height: 24),
 
                 // Code Field
-                if (isWithCode && widget.offer.code != null)
+                if (isWithCode && widget.offer.code != null) ...[
                   GestureDetector(
                     onTap: _handleCopy,
                     child: Container(
@@ -235,7 +235,8 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       ),
                     ),
                   ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
+                ],
 
                 // Conditions
                 if (parsedCondition != null)
