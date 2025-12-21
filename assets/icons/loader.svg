@@ -1,11 +1,10 @@
 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="20" height="20" fill="white"/>
-<rect x="8.75" width="2.5" height="6.5" rx="1.25" fill="#ABA7A8"/>
-<rect x="8.75" y="13.5" width="2.5" height="6.5" rx="1.25" fill="#DDD9D7"/>
-<rect x="6.10352e-05" y="11.2737" width="2.5" height="6.5" rx="1.25" transform="rotate(-90 6.10352e-05 11.2737)" fill="#CCC8C7"/>
-<rect x="13.5" y="11.2263" width="2.5" height="6.5" rx="1.25" transform="rotate(-90 13.5 11.2263)" fill="#DDD9D7"/>
-<rect x="2" y="3.76782" width="2.5" height="6.5" rx="1.25" transform="rotate(-45 2 3.76782)" fill="#BCB8B9"/>
-<rect x="11.75" y="13.2678" width="2.5" height="6.5" rx="1.25" transform="rotate(-45 11.75 13.2678)" fill="#DDD9D7"/>
-<rect x="3.79797" y="17.9155" width="2.5" height="6.5" rx="1.25" transform="rotate(-134.323 3.79797 17.9155)" fill="#DDD9D7"/>
-<rect x="13.4125" y="8.27856" width="2.5" height="6.5" rx="1.25" transform="rotate(-134.323 13.4125 8.27856)" fill="#9B9899"/>
+<rect x="8.75" width="2.5" height="6.5" rx="1.25" fill="#7069FA"/>
+<rect x="8.75" y="13.5" width="2.5" height="6.5" rx="1.25" fill="#7069FA" fill-opacity="0.35"/>
+<rect x="6.10352e-05" y="11.2737" width="2.5" height="6.5" rx="1.25" transform="rotate(-90 6.10352e-05 11.2737)" fill="#7069FA" fill-opacity="0.7"/>
+<rect x="13.5" y="11.2263" width="2.5" height="6.5" rx="1.25" transform="rotate(-90 13.5 11.2263)" fill="#7069FA" fill-opacity="0.35"/>
+<rect x="2" y="3.76782" width="2.5" height="6.5" rx="1.25" transform="rotate(-45 2 3.76782)" fill="#7069FA" fill-opacity="0.85"/>
+<rect x="11.75" y="13.2678" width="2.5" height="6.5" rx="1.25" transform="rotate(-45 11.75 13.2678)" fill="#7069FA" fill-opacity="0.35"/>
+<rect x="3.79797" y="17.9155" width="2.5" height="6.5" rx="1.25" transform="rotate(-134.323 3.79797 17.9155)" fill="#7069FA" fill-opacity="0.35"/>
+<rect x="13.4125" y="8.27856" width="2.5" height="6.5" rx="1.25" transform="rotate(-134.323 13.4125 8.27856)" fill="#7069FA" fill-opacity="0.9"/>
 </svg>
