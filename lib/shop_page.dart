@@ -11,6 +11,7 @@ import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/glift_sort_dropdown.dart';
+import 'widgets/offer_details_modal.dart';
 
 import 'services/filter_service.dart';
 
@@ -370,6 +371,7 @@ class _ShopPageState extends State<ShopPage> {
                             itemBuilder: (context, index) {
                               return _ShopOfferCard(
                                 offer: _filteredOffers[index],
+                                supabase: widget.supabase,
                               );
                             },
                           ),
@@ -427,8 +429,9 @@ class _ShopPageState extends State<ShopPage> {
 
 class _ShopOfferCard extends StatelessWidget {
   final ShopOffer offer;
+  final SupabaseClient supabase;
 
-  const _ShopOfferCard({required this.offer});
+  const _ShopOfferCard({required this.offer, required this.supabase});
 
   @override
   Widget build(BuildContext context) {
@@ -568,7 +571,13 @@ class _ShopOfferCard extends StatelessWidget {
                   height: 44,
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: Implement offer click logic
+                      showDialog(
+                        context: context,
+                        builder: (context) => OfferDetailsModal(
+                          offer: offer,
+                          supabase: supabase,
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF7069FA),

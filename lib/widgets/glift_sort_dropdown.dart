@@ -28,7 +28,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
 
   @override
   void dispose() {
-    _removeOverlay();
+    _removeOverlay(rebuild: false);
     _focusNode.dispose();
     super.dispose();
   }
@@ -222,13 +222,13 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
     overlay.insert(_overlayEntry!);
   }
 
-  void _removeOverlay() {
+  void _removeOverlay({bool rebuild = true}) {
     _overlayEntry?.remove();
     _overlayEntry = null;
     if (_focusNode.hasFocus) {
       _focusNode.unfocus();
     }
-    if (mounted) {
+    if (rebuild && mounted) {
       setState(() {});
     }
   }
