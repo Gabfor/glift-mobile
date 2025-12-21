@@ -324,65 +324,66 @@ class HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final program = _programs![index];
           return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
-          itemCount: program.trainings.length + 1,
-          separatorBuilder: (context, separatorIndex) =>
-              SizedBox(height: separatorIndex == 0 ? 10 : 16),
-          itemBuilder: (context, itemIndex) {
-            if (itemIndex == 0) {
-              return Text(
-                'Entraînement',
-                style: GoogleFonts.quicksand(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: GliftTheme.title,
-                ),
-              );
-            }
-
-            final training = program.trainings[itemIndex - 1];
-            return _TrainingCard(
-              training: training,
-              syncStatus: _syncStatus,
-              onTap: () async {
-                final result = await Navigator.of(context).push(
-                  PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => TrainingDetailsPage(
-                      training: training,
-                      supabase: widget.supabase,
-                    ),
-                    transitionsBuilder:
-                        (_, animation, secondaryAnimation, child) {
-                          const begin = Offset(0, 1);
-                          const end = Offset.zero;
-                          const curve = Curves.ease;
-
-                          final tween = Tween(
-                            begin: begin,
-                            end: end,
-                          ).chain(CurveTween(curve: curve));
-
-                          return SlideTransition(
-                            position: animation.drive(tween),
-                            child: child,
-                          );
-                        },
+            padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+            itemCount: program.trainings.length + 1,
+            separatorBuilder: (context, separatorIndex) =>
+                SizedBox(height: separatorIndex == 0 ? 10 : 16),
+            itemBuilder: (context, itemIndex) {
+              if (itemIndex == 0) {
+                return Text(
+                  'Entraînement',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: GliftTheme.title,
                   ),
                 );
+              }
 
-                if (result == true) {
-                  // Reload programs to refresh stats (last session, average time)
-                  _fetchPrograms();
-                  widget.onNavigateToDashboard?.call(
-                    programId: program.id,
-                    trainingId: training.id,
+              final training = program.trainings[itemIndex - 1];
+              return _TrainingCard(
+                training: training,
+                syncStatus: _syncStatus,
+                onTap: () async {
+                  final result = await Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => TrainingDetailsPage(
+                        training: training,
+                        supabase: widget.supabase,
+                      ),
+                      transitionsBuilder:
+                          (_, animation, secondaryAnimation, child) {
+                        const begin = Offset(0, 1);
+                        const end = Offset.zero;
+                        const curve = Curves.ease;
+
+                        final tween = Tween(
+                          begin: begin,
+                          end: end,
+                        ).chain(CurveTween(curve: curve));
+
+                        return SlideTransition(
+                          position: animation.drive(tween),
+                          child: child,
+                        );
+                      },
+                    ),
                   );
-                }
-              },
-            );
-          },
-        );
-      },
+
+                  if (result == true) {
+                    // Reload programs to refresh stats (last session, average time)
+                    _fetchPrograms();
+                    widget.onNavigateToDashboard?.call(
+                      programId: program.id,
+                      trainingId: training.id,
+                    );
+                  }
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
