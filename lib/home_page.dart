@@ -33,7 +33,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late final ProgramRepository _programRepository;
   late final PageController _pageController;
   late final ScrollController _programScrollController;
@@ -322,15 +322,20 @@ class HomePageState extends State<HomePage> {
         final program = _programs![index];
         return RefreshIndicator(
           onRefresh: _handleRefresh,
-          color: GliftTheme.accent,
+          color: Colors.transparent,
+          backgroundColor: Colors.transparent,
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
             physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: program.trainings.length + 1,
+            itemCount: program.trainings.length + 2,
             separatorBuilder: (context, separatorIndex) =>
                 SizedBox(height: separatorIndex == 0 ? 10 : 16),
             itemBuilder: (context, itemIndex) {
               if (itemIndex == 0) {
+                return _buildSyncIndicator();
+              }
+
+              if (itemIndex == 1) {
                 return Text(
                   'Entraînement',
                   style: GoogleFonts.quicksand(
@@ -341,7 +346,7 @@ class HomePageState extends State<HomePage> {
                 );
               }
 
-              final training = program.trainings[itemIndex - 1];
+              final training = program.trainings[itemIndex - 2];
               return _TrainingCard(
                 training: training,
                 syncStatus: _syncStatus,
@@ -385,6 +390,24 @@ class HomePageState extends State<HomePage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSyncIndicator() {
+    final isLoading = _syncStatus == SyncStatus.loading;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      vsync: this,
+      child: SizedBox(
+        height: isLoading ? 48 : 0,
+        child: isLoading
+            ? const Center(
+                child: _RotatingLoader(),
+              )
+            : const SizedBox.shrink(),
+      ),
     );
   }
 }
