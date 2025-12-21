@@ -15,6 +15,7 @@ import 'widgets/filter_modal.dart';
 import 'widgets/glift_sort_dropdown.dart';
 
 import 'services/filter_service.dart';
+import 'theme/glift_theme.dart';
 
 class StorePage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -262,6 +263,7 @@ class _StorePageState extends State<StorePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: GliftTheme.barrierColor,
       builder: (context) => FilterModal(
         sections: sections,
         selectedFilters: _selectedFiltersMap,
@@ -640,9 +642,11 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            color: _isDownloadable
-                                ? const Color(0xFF7069FA)
-                                : const Color(0xFFF2F1F6),
+                            color: _isDownloading
+                                ? const Color(0xFFF2F1F6)
+                                : (_isDownloadable
+                                    ? const Color(0xFF7069FA)
+                                    : const Color(0xFFF2F1F6)),
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: Row(
@@ -652,7 +656,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                                   ? const GliftLoader(
                                       size: 20,
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color: Color(0xFFD7D4DC),
                                       centered: false,
                                     )
                                   : SvgPicture.asset(
@@ -672,9 +676,11 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                               Text(
                                 _isDownloading ? 'Téléchargement...' : 'Télécharger',
                                 style: GoogleFonts.quicksand(
-                                  color: _isDownloadable
-                                      ? Colors.white
-                                      : const Color(0xFFD7D4DC),
+                                  color: _isDownloading
+                                      ? const Color(0xFFD7D4DC)
+                                      : (_isDownloadable
+                                          ? Colors.white
+                                          : const Color(0xFFD7D4DC)),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),

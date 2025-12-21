@@ -45,6 +45,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   int? _activeTimerRowIndex;
   final Map<String, List<bool>> _setCompletionStates = {};
   final ScrollController _scrollController = ScrollController();
+  bool _isFinishing = false;
 
   late final AnimationController _inlineTimerAnimationController;
   Animation<double>? _inlineTimerAnimation;
@@ -426,7 +427,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   Future<void> _finishTraining() async {
     if (_rows == null) return;
 
-    setState(() => _isLoading = true);
+    HapticFeedback.lightImpact();
+    setState(() => _isFinishing = true);
 
     try {
       // Filter only completed rows
@@ -469,7 +471,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       if (mounted) {
         setState(() {
           _error = e.toString();
-          _isLoading = false;
+          _isFinishing = false;
         });
       }
     }
@@ -710,15 +712,35 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             behavior: HitTestBehavior.translucent,
             child: _buildBody(allProcessed),
           ),
-          if (allProcessed)
+          if (allProcessed) ...[
             Positioned(
               left: 0,
               right: 0,
-              bottom: 30,
-              child: Center(
-                child: _FinishButton(onTap: _finishTraining),
+              bottom: 0,
+              child: Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      GliftTheme.barrierColor,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
               ),
             ),
+            if (!_isFinishing)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 30,
+                child: Center(
+                  child: _FinishButton(onTap: _finishTraining),
+                ),
+              ),
+          ],
           if (_currentInputHandler != null)
             Positioned(
               left: 0,
@@ -1471,6 +1493,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: GliftTheme.barrierColor,
       builder: (context) => NoteModal(
         initialNote: widget.row.note,
         initialMaterial: widget.row.material,

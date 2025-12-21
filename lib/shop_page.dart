@@ -14,6 +14,7 @@ import 'widgets/glift_sort_dropdown.dart';
 import 'widgets/offer_details_modal.dart';
 
 import 'services/filter_service.dart';
+import 'theme/glift_theme.dart';
 
 class ShopPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -223,6 +224,7 @@ class _ShopPageState extends State<ShopPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: GliftTheme.barrierColor,
       builder: (context) => FilterModal(
         sections: sections,
         selectedFilters: _selectedFiltersMap,

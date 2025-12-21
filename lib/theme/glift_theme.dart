@@ -10,6 +10,7 @@ class GliftTheme {
   static const Color body = Color(0xFF5D6494);
   static const Color pageIndicatorActive = Color(0xFFA1A5FD);
   static const Color pageIndicatorInactive = Color(0xFFECE9F1);
+  static const Color barrierColor = Color(0x992E3142); // 60% opacity of #2E3142
 
   static ThemeData buildTheme() {
     final quicksandFontFamily = GoogleFonts.quicksand().fontFamily;

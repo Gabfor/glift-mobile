@@ -709,6 +709,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: GliftTheme.barrierColor,
       builder: (context) => NoteModal(
         initialNote: widget.row.note,
         initialMaterial: widget.row.material,
