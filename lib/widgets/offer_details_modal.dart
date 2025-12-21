@@ -208,6 +208,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       ),
                       child: Stack(
                         alignment: Alignment.center,
+                        clipBehavior: Clip.none,
                         children: [
                           Text(
                             widget.offer.code!,
@@ -231,6 +232,18 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                               ),
                             ),
                           ),
+                          if (_copied)
+                            Positioned(
+                              right: 22, // Centered above the 20px icon (12 + 20/2 = 22 for center)
+                              top: -45, // Positioned above the icon
+                              child: const FractionalTranslation(
+                                translation: Offset(0.5, 0),
+                                child: _TooltipWithArrow(
+                                  backgroundColor: Color(0xFF2D2E32),
+                                  label: 'Copié !',
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -312,4 +325,64 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
       ),
     );
   }
+}
+
+class _TooltipWithArrow extends StatelessWidget {
+  final Color backgroundColor;
+  final String label;
+
+  const _TooltipWithArrow({required this.backgroundColor, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        CustomPaint(
+          size: const Size(12, 6),
+          painter: _TooltipArrowPainter(backgroundColor),
+        ),
+      ],
+    );
+  }
+}
+
+class _TooltipArrowPainter extends CustomPainter {
+  final Color color;
+
+  const _TooltipArrowPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
