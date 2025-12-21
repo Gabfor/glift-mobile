@@ -43,8 +43,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String? _pendingProgramId;
   String? _newlyDownloadedId;
   bool _isLoading = true;
+  bool _isManualRefreshInProgress = false;
   SyncStatus _syncStatus = SyncStatus.loading;
   String? _error;
+
+  double _pullDownOffset = 0;
+  static const double _refreshTriggerOffset = 80;
 
   @override
   void initState() {
@@ -82,10 +86,51 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _handleRefresh() async {
+    if (_isManualRefreshInProgress) return;
+
     setState(() {
+      _isManualRefreshInProgress = true;
       _syncStatus = SyncStatus.loading;
     });
-    await _fetchPrograms();
+
+    try {
+      await _fetchPrograms();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isManualRefreshInProgress = false;
+        });
+      }
+    }
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (_isManualRefreshInProgress || _isLoading) return false;
+
+    if (notification.metrics.extentBefore > 0) {
+      _resetPullDownOffset();
+      return false;
+    }
+
+    if (notification is OverscrollNotification &&
+        notification.overscroll < 0 &&
+        notification.dragDetails != null) {
+      _pullDownOffset += -notification.overscroll;
+      if (_pullDownOffset >= _refreshTriggerOffset) {
+        _resetPullDownOffset();
+        _handleRefresh();
+      }
+    } else if (notification is ScrollEndNotification) {
+      _resetPullDownOffset();
+    }
+
+    return false;
+  }
+
+  void _resetPullDownOffset() {
+    if (_pullDownOffset != 0) {
+      _pullDownOffset = 0;
+    }
   }
 
   Future<void> _fetchPrograms() async {
@@ -320,10 +365,8 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       itemCount: _programs!.length,
       itemBuilder: (context, index) {
         final program = _programs![index];
-        return RefreshIndicator(
-          onRefresh: _handleRefresh,
-          color: Colors.transparent,
-          backgroundColor: Colors.transparent,
+        return NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
             physics: const AlwaysScrollableScrollPhysics(),
