@@ -20,23 +20,28 @@ class HomePage extends StatefulWidget {
     super.key,
     required this.supabase,
     this.onNavigateToDashboard,
+    this.initialProgramId,
   });
+
+  final String? initialProgramId;
 
   final SupabaseClient supabase;
   final void Function({String? programId, String? trainingId})?
       onNavigateToDashboard;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   late final ProgramRepository _programRepository;
   late final PageController _pageController;
   late final ScrollController _programScrollController;
   final List<GlobalKey> _programKeys = [];
   List<Program>? _programs;
   String? _selectedProgramId;
+  String? _pendingProgramId;
+  String? _newlyDownloadedId;
   bool _isLoading = true;
   SyncStatus _syncStatus = SyncStatus.loading;
   String? _error;
@@ -47,6 +52,25 @@ class _HomePageState extends State<HomePage> {
     _programRepository = ProgramRepository(widget.supabase);
     _pageController = PageController();
     _programScrollController = ScrollController();
+    _selectedProgramId = widget.initialProgramId;
+    _newlyDownloadedId = widget.initialProgramId;
+    _fetchPrograms();
+  }
+
+  void clearNewIndicator() {
+    if (_newlyDownloadedId != null) {
+      setState(() {
+        _newlyDownloadedId = null;
+      });
+    }
+  }
+
+  void refresh({String? programId}) {
+    if (programId != null) {
+      _selectedProgramId = programId;
+      _pendingProgramId = programId;
+      _newlyDownloadedId = programId;
+    }
     _fetchPrograms();
   }
 
@@ -94,12 +118,29 @@ class _HomePageState extends State<HomePage> {
             ..addAll(List.generate(programs.length, (_) => GlobalKey()));
             
           // If we had no selection or selection is invalid, select first
-          if (_selectedProgramId == null || !programs.any((p) => p.id == _selectedProgramId)) {
-             if (programs.isNotEmpty) _selectedProgramId = programs.first.id;
+          if (_selectedProgramId == null ||
+              !programs.any((p) => p.id == _selectedProgramId)) {
+            if (programs.isNotEmpty) _selectedProgramId = programs.first.id;
           }
-          
+
           _isLoading = false;
           _syncStatus = SyncStatus.synced;
+
+          if (_pendingProgramId != null) {
+            final targetId = _pendingProgramId!;
+            _pendingProgramId = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final targetIndex = programs.indexWhere((p) => p.id == targetId);
+              if (targetIndex != -1) {
+                // Slight delay to ensure keys are bound and layout is ready
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (mounted) {
+                    _onProgramSelected(targetIndex, alignment: 1.0, forceScroll: true);
+                  }
+                });
+              }
+            });
+          }
         });
       }
     } catch (e) {
@@ -113,16 +154,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _onProgramSelected(int index) {
-    setState(() {
-      _selectedProgramId = _programs![index].id;
-    });
-    _scrollProgramIntoView(index);
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+  void _onProgramSelected(int index, {double alignment = 0.5, bool forceScroll = false}) {
+    if (_programs != null) {
+      final selectedId = _programs![index].id;
+      if (selectedId != _selectedProgramId || forceScroll) {
+        setState(() {
+          if (selectedId != _selectedProgramId) {
+            _selectedProgramId = selectedId;
+            _newlyDownloadedId = null; // Clear indicator on manual selection only
+          }
+        });
+        _pageController.jumpToPage(index);
+        _scrollProgramIntoView(index, alignment: alignment);
+      }
+    }
   }
 
   void _onPageChanged(int index) {
@@ -132,7 +177,7 @@ class _HomePageState extends State<HomePage> {
     _scrollProgramIntoView(index);
   }
 
-  void _scrollProgramIntoView(int index) {
+  void _scrollProgramIntoView(int index, {double alignment = 0.5}) {
     if (_programScrollController.hasClients && index < _programKeys.length) {
       final context = _programKeys[index].currentContext;
 
@@ -141,7 +186,7 @@ class _HomePageState extends State<HomePage> {
           context,
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
-          alignment: 0.5,
+          alignment: alignment,
         );
       } else {
         _programScrollController.animateTo(
@@ -195,22 +240,37 @@ class _HomePageState extends State<HomePage> {
                   final index = entry.key;
                   final program = entry.value;
                   final isSelected = program.id == _selectedProgramId;
+                  final isNew = program.id == _newlyDownloadedId;
+
                   return GestureDetector(
+                    key: _programKeys[index],
                     onTap: () => _onProgramSelected(index),
                     child: Padding(
                       padding: const EdgeInsets.only(right: 20),
-                      child: Container(
-                        key: _programKeys[index],
-                        child: Text(
-                          program.name,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.5),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isNew)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF00D591),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          Text(
+                            program.name,
+                            style: GoogleFonts.quicksand(
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   );

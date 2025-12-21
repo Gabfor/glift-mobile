@@ -20,10 +20,13 @@ class StorePage extends StatefulWidget {
   final SupabaseClient supabase;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
 
+  final void Function(String? programId)? onNavigateToHome;
+
   const StorePage({
     super.key,
     required this.supabase,
     this.onNavigationVisibilityChanged,
+    this.onNavigateToHome,
   });
 
   @override
@@ -394,6 +397,8 @@ class _StorePageState extends State<StorePage> {
                               return _StoreProgramCard(
                                 program: _filteredPrograms[index],
                                 isAuthenticated: isAuthenticated,
+                                repository: _repository,
+                                onNavigateToHome: widget.onNavigateToHome,
                               );
                             },
                           ),
@@ -449,19 +454,73 @@ class _StorePageState extends State<StorePage> {
 
 
 
-class _StoreProgramCard extends StatelessWidget {
+class _StoreProgramCard extends StatefulWidget {
   final StoreProgram program;
   final bool isAuthenticated;
+  final StoreRepository repository;
+  final void Function(String? programId)? onNavigateToHome;
 
   const _StoreProgramCard({
     required this.program,
     required this.isAuthenticated,
+    required this.repository,
+    this.onNavigateToHome,
   });
 
-  bool get _isDownloadable => isAuthenticated && program.linkedProgramId != null;
+  @override
+  State<_StoreProgramCard> createState() => _StoreProgramCardState();
+}
+
+class _StoreProgramCardState extends State<_StoreProgramCard> {
+  bool _isDownloading = false;
+
+  bool get _isDownloadable =>
+      widget.isAuthenticated && widget.program.linkedProgramId != null;
+
+  Future<void> _handleDownload() async {
+    if (_isDownloading) return;
+
+    setState(() {
+      _isDownloading = true;
+    });
+
+    HapticFeedback.lightImpact();
+
+    try {
+      final success = await widget.repository.downloadProgram(widget.program.id);
+      if (mounted) {
+        if (success != null) {
+          widget.onNavigateToHome?.call(success);
+        } else {
+          throw Exception('Download returned null');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Erreur lors du téléchargement : $e',
+              style: GoogleFonts.quicksand(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final program = widget.program;
+    // ... rest of the build method stays similar, but using _isDownloading ...
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -575,11 +634,8 @@ class _StoreProgramCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: _isDownloadable
-                            ? () {
-                                HapticFeedback.lightImpact();
-                                // TODO: Implement download logic
-                              }
+                        onTap: _isDownloadable && !_isDownloading
+                            ? _handleDownload
                             : null,
                         child: Container(
                           height: 44,
@@ -592,22 +648,29 @@ class _StoreProgramCard extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SvgPicture.asset(
-                                _isDownloadable
-                                    ? 'assets/icons/download.svg'
-                                    : 'assets/icons/locked.svg',
-                                width: _isDownloadable ? 20 : 15,
-                                height: _isDownloadable ? 20 : 15,
-                                colorFilter: ColorFilter.mode(
-                                  _isDownloadable
-                                      ? Colors.white
-                                      : const Color(0xFFD7D4DC),
-                                  BlendMode.srcIn,
-                                ),
-                              ),
+                              _isDownloading
+                                  ? const GliftLoader(
+                                      size: 20,
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                      centered: false,
+                                    )
+                                  : SvgPicture.asset(
+                                      _isDownloadable
+                                          ? 'assets/icons/download.svg'
+                                          : 'assets/icons/locked.svg',
+                                      width: _isDownloadable ? 20 : 15,
+                                      height: _isDownloadable ? 20 : 15,
+                                      colorFilter: ColorFilter.mode(
+                                        _isDownloadable
+                                            ? Colors.white
+                                            : const Color(0xFFD7D4DC),
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
                               const SizedBox(width: 8),
                               Text(
-                                'Télécharger',
+                                _isDownloading ? 'Téléchargement...' : 'Télécharger',
                                 style: GoogleFonts.quicksand(
                                   color: _isDownloadable
                                       ? Colors.white

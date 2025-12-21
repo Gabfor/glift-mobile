@@ -21,6 +21,7 @@ class _MainPageState extends State<MainPage> {
   int _currentIndex = 1; // Default to 'Séances'
   bool _isBottomNavVisible = true;
   final GlobalKey<DashboardPageState> _dashboardKey = GlobalKey();
+  final GlobalKey<HomePageState> _homeKey = GlobalKey();
 
   late final List<Widget> _pages;
 
@@ -34,12 +35,14 @@ class _MainPageState extends State<MainPage> {
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
       ),
       HomePage(
+        key: _homeKey,
         supabase: widget.supabase,
         onNavigateToDashboard: _navigateToDashboard,
       ),
       StorePage(
         supabase: widget.supabase,
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+        onNavigateToHome: (programId) => _navigateToHome(programId: programId),
       ),
       ShopPage(
         supabase: widget.supabase,
@@ -63,7 +66,21 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  void _navigateToHome({String? programId}) {
+    setState(() {
+      _currentIndex = 1;
+      _isBottomNavVisible = true;
+    });
+    // Slight delay to ensure the widget is built/visible before refreshing
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _homeKey.currentState?.refresh(programId: programId);
+    });
+  }
+
   void _onItemTapped(int index) {
+    if (_currentIndex == 1 && index != 1) {
+      _homeKey.currentState?.clearNewIndicator();
+    }
     setState(() {
       _currentIndex = index;
       _isBottomNavVisible = true;
