@@ -7,11 +7,20 @@ import 'dashboard_page.dart';
 import 'store_page.dart';
 import 'shop_page.dart';
 import 'settings_page.dart';
+import 'auth/auth_repository.dart';
+import 'auth/biometric_auth_service.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key, required this.supabase});
+  const MainPage({
+    super.key,
+    required this.supabase,
+    required this.authRepository,
+    required this.biometricAuthService,
+  });
 
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -48,7 +57,11 @@ class _MainPageState extends State<MainPage> {
         supabase: widget.supabase,
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
       ),
-      SettingsPage(supabase: widget.supabase),
+      SettingsPage(
+        supabase: widget.supabase,
+        authRepository: widget.authRepository,
+        biometricAuthService: widget.biometricAuthService,
+      ),
     ];
   }
 

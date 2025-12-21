@@ -151,7 +151,11 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => MainPage(supabase: widget.supabase),
+          builder: (_) => MainPage(
+            supabase: widget.supabase,
+            authRepository: widget.authRepository,
+            biometricAuthService: widget.biometricAuthService,
+          ),
         ),
       );
     } on AuthException catch (error) {

@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
 import 'widgets/glift_page_layout.dart';
+import 'login_page.dart';
+import 'auth/auth_repository.dart';
+import 'auth/biometric_auth_service.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
 
-  const SettingsPage({super.key, required this.supabase});
+  const SettingsPage({
+    super.key,
+    required this.supabase,
+    required this.authRepository,
+    required this.biometricAuthService,
+  });
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -24,15 +35,35 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _superset = true;
   bool _vibrations = true;
   bool _sound = true;
+  bool _isLoggingOut = false;
 
   Future<void> _signOut() async {
+    if (_isLoggingOut) return;
+    
+    HapticFeedback.lightImpact();
+    setState(() => _isLoggingOut = true);
+
     try {
       await widget.supabase.auth.signOut();
-      // Navigation to login will be handled by auth state change listener in main.dart
-      // or we can manually navigate if needed, but usually auth state change is enough
+      if (mounted) {
+        // Navigate to login page with instant transition and clear the navigation stack
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
+              supabase: widget.supabase,
+              authRepository: widget.authRepository,
+              biometricAuthService: widget.biometricAuthService,
+            ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+          (route) => false,
+        );
+      }
     } catch (e) {
       debugPrint('Error signing out: $e');
       if (mounted) {
+        setState(() => _isLoggingOut = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erreur lors de la déconnexion')),
         );
@@ -226,22 +257,48 @@ class _SettingsPageState extends State<SettingsPage> {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: _signOut,
+              onPressed: _isLoggingOut ? null : _signOut,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4F4E),
+                backgroundColor: _isLoggingOut 
+                    ? const Color(0xFFF2F1F6) 
+                    : const Color(0xFFEF4F4E),
+                disabledBackgroundColor: const Color(0xFFF2F1F6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
                 elevation: 0,
               ),
-              child: Text(
-                'Se déconnecter',
-                style: GoogleFonts.quicksand(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: _isLoggingOut
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'En cours...',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFFD7D4DC),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Se déconnecter',
+                      style: GoogleFonts.quicksand(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
           ),
         ],

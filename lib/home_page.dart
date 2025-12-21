@@ -81,6 +81,13 @@ class HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  Future<void> _handleRefresh() async {
+    setState(() {
+      _syncStatus = SyncStatus.loading;
+    });
+    await _fetchPrograms();
+  }
+
   Future<void> _fetchPrograms() async {
     // 1. Load local cache first
     try {
@@ -130,7 +137,10 @@ class HomePageState extends State<HomePage> {
             final targetId = _pendingProgramId!;
             _pendingProgramId = null;
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              debugPrint('Looking for program with ID: $targetId');
+              debugPrint('Programs list: ${programs.map((p) => '${p.name} (${p.id})').join(', ')}');
               final targetIndex = programs.indexWhere((p) => p.id == targetId);
+              debugPrint('Found at index: $targetIndex');
               if (targetIndex != -1) {
                 // Slight delay to ensure keys are bound and layout is ready
                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -158,10 +168,12 @@ class HomePageState extends State<HomePage> {
     if (_programs != null) {
       final selectedId = _programs![index].id;
       if (selectedId != _selectedProgramId || forceScroll) {
+        final isDifferentProgram = selectedId != _selectedProgramId;
         setState(() {
-          if (selectedId != _selectedProgramId) {
-            _selectedProgramId = selectedId;
-            _newlyDownloadedId = null; // Clear indicator on manual selection only
+          _selectedProgramId = selectedId;
+          // Clear indicator only on manual selection of a different program
+          if (isDifferentProgram && !forceScroll) {
+            _newlyDownloadedId = null;
           }
         });
         _pageController.jumpToPage(index);
@@ -302,13 +314,16 @@ class HomePageState extends State<HomePage> {
       );
     }
 
-    return PageView.builder(
-      controller: _pageController,
-      onPageChanged: _onPageChanged,
-      itemCount: _programs!.length,
-      itemBuilder: (context, index) {
-        final program = _programs![index];
-        return ListView.separated(
+    return RefreshIndicator(
+      onRefresh: _handleRefresh,
+      color: GliftTheme.accent,
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        itemCount: _programs!.length,
+        itemBuilder: (context, index) {
+          final program = _programs![index];
+          return ListView.separated(
           padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
           itemCount: program.trainings.length + 1,
           separatorBuilder: (context, separatorIndex) =>
