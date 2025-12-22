@@ -383,28 +383,28 @@ class HomePageState extends State<HomePage> {
                               const curve = Curves.ease;
 
                               final tween = Tween(
-                              begin: begin,
-                              end: end,
-                            ).chain(CurveTween(curve: curve));
+                                begin: begin,
+                                end: end,
+                              ).chain(CurveTween(curve: curve));
 
-                            return SlideTransition(
-                              position: animation.drive(tween),
-                              child: child,
-                            );
-                          },
-                        ),
-                      );
-
-                      if (result == true) {
-                        // Reload programs to refresh stats (last session, average time)
-                        _fetchPrograms();
-                        widget.onNavigateToDashboard?.call(
-                          programId: program.id,
-                          trainingId: training.id,
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          ),
                         );
-                      }
-                    },
-                  );
+
+                        if (result == true) {
+                          // Reload programs to refresh stats (last session, average time)
+                          _fetchPrograms();
+                          widget.onNavigateToDashboard?.call(
+                            programId: program.id,
+                            trainingId: training.id,
+                          );
+                        }
+                      },
+                    );
                 },
               );
             },
