@@ -327,57 +327,62 @@ class HomePageState extends State<HomePage> {
       );
     }
 
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: _handleRefresh,
-          // Ensure pull-to-refresh works with the nested ListViews inside the
-          // horizontal PageView
-          notificationPredicate: (notification) => notification.depth == 1,
-          color: Colors.transparent,
-          backgroundColor: Colors.transparent,
-          strokeWidth: 0.0001,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            itemCount: _programs!.length,
-            itemBuilder: (context, index) {
-              final program = _programs![index];
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
-                itemCount: program.trainings.length + 1,
-                separatorBuilder: (context, separatorIndex) =>
-                    SizedBox(height: separatorIndex == 0 ? 10 : 16),
-                itemBuilder: (context, itemIndex) {
-                  if (itemIndex == 0) {
-                    return Text(
-                      'Entraînement',
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: GliftTheme.title,
-                      ),
-                    );
-                  }
+    return NotificationListener<OverscrollIndicatorNotification>(
+      onNotification: (notification) {
+        notification.disallowIndicator();
+        return false;
+      },
+      child: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: _handleRefresh,
+            // Ensure pull-to-refresh works with the nested ListViews inside the
+            // horizontal PageView
+            notificationPredicate: (notification) => notification.depth == 1,
+            color: Colors.transparent,
+            backgroundColor: Colors.transparent,
+            strokeWidth: 0.0001,
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              itemCount: _programs!.length,
+              itemBuilder: (context, index) {
+                final program = _programs![index];
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+                  itemCount: program.trainings.length + 1,
+                  separatorBuilder: (context, separatorIndex) =>
+                      SizedBox(height: separatorIndex == 0 ? 10 : 16),
+                  itemBuilder: (context, itemIndex) {
+                    if (itemIndex == 0) {
+                      return Text(
+                        'Entraînement',
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: GliftTheme.title,
+                        ),
+                      );
+                    }
 
-                  final training = program.trainings[itemIndex - 1];
-                  return _TrainingCard(
-                    training: training,
-                    syncStatus: _syncStatus,
-                    onTap: () async {
-                      final result = await Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => TrainingDetailsPage(
-                            training: training,
-                            supabase: widget.supabase,
-                          ),
-                          transitionsBuilder:
-                              (_, animation, secondaryAnimation, child) {
-                            const begin = Offset(0, 1);
-                            const end = Offset.zero;
-                            const curve = Curves.ease;
+                    final training = program.trainings[itemIndex - 1];
+                    return _TrainingCard(
+                      training: training,
+                      syncStatus: _syncStatus,
+                      onTap: () async {
+                        final result = await Navigator.of(context).push(
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => TrainingDetailsPage(
+                              training: training,
+                              supabase: widget.supabase,
+                            ),
+                            transitionsBuilder:
+                                (_, animation, secondaryAnimation, child) {
+                              const begin = Offset(0, 1);
+                              const end = Offset.zero;
+                              const curve = Curves.ease;
 
-                            final tween = Tween(
+                              final tween = Tween(
                               begin: begin,
                               end: end,
                             ).chain(CurveTween(curve: curve));
@@ -407,14 +412,14 @@ class HomePageState extends State<HomePage> {
         ),
         if (_isRefreshing)
           Positioned(
-            top: 12,
+            top: 50,
             left: 0,
             right: 0,
             child: IgnorePointer(
               ignoring: true,
               child: SizedBox(
-                height: 28,
-                width: 28,
+                height: 25,
+                width: 25,
                 child: const _RotatingLoader(),
               ),
             ),
@@ -583,8 +588,8 @@ class _RotatingLoaderState extends State<_RotatingLoader>
       turns: _controller,
       child: SvgPicture.asset(
         'assets/icons/loader.svg',
-        width: 20,
-        height: 20,
+        width: 25,
+        height: 25,
       ),
     );
   }
