@@ -81,6 +81,18 @@ class HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  void _ensureSelectedProgramVisible() {
+    if (_programs == null || _selectedProgramId == null) return;
+
+    final index = _programs!.indexWhere((p) => p.id == _selectedProgramId);
+    if (index == -1) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _onProgramSelected(index, forceScroll: true);
+    });
+  }
+
   Future<void> _handleRefresh() async {
     setState(() {
       _syncStatus = SyncStatus.loading;
@@ -150,6 +162,8 @@ class HomePageState extends State<HomePage> {
                 });
               }
             });
+          } else {
+            _ensureSelectedProgramVisible();
           }
         });
       }
