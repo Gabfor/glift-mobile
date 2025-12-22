@@ -55,12 +55,19 @@ class _StorePageState extends State<StorePage> {
     super.initState();
     _repository = StoreRepository(widget.supabase);
 
-    // Initialize from service
-    final filterService = FilterService();
-    _selectedFiltersMap = Map.from(filterService.storeFilters);
-    _selectedSort = filterService.storeSort;
+    _initializeFilters();
 
     _loadPrograms();
+  }
+
+  void _initializeFilters() {
+    final filterService = FilterService();
+    _selectedFiltersMap = filterService.storeFilters.map(
+      (key, value) => MapEntry(key, Set<String>.from(value)),
+    );
+    _selectedSort = filterService.storeSort;
+    _removeAllLevelsFilter();
+    filterService.storeFilters = _selectedFiltersMap;
   }
 
   Future<void> _loadPrograms() async {
@@ -205,6 +212,16 @@ class _StorePageState extends State<StorePage> {
     return filtered;
   }
 
+  void _removeAllLevelsFilter() {
+    final levelFilters = _selectedFiltersMap['Niveau'];
+    if (levelFilters != null && levelFilters.remove('Tous niveaux')) {
+      _selectedFiltersMap = {
+        ..._selectedFiltersMap,
+        'Niveau': levelFilters,
+      };
+    }
+  }
+
   void _showFilterModal() {
     final goals = <String>{};
     final partners = <String>{};
@@ -218,7 +235,9 @@ class _StorePageState extends State<StorePage> {
       if (program.partnerName != null && program.partnerName!.isNotEmpty) {
         partners.add(program.partnerName!);
       }
-      if (program.level.isNotEmpty) levels.add(program.level);
+      if (program.level.isNotEmpty && program.level != 'Tous niveaux') {
+        levels.add(program.level);
+      }
       if (program.duration.isNotEmpty) {
         durations.add('${program.duration} minutes');
       }
