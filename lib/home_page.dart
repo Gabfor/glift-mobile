@@ -424,7 +424,8 @@ class HomePageState extends State<HomePage> {
               ),
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 }
