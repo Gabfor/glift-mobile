@@ -331,6 +331,9 @@ class HomePageState extends State<HomePage> {
       children: [
         RefreshIndicator(
           onRefresh: _handleRefresh,
+          // Ensure pull-to-refresh works with the nested ListViews inside the
+          // horizontal PageView
+          notificationPredicate: (notification) => notification.depth == 1,
           color: Colors.transparent,
           backgroundColor: Colors.transparent,
           strokeWidth: 0.0001,
