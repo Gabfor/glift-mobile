@@ -327,100 +327,110 @@ class HomePageState extends State<HomePage> {
       );
     }
 
+    final isSyncing = _syncStatus == SyncStatus.loading;
+
     return NotificationListener<OverscrollIndicatorNotification>(
       onNotification: (notification) {
         notification.disallowIndicator();
         return false;
       },
-      child: Stack(
+      child: Column(
         children: [
-          RefreshIndicator(
-            onRefresh: _handleRefresh,
-            // Ensure pull-to-refresh works with the nested ListViews inside the
-            // horizontal PageView
-            notificationPredicate: (notification) => notification.depth == 1,
-            color: Colors.transparent,
-            backgroundColor: Colors.transparent,
-            strokeWidth: 0.0001,
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: _onPageChanged,
-              itemCount: _programs!.length,
-              itemBuilder: (context, index) {
-                final program = _programs![index];
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
-                  itemCount: program.trainings.length + 1,
-                  separatorBuilder: (context, separatorIndex) =>
-                      SizedBox(height: separatorIndex == 0 ? 10 : 16),
-                  itemBuilder: (context, itemIndex) {
-                    if (itemIndex == 0) {
-                      return Text(
-                        'Entraînement',
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: GliftTheme.title,
-                        ),
-                      );
-                    }
-
-                    final training = program.trainings[itemIndex - 1];
-                    return _TrainingCard(
-                      training: training,
-                      syncStatus: _syncStatus,
-                      onTap: () async {
-                        final result = await Navigator.of(context).push(
-                          PageRouteBuilder(
-                            pageBuilder: (_, __, ___) => TrainingDetailsPage(
-                              training: training,
-                              supabase: widget.supabase,
-                            ),
-                            transitionsBuilder:
-                                (_, animation, secondaryAnimation, child) {
-                              const begin = Offset(0, 1);
-                              const end = Offset.zero;
-                              const curve = Curves.ease;
-
-                              final tween = Tween(
-                                begin: begin,
-                                end: end,
-                              ).chain(CurveTween(curve: curve));
-
-                              return SlideTransition(
-                                position: animation.drive(tween),
-                                child: child,
-                              );
-                            },
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isSyncing
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 4),
+                    child: SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: const _RotatingLoader(),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              // Ensure pull-to-refresh works with the nested ListViews inside the
+              // horizontal PageView
+              notificationPredicate: (notification) => notification.depth == 1,
+              color: Colors.transparent,
+              backgroundColor: Colors.transparent,
+              strokeWidth: 0.0001,
+              displacement: 0,
+              edgeOffset: -24,
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                itemCount: _programs!.length,
+                itemBuilder: (context, index) {
+                  final program = _programs![index];
+                  return ListView.separated(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      isSyncing ? 10 : 30,
+                      20,
+                      20,
+                    ),
+                    itemCount: program.trainings.length + 1,
+                    separatorBuilder: (context, separatorIndex) =>
+                        SizedBox(height: separatorIndex == 0 ? 10 : 16),
+                    itemBuilder: (context, itemIndex) {
+                      if (itemIndex == 0) {
+                        return Text(
+                          'Entraînement',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: GliftTheme.title,
                           ),
                         );
+                      }
 
-                        if (result == true) {
-                          // Reload programs to refresh stats (last session, average time)
-                          _fetchPrograms();
-                          widget.onNavigateToDashboard?.call(
-                            programId: program.id,
-                            trainingId: training.id,
+                      final training = program.trainings[itemIndex - 1];
+                      return _TrainingCard(
+                        training: training,
+                        syncStatus: _syncStatus,
+                        onTap: () async {
+                          final result = await Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder: (_, __, ___) => TrainingDetailsPage(
+                                training: training,
+                                supabase: widget.supabase,
+                              ),
+                              transitionsBuilder:
+                                  (_, animation, secondaryAnimation, child) {
+                                const begin = Offset(0, 1);
+                                const end = Offset.zero;
+                                const curve = Curves.ease;
+
+                                final tween = Tween(
+                                  begin: begin,
+                                  end: end,
+                                ).chain(CurveTween(curve: curve));
+
+                                return SlideTransition(
+                                  position: animation.drive(tween),
+                                  child: child,
+                                );
+                              },
+                            ),
                           );
-                        }
-                      },
-                    );
+
+                          if (result == true) {
+                            // Reload programs to refresh stats (last session, average time)
+                            _fetchPrograms();
+                            widget.onNavigateToDashboard?.call(
+                              programId: program.id,
+                              trainingId: training.id,
+                            );
+                          }
+                        },
+                      );
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ),
-        if (_isRefreshing)
-          Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              ignoring: true,
-              child: SizedBox(
-                height: 25,
-                width: 25,
-                child: const _RotatingLoader(),
               ),
             ),
           ),
