@@ -343,70 +343,79 @@ class DashboardPageState extends State<DashboardPage> {
           return const GliftLoader();
         }
 
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-          children: [
-            if (_trainings.isNotEmpty)
-              Row(
-                children: [
-                  _buildArrowButton(
-                    icon: Icons.chevron_left,
-                    onTap: _selectedTrainingIndex > 0
-                        ? () => _onTrainingChanged(-1)
-                        : null,
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Text(
-                      _trainings[_selectedTrainingIndex]['name'],
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+        return RefreshIndicator(
+          onRefresh: () => refresh(
+            programId: _selectedProgramId,
+            trainingId: _trainings.isNotEmpty
+                ? _trainings[_selectedTrainingIndex]['id'] as String?
+                : null,
+          ),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            children: [
+              if (_trainings.isNotEmpty)
+                Row(
+                  children: [
+                    _buildArrowButton(
+                      icon: Icons.chevron_left,
+                      onTap: _selectedTrainingIndex > 0
+                          ? () => _onTrainingChanged(-1)
+                          : null,
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Text(
+                        _trainings[_selectedTrainingIndex]['name'],
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 20),
-                  _buildArrowButton(
-                    icon: Icons.chevron_right,
-                    onTap: _selectedTrainingIndex < _trainings.length - 1
-                        ? () => _onTrainingChanged(1)
-                        : null,
-                  ),
-                ],
-              ),
-            if (_trainings.isNotEmpty) const SizedBox(height: 20),
-            if (_exercises.isEmpty)
-              Center(
-                child: Text(
-                  'Aucun exercice trouvé',
-                  style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
-                    fontSize: 16,
-                  ),
-                ),
-              )
-            else
-              ..._exercises.asMap().entries.map((entry) {
-                final exercise = entry.value;
-                final isLast = entry.key == _exercises.length - 1;
-
-                return Column(
-                  children: [
-                    _ExerciseChartCard(
-                      key: ValueKey(exercise.id),
-                      exercise: exercise,
-                      repository: _repository,
-                      userId: widget.supabase.auth.currentUser!.id,
+                    const SizedBox(width: 20),
+                    _buildArrowButton(
+                      icon: Icons.chevron_right,
+                      onTap: _selectedTrainingIndex < _trainings.length - 1
+                          ? () => _onTrainingChanged(1)
+                          : null,
                     ),
-                    if (!isLast) const SizedBox(height: 20),
                   ],
-                );
-              }),
-          ],
+                ),
+              if (_trainings.isNotEmpty) const SizedBox(height: 20),
+              if (_exercises.isEmpty)
+                Center(
+                  child: Text(
+                    'Aucun exercice trouvé',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF3A416F),
+                      fontSize: 16,
+                    ),
+                  ),
+                )
+              else
+                ..._exercises.asMap().entries.map((entry) {
+                  final exercise = entry.value;
+                  final isLast = entry.key == _exercises.length - 1;
+
+                  return Column(
+                    children: [
+                      _ExerciseChartCard(
+                        key: ValueKey(exercise.id),
+                        exercise: exercise,
+                        repository: _repository,
+                        userId: widget.supabase.auth.currentUser!.id,
+                      ),
+                      if (!isLast) const SizedBox(height: 20),
+                    ],
+                  );
+                }),
+            ],
+          ),
         );
       },
     );
