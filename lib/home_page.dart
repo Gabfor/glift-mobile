@@ -12,6 +12,7 @@ import 'theme/glift_theme.dart';
 import 'training_details_page.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/glift_pull_to_refresh.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -328,16 +329,16 @@ class HomePageState extends State<HomePage> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _handleRefresh,
-      color: GliftTheme.accent,
-      child: PageView.builder(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        itemCount: _programs!.length,
-        itemBuilder: (context, index) {
-          final program = _programs![index];
-          return ListView.separated(
+    return PageView.builder(
+      controller: _pageController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      onPageChanged: _onPageChanged,
+      itemCount: _programs!.length,
+      itemBuilder: (context, index) {
+        final program = _programs![index];
+        return GliftPullToRefresh(
+          onRefresh: _handleRefresh,
+          child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
             itemCount: program.trainings.length + 1,
             separatorBuilder: (context, separatorIndex) =>
@@ -395,9 +396,9 @@ class HomePageState extends State<HomePage> {
                 },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

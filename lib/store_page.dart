@@ -11,6 +11,7 @@ import 'repositories/store_repository.dart';
 import 'models/store_program.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/glift_sort_dropdown.dart';
 
@@ -306,126 +307,136 @@ class _StorePageState extends State<StorePage> {
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
       child: GliftPageLayout(
-        scrollable: isScrollable,
+        scrollable: false,
         title: 'Glift Store',
         subtitle: 'Trouver votre prochain programme',
-        padding: const EdgeInsets.only(top: 20, bottom: 30),
-        child: _isLoading
-            ? const GliftLoader()
-            : _programs.isEmpty
-                ? Center(
-                    child: Text(
-                      'Aucun programme disponible',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFFC2BFC6),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_availableGoals.length > 1) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Text(
-                                  'Trier par',
-                                  style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF3A416F),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Row(
+        padding: EdgeInsets.zero,
+        child: GliftPullToRefresh(
+          onRefresh: () async {
+            await _loadPrograms();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(top: 20, bottom: 30),
+            child: _isLoading
+                ? const GliftLoader()
+                : _programs.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Aucun programme disponible',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFFC2BFC6),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_availableGoals.length > 1) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: GliftSortDropdown(
-                                      options: _sortOptions,
-                                      selectedValue: _selectedSort,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedSort = value;
-                                          FilterService().storeSort = value;
-                                        });
-                                      },
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text(
+                                      'Trier par',
+                                      style: GoogleFonts.quicksand(
+                                        color: const Color(0xFF3A416F),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  GestureDetector(
-                                    onTap: () {
-                                      _showFilterModal();
-                                    },
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: GliftSortDropdown(
+                                          options: _sortOptions,
+                                          selectedValue: _selectedSort,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _selectedSort = value;
+                                              FilterService().storeSort = value;
+                                            });
+                                          },
                                         ),
                                       ),
-                                      padding: const EdgeInsets.all(10),
-                                      child: SvgPicture.asset(
-                                        _hasActiveFilters
-                                            ? 'assets/icons/filtre_green.svg'
-                                            : 'assets/icons/filtre_red.svg',
-                                        height: 16,
-                                        width: 16,
+                                      const SizedBox(width: 10),
+                                      GestureDetector(
+                                        onTap: () {
+                                          _showFilterModal();
+                                        },
+                                        child: Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(0xFFD7D4DC),
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(10),
+                                          child: SvgPicture.asset(
+                                            _hasActiveFilters
+                                                ? 'assets/icons/filtre_green.svg'
+                                                : 'assets/icons/filtre_red.svg',
+                                            height: 16,
+                                            width: 16,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                      if (_filteredPrograms.isEmpty)
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              'Aucun programme disponible',
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFFC2BFC6),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                          if (_filteredPrograms.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 40),
+                                child: Text(
+                                  'Aucun programme disponible',
+                                  style: GoogleFonts.quicksand(
+                                    color: const Color(0xFFC2BFC6),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                padding: const EdgeInsets.only(bottom: 50),
+                                itemCount: _filteredPrograms.length,
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 20),
+                                itemBuilder: (context, index) {
+                                  final isAuthenticated =
+                                      widget.supabase.auth.currentUser != null;
+                                  return _StoreProgramCard(
+                                    program: _filteredPrograms[index],
+                                    isAuthenticated: isAuthenticated,
+                                    repository: _repository,
+                                    onNavigateToHome: widget.onNavigateToHome,
+                                  );
+                                },
                               ),
                             ),
-                          ),
-                        )
-                      else
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: const EdgeInsets.only(bottom: 50),
-                            itemCount: _filteredPrograms.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 20),
-                            itemBuilder: (context, index) {
-                              final isAuthenticated =
-                                  widget.supabase.auth.currentUser != null;
-                              return _StoreProgramCard(
-                                program: _filteredPrograms[index],
-                                isAuthenticated: isAuthenticated,
-                                repository: _repository,
-                                onNavigateToHome: widget.onNavigateToHome,
-                              );
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
+                        ],
+                      ),
+          ),
+        ),
       ),
     );
   }
