@@ -11,6 +11,7 @@ import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/note_modal.dart';
 import 'widgets/superset_group_card.dart';
 import 'widgets/numeric_keypad.dart';
@@ -347,12 +348,15 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         }
         return false;
       },
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(
-            20, 20, 20, _currentInputHandler != null ? 360 : 100),
-        itemCount: items.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 20),
-        itemBuilder: (context, index) => items[index],
+      child: GliftPullToRefresh(
+        onRefresh: _fetchDetails,
+        child: ListView.separated(
+          padding: EdgeInsets.fromLTRB(
+              20, 20, 20, _currentInputHandler != null ? 360 : 100),
+          itemCount: items.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 20),
+          itemBuilder: (context, index) => items[index],
+        ),
       ),
     );
   }
@@ -557,7 +561,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
   @override
   bool get wantKeepAlive => true;
 
-  late final List<_EffortState> _effortStates;
+  late List<_EffortState> _effortStates;
   late List<String> _repetitions;
   late List<String> _weights;
   
@@ -569,6 +573,18 @@ class _ExerciseCardState extends State<_ExerciseCard>
   @override
   void initState() {
     super.initState();
+    _initializeState();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ExerciseCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.row != oldWidget.row) {
+      _initializeState();
+    }
+  }
+
+  void _initializeState() {
     _effortStates = List<_EffortState>.generate(
       widget.row.series,
       (index) => index < widget.row.efforts.length
