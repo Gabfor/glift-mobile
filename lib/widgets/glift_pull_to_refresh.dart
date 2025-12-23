@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class GliftPullToRefresh extends StatefulWidget {
@@ -42,6 +43,11 @@ class _GliftPullToRefreshState extends State<GliftPullToRefresh>
     return CustomRefreshIndicator(
       onRefresh: widget.onRefresh,
       offsetToArmed: 100.0, // Distance to trigger refresh
+      onStateChanged: (change) {
+        if (change.didChange(to: IndicatorState.armed)) {
+          HapticFeedback.lightImpact();
+        }
+      },
       builder: (context, child, controller) {
         return Stack(
           clipBehavior: Clip.none, // Allow overflow if needed, but we position carefully
