@@ -16,6 +16,7 @@ class ShopOffer {
   final bool premium;
   final String? modal;
   final String? condition;
+  final String? gender;
 
   ShopOffer({
     required this.id,
@@ -35,6 +36,7 @@ class ShopOffer {
     required this.premium,
     this.modal,
     this.condition,
+    this.gender,
   });
 
   factory ShopOffer.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class ShopOffer {
       premium: json['premium'] as bool? ?? false,
       modal: json['modal'] as String?,
       condition: json['condition'] as String?,
+      gender: json['gender'] as String?,
     );
   }
 }

@@ -67,7 +67,6 @@ class _StorePageState extends State<StorePage> {
       (key, value) => MapEntry(key, Set<String>.from(value)),
     );
     _selectedSort = filterService.storeSort;
-    _removeAllLevelsFilter();
     filterService.storeFilters = _selectedFiltersMap;
   }
 
@@ -144,10 +143,14 @@ class _StorePageState extends State<StorePage> {
 
         // Niveau
         if (matches && selectedFilters.containsKey('Niveau')) {
-          if (selectedFilters['Niveau']!.isEmpty) {
+          final selected = selectedFilters['Niveau']!;
+          if (selected.isEmpty) {
             matches = false;
-          } else if (!selectedFilters['Niveau']!.contains(program.level)) {
-            matches = false;
+          } else {
+             // 'Tous niveaux' is wildcard: matches if any level is selected
+             if (program.level != 'Tous niveaux' && !selected.contains(program.level)) {
+                matches = false;
+             }
           }
         }
 
@@ -166,20 +169,34 @@ class _StorePageState extends State<StorePage> {
 
         // Lieu
         if (matches && selectedFilters.containsKey('Lieu')) {
-          if (selectedFilters['Lieu']!.isEmpty) {
+          final selected = selectedFilters['Lieu']!;
+          if (selected.isEmpty) {
             matches = false;
-          } else if (program.location == null ||
-              !selectedFilters['Lieu']!.contains(program.location)) {
-            matches = false;
+          } else if (program.location != null && program.location!.isNotEmpty) {
+             final pLocs = program.location!.split(',').map((e) => e.trim().toLowerCase());
+             final hasMatch = selected.any((s) => pLocs.contains(s.toLowerCase()));
+             if (!hasMatch) matches = false;
           }
+          // If location is null/empty, we assume it applies everywhere/matches (Wildcard)
         }
 
         // Sexe
         if (matches && selectedFilters.containsKey('Sexe')) {
-          if (selectedFilters['Sexe']!.isEmpty) {
+          final selected = selectedFilters['Sexe']!;
+          if (selected.isEmpty) {
             matches = false;
-          } else if (!selectedFilters['Sexe']!.contains(program.gender)) {
-            matches = false;
+          } else {
+            final gender = program.gender.toLowerCase();
+            final isWildcard = gender.isEmpty || // Empty is wildcard
+                gender == 'tous' ||
+                gender == 'mixte' ||
+                gender == 'unisexe';
+
+            if (!isWildcard) {
+              if (!selected.any((s) => s.toLowerCase() == gender)) {
+                matches = false;
+              }
+            }
           }
         }
 
@@ -213,15 +230,7 @@ class _StorePageState extends State<StorePage> {
     return filtered;
   }
 
-  void _removeAllLevelsFilter() {
-    final levelFilters = _selectedFiltersMap['Niveau'];
-    if (levelFilters != null && levelFilters.remove('Tous niveaux')) {
-      _selectedFiltersMap = {
-        ..._selectedFiltersMap,
-        'Niveau': levelFilters,
-      };
-    }
-  }
+
 
   void _showFilterModal() {
     final goals = <String>{};
@@ -246,7 +255,10 @@ class _StorePageState extends State<StorePage> {
         genders.add(program.gender);
       }
       if (program.location != null && program.location!.isNotEmpty) {
-        locations.add(program.location!);
+        final locs = program.location!.split(',');
+        for (var loc in locs) {
+          locations.add(loc.trim());
+        }
       }
     }
 

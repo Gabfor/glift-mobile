@@ -127,47 +127,68 @@ class _ShopPageState extends State<ShopPage> {
       filtered = filtered.where((offer) {
         bool matches = true;
 
-        // General logic for all filters:
-        // If the filter key is present in selectedFilters, it implies the filter is ACTIVE.
-        // If the set of selected values for that filter is EMPTY, it means "Match MUST be in {}", which is impossible.
-        // So, if key exists && value is empty => match = false.
+        // Helper to check if we should filter by a section
+        bool shouldFilter(String section) {
+          if (!selectedFilters.containsKey(section)) return false;
+          final selected = selectedFilters[section]!;
+          if (selected.isEmpty) return true; // Selected nothing -> matches nothing
+          
+          final available = _filterOptionsBySection[section] ?? {};
+          // If all available options are selected, don't filter (show items even if they don't have the tag)
+          if (selected.length == available.length && available.isNotEmpty) return false;
+          
+          return true;
+        }
 
         // Sexe
-        if (selectedFilters.containsKey('Sexe')) {
-          if (selectedFilters['Sexe']!.isEmpty) {
+        if (shouldFilter('Sexe')) {
+          final selected = selectedFilters['Sexe']!;
+          if (selected.isEmpty) {
             matches = false;
-          } else if (!offer.type
-              .any((type) => selectedFilters['Sexe']!.contains(type))) {
-            matches = false;
+          } else {
+            final gender = offer.gender?.toLowerCase();
+            
+            // Wildcard check
+            final isWildcard = gender != null && 
+                (gender == 'tous' || gender == 'mixte' || gender == 'unisexe');
+
+            if (isWildcard) {
+               matches = true;
+            } else {
+               // Match against selection
+               if (gender == null || !selected.any((s) => s.toLowerCase() == gender)) {
+                 matches = false;
+               }
+            }
           }
         }
 
         // Catégorie
-        if (matches && selectedFilters.containsKey('Catégorie')) {
-          if (selectedFilters['Catégorie']!.isEmpty) {
+        if (matches && shouldFilter('Catégorie')) {
+          final selected = selectedFilters['Catégorie']!;
+           if (selected.isEmpty) {
             matches = false;
-          } else if (!offer.type
-              .any((type) => selectedFilters['Catégorie']!.contains(type))) {
+          } else if (!offer.type.any((type) => selected.contains(type))) {
             matches = false;
           }
         }
 
         // Sport
-        if (matches && selectedFilters.containsKey('Sport')) {
-          if (selectedFilters['Sport']!.isEmpty) {
+        if (matches && shouldFilter('Sport')) {
+          final selected = selectedFilters['Sport']!;
+           if (selected.isEmpty) {
             matches = false;
-          } else if (!offer.type
-              .any((type) => selectedFilters['Sport']!.contains(type))) {
+          } else if (!offer.type.any((type) => selected.contains(type))) {
             matches = false;
           }
         }
 
         // Boutique
-        if (matches && selectedFilters.containsKey('Boutique')) {
-          if (selectedFilters['Boutique']!.isEmpty) {
+        if (matches && shouldFilter('Boutique')) {
+          final selected = selectedFilters['Boutique']!;
+           if (selected.isEmpty) {
             matches = false;
-          } else if (offer.shop == null ||
-              !selectedFilters['Boutique']!.contains(offer.shop)) {
+          } else if (offer.shop == null || !selected.contains(offer.shop)) {
             matches = false;
           }
         }
