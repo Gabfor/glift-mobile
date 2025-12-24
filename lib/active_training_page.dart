@@ -368,9 +368,25 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     int index,
     int duration, {
     InlineTimerData? inlineData,
+    bool autoTrigger = false,
   }) async {
-    if (_inlineTimerData != null && inlineData == null) {
-      return;
+    if (_inlineTimerData != null) {
+      if (autoTrigger) {
+         setState(() {
+          _inlineTimerData = InlineTimerData(
+            remainingSeconds: duration,
+            isRunning: true,
+            durationInSeconds: duration,
+            enableSound: _inlineTimerData!.enableSound,
+            enableVibration: _inlineTimerData!.enableVibration,
+          );
+          _activeTimerRowIndex = index;
+        });
+        return;
+      }
+      if (inlineData == null) {
+        return;
+      }
     }
     _activeTimerRowIndex = index;
 
@@ -854,6 +870,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
                 onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
                 onOpenTimer: (idx, duration) => _openTimerForRow(idx, duration),
+                onAutoTriggerTimer: (idx, duration) => 
+                    _openTimerForRow(idx, duration, autoTrigger: true),
                 showDecoration: false,
                 showActions: false,
                 showTimer: group.indexOf(r) == 0,
@@ -887,6 +905,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
             onMaterialUpdate: (material) => _handleMaterialUpdate(rowIndex, material),
             onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
+            onAutoTriggerTimer: (rowIndex, duration) => 
+                _openTimerForRow(rowIndex, duration, autoTrigger: true),
             showDecoration: true,
             showActions: true,
             showTimer: true,
@@ -1001,6 +1021,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
     required this.onOpenTimer,
+    required this.onAutoTriggerTimer,
     this.showDecoration = true,
     this.showActions = true,
     this.showTimer = true,
@@ -1028,6 +1049,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
   final Future<void> Function(int index, int duration) onOpenTimer;
+  final Future<void> Function(int index, int duration) onAutoTriggerTimer;
   final bool showDecoration;
   final bool showActions;
   final bool showTimer;
@@ -1077,6 +1099,22 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
 
     if (_isRunning) {
       _startTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_InlineRestTimer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.data != oldWidget.data) {
+      _timer?.cancel();
+      _timer = null;
+      setState(() {
+        _remainingSeconds = widget.data.remainingSeconds;
+        _isRunning = widget.data.isRunning;
+      });
+      if (_isRunning) {
+        _startTimer();
+      }
     }
   }
 
@@ -1473,6 +1511,17 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     });
 
     widget.onSetCompletionChanged(List<bool>.from(_completedSets));
+
+    // Auto-trigger timer if completing a set (not unchecking) and not the last set
+    final isNowCompleted = _completedSets[index];
+    final isLastSet = index == widget.row.series - 1;
+    
+    if (isNowCompleted && !isLastSet) {
+      final duration = int.tryParse(widget.row.rest) ?? 0;
+      if (duration > 0) {
+        widget.onAutoTriggerTimer(widget.index, duration);
+      }
+    }
   }
 
   Future<void> _launchVideoUrl() async {
