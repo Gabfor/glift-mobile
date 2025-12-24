@@ -19,6 +19,7 @@ class SettingsService {
   static const String _kDisplayType = 'timer_display_type';
   static const String _kMaterial = 'exercise_material_enabled';
   static const String _kAutoTrigger = 'timer_auto_trigger_enabled';
+  static const String _kWeightUnit = 'weight_unit';
 
   // Display Type
   Future<void> saveDisplayType(String type) async {
@@ -51,6 +52,17 @@ class SettingsService {
   bool getAutoTriggerEnabled() {
     if (!_initialized) return true;
     return _prefs.getBool(_kAutoTrigger) ?? true;
+  }
+
+  // Weight Unit
+  Future<void> saveWeightUnit(String unit) async {
+    await _initIfNeeded();
+    await _prefs.setString(_kWeightUnit, unit);
+  }
+
+  String getWeightUnit() {
+    if (!_initialized) return 'metric';
+    return _prefs.getString(_kWeightUnit) ?? 'metric';
   }
 
   Future<void> _initIfNeeded() async {
