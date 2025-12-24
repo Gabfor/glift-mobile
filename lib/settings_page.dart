@@ -8,6 +8,7 @@ import 'login_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'services/settings_service.dart';
+import 'weight_unit_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -27,7 +28,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   // Local state for toggles (mocked for now as per requirements)
-  final bool _weightMetric = true;
+  String _weightUnit = 'metric';
   bool _effort = true;
   bool _links = true;
   bool _notes = true;
@@ -55,6 +56,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _material = settings.getMaterialEnabled();
         _autoTrigger = settings.getAutoTriggerEnabled();
         _displayType = settings.getDisplayType();
+        _weightUnit = settings.getWeightUnit();
       });
     }
   }
@@ -114,7 +116,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Métrique (kg)',
+                      _weightUnit == 'imperial' ? 'Impérial (lb)' : 'Métrique (kg)',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -125,7 +127,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
                   ],
                 ),
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => WeightUnitSettingsPage(
+                        initialValue: _weightUnit,
+                        onChanged: (value) {
+                          setState(() => _weightUnit = value);
+                          SettingsService.instance.saveWeightUnit(value);
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
