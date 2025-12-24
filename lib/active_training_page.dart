@@ -1366,7 +1366,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
 }
 
 class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with AutomaticKeepAliveClientMixin {
-  late final List<_EffortState> _effortStates;
+  List<_EffortState> _effortStates = [];
   late List<String> _repetitions;
   late List<String> _weights;
   late List<bool> _completedSets;
