@@ -872,6 +872,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onOpenTimer: (idx, duration) => _openTimerForRow(idx, duration),
                 onAutoTriggerTimer: (idx, duration) => 
                     _openTimerForRow(idx, duration, autoTrigger: true),
+                onCloseTimer: _closeInlineTimer,
                 showDecoration: false,
                 showActions: false,
                 showTimer: group.indexOf(r) == 0,
@@ -907,6 +908,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             onOpenTimer: (rowIndex, duration) => _openTimerForRow(rowIndex, duration),
             onAutoTriggerTimer: (rowIndex, duration) => 
                 _openTimerForRow(rowIndex, duration, autoTrigger: true),
+            onCloseTimer: _closeInlineTimer,
             showDecoration: true,
             showActions: true,
             showTimer: true,
@@ -1022,6 +1024,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onMaterialUpdate,
     required this.onOpenTimer,
     required this.onAutoTriggerTimer,
+    required this.onCloseTimer,
     this.showDecoration = true,
     this.showActions = true,
     this.showTimer = true,
@@ -1050,6 +1053,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final Future<void> Function(String) onMaterialUpdate;
   final Future<void> Function(int index, int duration) onOpenTimer;
   final Future<void> Function(int index, int duration) onAutoTriggerTimer;
+  final VoidCallback onCloseTimer;
   final bool showDecoration;
   final bool showActions;
   final bool showTimer;
@@ -1506,6 +1510,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   }
 
   void _toggleSetCompletion(int index) {
+    HapticFeedback.lightImpact();
     setState(() {
       _completedSets[index] = !_completedSets[index];
     });
@@ -1521,6 +1526,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       if (duration > 0) {
         widget.onAutoTriggerTimer(widget.index, duration);
       }
+    } else if (isNowCompleted && isLastSet) {
+      widget.onCloseTimer();
     }
   }
 
