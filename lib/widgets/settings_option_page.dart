@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/glift_theme.dart';
@@ -58,7 +59,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                 widget.headerTitle,
                 style: GoogleFonts.quicksand(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -67,7 +68,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                 widget.headerSubtitle,
                 style: GoogleFonts.quicksand(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -87,16 +88,27 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
               border: Border.all(color: const Color(0xFFD7D4DC)),
             ),
             child: Column(
-              children: widget.options.map((option) {
-                return _SettingsOptionTile(
-                  label: option.label,
-                  isSelected: option.value == _selectedValue,
-                  onTap: () {
-                    setState(() => _selectedValue = option.value);
-                    widget.onChanged(option.value);
-                  },
-                );
-              }).toList(),
+              children: [
+                for (int i = 0; i < widget.options.length; i++) ...[
+                  if (i > 0)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFD7D4DC),
+                      indent: 15,
+                      endIndent: 15,
+                    ),
+                  _SettingsOptionTile(
+                    label: widget.options[i].label,
+                    isSelected: widget.options[i].value == _selectedValue,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setState(() => _selectedValue = widget.options[i].value);
+                      widget.onChanged(widget.options[i].value);
+                    },
+                  ),
+                ],
+              ],
             ),
           ),
         ],
@@ -156,7 +168,7 @@ class _SettingsOptionTile extends StatelessWidget {
               label,
               style: GoogleFonts.quicksand(
                 color: GliftTheme.body,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

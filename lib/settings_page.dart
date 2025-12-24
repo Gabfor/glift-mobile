@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
 import 'widgets/glift_page_layout.dart';
+import 'widgets/glift_pull_to_refresh.dart';
 import 'login_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
@@ -51,6 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadSettings() async {
     final settings = SettingsService.instance;
     await settings.init();
+    settings.initSupabase(widget.supabase);
     if (mounted) {
       setState(() {
         _material = settings.getMaterialEnabled();
@@ -102,9 +104,22 @@ class _SettingsPageState extends State<SettingsPage> {
       subtitle: 'Personnaliser l’application',
       scrollable: false,
       padding: EdgeInsets.zero,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        children: [
+      child: GliftPullToRefresh(
+        onRefresh: () async {
+          await SettingsService.instance.syncFromSupabase();
+          if (mounted) {
+            setState(() {
+              final settings = SettingsService.instance;
+              _material = settings.getMaterialEnabled();
+              _autoTrigger = settings.getAutoTriggerEnabled();
+              _displayType = settings.getDisplayType();
+              _weightUnit = settings.getWeightUnit();
+            });
+          }
+        },
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+          children: [
           // App Settings
           const _SettingsSectionHeader(title: 'RÉGLAGES DE L’APPLICATION'),
           const SizedBox(height: 10),
@@ -137,6 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           SettingsService.instance.saveWeightUnit(value);
                         },
                       ),
+                      fullscreenDialog: true,
                     ),
                   );
                 },
@@ -378,6 +394,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
+    ),
     );
   }
 }

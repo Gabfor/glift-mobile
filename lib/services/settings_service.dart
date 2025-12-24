@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase/supabase.dart';
 
 class SettingsService {
   static final SettingsService _instance = SettingsService._internal();
@@ -7,12 +8,43 @@ class SettingsService {
   SettingsService._internal();
 
   late SharedPreferences _prefs;
+  SupabaseClient? _supabase;
   bool _initialized = false;
 
   Future<void> init() async {
     if (_initialized) return;
     _prefs = await SharedPreferences.getInstance();
     _initialized = true;
+  }
+
+  void initSupabase(SupabaseClient client) {
+    _supabase = client;
+    syncFromSupabase();
+  }
+
+  Future<void> syncFromSupabase() async {
+    final user = _supabase?.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final response = await _supabase!
+          .from('preferences')
+          .select('weight_unit')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (response != null && response['weight_unit'] != null) {
+        final unit = response['weight_unit'] as String;
+        final localUnit = unit == 'lb' ? 'imperial' : 'metric';
+        if (localUnit != getWeightUnit()) {
+          await _prefs.setString(_kWeightUnit, localUnit);
+        }
+      }
+    } catch (e) {
+      // Create preference row if it doesn't exist? Or just ignore.
+      // Usually preferences are created on signup.
+      print('Error syncing settings: $e');
+    }
   }
 
   // Keys
@@ -58,6 +90,19 @@ class SettingsService {
   Future<void> saveWeightUnit(String unit) async {
     await _initIfNeeded();
     await _prefs.setString(_kWeightUnit, unit);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      final dbUnit = unit == 'imperial' ? 'lb' : 'kg';
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'weight_unit': dbUnit,
+        });
+      } catch (e) {
+        print('Error saving weight unit to Supabase: $e');
+      }
+    }
   }
 
   String getWeightUnit() {
