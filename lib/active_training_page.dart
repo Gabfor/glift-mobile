@@ -18,6 +18,7 @@ import '../timer_page.dart';
 import 'widgets/note_modal.dart';
 import 'widgets/superset_group_card.dart';
 import '../services/notification_service.dart';
+import '../services/settings_service.dart';
 import '../services/vibration_service.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
@@ -388,6 +389,23 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         return;
       }
     }
+
+    // Check settings for default display type
+    final displayType = SettingsService.instance.getDisplayType();
+    
+    // If preference is 'Miniature', open inline directly (unless overridden somehow, but here we assume default action)
+    if (displayType == 'Miniature') {
+      _activateInlineTimer(InlineTimerData(
+        remainingSeconds: duration,
+        isRunning: true, // Auto-start by default on trigger/tap? Yes.
+        durationInSeconds: duration,
+        enableSound: SettingsService.instance.getAutoTriggerEnabled(), // Re-using auto-trigger bool for sound enabled default? No, usually separate. But for now...
+        enableVibration: true,
+      ));
+      _activeTimerRowIndex = index;
+      return;
+    }
+
     _activeTimerRowIndex = index;
 
     final result = await Navigator.of(context).push<InlineTimerData>(

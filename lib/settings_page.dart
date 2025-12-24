@@ -7,6 +7,7 @@ import 'widgets/glift_page_layout.dart';
 import 'login_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
+import 'services/settings_service.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -30,12 +31,33 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _effort = true;
   bool _links = true;
   bool _notes = true;
+  bool _material = true;
   bool _rest = true;
   bool _tracking = true;
   bool _superset = true;
+  bool _autoTrigger = true;
   bool _vibrations = true;
   bool _sound = true;
+  String _displayType = 'Miniature';
   bool _isLoggingOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final settings = SettingsService.instance;
+    await settings.init();
+    if (mounted) {
+      setState(() {
+        _material = settings.getMaterialEnabled();
+        _autoTrigger = settings.getAutoTriggerEnabled();
+        _displayType = settings.getDisplayType();
+      });
+    }
+  }
 
   Future<void> _signOut() async {
     if (_isLoggingOut) return;
@@ -130,6 +152,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) => setState(() => _notes = v),
               ),
               _SettingsSwitchTile(
+                title: 'Activer Matériel',
+                value: _material,
+                onChanged: (v) {
+                  setState(() => _material = v);
+                  SettingsService.instance.saveMaterialEnabled(v);
+                },
+              ),
+              _SettingsSwitchTile(
                 title: 'Activer Repos',
                 value: _rest,
                 onChanged: (v) => setState(() => _rest = v),
@@ -154,6 +184,14 @@ class _SettingsPageState extends State<SettingsPage> {
           _SettingsContainer(
             children: [
               _SettingsSwitchTile(
+                title: 'Déclenchement automatique',
+                value: _autoTrigger,
+                onChanged: (v) {
+                  setState(() => _autoTrigger = v);
+                  SettingsService.instance.saveAutoTriggerEnabled(v);
+                },
+              ),
+              _SettingsSwitchTile(
                 title: 'Activer les vibrations',
                 value: _vibrations,
                 onChanged: (v) => setState(() => _vibrations = v),
@@ -162,6 +200,29 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: 'Activer la sonnerie',
                 value: _sound,
                 onChanged: (v) => setState(() => _sound = v),
+              ),
+              _SettingsTile(
+                title: 'Type d\'affichage',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _displayType,
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {
+                  final newType = _displayType == 'Miniature' ? 'Plein écran' : 'Miniature';
+                  setState(() => _displayType = newType);
+                  SettingsService.instance.saveDisplayType(newType);
+                },
               ),
               _SettingsTile(
                 title: 'Effet sonore',
