@@ -54,7 +54,7 @@ class _SoundSettingsPageState extends State<SoundSettingsPage> {
   Widget build(BuildContext context) {
     return SettingsOptionPage(
       headerTitle: 'Réglages',
-      headerSubtitle: 'Effet sonore',
+      headerSubtitle: 'Sonnerie',
       options: const [
         SettingsOptionItem(value: 'none', label: 'Aucun'),
         SettingsOptionItem(value: 'bip', label: 'Bip'),

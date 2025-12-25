@@ -53,6 +53,8 @@ class SettingsService {
   static const String _kAutoTrigger = 'timer_auto_trigger_enabled';
   static const String _kWeightUnit = 'weight_unit';
   static const String _kSoundEffect = 'timer_sound_effect';
+  static const String _kSoundEnabled = 'timer_sound_enabled';
+  static const String _kVibrationEnabled = 'timer_vibration_enabled';
 
   // Display Type
   Future<void> saveDisplayType(String type) async {
@@ -120,6 +122,28 @@ class SettingsService {
   String getSoundEffect() {
     if (!_initialized) return 'radar';
     return _prefs.getString(_kSoundEffect) ?? 'radar';
+  }
+
+  // Sound Enabled
+  Future<void> saveSoundEnabled(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kSoundEnabled, enabled);
+  }
+
+  bool getSoundEnabled() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kSoundEnabled) ?? true;
+  }
+
+  // Vibration Enabled
+  Future<void> saveVibrationEnabled(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kVibrationEnabled, enabled);
+  }
+
+  bool getVibrationEnabled() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kVibrationEnabled) ?? true;
   }
 
   Future<void> _initIfNeeded() async {

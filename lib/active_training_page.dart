@@ -400,7 +400,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         isRunning: true, // Auto-start by default on trigger/tap? Yes.
         durationInSeconds: duration,
         enableSound: SettingsService.instance.getAutoTriggerEnabled(), // Re-using auto-trigger bool for sound enabled default? No, usually separate. But for now...
-        enableVibration: true,
+        enableVibration: SettingsService.instance.getVibrationEnabled(),
       ));
       _activeTimerRowIndex = index;
       return;
@@ -414,7 +414,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           durationInSeconds: inlineData?.durationInSeconds ?? duration,
           initialRemainingSeconds: inlineData?.remainingSeconds,
           enableSound: inlineData?.enableSound ?? true,
-          enableVibration: inlineData?.enableVibration ?? true,
+          enableVibration: inlineData?.enableVibration ?? SettingsService.instance.getVibrationEnabled(),
           autoStart: inlineData?.isRunning ?? true,
           isActiveTraining: true,
           onSave: (value) => _handleRestUpdate(index, value),

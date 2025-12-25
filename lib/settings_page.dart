@@ -62,7 +62,10 @@ class _SettingsPageState extends State<SettingsPage> {
         _autoTrigger = settings.getAutoTriggerEnabled();
         _displayType = settings.getDisplayType();
         _weightUnit = settings.getWeightUnit();
+        _weightUnit = settings.getWeightUnit();
         _soundEffect = settings.getSoundEffect();
+        _sound = settings.getSoundEnabled();
+        _vibrations = settings.getVibrationEnabled();
       });
     }
   }
@@ -118,7 +121,10 @@ class _SettingsPageState extends State<SettingsPage> {
               _autoTrigger = settings.getAutoTriggerEnabled();
               _displayType = settings.getDisplayType();
               _weightUnit = settings.getWeightUnit();
+              _weightUnit = settings.getWeightUnit();
               _soundEffect = settings.getSoundEffect();
+              _sound = settings.getSoundEnabled();
+              _vibrations = settings.getVibrationEnabled();
             });
           }
         },
@@ -229,12 +235,50 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsSwitchTile(
                 title: 'Activer les vibrations',
                 value: _vibrations,
-                onChanged: (v) => setState(() => _vibrations = v),
+                onChanged: (v) {
+                  setState(() => _vibrations = v);
+                  SettingsService.instance.saveVibrationEnabled(v);
+                },
               ),
               _SettingsSwitchTile(
                 title: 'Activer la sonnerie',
                 value: _sound,
-                onChanged: (v) => setState(() => _sound = v),
+                onChanged: (v) {
+                  setState(() => _sound = v);
+                  SettingsService.instance.saveSoundEnabled(v);
+                },
+              ),
+              _SettingsTile(
+                title: 'Sonnerie',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _getSoundEffectLabel(_soundEffect),
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SoundSettingsPage(
+                        initialValue: _soundEffect,
+                        onChanged: (value) {
+                          setState(() => _soundEffect = value);
+                          SettingsService.instance.saveSoundEffect(value);
+                        },
+                      ),
+                      fullscreenDialog: true,
+                    ),
+                  );
+                },
               ),
               _SettingsTile(
                 title: 'Type d\'affichage',
@@ -261,38 +305,6 @@ class _SettingsPageState extends State<SettingsPage> {
                         onChanged: (value) {
                           setState(() => _displayType = value);
                           SettingsService.instance.saveDisplayType(value);
-                        },
-                      ),
-                      fullscreenDialog: true,
-                    ),
-                  );
-                },
-              ),
-              _SettingsTile(
-                title: 'Effet sonore',
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _getSoundEffectLabel(_soundEffect),
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
-                  ],
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => SoundSettingsPage(
-                        initialValue: _soundEffect,
-                        onChanged: (value) {
-                          setState(() => _soundEffect = value);
-                          SettingsService.instance.saveSoundEffect(value);
                         },
                       ),
                       fullscreenDialog: true,
@@ -542,7 +554,10 @@ class _SettingsSwitchTile extends StatelessWidget {
             child: Switch.adaptive(
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               value: value,
-              onChanged: onChanged,
+              onChanged: (v) {
+                HapticFeedback.lightImpact();
+                onChanged(v);
+              },
               activeColor: const Color(0xFFA1A5FD),
             ),
           ),

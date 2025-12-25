@@ -20,11 +20,13 @@ import 'package:supabase/supabase.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 import 'services/notification_service.dart';
+import 'services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr_FR', null);
   await NotificationService.instance.initialize();
+  await SettingsService.instance.init();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

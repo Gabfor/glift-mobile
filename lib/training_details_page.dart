@@ -18,6 +18,7 @@ import 'widgets/numeric_keypad.dart';
 import 'active_training_page.dart';
 import '../theme/glift_theme.dart';
 import '../timer_page.dart';
+import '../services/settings_service.dart';
 
 class TrainingDetailsPage extends StatefulWidget {
   const TrainingDetailsPage({
@@ -789,6 +790,8 @@ class _ExerciseCardState extends State<_ExerciseCard>
                           builder: (context) => TimerPage(
                             durationInSeconds: duration,
                             autoStart: false,
+                            enableVibration: SettingsService.instance.getVibrationEnabled(),
+                            enableSound: SettingsService.instance.getSoundEnabled(),
                             onSave: widget.onRestUpdate,
                           ),
                         ),
