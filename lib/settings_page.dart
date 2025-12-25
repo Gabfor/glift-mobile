@@ -11,6 +11,7 @@ import 'auth/biometric_auth_service.dart';
 import 'services/settings_service.dart';
 import 'weight_unit_settings_page.dart';
 import 'display_settings_page.dart';
+import 'sound_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -42,6 +43,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _vibrations = true;
   bool _sound = true;
   String _displayType = 'Miniature';
+  String _soundEffect = 'radar';
   bool _isLoggingOut = false;
 
   @override
@@ -60,6 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _autoTrigger = settings.getAutoTriggerEnabled();
         _displayType = settings.getDisplayType();
         _weightUnit = settings.getWeightUnit();
+        _soundEffect = settings.getSoundEffect();
       });
     }
   }
@@ -115,6 +118,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _autoTrigger = settings.getAutoTriggerEnabled();
               _displayType = settings.getDisplayType();
               _weightUnit = settings.getWeightUnit();
+              _soundEffect = settings.getSoundEffect();
             });
           }
         },
@@ -270,7 +274,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Radar',
+                      _getSoundEffectLabel(_soundEffect),
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -281,7 +285,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
                   ],
                 ),
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SoundSettingsPage(
+                        initialValue: _soundEffect,
+                        onChanged: (value) {
+                          setState(() => _soundEffect = value);
+                          SettingsService.instance.saveSoundEffect(value);
+                        },
+                      ),
+                      fullscreenDialog: true,
+                    ),
+                  );
+                },
               ),
               _SettingsTile(
                 title: 'Valeur par défaut',
@@ -406,6 +423,14 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     ),
     );
+  }
+  String _getSoundEffectLabel(String value) {
+    if (value == 'none') return 'Aucun';
+    if (value == 'bip') return 'Bip';
+    if (value == 'radar') return 'Radar';
+    if (value == 'gong') return 'Gong';
+    if (value == 'bell') return 'Cloche';
+    return 'Radar';
   }
 }
 

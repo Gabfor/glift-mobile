@@ -27,6 +27,7 @@ dependencies:
   vibration: ^1.8.4
   shared_preferences: ^2.5.4
   custom_refresh_indicator: ^4.0.1
+  audioplayers: ^6.5.1
 
 dev_dependencies:
   flutter_test:
@@ -68,3 +69,4 @@ flutter:
     - assets/images/onboarding_noter.svg
     - assets/images/onboarding_visualiser.svg
     - assets/icons/
+    - assets/sounds/

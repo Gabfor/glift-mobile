@@ -52,6 +52,7 @@ class SettingsService {
   static const String _kMaterial = 'exercise_material_enabled';
   static const String _kAutoTrigger = 'timer_auto_trigger_enabled';
   static const String _kWeightUnit = 'weight_unit';
+  static const String _kSoundEffect = 'timer_sound_effect';
 
   // Display Type
   Future<void> saveDisplayType(String type) async {
@@ -108,6 +109,17 @@ class SettingsService {
   String getWeightUnit() {
     if (!_initialized) return 'metric';
     return _prefs.getString(_kWeightUnit) ?? 'metric';
+  }
+
+  // Sound Effect
+  Future<void> saveSoundEffect(String effect) async {
+    await _initIfNeeded();
+    await _prefs.setString(_kSoundEffect, effect);
+  }
+
+  String getSoundEffect() {
+    if (!_initialized) return 'radar';
+    return _prefs.getString(_kSoundEffect) ?? 'radar';
   }
 
   Future<void> _initIfNeeded() async {
