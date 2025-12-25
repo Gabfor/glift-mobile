@@ -151,52 +151,56 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
         behavior: HitTestBehavior.translucent,
         onTap: _handleOutsideTap,
         child: Stack(
-          fit: StackFit.expand,
           children: [
             // Content (Centered in screen)
             Center(
-              child: Row(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 140,
-                    child: _EditableTimeValue(
-                      value: minutes,
-                      label: 'Minutes',
-                      isEditing: _isEditingMinutes,
-                      controller: _minutesController,
-                      focusNode: _minutesFocusNode,
-                      onTap: _enterMinutesEdit,
-                      maxLength: 2,
-                    ),
-                  ),
-                  Container(
-                    width: 20,
-                    height: 90,
-                    alignment: Alignment.center,
-                    child: Text(
-                      ':',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.redHatText(
-                        fontSize: 80,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF3A416F),
-                        height: 1.0,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        child: _EditableTimeValue(
+                          value: minutes,
+                          label: 'Minutes',
+                          isEditing: _isEditingMinutes,
+                          controller: _minutesController,
+                          focusNode: _minutesFocusNode,
+                          onTap: _enterMinutesEdit,
+                          maxLength: 2,
+                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 140,
-                    child: _EditableTimeValue(
-                      value: seconds,
-                      label: 'Secondes',
-                      isEditing: _isEditingSeconds,
-                      controller: _secondsController,
-                      focusNode: _secondsFocusNode,
-                      onTap: _enterSecondsEdit,
-                      maxLength: 2,
-                    ),
+                      Container(
+                        width: 20,
+                        height: 90,
+                        alignment: Alignment.center,
+                        child: Text(
+                          ':',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.redHatText(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF3A416F),
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 140,
+                        child: _EditableTimeValue(
+                          value: seconds,
+                          label: 'Secondes',
+                          isEditing: _isEditingSeconds,
+                          controller: _secondsController,
+                          focusNode: _secondsFocusNode,
+                          onTap: _enterSecondsEdit,
+                          maxLength: 2,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
