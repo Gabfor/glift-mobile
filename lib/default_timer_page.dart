@@ -152,7 +152,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
         onTap: _handleOutsideTap,
         child: SafeArea(
           bottom: false,
-          child: Column(
+          child: Stack(
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -186,53 +186,51 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
                   ],
                 ),
               ),
-              Expanded(
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        child: _EditableTimeValue(
-                          value: minutes,
-                          label: 'Minutes',
-                          isEditing: _isEditingMinutes,
-                          controller: _minutesController,
-                          focusNode: _minutesFocusNode,
-                          onTap: _enterMinutesEdit,
-                          maxLength: 2,
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 140,
+                      child: _EditableTimeValue(
+                        value: minutes,
+                        label: 'Minutes',
+                        isEditing: _isEditingMinutes,
+                        controller: _minutesController,
+                        focusNode: _minutesFocusNode,
+                        onTap: _enterMinutesEdit,
+                        maxLength: 2,
+                      ),
+                    ),
+                    Container(
+                      width: 20,
+                      height: 90,
+                      alignment: Alignment.center,
+                      child: Text(
+                        ':',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.redHatText(
+                          fontSize: 80,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF3A416F),
+                          height: 1.0,
                         ),
                       ),
-                      Container(
-                        width: 20,
-                        height: 90,
-                        alignment: Alignment.center,
-                        child: Text(
-                          ':',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.redHatText(
-                            fontSize: 80,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF3A416F),
-                            height: 1.0,
-                          ),
-                        ),
+                    ),
+                    SizedBox(
+                      width: 140,
+                      child: _EditableTimeValue(
+                        value: seconds,
+                        label: 'Secondes',
+                        isEditing: _isEditingSeconds,
+                        controller: _secondsController,
+                        focusNode: _secondsFocusNode,
+                        onTap: _enterSecondsEdit,
+                        maxLength: 2,
                       ),
-                      SizedBox(
-                        width: 140,
-                        child: _EditableTimeValue(
-                          value: seconds,
-                          label: 'Secondes',
-                          isEditing: _isEditingSeconds,
-                          controller: _secondsController,
-                          focusNode: _secondsFocusNode,
-                          onTap: _enterSecondsEdit,
-                          maxLength: 2,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
