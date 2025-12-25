@@ -163,7 +163,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           SettingsService.instance.saveWeightUnit(value);
                         },
                       ),
-                      fullscreenDialog: true,
                     ),
                   );
                 },
@@ -275,7 +274,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           SettingsService.instance.saveSoundEffect(value);
                         },
                       ),
-                      fullscreenDialog: true,
                     ),
                   );
                 },
@@ -307,7 +305,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           SettingsService.instance.saveDisplayType(value);
                         },
                       ),
-                      fullscreenDialog: true,
                     ),
                   );
                 },
