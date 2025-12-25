@@ -8,6 +8,7 @@ import 'package:supabase/supabase.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'repositories/dashboard_repository.dart';
+import 'services/settings_service.dart';
 import 'models/program.dart';
 import 'models/training_row.dart';
 import 'widgets/glift_loader.dart';
@@ -613,8 +614,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
     double interval = 25;
     double chartMaxY = 100;
 
+    final isImperial = SettingsService.instance.getWeightUnit() == 'imperial';
+    final double conversion = 1.0;
+    final String unitLabel = isImperial ? 'lb' : 'kg';
+
     if (_history.isNotEmpty) {
-      final values = _history.map((e) => e['value'] as double).toList();
+      final values = _history.map((e) => (e['value'] as double) * conversion).toList();
       double minV = values.reduce((a, b) => a < b ? a : b);
       double maxV = values.reduce((a, b) => a > b ? a : b);
 
@@ -792,7 +797,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         final realValue = value + realMinY;
                                         final displayValue = realValue.round();
                                         return Text(
-                                          '$displayValue kg',
+                                          '$displayValue $unitLabel',
                                           style: GoogleFonts.quicksand(
                                             color: const Color(0xFF3A416F),
                                             fontSize: 12,
@@ -827,7 +832,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                     spots: _history.asMap().entries.map((e) {
                                       return FlSpot(
                                         e.key.toDouble(),
-                                        (e.value['value'] as double) - realMinY,
+                                        ((e.value['value'] as double) * conversion) - realMinY,
                                       );
                                     }).toList(),
                                     isCurved: true,
@@ -981,7 +986,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 child: _TooltipWithArrow(
                                   backgroundColor: const Color(0xFF2D2E32),
                                   label:
-                                      '${_formatWeight(_history[_touchedSpot!.x.toInt()]['value'] as double)} kg',
+                                      '${_formatWeight((_history[_touchedSpot!.x.toInt()]['value'] as double) * conversion)} $unitLabel',
                                 ),
                               ),
                             ),

@@ -10,6 +10,7 @@ import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'services/settings_service.dart';
 import 'weight_unit_settings_page.dart';
+import 'display_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -249,9 +250,18 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
                 onTap: () {
-                  final newType = _displayType == 'Miniature' ? 'Plein écran' : 'Miniature';
-                  setState(() => _displayType = newType);
-                  SettingsService.instance.saveDisplayType(newType);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => DisplaySettingsPage(
+                        initialValue: _displayType,
+                        onChanged: (value) {
+                          setState(() => _displayType = value);
+                          SettingsService.instance.saveDisplayType(value);
+                        },
+                      ),
+                      fullscreenDialog: true,
+                    ),
+                  );
                 },
               ),
               _SettingsTile(
