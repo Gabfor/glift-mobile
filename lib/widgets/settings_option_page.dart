@@ -94,7 +94,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                     const Divider(
                       height: 1,
                       thickness: 1,
-                      color: Color(0xFFD7D4DC),
+                      color: Color(0xFFECE9F1),
                       indent: 15,
                       endIndent: 15,
                     ),

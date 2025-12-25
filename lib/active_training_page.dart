@@ -1541,7 +1541,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     
     if (isNowCompleted && !isLastSet) {
       final duration = int.tryParse(widget.row.rest) ?? 0;
-      if (duration > 0) {
+      final autoTrigger = SettingsService.instance.getAutoTriggerEnabled();
+      if (duration > 0 && autoTrigger) {
         widget.onAutoTriggerTimer(widget.index, duration);
       }
     } else if (isNowCompleted && isLastSet) {
