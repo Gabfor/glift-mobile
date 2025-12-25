@@ -150,94 +150,93 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _handleOutsideTap,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Content (Centered in screen)
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 140,
-                    child: _EditableTimeValue(
-                      value: minutes,
-                      label: 'Minutes',
-                      isEditing: _isEditingMinutes,
-                      controller: _minutesController,
-                      focusNode: _minutesFocusNode,
-                      onTap: _enterMinutesEdit,
-                      maxLength: 2,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Réglages',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF3A416F),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Valeur par défaut',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF3A416F),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Container(
-                    width: 20,
-                    height: 90,
-                    alignment: Alignment.center,
-                    child: Text(
-                      ':',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.redHatText(
-                        fontSize: 80,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF3A416F),
-                        height: 1.0,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 140,
-                    child: _EditableTimeValue(
-                      value: seconds,
-                      label: 'Secondes',
-                      isEditing: _isEditingSeconds,
-                      controller: _secondsController,
-                      focusNode: _secondsFocusNode,
-                      onTap: _enterSecondsEdit,
-                      maxLength: 2,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-
-            // Header (Fixed top)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 20,
-              left: 20,
-              right: 20,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
-                  const SizedBox(width: 16),
-                  Column(
+              Expanded(
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Réglages',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                      SizedBox(
+                        width: 140,
+                        child: _EditableTimeValue(
+                          value: minutes,
+                          label: 'Minutes',
+                          isEditing: _isEditingMinutes,
+                          controller: _minutesController,
+                          focusNode: _minutesFocusNode,
+                          onTap: _enterMinutesEdit,
+                          maxLength: 2,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Valeur par défaut',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                      Container(
+                        width: 20,
+                        height: 90,
+                        alignment: Alignment.center,
+                        child: Text(
+                          ':',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.redHatText(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF3A416F),
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 140,
+                        child: _EditableTimeValue(
+                          value: seconds,
+                          label: 'Secondes',
+                          isEditing: _isEditingSeconds,
+                          controller: _secondsController,
+                          focusNode: _secondsFocusNode,
+                          onTap: _enterSecondsEdit,
+                          maxLength: 2,
                         ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
