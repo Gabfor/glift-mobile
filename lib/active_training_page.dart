@@ -1540,7 +1540,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final isLastSet = index == widget.row.series - 1;
     
     if (isNowCompleted && !isLastSet) {
-      final duration = int.tryParse(widget.row.rest) ?? 0;
+      int duration = int.tryParse(widget.row.rest) ?? 0;
+      if (duration == 0) {
+        duration = SettingsService.instance.getDefaultRestTime();
+      }
       final autoTrigger = SettingsService.instance.getAutoTriggerEnabled();
       if (duration > 0 && autoTrigger) {
         widget.onAutoTriggerTimer(widget.index, duration);
@@ -1626,7 +1629,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 if (widget.showTimer) ...[
                   GestureDetector(
                     onTap: () {
-                      final duration = int.tryParse(widget.row.rest) ?? 0;
+                      int duration = int.tryParse(widget.row.rest) ?? 0;
+    if (duration == 0) {
+      duration = SettingsService.instance.getDefaultRestTime();
+    }
                       widget.onOpenTimer(widget.index, duration);
                     },
                     child: SvgPicture.asset(

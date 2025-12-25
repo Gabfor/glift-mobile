@@ -12,6 +12,7 @@ import 'services/settings_service.dart';
 import 'weight_unit_settings_page.dart';
 import 'display_settings_page.dart';
 import 'sound_settings_page.dart';
+import 'default_timer_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -44,6 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _sound = true;
   String _displayType = 'Miniature';
   String _soundEffect = 'radar';
+  int _defaultRestTime = 60;
   bool _isLoggingOut = false;
 
   @override
@@ -65,7 +67,9 @@ class _SettingsPageState extends State<SettingsPage> {
         _weightUnit = settings.getWeightUnit();
         _soundEffect = settings.getSoundEffect();
         _sound = settings.getSoundEnabled();
+        _sound = settings.getSoundEnabled();
         _vibrations = settings.getVibrationEnabled();
+        _defaultRestTime = settings.getDefaultRestTime(); 
       });
     }
   }
@@ -124,7 +128,9 @@ class _SettingsPageState extends State<SettingsPage> {
               _weightUnit = settings.getWeightUnit();
               _soundEffect = settings.getSoundEffect();
               _sound = settings.getSoundEnabled();
+              _sound = settings.getSoundEnabled();
               _vibrations = settings.getVibrationEnabled();
+              _defaultRestTime = settings.getDefaultRestTime();
             });
           }
         },
@@ -315,7 +321,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '0 secondes',
+                      '${_defaultRestTime} secondes',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -326,7 +332,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
                   ],
                 ),
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => DefaultTimerPage(
+                        initialDuration: _defaultRestTime,
+                      ),
+                    ),
+                  ).then((_) {
+                    // Update state when returning
+                     setState(() {
+                       _defaultRestTime = SettingsService.instance.getDefaultRestTime();
+                     });
+                  });
+                },
               ),
             ],
           ),

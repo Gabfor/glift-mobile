@@ -146,6 +146,19 @@ class SettingsService {
     return _prefs.getBool(_kVibrationEnabled) ?? true;
   }
 
+  // Default Rest Time
+  static const String _kDefaultRestTime = 'default_rest_time';
+
+  Future<void> saveDefaultRestTime(int seconds) async {
+    await _initIfNeeded();
+    await _prefs.setInt(_kDefaultRestTime, seconds);
+  }
+
+  int getDefaultRestTime() {
+    if (!_initialized) return 60; // Default 1 min
+    return _prefs.getInt(_kDefaultRestTime) ?? 60;
+  }
+
   Future<void> _initIfNeeded() async {
     if (!_initialized) {
       await init();

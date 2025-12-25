@@ -784,7 +784,10 @@ class _ExerciseCardState extends State<_ExerciseCard>
                 if (widget.showTimer) ...[
                   GestureDetector(
                     onTap: () {
-                      final duration = int.tryParse(widget.row.rest) ?? 0;
+                      int duration = int.tryParse(widget.row.rest) ?? 0;
+                      if (duration == 0) {
+                        duration = SettingsService.instance.getDefaultRestTime();
+                      }
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => TimerPage(
