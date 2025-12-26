@@ -1697,28 +1697,31 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             child: Row(
               children: [
                 // Set Number
-                Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FA),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${index + 1}',
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                Expanded(
+                  flex: 40,
+                  child: Center(
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF3A416F),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(width: 10),
 
                 // Reps
                 Expanded(

@@ -425,6 +425,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 onTap: () {},
               ),
+              _SettingsTile(
+                title: 'Mentions légales',
+                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                onTap: () {
+                  // TODO: Add navigation to legal mentions
+                },
+              ),
             ],
           ),
           const SizedBox(height: 30),
