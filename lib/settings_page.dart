@@ -61,12 +61,11 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) {
       setState(() {
         _material = settings.getMaterialEnabled();
+        _effort = settings.getShowEffort();
         _autoTrigger = settings.getAutoTriggerEnabled();
         _displayType = settings.getDisplayType();
         _weightUnit = settings.getWeightUnit();
-        _weightUnit = settings.getWeightUnit();
         _soundEffect = settings.getSoundEffect();
-        _sound = settings.getSoundEnabled();
         _sound = settings.getSoundEnabled();
         _vibrations = settings.getVibrationEnabled();
         _defaultRestTime = settings.getDefaultRestTime(); 
@@ -122,12 +121,11 @@ class _SettingsPageState extends State<SettingsPage> {
             setState(() {
               final settings = SettingsService.instance;
               _material = settings.getMaterialEnabled();
+              _effort = settings.getShowEffort();
               _autoTrigger = settings.getAutoTriggerEnabled();
               _displayType = settings.getDisplayType();
               _weightUnit = settings.getWeightUnit();
-              _weightUnit = settings.getWeightUnit();
               _soundEffect = settings.getSoundEffect();
-              _sound = settings.getSoundEnabled();
               _sound = settings.getSoundEnabled();
               _vibrations = settings.getVibrationEnabled();
               _defaultRestTime = settings.getDefaultRestTime();
@@ -185,7 +183,10 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsSwitchTile(
                 title: 'Activer Effort',
                 value: _effort,
-                onChanged: (v) => setState(() => _effort = v),
+                onChanged: (v) {
+                  setState(() => _effort = v);
+                  SettingsService.instance.saveShowEffort(v);
+                },
               ),
               _SettingsSwitchTile(
                 title: 'Activer Liens',

@@ -29,15 +29,23 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit')
+          .select('weight_unit, show_effort')
           .eq('id', user.id)
           .maybeSingle();
 
-      if (response != null && response['weight_unit'] != null) {
-        final unit = response['weight_unit'] as String;
-        final localUnit = unit == 'lb' ? 'imperial' : 'metric';
-        if (localUnit != getWeightUnit()) {
-          await _prefs.setString(_kWeightUnit, localUnit);
+      if (response != null) {
+        if (response['weight_unit'] != null) {
+          final unit = response['weight_unit'] as String;
+          final localUnit = unit == 'lb' ? 'imperial' : 'metric';
+          if (localUnit != getWeightUnit()) {
+            await _prefs.setString(_kWeightUnit, localUnit);
+          }
+        }
+        if (response['show_effort'] != null) {
+            final showEffort = response['show_effort'] as bool;
+            if (showEffort != getShowEffort()) {
+                await _prefs.setBool(_kShowEffort, showEffort);
+            }
         }
       }
     } catch (e) {
@@ -55,6 +63,7 @@ class SettingsService {
   static const String _kSoundEffect = 'timer_sound_effect';
   static const String _kSoundEnabled = 'timer_sound_enabled';
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
+  static const String _kShowEffort = 'show_effort';
 
   // Display Type
   Future<void> saveDisplayType(String type) async {
@@ -157,6 +166,29 @@ class SettingsService {
   int getDefaultRestTime() {
     if (!_initialized) return 60; // Default 1 min
     return _prefs.getInt(_kDefaultRestTime) ?? 60;
+  }
+
+  // Show Effort
+  Future<void> saveShowEffort(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowEffort, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_effort': show,
+        });
+      } catch (e) {
+        print('Error saving show_effort to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowEffort() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowEffort) ?? true;
   }
 
   Future<void> _initIfNeeded() async {

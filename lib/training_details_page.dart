@@ -832,8 +832,10 @@ class _ExerciseCardState extends State<_ExerciseCard>
             const _GridHeader('Reps.', flex: 86),
             const SizedBox(width: 10),
             const _GridHeader('Poids', flex: 86),
-            const SizedBox(width: 10),
-            const _GridHeader('Effort', flex: 68),
+            if (SettingsService.instance.getShowEffort()) ...[
+              const SizedBox(width: 10),
+              const _GridHeader('Effort', flex: 68),
+            ],
           ],
         ),
         const SizedBox(height: 10),
@@ -923,30 +925,32 @@ class _ExerciseCardState extends State<_ExerciseCard>
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 68,
-                  child: GestureDetector(
-                    onTap: () => _cycleEffortState(index),
-                    child: Container(
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFFECE9F1),
-                          width: 1,
+                if (SettingsService.instance.getShowEffort()) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 68,
+                    child: GestureDetector(
+                      onTap: () => _cycleEffortState(index),
+                      child: Container(
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: visuals.backgroundColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(0xFFECE9F1),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: Image.asset(
-                        visuals.iconPath,
-                        width: 24,
-                        height: 24,
+                        child: Image.asset(
+                          visuals.iconPath,
+                          width: 24,
+                          height: 24,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           );

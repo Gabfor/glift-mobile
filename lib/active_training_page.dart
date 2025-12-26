@@ -1665,8 +1665,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             _GridHeader('Reps.', flex: 86),
             const SizedBox(width: 10),
             _GridHeader('Poids', flex: 86),
-            const SizedBox(width: 10),
-            _GridHeader('Effort', flex: 68),
+            if (SettingsService.instance.getShowEffort()) ...[
+              const SizedBox(width: 10),
+              _GridHeader('Effort', flex: 68),
+            ],
             const SizedBox(width: 10),
             _GridHeader('Suivi', flex: 40),
           ],
@@ -1766,33 +1768,35 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                if (SettingsService.instance.getShowEffort()) ...[
+                  const SizedBox(width: 10),
 
-                // Effort toggle
-                Expanded(
-                  flex: 68,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () => _cycleEffortState(index),
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFFECE9F1),
-                          width: 1,
+                  // Effort toggle
+                  Expanded(
+                    flex: 68,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _cycleEffortState(index),
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: visuals.backgroundColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(0xFFECE9F1),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Image.asset(
-                        visuals.iconPath,
-                        width: 24,
-                        height: 24,
+                        alignment: Alignment.center,
+                        child: Image.asset(
+                          visuals.iconPath,
+                          width: 24,
+                          height: 24,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(width: 10),
 
                 // Suivi (Completion)
