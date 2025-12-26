@@ -29,7 +29,7 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort')
+          .select('weight_unit, show_effort, show_materiel')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -45,6 +45,12 @@ class SettingsService {
             final showEffort = response['show_effort'] as bool;
             if (showEffort != getShowEffort()) {
                 await _prefs.setBool(_kShowEffort, showEffort);
+            }
+        }
+        if (response['show_materiel'] != null) {
+            final showMateriel = response['show_materiel'] as bool;
+            if (showMateriel != getMaterialEnabled()) {
+                await _prefs.setBool(_kMaterial, showMateriel);
             }
         }
       }
@@ -80,6 +86,18 @@ class SettingsService {
   Future<void> saveMaterialEnabled(bool enabled) async {
     await _initIfNeeded();
     await _prefs.setBool(_kMaterial, enabled);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_materiel': enabled,
+        });
+      } catch (e) {
+        print('Error saving show_materiel to Supabase: $e');
+      }
+    }
   }
 
   bool getMaterialEnabled() {

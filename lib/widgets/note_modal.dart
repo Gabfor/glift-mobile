@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../services/settings_service.dart';
 
 class NoteModal extends StatefulWidget {
   final String? initialNote;
@@ -153,132 +154,133 @@ class _NoteModalState extends State<NoteModal> {
             const SizedBox(height: 20),
             
             // Material Section
-            GestureDetector(
-              onTap: () {
-                if (!_isEditingMaterial) {
-                  setState(() {
-                    _isEditingMaterial = true;
-                    // Pre-fill controller if empty (though logic below handles it)
-                     if (_materialController.text.isEmpty && widget.initialMaterial != null) {
-                      _materialController.text = widget.initialMaterial!;
-                    }
-                  });
-                   // Schedule focus request
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _materialFocusNode.requestFocus();
-                  });
-                }
-              },
-              child: Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFD7D4DC)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.baseline, // Baseline alignment
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            'Matériel : ',
-                            style: GoogleFonts.quicksand(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
-                              height: 1.3, // Standardize height
+            if (SettingsService.instance.getMaterialEnabled())
+              GestureDetector(
+                onTap: () {
+                  if (!_isEditingMaterial) {
+                    setState(() {
+                      _isEditingMaterial = true;
+                      // Pre-fill controller if empty (though logic below handles it)
+                       if (_materialController.text.isEmpty && widget.initialMaterial != null) {
+                        _materialController.text = widget.initialMaterial!;
+                      }
+                    });
+                     // Schedule focus request
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _materialFocusNode.requestFocus();
+                    });
+                  }
+                },
+                child: Container(
+                  height: 50,
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFD7D4DC)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.baseline, // Baseline alignment
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              'Matériel : ',
+                              style: GoogleFonts.quicksand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF3A416F),
+                                height: 1.3, // Standardize height
+                              ),
                             ),
-                          ),
-                          Expanded(
-                          child: _isEditingMaterial
-                              ? TextField(
-                                  controller: _materialController,
-                                  focusNode: _materialFocusNode,
-                                  style: GoogleFonts.quicksand(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF5D6494),
-                                    height: 1.3,
-                                    letterSpacing: 0.0, // Force consistent spacing
-                                  ),
-                                  strutStyle: const StrutStyle(
-                                    fontSize: 16,
-                                    height: 1.3,
-                                    forceStrutHeight: true,
-                                  ),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    isDense: true,
-                                    isCollapsed: true, // Key for alignment
-                                    contentPadding: EdgeInsets.zero,
-                                    hintText: 'Ex: Haltères, Barre...',
-                                    hintStyle: GoogleFonts.quicksand(
-                                      color: const Color(0xFFD7D4DC),
+                            Expanded(
+                            child: _isEditingMaterial
+                                ? TextField(
+                                    controller: _materialController,
+                                    focusNode: _materialFocusNode,
+                                    style: GoogleFonts.quicksand(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF5D6494),
                                       height: 1.3,
-                                      letterSpacing: 0.0,
+                                      letterSpacing: 0.0, // Force consistent spacing
                                     ),
+                                    strutStyle: const StrutStyle(
+                                      fontSize: 16,
+                                      height: 1.3,
+                                      forceStrutHeight: true,
+                                    ),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                      isCollapsed: true, // Key for alignment
+                                      contentPadding: EdgeInsets.zero,
+                                      hintText: 'Ex: Haltères, Barre...',
+                                      hintStyle: GoogleFonts.quicksand(
+                                        color: const Color(0xFFD7D4DC),
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.3,
+                                        letterSpacing: 0.0,
+                                      ),
+                                    ),
+                                    onSubmitted: (value) {
+                                      widget.onSaveMaterial(value);
+                                      setState(() {
+                                        _isEditingMaterial = false;
+                                      });
+                                    },
+                                    onEditingComplete: () {
+                                      widget.onSaveMaterial(_materialController.text);
+                                      setState(() {
+                                        _isEditingMaterial = false;
+                                      });
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                  )
+                                : Text(
+                                    _materialController.text.isNotEmpty
+                                        ? _materialController.text
+                                        : 'Ex: Haltères, Barre...',
+                                    style: GoogleFonts.quicksand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: _materialController.text.isNotEmpty
+                                          ? const Color(0xFF5D6494)
+                                          : const Color(0xFFD7D4DC),
+                                      height: 1.3,
+                                      letterSpacing: 0.0, // Force consistent spacing
+                                    ),
+                                    strutStyle: const StrutStyle(
+                                      fontSize: 16,
+                                      height: 1.3,
+                                      forceStrutHeight: true,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  onSubmitted: (value) {
-                                    widget.onSaveMaterial(value);
-                                    setState(() {
-                                      _isEditingMaterial = false;
-                                    });
-                                  },
-                                  onEditingComplete: () {
-                                    widget.onSaveMaterial(_materialController.text);
-                                    setState(() {
-                                      _isEditingMaterial = false;
-                                    });
-                                    FocusScope.of(context).unfocus();
-                                  },
-                                )
-                              : Text(
-                                  _materialController.text.isNotEmpty
-                                      ? _materialController.text
-                                      : 'Ex: Haltères, Barre...',
-                                  style: GoogleFonts.quicksand(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: _materialController.text.isNotEmpty
-                                        ? const Color(0xFF5D6494)
-                                        : const Color(0xFFD7D4DC),
-                                    height: 1.3,
-                                    letterSpacing: 0.0, // Force consistent spacing
-                                  ),
-                                  strutStyle: const StrutStyle(
-                                    fontSize: 16,
-                                    height: 1.3,
-                                    forceStrutHeight: true,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                      if (!_isEditingMaterial) ...[
+                        const SizedBox(width: 20),
+                        SvgPicture.asset(
+                          'assets/icons/edit.svg',
+                          width: 15,
+                          height: 15,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF5D6494),
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                    if (!_isEditingMaterial) ...[
-                      const SizedBox(width: 20),
-                      SvgPicture.asset(
-                        'assets/icons/edit.svg',
-                        width: 15,
-                        height: 15,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF5D6494),
-                          BlendMode.srcIn,
-                        ),
-                      ),
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
             
             const SizedBox(height: 20),
             Text(
