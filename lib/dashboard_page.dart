@@ -602,66 +602,69 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
   @override
   Widget build(BuildContext context) {
-    const int desiredGridLines = 5;
-    const double gridLineSpacingPx = 38;
-    const double chartOverheadHeight = 140;
+    return ValueListenableBuilder<String>(
+      valueListenable: SettingsService.instance.weightUnitNotifier,
+      builder: (context, weightUnit, _) {
+        const int desiredGridLines = 5;
+        const double gridLineSpacingPx = 38;
+        const double chartOverheadHeight = 140;
 
-    double minX = 0;
-    double maxX = 6;
+        double minX = 0;
+        double maxX = 6;
 
-    double realMinY = 0;
-    double realMaxY = 100;
-    double interval = 25;
-    double chartMaxY = 100;
+        double realMinY = 0;
+        double realMaxY = 100;
+        double interval = 25;
+        double chartMaxY = 100;
 
-    final isImperial = SettingsService.instance.getWeightUnit() == 'imperial';
-    final double conversion = 1.0;
-    final String unitLabel = isImperial ? 'lb' : 'kg';
+        final isImperial = weightUnit == 'imperial';
+        final double conversion = 1.0;
+        final String unitLabel = isImperial ? 'lb' : 'kg';
 
-    if (_history.isNotEmpty) {
-      final values = _history.map((e) => (e['value'] as double) * conversion).toList();
-      double minV = values.reduce((a, b) => a < b ? a : b);
-      double maxV = values.reduce((a, b) => a > b ? a : b);
+        if (_history.isNotEmpty) {
+          final values = _history.map((e) => (e['value'] as double) * conversion).toList();
+          double minV = values.reduce((a, b) => a < b ? a : b);
+          double maxV = values.reduce((a, b) => a > b ? a : b);
 
-      // Initial range estimate
-      double minFloor = minV.floorToDouble();
-      double maxCeil = maxV.ceilToDouble();
-      if (minFloor == maxCeil) maxCeil += 5;
+          // Initial range estimate
+          double minFloor = minV.floorToDouble();
+          double maxCeil = maxV.ceilToDouble();
+          if (minFloor == maxCeil) maxCeil += 5;
 
-      double range = maxCeil - minFloor;
-      double rawInterval = range / (desiredGridLines - 1);
-      if (rawInterval < 1) rawInterval = 1;
-      interval = rawInterval.ceilToDouble();
+          double range = maxCeil - minFloor;
+          double rawInterval = range / (desiredGridLines - 1);
+          if (rawInterval < 1) rawInterval = 1;
+          interval = rawInterval.ceilToDouble();
 
-      // Snap min to interval and ensure padding from bottom
-      // We want the lowest point to be at least 20% of an interval above the bottom line
-      double snappedMin = (minFloor / interval).floorToDouble() * interval;
-      if (minV - snappedMin < interval * 0.2) {
-        snappedMin -= interval;
-      }
-      realMinY = max(0, snappedMin);
+          // Snap min to interval and ensure padding from bottom
+          // We want the lowest point to be at least 20% of an interval above the bottom line
+          double snappedMin = (minFloor / interval).floorToDouble() * interval;
+          if (minV - snappedMin < interval * 0.2) {
+            snappedMin -= interval;
+          }
+          realMinY = max(0, snappedMin);
 
-      // Recalculate interval to ensure we cover the max value
-      // We have fixed number of lines starting from realMinY
-      double neededRange = maxV - realMinY;
-      rawInterval = neededRange / (desiredGridLines - 1);
-      if (rawInterval < 1) rawInterval = 1;
-      interval = rawInterval.ceilToDouble();
+          // Recalculate interval to ensure we cover the max value
+          // We have fixed number of lines starting from realMinY
+          double neededRange = maxV - realMinY;
+          rawInterval = neededRange / (desiredGridLines - 1);
+          if (rawInterval < 1) rawInterval = 1;
+          interval = rawInterval.ceilToDouble();
 
-      chartMaxY = interval * (desiredGridLines - 1);
+          chartMaxY = interval * (desiredGridLines - 1);
 
-      // Calculate centered viewport
-      // We want the spacing to be the same as if there were 7 points (range 0..6)
-      // So the view range must always be 6.
-      // We center the available data points within this range.
-      final double dataCount = _history.length.toDouble();
-      final double centerData = (dataCount - 1) / 2;
-      final double viewRange = 6;
-      minX = centerData - viewRange / 2;
-      maxX = centerData + viewRange / 2;
-    }
+          // Calculate centered viewport
+          // We want the spacing to be the same as if there were 7 points (range 0..6)
+          // So the view range must always be 6.
+          // We center the available data points within this range.
+          final double dataCount = _history.length.toDouble();
+          final double centerData = (dataCount - 1) / 2;
+          final double viewRange = 6;
+          minX = centerData - viewRange / 2;
+          maxX = centerData + viewRange / 2;
+        }
 
-    return Container(
+        return Container(
       width: double.infinity,
       height: chartOverheadHeight + (desiredGridLines - 1) * gridLineSpacingPx,
       padding: const EdgeInsets.fromLTRB(20, 20, 25, 20),
@@ -1011,6 +1014,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
             ),
         ],
       ),
+    );
+      },
     );
   }
 }

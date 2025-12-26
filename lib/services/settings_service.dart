@@ -16,6 +16,7 @@ class SettingsService {
     if (_initialized) return;
     _prefs = await SharedPreferences.getInstance();
     _initialized = true;
+    weightUnitNotifier.value = getWeightUnit();
   }
 
   Future<void> initSupabase(SupabaseClient client) async {
@@ -40,6 +41,7 @@ class SettingsService {
           final localUnit = unit == 'lb' ? 'imperial' : 'metric';
           if (localUnit != getWeightUnit()) {
             await _prefs.setString(_kWeightUnit, localUnit);
+            weightUnitNotifier.value = localUnit;
           }
         }
         if (response['show_effort'] != null) {
@@ -78,6 +80,9 @@ class SettingsService {
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
   static const String _kShowEffort = 'show_effort';
   static const String _kShowRepos = 'show_repos';
+
+  // Notifiers
+  final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
 
   // Display Type
   Future<void> saveDisplayType(String type) async {
@@ -128,6 +133,7 @@ class SettingsService {
   Future<void> saveWeightUnit(String unit) async {
     await _initIfNeeded();
     await _prefs.setString(_kWeightUnit, unit);
+    weightUnitNotifier.value = unit;
 
     final user = _supabase?.auth.currentUser;
     if (user != null) {
