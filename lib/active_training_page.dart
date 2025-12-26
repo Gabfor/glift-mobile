@@ -1586,7 +1586,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     super.build(context);
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
     final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
-    final hasLink = widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
+    final hasLink = widget.row.videoUrl != null &&
+        widget.row.videoUrl!.isNotEmpty &&
+        SettingsService.instance.getShowLinks();
     final effectiveIsCompleted = widget.isCompleted || _isCompleting;
     final effectiveIsIgnored = widget.isIgnored || _isIgnoring;
 

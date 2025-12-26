@@ -742,8 +742,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
 
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
     final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
-    final hasLink =
-        widget.row.videoUrl != null && widget.row.videoUrl!.isNotEmpty;
+    final hasLink = widget.row.videoUrl != null &&
+        widget.row.videoUrl!.isNotEmpty &&
+        SettingsService.instance.getShowLinks();
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -31,7 +31,7 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort, show_materiel, show_repos')
+          .select('weight_unit, show_effort, show_materiel, show_repos, show_link')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -60,6 +60,12 @@ class SettingsService {
             final showRepos = response['show_repos'] as bool;
             if (showRepos != getShowRepos()) {
                 await _prefs.setBool(_kShowRepos, showRepos);
+            }
+        }
+        if (response['show_link'] != null) {
+            final showLink = response['show_link'] as bool;
+            if (showLink != getShowLinks()) {
+                await _prefs.setBool(_kShowLinks, showLink);
             }
         }
       }
@@ -244,6 +250,31 @@ class SettingsService {
   bool getShowRepos() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowRepos) ?? true;
+  }
+
+  // Show Links
+  static const String _kShowLinks = 'show_links';
+
+  Future<void> saveShowLinks(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowLinks, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_link': show, // Column name is show_link (singular)
+        });
+      } catch (e) {
+        print('Error saving show_link to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowLinks() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowLinks) ?? true;
   }
 
   Future<void> _initIfNeeded() async {

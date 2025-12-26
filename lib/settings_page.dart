@@ -68,6 +68,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _soundEffect = settings.getSoundEffect();
         _sound = settings.getSoundEnabled();
         _vibrations = settings.getVibrationEnabled();
+        _links = settings.getShowLinks();
 
         _rest = settings.getShowRepos();
         debugPrint('SettingsPage: Loaded _rest = $_rest'); // DEBUG
@@ -131,6 +132,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _soundEffect = settings.getSoundEffect();
               _sound = settings.getSoundEnabled();
               _vibrations = settings.getVibrationEnabled();
+              _links = settings.getShowLinks();
               _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
@@ -195,7 +197,10 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsSwitchTile(
                 title: 'Activer Liens',
                 value: _links,
-                onChanged: (v) => setState(() => _links = v),
+                onChanged: (v) {
+                  setState(() => _links = v);
+                  SettingsService.instance.saveShowLinks(v);
+                },
               ),
               _SettingsSwitchTile(
                 title: 'Activer Notes',
