@@ -137,6 +137,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _links = settings.getShowLinks();
               _notes = settings.getShowNotes();
               _suivi = settings.getShowSuivi();
+              _superset = settings.getShowSuperset();
               _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
@@ -245,7 +246,10 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsSwitchTile(
                 title: 'Activer Superset',
                 value: _superset,
-                onChanged: (v) => setState(() => _superset = v),
+                onChanged: (v) {
+                  setState(() => _superset = v);
+                  SettingsService.instance.saveShowSuperset(v);
+                },
               ),
             ],
           ),

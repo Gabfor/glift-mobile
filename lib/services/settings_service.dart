@@ -31,7 +31,7 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi')
+          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi, show_superset')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -82,6 +82,12 @@ class SettingsService {
             final showSuivi = response['show_suivi'] as bool;
             if (showSuivi != getShowSuivi()) {
                 await _prefs.setBool(_kShowSuivi, showSuivi);
+            }
+        }
+        if (response['show_superset'] != null) {
+            final showSuperset = response['show_superset'] as bool;
+            if (showSuperset != getShowSuperset()) {
+                await _prefs.setBool(_kShowSuperset, showSuperset);
             }
         }
       }
@@ -346,6 +352,31 @@ class SettingsService {
   bool getShowSuivi() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowSuivi) ?? true;
+  }
+
+  // Show Superset
+  static const String _kShowSuperset = 'show_superset';
+
+  Future<void> saveShowSuperset(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowSuperset, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_superset': show,
+        });
+      } catch (e) {
+        print('Error saving show_superset to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowSuperset() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowSuperset) ?? true;
   }
 
   Future<void> _initIfNeeded() async {

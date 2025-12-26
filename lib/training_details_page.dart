@@ -291,12 +291,12 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         ),
       );
     }
-
+    
     final items = <Widget>[];
     int i = 0;
     while (i < _rows!.length) {
       final row = _rows![i];
-      if (row.supersetId != null) {
+      if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
         final group = <TrainingRow>[row];
         int j = i + 1;
         while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {

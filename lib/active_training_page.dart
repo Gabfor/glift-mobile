@@ -840,7 +840,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         final row = rowSubset[i];
         final rowIndex = _rows!.indexOf(row);
 
-        if (row.supersetId != null) {
+        if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
           final group = <TrainingRow>[row];
           int j = i + 1;
           while (j < rowSubset.length && rowSubset[j].supersetId == row.supersetId) {
