@@ -893,7 +893,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onCloseTimer: _closeInlineTimer,
                 showDecoration: false,
                 showActions: false,
-                showTimer: group.indexOf(r) == 0,
+                showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
               );
             }).toList(),
           ));
@@ -929,7 +929,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             onCloseTimer: _closeInlineTimer,
             showDecoration: true,
             showActions: true,
-            showTimer: true,
+            showTimer: SettingsService.instance.getShowRepos(),
           ));
           i++;
         }

@@ -314,7 +314,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
               onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
               showDecoration: false,
-              showTimer: group.indexOf(r) == 0,
+              showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
             );
           }).toList(),
         ));
@@ -333,7 +333,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           onMaterialUpdate: (material) =>
               _handleMaterialUpdate(rowIndex, material),
           showDecoration: true,
-          showTimer: true,
+          showTimer: SettingsService.instance.getShowRepos(),
         ));
         i++;
       }

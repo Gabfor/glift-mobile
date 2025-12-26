@@ -57,7 +57,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadSettings() async {
     final settings = SettingsService.instance;
     await settings.init();
-    settings.initSupabase(widget.supabase);
+    await settings.initSupabase(widget.supabase);
     if (mounted) {
       setState(() {
         _material = settings.getMaterialEnabled();
@@ -68,6 +68,9 @@ class _SettingsPageState extends State<SettingsPage> {
         _soundEffect = settings.getSoundEffect();
         _sound = settings.getSoundEnabled();
         _vibrations = settings.getVibrationEnabled();
+
+        _rest = settings.getShowRepos();
+        debugPrint('SettingsPage: Loaded _rest = $_rest'); // DEBUG
         _defaultRestTime = settings.getDefaultRestTime(); 
       });
     }
@@ -128,6 +131,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _soundEffect = settings.getSoundEffect();
               _sound = settings.getSoundEnabled();
               _vibrations = settings.getVibrationEnabled();
+              _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
           }
@@ -209,7 +213,10 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsSwitchTile(
                 title: 'Activer Repos',
                 value: _rest,
-                onChanged: (v) => setState(() => _rest = v),
+                onChanged: (v) {
+                  setState(() => _rest = v);
+                  SettingsService.instance.saveShowRepos(v);
+                },
               ),
               _SettingsSwitchTile(
                 title: 'Activer Suivi',

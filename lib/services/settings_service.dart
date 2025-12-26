@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase/supabase.dart';
+import 'package:flutter/foundation.dart';
 
 class SettingsService {
   static final SettingsService _instance = SettingsService._internal();
@@ -17,9 +18,9 @@ class SettingsService {
     _initialized = true;
   }
 
-  void initSupabase(SupabaseClient client) {
+  Future<void> initSupabase(SupabaseClient client) async {
     _supabase = client;
-    syncFromSupabase();
+    await syncFromSupabase();
   }
 
   Future<void> syncFromSupabase() async {
@@ -29,7 +30,7 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort, show_materiel')
+          .select('weight_unit, show_effort, show_materiel, show_repos')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -53,6 +54,12 @@ class SettingsService {
                 await _prefs.setBool(_kMaterial, showMateriel);
             }
         }
+        if (response['show_repos'] != null) {
+            final showRepos = response['show_repos'] as bool;
+            if (showRepos != getShowRepos()) {
+                await _prefs.setBool(_kShowRepos, showRepos);
+            }
+        }
       }
     } catch (e) {
       // Create preference row if it doesn't exist? Or just ignore.
@@ -70,6 +77,7 @@ class SettingsService {
   static const String _kSoundEnabled = 'timer_sound_enabled';
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
   static const String _kShowEffort = 'show_effort';
+  static const String _kShowRepos = 'show_repos';
 
   // Display Type
   Future<void> saveDisplayType(String type) async {
@@ -207,6 +215,29 @@ class SettingsService {
   bool getShowEffort() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowEffort) ?? true;
+  }
+
+  // Show Repos
+  Future<void> saveShowRepos(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowRepos, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_repos': show,
+        });
+      } catch (e) {
+        print('Error saving show_repos to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowRepos() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowRepos) ?? true;
   }
 
   Future<void> _initIfNeeded() async {
