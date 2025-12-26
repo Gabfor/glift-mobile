@@ -31,7 +31,7 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes')
+          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -76,6 +76,12 @@ class SettingsService {
                 if (!showNotes) {
                    await _prefs.setBool(_kMaterial, false);
                 }
+            }
+        }
+        if (response['show_suivi'] != null) {
+            final showSuivi = response['show_suivi'] as bool;
+            if (showSuivi != getShowSuivi()) {
+                await _prefs.setBool(_kShowSuivi, showSuivi);
             }
         }
       }
@@ -315,6 +321,31 @@ class SettingsService {
   bool getShowNotes() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowNotes) ?? true;
+  }
+
+  // Show Suivi
+  static const String _kShowSuivi = 'show_suivi';
+
+  Future<void> saveShowSuivi(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowSuivi, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_suivi': show,
+        });
+      } catch (e) {
+        print('Error saving show_suivi to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowSuivi() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowSuivi) ?? true;
   }
 
   Future<void> _initIfNeeded() async {

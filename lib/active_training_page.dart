@@ -1677,7 +1677,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               _GridHeader('Effort', flex: 68),
             ],
             const SizedBox(width: 10),
-            _GridHeader('Suivi', flex: 40),
+            if (SettingsService.instance.getShowSuivi())
+              const _GridHeader('Suivi', flex: 40),
           ],
         ),
         const SizedBox(height: 10),
@@ -1696,26 +1697,28 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             child: Row(
               children: [
                 // Set Number
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${index + 1}',
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${index + 1}',
+                        style: GoogleFonts.quicksand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3A416F),
+                        ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
 
                 // Reps
                 Expanded(
@@ -1806,20 +1809,22 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     ),
                   ),
                 ],
-                const SizedBox(width: 10),
+                if (SettingsService.instance.getShowSuivi()) ...[
+                  const SizedBox(width: 10),
 
-                // Suivi (Completion)
-                Expanded(
-                  flex: 40,
-                  child: GestureDetector(
-                    onTap: () => _toggleSetCompletion(index),
-                    child: SvgPicture.asset(
-                      isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg',
-                      width: 24,
-                      height: 24,
+                  // Suivi (Completion)
+                  Expanded(
+                    flex: 40,
+                    child: GestureDetector(
+                      onTap: () => _toggleSetCompletion(index),
+                      child: SvgPicture.asset(
+                        isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg',
+                        width: 24,
+                        height: 24,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           );

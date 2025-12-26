@@ -36,6 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _effort = true;
   bool _links = true;
   bool _notes = true;
+  bool _suivi = true;
   bool _material = true;
   bool _rest = true;
   bool _tracking = true;
@@ -135,6 +136,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _vibrations = settings.getVibrationEnabled();
               _links = settings.getShowLinks();
               _notes = settings.getShowNotes();
+              _suivi = settings.getShowSuivi();
               _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
@@ -234,8 +236,11 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _SettingsSwitchTile(
                 title: 'Activer Suivi',
-                value: _tracking,
-                onChanged: (v) => setState(() => _tracking = v),
+                value: _suivi,
+                onChanged: (v) {
+                  setState(() => _suivi = v);
+                  SettingsService.instance.saveShowSuivi(v);
+                },
               ),
               _SettingsSwitchTile(
                 title: 'Activer Superset',
