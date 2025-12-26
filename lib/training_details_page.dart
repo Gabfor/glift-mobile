@@ -56,6 +56,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   Future<void> _fetchDetails() async {
     try {
+      // Sync settings to ensure UI reflects latest preferences
+      await SettingsService.instance.syncFromSupabase();
+      
       final rows = await _programRepository.getTrainingDetails(widget.training.id);
       if (mounted) {
         setState(() {
@@ -741,7 +744,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
     super.build(context);
 
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
-    final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
+    final hasNote = widget.row.note != null &&
+        widget.row.note!.isNotEmpty &&
+        SettingsService.instance.getShowNotes();
     final hasLink = widget.row.videoUrl != null &&
         widget.row.videoUrl!.isNotEmpty &&
         SettingsService.instance.getShowLinks();
@@ -811,16 +816,17 @@ class _ExerciseCardState extends State<_ExerciseCard>
                   ),
                   const SizedBox(width: 20),
                 ],
-                GestureDetector(
-                  onTap: _showNoteModal,
-                  child: SvgPicture.asset(
-                    hasNote
-                        ? 'assets/icons/note_on.svg'
-                        : 'assets/icons/note_off.svg',
-                    width: 24,
-                    height: 24,
+                if (SettingsService.instance.getShowNotes())
+                  GestureDetector(
+                    onTap: _showNoteModal,
+                    child: SvgPicture.asset(
+                      hasNote
+                          ? 'assets/icons/note_on.svg'
+                          : 'assets/icons/note_off.svg',
+                      width: 24,
+                      height: 24,
+                    ),
                   ),
-                ),
               ],
             ),
           ],
@@ -843,7 +849,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
         ...List.generate(widget.row.series, (index) {
           final reps = index < _repetitions.length ? _repetitions[index] : '-';
           final weight = index < _weights.length ? _weights[index] : '-';
-          final visuals = _visualsForState(_effortStates[index]);
+          final visuals = SettingsService.instance.getShowEffort()
+              ? _visualsForState(_effortStates[index])
+              : _visualsForState(_EffortState.neutral);
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),

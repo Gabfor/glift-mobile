@@ -69,6 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _sound = settings.getSoundEnabled();
         _vibrations = settings.getVibrationEnabled();
         _links = settings.getShowLinks();
+        _notes = settings.getShowNotes();
 
         _rest = settings.getShowRepos();
         debugPrint('SettingsPage: Loaded _rest = $_rest'); // DEBUG
@@ -133,6 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _sound = settings.getSoundEnabled();
               _vibrations = settings.getVibrationEnabled();
               _links = settings.getShowLinks();
+              _notes = settings.getShowNotes();
               _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
@@ -205,11 +207,18 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsSwitchTile(
                 title: 'Activer Notes',
                 value: _notes,
-                onChanged: (v) => setState(() => _notes = v),
+                onChanged: (v) {
+                  setState(() {
+                    _notes = v;
+                    if (!v) _material = false;
+                  });
+                  SettingsService.instance.saveShowNotes(v);
+                },
               ),
               _SettingsSwitchTile(
                 title: 'Activer Matériel',
                 value: _material,
+                enabled: _notes, // Disabled if Notes is OFF
                 onChanged: (v) {
                   setState(() => _material = v);
                   SettingsService.instance.saveMaterialEnabled(v);
@@ -554,11 +563,13 @@ class _SettingsSwitchTile extends StatelessWidget {
   final String title;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final bool enabled;
 
   const _SettingsSwitchTile({
     required this.title,
     required this.value,
     required this.onChanged,
+    this.enabled = true,
   });
 
   @override
@@ -571,7 +582,7 @@ class _SettingsSwitchTile extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF3A416F),
+              color: enabled ? const Color(0xFF3A416F) : const Color(0xFFECE9F1),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -583,10 +594,12 @@ class _SettingsSwitchTile extends StatelessWidget {
             child: Switch.adaptive(
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               value: value,
-              onChanged: (v) {
-                HapticFeedback.lightImpact();
-                onChanged(v);
-              },
+              onChanged: enabled
+                  ? (v) {
+                      HapticFeedback.lightImpact();
+                      onChanged(v);
+                    }
+                  : null,
               activeColor: const Color(0xFFA1A5FD),
             ),
           ),

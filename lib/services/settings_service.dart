@@ -31,7 +31,7 @@ class SettingsService {
     try {
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort, show_materiel, show_repos, show_link')
+          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -66,6 +66,16 @@ class SettingsService {
             final showLink = response['show_link'] as bool;
             if (showLink != getShowLinks()) {
                 await _prefs.setBool(_kShowLinks, showLink);
+            }
+        }
+        if (response['show_notes'] != null) {
+            final showNotes = response['show_notes'] as bool;
+            if (showNotes != getShowNotes()) {
+                await _prefs.setBool(_kShowNotes, showNotes);
+                // Enforce side effect on sync
+                if (!showNotes) {
+                   await _prefs.setBool(_kMaterial, false);
+                }
             }
         }
       }
@@ -275,6 +285,36 @@ class SettingsService {
   bool getShowLinks() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowLinks) ?? true;
+  }
+
+  // Show Notes
+  static const String _kShowNotes = 'show_notes';
+
+  Future<void> saveShowNotes(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowNotes, show);
+
+    // Side effect: If Notes are OFF, Material must be OFF.
+    if (!show) {
+      await saveMaterialEnabled(false);
+    }
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_notes': show,
+        });
+      } catch (e) {
+        print('Error saving show_notes to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowNotes() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowNotes) ?? true;
   }
 
   Future<void> _initIfNeeded() async {

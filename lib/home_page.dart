@@ -9,6 +9,7 @@ import 'models/program.dart';
 import 'models/training.dart';
 import 'repositories/program_repository.dart';
 import 'theme/glift_theme.dart';
+import 'services/settings_service.dart';
 import 'training_details_page.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
@@ -98,6 +99,8 @@ class HomePageState extends State<HomePage> {
     setState(() {
       _syncStatus = SyncStatus.loading;
     });
+    // Sync settings first or concurrently
+    await SettingsService.instance.syncFromSupabase();
     await _fetchPrograms();
   }
 

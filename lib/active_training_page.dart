@@ -1585,7 +1585,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   Widget build(BuildContext context) {
     super.build(context);
     final hasRest = widget.row.rest.isNotEmpty && widget.row.rest != '0';
-    final hasNote = widget.row.note != null && widget.row.note!.isNotEmpty;
+    final hasNote = widget.row.note != null &&
+        widget.row.note!.isNotEmpty &&
+        SettingsService.instance.getShowNotes();
     final hasLink = widget.row.videoUrl != null &&
         widget.row.videoUrl!.isNotEmpty &&
         SettingsService.instance.getShowLinks();
@@ -1645,14 +1647,17 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   ),
                   const SizedBox(width: 20),
                 ],
-                GestureDetector(
-                  onTap: _showNoteModal,
-                  child: SvgPicture.asset(
-                    hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg',
-                    width: 24,
-                    height: 24,
+                if (SettingsService.instance.getShowNotes())
+                  GestureDetector(
+                    onTap: _showNoteModal,
+                    child: SvgPicture.asset(
+                      hasNote
+                          ? 'assets/icons/note_on.svg'
+                          : 'assets/icons/note_off.svg',
+                      width: 24,
+                      height: 24,
+                    ),
                   ),
-                ),
               ],
             ),
           ],
@@ -1681,7 +1686,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         ...List.generate(widget.row.series, (index) {
           final reps = index < _repetitions.length ? _repetitions[index] : '-';
           final weight = index < _weights.length ? _weights[index] : '-';
-          final visuals = _visualsForState(_effortStates[index]);
+          final visuals = SettingsService.instance.getShowEffort()
+              ? _visualsForState(_effortStates[index])
+              : _visualsForState(_EffortState.neutral);
           final isCompleted = _completedSets[index];
 
           return Padding(
