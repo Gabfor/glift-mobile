@@ -63,10 +63,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/app_icon.svg
-    - assets/images/logo_app.svg
-    - assets/images/onboarding_suivre.svg
-    - assets/images/onboarding_noter.svg
-    - assets/images/onboarding_visualiser.svg
+    - assets/images/congrats.svg
+    - assets/images/
     - assets/icons/
     - assets/sounds/
