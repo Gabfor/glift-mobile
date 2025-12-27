@@ -425,7 +425,13 @@ class ProgramRepository {
           // Only insert sets with valid repetitions (assuming check constraint requires > 0)
           if (reps > 0) {
             // Ensure weights array length matches repetitions (check constraint: cardinality(weights) == repetitions)
-            final weightToUse = weight.trim().isEmpty ? '0' : weight;
+            var weightToUse = weight.trim();
+            if (weightToUse.isEmpty || weightToUse == '-') {
+              weightToUse = '0';
+            }
+            // Also replace commas with dots just in case it's being passed as string but checked as numeric downstream
+            weightToUse = weightToUse.replaceAll(',', '.');
+            
             final weightsList = List<String>.filled(reps, weightToUse);
 
             setsData.add({
@@ -465,6 +471,19 @@ class ProgramRepository {
       throw Exception(errorDetails.toString());
     } catch (e) {
       throw Exception('Erreur lors de la sauvegarde de la séance: $e');
+    }
+  }
+  Future<int> getTotalSessionCount(String userId) async {
+    try {
+      final response = await _supabase
+          .from('training_sessions')
+          .count()
+          .eq('user_id', userId);
+      
+      return response;
+    } catch (e) {
+      debugPrint('Error getting session count: $e');
+      return 0;
     }
   }
 }

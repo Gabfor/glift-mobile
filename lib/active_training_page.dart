@@ -20,6 +20,7 @@ import 'widgets/superset_group_card.dart';
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
 import '../services/vibration_service.dart';
+import '../session_completed_page.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -499,7 +500,31 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           await vibrationService.fallback();
         }
 
-        Navigator.of(context).pop(true);
+        // Fetch session count for the completion screen
+        int sessionCount = 1;
+        final userId = widget.supabase.auth.currentUser?.id;
+        if (userId != null) {
+          sessionCount = await _programRepository.getTotalSessionCount(userId);
+        }
+        
+        final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
+        final displayDuration = duration > 0 ? duration : 1;
+
+        if (!mounted) return;
+
+        // Navigate to completion screen
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SessionCompletedPage(
+              sessionCount: sessionCount,
+              durationMinutes: displayDuration,
+            ),
+          ),
+        );
+        
+        if (mounted) {
+             Navigator.of(context).pop(true);
+        }
       }
     } catch (e) {
       if (mounted) {
