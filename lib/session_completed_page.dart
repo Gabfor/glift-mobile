@@ -38,14 +38,12 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                    child: SizedBox(
-                      width: 280,
-                      height: 280,
-                      child: SvgPicture.asset(
-                        'assets/images/congrats.svg',
-                        fit: BoxFit.contain,
-                      ),
+                  const Spacer(),
+                  Expanded(
+                    flex: 4,
+                    child: Image.asset(
+                      'assets/images/congrats.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(height: 48),
@@ -72,7 +70,27 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                       children: [
                         const TextSpan(text: 'C’était votre '),
                         TextSpan(
-                          text: '${widget.sessionCount}ème séance',
+                          text: '${widget.sessionCount}',
+                          style: GoogleFonts.quicksand(
+                            fontWeight: FontWeight.w700, // Bold
+                            color: const Color(0xFF3A416F),
+                          ),
+                        ),
+                        WidgetSpan(
+                          child: Transform.translate(
+                            offset: const Offset(0, -6.0),
+                            child: Text(
+                              'ème',
+                              style: GoogleFonts.quicksand(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF3A416F),
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' séance',
                           style: GoogleFonts.quicksand(
                             fontWeight: FontWeight.w700, // Bold
                             color: const Color(0xFF3A416F),
@@ -122,6 +140,21 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 20,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.of(context).pop(true);
+              },
+              child: SvgPicture.asset(
+                'assets/icons/close.svg',
+                width: 30,
+                height: 30,
               ),
             ),
           ),
