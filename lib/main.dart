@@ -193,7 +193,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       title:
           'Notez facilement vos performances et assurez-vous de toujours progresser',
       description:
-          'Notez vos performances et vos sensations. Ajustez vos entraînements en temps réel ou plus tard afin de toujours progresser.',
+          'Notez vos performances et vos sensations. Ajustez vos entraînements afin de toujours progresser.',
       imageAsset: 'assets/images/onboarding_noter.svg',
     ),
     const OnboardingPageData(
@@ -201,7 +201,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       title:
           'Visualisez votre progression séance après séance et restez motivé pour longtemps',
       description:
-          'Visualisez vos progrès dans votre tableau de bord, fixez-vous des objectifs toujours plus ambitieux et sortez de votre zone de confort.',
+          'Visualisez vos progrès dans votre tableau de bord, soyez toujours plus ambitieux et sortez de votre zone de confort.',
       imageAsset: 'assets/images/onboarding_visualiser.svg',
     ),
   ];
@@ -356,13 +356,7 @@ class OnboardingSlide extends StatelessWidget {
         final availableHeight = constraints.maxHeight;
         final availableWidth = constraints.maxWidth;
 
-        final imageSize = math.max(
-          160.0,
-          math.min(
-            360.0,
-            math.min(availableWidth * 0.85, availableHeight * 0.42),
-          ),
-        );
+        final imageSize = 320.0;
 
         return SingleChildScrollView(
           child: ConstrainedBox(
@@ -371,6 +365,7 @@ class OnboardingSlide extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const SizedBox(height: 20),
                 Center(
                   child: EmbeddedRasterImage(
                     svgAsset: data.imageAsset,
@@ -378,7 +373,7 @@ class OnboardingSlide extends StatelessWidget {
                     height: imageSize,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 42),
                 Text(
                   data.tagline,
                   textAlign: TextAlign.center,
