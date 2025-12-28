@@ -209,7 +209,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final rowIndex = _activeTimerRowIndex ?? 0;
 
     _closeInlineTimer();
-    await _openTimerForRow(rowIndex, data.durationInSeconds, inlineData: data);
+    await _openTimerForRow(rowIndex, data.durationInSeconds, inlineData: data, forceFullScreen: true);
   }
 
   void _closeKeypad() {
@@ -377,6 +377,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     int duration, {
     InlineTimerData? inlineData,
     bool autoTrigger = false,
+    bool forceFullScreen = false,
   }) async {
     if (_inlineTimerData != null) {
       if (autoTrigger) {
@@ -397,16 +398,15 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       }
     }
 
-    // Check settings for default display type
     final displayType = SettingsService.instance.getDisplayType();
     
-    // If preference is 'Miniature', open inline directly (unless overridden somehow, but here we assume default action)
-    if (displayType == 'Miniature') {
+    // If preference is 'Miniature', open inline directly, UNLESS forced to full screen
+    if (displayType == 'Miniature' && !forceFullScreen) {
       _activateInlineTimer(InlineTimerData(
         remainingSeconds: duration,
-        isRunning: true, // Auto-start by default on trigger/tap? Yes.
-        durationInSeconds: duration,
-        enableSound: SettingsService.instance.getAutoTriggerEnabled(), // Re-using auto-trigger bool for sound enabled default? No, usually separate. But for now...
+        isRunning: true,
+        durationInSeconds: inlineData?.durationInSeconds ?? duration,
+        enableSound: SettingsService.instance.getAutoTriggerEnabled(),
         enableVibration: SettingsService.instance.getVibrationEnabled(),
       ));
       _activeTimerRowIndex = index;
