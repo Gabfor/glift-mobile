@@ -134,7 +134,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                             child: Transform.translate(
                               offset: const Offset(0, -6.0),
                               child: Text(
-                                'ème',
+                                widget.sessionCount == 1 ? 'ʳᵉ' : 'ᵉ',
                                 style: GoogleFonts.quicksand(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -152,7 +152,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                           ),
                           const TextSpan(text: ' et vous vous êtes entraîné pendant '),
                           TextSpan(
-                            text: '${widget.durationMinutes} minutes',
+                            text: '${widget.durationMinutes} minute${widget.durationMinutes > 1 ? 's' : ''}',
                             style: GoogleFonts.quicksand(
                               fontWeight: FontWeight.w700, // Bold
                               color: const Color(0xFF3A416F),
