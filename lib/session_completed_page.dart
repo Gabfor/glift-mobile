@@ -15,6 +15,7 @@ class SessionCompletedPage extends StatefulWidget {
     required this.sessionCount,
     required this.durationMinutes,
     this.programId,
+    this.trainingId,
     required this.supabase,
     required this.authRepository,
     required this.biometricAuthService,
@@ -23,6 +24,7 @@ class SessionCompletedPage extends StatefulWidget {
   final int sessionCount;
   final int durationMinutes;
   final String? programId;
+  final String? trainingId;
   final SupabaseClient supabase;
   final AuthRepository authRepository;
   final BiometricAuthService biometricAuthService;
@@ -61,6 +63,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
           authRepository: widget.authRepository,
           biometricAuthService: widget.biometricAuthService,
           initialProgramId: widget.programId,
+          initialTrainingId: widget.trainingId,
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,

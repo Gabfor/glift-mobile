@@ -17,12 +17,14 @@ class MainPage extends StatefulWidget {
     required this.authRepository,
     required this.biometricAuthService,
     this.initialProgramId,
+    this.initialTrainingId,
   });
 
   final SupabaseClient supabase;
   final AuthRepository authRepository;
   final BiometricAuthService biometricAuthService;
   final String? initialProgramId;
+  final String? initialTrainingId;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -51,6 +53,7 @@ class _MainPageState extends State<MainPage> {
         authRepository: widget.authRepository,
         biometricAuthService: widget.biometricAuthService,
         initialProgramId: widget.initialProgramId,
+        initialTrainingId: widget.initialTrainingId,
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
       ),
       HomePage(

@@ -26,6 +26,7 @@ class DashboardPage extends StatefulWidget {
     required this.authRepository,
     required this.biometricAuthService,
     this.initialProgramId,
+    this.initialTrainingId,
     this.onNavigationVisibilityChanged,
   });
 
@@ -33,6 +34,7 @@ class DashboardPage extends StatefulWidget {
   final AuthRepository authRepository;
   final BiometricAuthService biometricAuthService;
   final String? initialProgramId;
+  final String? initialTrainingId;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
 
   @override
@@ -97,7 +99,7 @@ class DashboardPageState extends State<DashboardPage> {
         // Use provided programId if valid, otherwise default to first
         if (programId != null && programs.any((p) => p.id == programId)) {
           _selectedProgramId = programId;
-        } else {
+        } else if (_selectedProgramId == null || !programs.any((p) => p.id == _selectedProgramId)) {
           _selectedProgramId = programs.first.id;
         }
         _programKeys
@@ -116,7 +118,7 @@ class DashboardPageState extends State<DashboardPage> {
         });
       }
 
-      await _loadTrainings(_selectedProgramId!, trainingId: trainingId);
+      await _loadTrainings(_selectedProgramId!, trainingId: trainingId ?? (_selectedProgramId == widget.initialProgramId ? widget.initialTrainingId : null));
       
       // Scroll to selected program if needed
       if (_selectedProgramId != null) {

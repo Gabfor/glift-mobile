@@ -520,6 +520,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 sessionCount: sessionCount,
                 durationMinutes: displayDuration,
                 programId: widget.training.programId,
+                trainingId: widget.training.id,
                 supabase: widget.supabase,
                 authRepository: widget.authRepository,
                 biometricAuthService: widget.biometricAuthService,
