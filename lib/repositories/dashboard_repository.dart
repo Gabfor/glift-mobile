@@ -13,6 +13,7 @@ class DashboardRepository {
           .from('programs')
           .select('id, name, position, dashboard, app, trainings(id)')
           .eq('user_id', userId)
+          .or('dashboard.eq.true,dashboard.is.null')
           .order('position', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;
@@ -44,6 +45,7 @@ class DashboardRepository {
           .from('trainings')
           .select('id, name, dashboard, position, program_id')
           .eq('program_id', programId)
+          .or('dashboard.eq.true,dashboard.is.null')
           .order('position', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;

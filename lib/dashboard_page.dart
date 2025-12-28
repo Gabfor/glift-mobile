@@ -78,10 +78,18 @@ class DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
-  Future<void> refresh({String? programId, String? trainingId}) async {
+  Future<void> refreshData({String? programId}) async {
     setState(() => _isLoading = true);
-    await _loadData(programId: programId, trainingId: trainingId);
+    await _loadData(programId: programId);
   }
+
+  // The existing refresh method is now replaced by refreshData,
+  // and _loadData is kept private.
+  // The original refresh method was:
+  // Future<void> refresh({String? programId, String? trainingId}) async {
+  //   setState(() => _isLoading = true);
+  //   await _loadData(programId: programId, trainingId: trainingId);
+  // }
 
   Future<void> _loadData({String? programId, String? trainingId}) async {
     try {
@@ -90,7 +98,13 @@ class DashboardPageState extends State<DashboardPage> {
 
       final programs = await _repository.getDashboardPrograms(userId);
       if (programs.isEmpty) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _programs = [];
+          _trainings = [];
+          _exercises = [];
+          _selectedProgramId = null;
+          _isLoading = false;
+        });
         return;
       }
 
@@ -331,13 +345,24 @@ class DashboardPageState extends State<DashboardPage> {
     }
 
     if (_programs.isEmpty) {
-      return Center(
-        child: Text(
-          'Aucun programme disponible',
-          style: GoogleFonts.quicksand(
-            color: const Color(0xFF3A416F),
-            fontSize: 16,
-          ),
+      return GliftPullToRefresh(
+        onRefresh: () async {
+          await refreshData(programId: _selectedProgramId);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 200),
+          children: [
+            Center(
+              child: Text(
+                'Aucun programme disponible',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF3A416F),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -361,7 +386,7 @@ class DashboardPageState extends State<DashboardPage> {
 
         return GliftPullToRefresh(
           onRefresh: () async {
-            await refresh(programId: _selectedProgramId);
+            await refreshData(programId: _selectedProgramId);
           },
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -480,6 +505,18 @@ class DashboardPageState extends State<DashboardPage> {
                   );
                 }),
               ],
+            ),
+          ),
+        ] else ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 8),
+            child: Text(
+              'Aucun programme',
+              style: GoogleFonts.quicksand(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

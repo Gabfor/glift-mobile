@@ -313,6 +313,18 @@ class HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        ] else ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 8),
+            child: Text(
+              'Aucun programme',
+              style: GoogleFonts.quicksand(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ],
         const SizedBox(height: 20),
       ],
@@ -329,10 +341,20 @@ class HomePageState extends State<HomePage> {
     }
 
     if (_programs == null || _programs!.isEmpty) {
-      return Center(
-        child: Text(
-          'Aucun programme disponible',
-          style: GoogleFonts.quicksand(fontSize: 16, color: GliftTheme.body),
+      return GliftPullToRefresh(
+        onRefresh: _handleRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 200),
+          children: [
+            Center(
+              child: Text(
+                'Aucun programme disponible',
+                style: GoogleFonts.quicksand(
+                    fontSize: 16, color: GliftTheme.body),
+              ),
+            ),
+          ],
         ),
       );
     }

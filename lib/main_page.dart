@@ -88,9 +88,8 @@ class _MainPageState extends State<MainPage> {
     });
     // Slight delay to ensure the widget is built/visible before refreshing
     Future.delayed(const Duration(milliseconds: 100), () {
-      _dashboardKey.currentState?.refresh(
+      _dashboardKey.currentState?.refreshData(
         programId: programId,
-        trainingId: trainingId,
       );
     });
   }
@@ -100,6 +99,10 @@ class _MainPageState extends State<MainPage> {
       _currentIndex = 1;
       _isBottomNavVisible = true;
     });
+    
+    // Refresh Dashboard as well so it's ready when user switches to it
+    _dashboardKey.currentState?.refreshData(programId: programId);
+
     // Slight delay to ensure the widget is built/visible before refreshing
     Future.delayed(const Duration(milliseconds: 100), () {
       _homeKey.currentState?.refresh(programId: programId);
