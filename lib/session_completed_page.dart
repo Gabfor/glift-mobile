@@ -55,13 +55,15 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
   void _close() {
     HapticFeedback.lightImpact();
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => MainPage(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => MainPage(
           supabase: widget.supabase,
           authRepository: widget.authRepository,
           biometricAuthService: widget.biometricAuthService,
           initialProgramId: widget.programId,
         ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
       ),
       (route) => false,
     );
