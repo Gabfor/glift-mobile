@@ -787,8 +787,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      GliftTheme.barrierColor,
-                      Colors.transparent,
+                      const Color(0x8C2E3142),
+                      const Color(0x002E3142),
                     ],
                   ),
                 ),
