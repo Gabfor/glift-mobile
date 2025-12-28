@@ -16,6 +16,7 @@ import 'models/training_row.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
+import 'models/dashboard_preferences.dart';
 
 class DashboardPage extends StatefulWidget {
 
@@ -49,6 +50,8 @@ class DashboardPageState extends State<DashboardPage> {
 
   List<Program> _programs = [];
   String? _selectedProgramId;
+  
+  DashboardPreferences _preferences = DashboardPreferences(); // Initialize with defaults
 
   List<Map<String, dynamic>> _trainings = [];
   int _selectedTrainingIndex = 0;
@@ -120,6 +123,10 @@ class DashboardPageState extends State<DashboardPage> {
           ..clear()
           ..addAll(List.generate(programs.length, (_) => GlobalKey()));
       });
+
+      
+      // Fetch preferences in parallel or after programs
+      _preferences = await _repository.getDashboardPreferences(userId);
 
       final selectedProgramIndex =
           programs.indexWhere((program) => program.id == _selectedProgramId);
@@ -446,6 +453,7 @@ class DashboardPageState extends State<DashboardPage> {
                         exercise: exercise,
                         repository: _repository,
                         userId: widget.supabase.auth.currentUser!.id,
+                        settings: _preferences.getSettingsFor(exercise.id),
                       ),
                       if (!isLast) const SizedBox(height: 20),
                     ],
@@ -552,12 +560,14 @@ class _ExerciseChartCard extends StatefulWidget {
   final TrainingRow exercise;
   final DashboardRepository repository;
   final String userId;
+  final ExerciseDisplaySetting settings;
 
   const _ExerciseChartCard({
     super.key,
     required this.exercise,
     required this.repository,
     required this.userId,
+    required this.settings,
   });
 
   @override
@@ -611,19 +621,114 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
       final processedHistory = history.map((session) {
         final sets = (session['sets'] as List?) ?? [];
-        double maxWeight = 0;
+        double value = 0;
+        final curveType = widget.settings.curveType;
 
-        for (final set in sets) {
-          final weights = (set['weights'] as List?) ?? [];
-          for (final w in weights) {
-            final weight = double.tryParse(w.toString()) ?? 0;
-            if (weight > maxWeight) maxWeight = weight;
-          }
+        switch (curveType) {
+          case 'poids-maximum':
+            for (final set in sets) {
+              final weights = (set['weights'] as List?) ?? [];
+              for (final w in weights) {
+                final weight = double.tryParse(w.toString()) ?? 0;
+                if (weight > value) value = weight;
+              }
+            }
+            break;
+            
+          case 'poids-moyen':
+            double totalWeight = 0;
+            int count = 0;
+            for (final set in sets) {
+              final weights = (set['weights'] as List?) ?? [];
+              for (final w in weights) {
+                totalWeight += double.tryParse(w.toString()) ?? 0;
+                count++;
+              }
+            }
+            if (count > 0) value = totalWeight / count;
+            break;
+
+          case 'poids-total':
+            for (final set in sets) {
+              final weights = (set['weights'] as List?) ?? [];
+              final reps = int.tryParse(set['repetitions']?.toString() ?? '0') ?? 0;
+              // If we have weights, sum them. Usually volume = weight * reps.
+              // Web implementation: `totalWeight += setTotalWeight`.
+              // where `setTotalWeight` = sum of weights array. 
+              // Wait, web logic:
+              // const setTotalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+              // totalWeight += setTotalWeight;
+              // It seems it sums the weights array directly? 
+              // Let's look at web logic again:
+              // `const setTotalWeight = weights.reduce((sum, weight) => sum + weight, 0);`
+              // `totalWeight += setTotalWeight;`
+              // Yes, it strictly sums the weights array. (Usually in this app `weights` array length = number of reps with that weight?).
+              // But `effectiveRepetitions` is used for reps count.
+              // For `poids-total` (Total Volume), usually it is Weight * Reps.
+              // But here `weights` array likely contains one entry per rep if it's drop set? Or is it `weights` field of a set?
+              // In this app, `weights` is `number[]`. 
+              // If `repetitions` is present, it might override length?
+              // Web: "weights.reduce(...)". This means strictly sum of values in weights array.
+              double setWeightSum = 0;
+              for (final w in weights) {
+                 setWeightSum += double.tryParse(w.toString()) ?? 0;
+              }
+              // If weights array represents the weight used for the set, and we have N reps.
+              // In Glift, `weights` is an array of weights for the set (e.g. [10, 10, 10] for 3 reps?).
+              // If so, simple sum is correct volume.
+              value += setWeightSum;
+            }
+            break;
+
+          case 'repetition-maximum':
+             for (final set in sets) {
+                final reps = int.tryParse(set['repetitions']?.toString() ?? '0');
+                final weights = (set['weights'] as List?) ?? [];
+                // effective reps = reps ?? weights.length
+                final effectiveReps = reps ?? weights.length;
+                if (effectiveReps > value) value = effectiveReps.toDouble();
+             }
+             break;
+
+          case 'repetition-moyenne':
+             double totalReps = 0;
+             int setCount = 0;
+             for (final set in sets) {
+                final reps = int.tryParse(set['repetitions']?.toString() ?? '0');
+                final weights = (set['weights'] as List?) ?? [];
+                final effectiveReps = reps ?? weights.length;
+                if (effectiveReps > 0) {
+                    totalReps += effectiveReps;
+                    setCount++;
+                }
+             }
+             if (setCount > 0) value = totalReps / setCount;
+             break;
+
+          case 'repetitions-totales':
+             for (final set in sets) {
+                final reps = int.tryParse(set['repetitions']?.toString() ?? '0');
+                final weights = (set['weights'] as List?) ?? [];
+                final effectiveReps = reps ?? weights.length;
+                value += effectiveReps;
+             }
+             break;
+
+          default:
+             // Default to max weight
+             for (final set in sets) {
+              final weights = (set['weights'] as List?) ?? [];
+              for (final w in weights) {
+                final weight = double.tryParse(w.toString()) ?? 0;
+                if (weight > value) value = weight;
+              }
+            }
         }
+
 
         return {
           'date': DateTime.parse(session['session']['performed_at']),
-          'value': maxWeight,
+          'value': value,
         };
       }).toList();
 
@@ -667,9 +772,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         double interval = 25;
         double chartMaxY = 100;
 
-        final isImperial = weightUnit == 'imperial';
-        final double conversion = 1.0;
-        final String unitLabel = isImperial ? 'lb' : 'kg';
+        final isWeightCurve = widget.settings.curveType.startsWith('poids');
+        final isImperial = weightUnit == 'imperial' && isWeightCurve;
+        final double conversion = isImperial ? 2.20462 : 1.0;
+        final String unitLabel = isWeightCurve 
+            ? (isImperial ? 'lb' : 'kg')
+            : 'rép';
 
         if (_history.isNotEmpty) {
           final values = _history.map((e) => (e['value'] as double) * conversion).toList();

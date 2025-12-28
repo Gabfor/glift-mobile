@@ -1,11 +1,13 @@
 import 'package:supabase/supabase.dart';
 import '../models/program.dart';
 import '../models/training_row.dart';
+import '../models/dashboard_preferences.dart';
 
 class DashboardRepository {
   final SupabaseClient _supabase;
 
   DashboardRepository(this._supabase);
+
 
   Future<List<Program>> getDashboardPrograms(String userId) async {
     try {
@@ -99,6 +101,27 @@ class DashboardRepository {
       return List<Map<String, dynamic>>.from(response as List);
     } catch (e) {
       throw Exception('Erreur lors du chargement de l\'historique: $e');
+    }
+  }
+
+
+  Future<DashboardPreferences> getDashboardPreferences(String userId) async {
+    try {
+      final response = await _supabase
+          .from('dashboard_preferences')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (response == null) {
+        return DashboardPreferences();
+      }
+
+      return DashboardPreferences.fromJson(response);
+    } catch (e) {
+      // Return defaults on error to not block the UI
+      print('Error fetching preferences: $e');
+      return DashboardPreferences();
     }
   }
 }
