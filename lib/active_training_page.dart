@@ -1871,7 +1871,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             children: [
               ActionButton(
                 label: 'Ignorer',
-                icon: 'assets/icons/close.svg',
+                icon: 'assets/icons/croix_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
                 color: effectiveIsCompleted
@@ -1880,7 +1880,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 backgroundColor:
                     effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
                 isDisabled: effectiveIsCompleted,
-                onTap: (effectiveIsCompleted || effectiveIsIgnored)
+                onTap: (effectiveIsCompleted || _isIgnoring)
                     ? null
                     : () {
                         _handleIgnore();

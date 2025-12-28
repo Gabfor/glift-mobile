@@ -98,7 +98,7 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                 children: [
                   ActionButton(
                     label: 'Ignorer',
-                    icon: 'assets/icons/close.svg',
+                    icon: 'assets/icons/croix_small.svg',
                     iconWidth: 12,
                     iconHeight: 12,
                     color: effectiveIsCompleted
@@ -107,7 +107,7 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     backgroundColor:
                         effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
                     isDisabled: effectiveIsCompleted,
-                    onTap: (effectiveIsCompleted || effectiveIsIgnored)
+                    onTap: (effectiveIsCompleted || _isIgnoring)
                         ? null
                         : () {
                             _handleIgnore();
