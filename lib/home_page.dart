@@ -144,6 +144,12 @@ class HomePageState extends State<HomePage> {
           _programKeys
             ..clear()
             ..addAll(List.generate(programs.length, (_) => GlobalKey()));
+
+          // Clear new indicator if the program is no longer visible
+          if (_newlyDownloadedId != null &&
+              !programs.any((p) => p.id == _newlyDownloadedId)) {
+            _newlyDownloadedId = null;
+          }
             
           // If we had no selection or selection is invalid, select first
           if (_selectedProgramId == null ||
