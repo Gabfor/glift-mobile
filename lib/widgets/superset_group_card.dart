@@ -98,7 +98,7 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                 children: [
                   ActionButton(
                     label: 'Ignorer',
-                    icon: 'assets/icons/croix_small.svg',
+                    icon: 'assets/icons/close.svg',
                     iconWidth: 12,
                     iconHeight: 12,
                     color: effectiveIsCompleted

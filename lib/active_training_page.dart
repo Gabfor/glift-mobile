@@ -21,16 +21,22 @@ import '../services/notification_service.dart';
 import '../services/settings_service.dart';
 import '../services/vibration_service.dart';
 import '../session_completed_page.dart';
+import '../auth/auth_repository.dart';
+import '../auth/biometric_auth_service.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
     super.key,
     required this.training,
     required this.supabase,
+    required this.authRepository,
+    required this.biometricAuthService,
   });
 
   final Training training;
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
 
   @override
   State<ActiveTrainingPage> createState() => _ActiveTrainingPageState();
@@ -492,13 +498,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       }
 
       if (mounted) {
-        const vibrationService = DeviceVibrationService();
-        final hasVibrator = await vibrationService.hasVibrator();
-        if (hasVibrator) {
-          await vibrationService.vibrate();
-        } else {
-          await vibrationService.fallback();
-        }
+
 
         // Fetch session count for the completion screen
         int sessionCount = 1;
@@ -513,17 +513,21 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         if (!mounted) return;
 
         // Navigate to completion screen
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SessionCompletedPage(
-              sessionCount: sessionCount,
-              durationMinutes: displayDuration,
-            ),
-          ),
-        );
-        
         if (mounted) {
-             Navigator.of(context).pop(true);
+          await Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
+                sessionCount: sessionCount,
+                durationMinutes: displayDuration,
+                programId: widget.training.programId,
+                supabase: widget.supabase,
+                authRepository: widget.authRepository,
+                biometricAuthService: widget.biometricAuthService,
+              ),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
         }
       }
     } catch (e) {
@@ -1867,7 +1871,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             children: [
               ActionButton(
                 label: 'Ignorer',
-                icon: 'assets/icons/croix_small.svg',
+                icon: 'assets/icons/close.svg',
                 iconWidth: 12,
                 iconHeight: 12,
                 color: effectiveIsCompleted

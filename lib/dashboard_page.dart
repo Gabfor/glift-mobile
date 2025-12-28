@@ -9,6 +9,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'repositories/dashboard_repository.dart';
 import 'services/settings_service.dart';
+import 'auth/auth_repository.dart';
+import 'auth/biometric_auth_service.dart';
 import 'models/program.dart';
 import 'models/training_row.dart';
 import 'widgets/glift_loader.dart';
@@ -16,14 +18,22 @@ import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 
 class DashboardPage extends StatefulWidget {
-  final SupabaseClient supabase;
-  final ValueChanged<bool>? onNavigationVisibilityChanged;
+
 
   const DashboardPage({
     super.key,
     required this.supabase,
+    required this.authRepository,
+    required this.biometricAuthService,
+    this.initialProgramId,
     this.onNavigationVisibilityChanged,
   });
+
+  final SupabaseClient supabase;
+  final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
+  final String? initialProgramId;
+  final ValueChanged<bool>? onNavigationVisibilityChanged;
 
   @override
   State<DashboardPage> createState() => DashboardPageState();
@@ -54,6 +64,7 @@ class DashboardPageState extends State<DashboardPage> {
     _repository = DashboardRepository(widget.supabase);
     _programPageController = PageController();
     _programScrollController = ScrollController();
+    _selectedProgramId = widget.initialProgramId;
     _loadData();
   }
 

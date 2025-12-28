@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 
 import 'auth/auth_repository.dart';
+import 'auth/biometric_auth_service.dart';
 import 'login_page.dart';
 import 'models/program.dart';
 import 'models/training.dart';
@@ -21,6 +22,8 @@ class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     required this.supabase,
+    required this.authRepository,
+    required this.biometricAuthService,
     this.onNavigateToDashboard,
     this.initialProgramId,
   });
@@ -28,6 +31,8 @@ class HomePage extends StatefulWidget {
   final String? initialProgramId;
 
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
   final void Function({String? programId, String? trainingId})?
       onNavigateToDashboard;
 
@@ -368,6 +373,8 @@ class HomePageState extends State<HomePage> {
                       pageBuilder: (_, __, ___) => TrainingDetailsPage(
                         training: training,
                         supabase: widget.supabase,
+                        authRepository: widget.authRepository,
+                        biometricAuthService: widget.biometricAuthService,
                       ),
                       transitionsBuilder:
                           (_, animation, secondaryAnimation, child) {

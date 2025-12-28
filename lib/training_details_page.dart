@@ -19,16 +19,22 @@ import 'active_training_page.dart';
 import '../theme/glift_theme.dart';
 import '../timer_page.dart';
 import '../services/settings_service.dart';
+import '../auth/auth_repository.dart';
+import '../auth/biometric_auth_service.dart';
 
 class TrainingDetailsPage extends StatefulWidget {
   const TrainingDetailsPage({
     super.key,
     required this.training,
     required this.supabase,
+    required this.authRepository,
+    required this.biometricAuthService,
   });
 
   final Training training;
   final SupabaseClient supabase;
+  final AuthRepository authRepository;
+  final BiometricAuthService biometricAuthService;
 
   @override
   State<TrainingDetailsPage> createState() => _TrainingDetailsPageState();
@@ -162,6 +168,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         pageBuilder: (_, __, ___) => ActiveTrainingPage(
           training: widget.training,
           supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,

@@ -63,7 +63,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/congrats.png
+    - assets/images/congrats.gif
     - assets/images/
     - assets/icons/
     - assets/sounds/

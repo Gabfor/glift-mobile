@@ -16,11 +16,13 @@ class MainPage extends StatefulWidget {
     required this.supabase,
     required this.authRepository,
     required this.biometricAuthService,
+    this.initialProgramId,
   });
 
   final SupabaseClient supabase;
   final AuthRepository authRepository;
   final BiometricAuthService biometricAuthService;
+  final String? initialProgramId;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -37,15 +39,26 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    // Use Dashboard as default if an initial program ID is provided
+    if (widget.initialProgramId != null) {
+      _currentIndex = 0;
+    }
+    
     _pages = [
       DashboardPage(
         key: _dashboardKey,
         supabase: widget.supabase,
+        authRepository: widget.authRepository,
+        biometricAuthService: widget.biometricAuthService,
+        initialProgramId: widget.initialProgramId,
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
       ),
       HomePage(
         key: _homeKey,
         supabase: widget.supabase,
+        authRepository: widget.authRepository,
+        biometricAuthService: widget.biometricAuthService,
+        initialProgramId: widget.initialProgramId,
         onNavigateToDashboard: _navigateToDashboard,
       ),
       StorePage(
