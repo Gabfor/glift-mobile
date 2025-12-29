@@ -13,7 +13,6 @@ class ShopOffer {
   final String? shopWebsite;
   final String? shopLink;
   final String? shipping;
-  final bool premium;
   final String? modal;
   final String? condition;
   final String? gender;
@@ -33,7 +32,6 @@ class ShopOffer {
     this.shopWebsite,
     this.shopLink,
     this.shipping,
-    required this.premium,
     this.modal,
     this.condition,
     this.gender,
@@ -76,7 +74,6 @@ class ShopOffer {
       shopWebsite: json['shop_website'] as String?,
       shopLink: json['shop_link'] as String?,
       shipping: json['shipping'] as String?,
-      premium: json['premium'] as bool? ?? false,
       modal: json['modal'] as String?,
       condition: json['condition'] as String?,
       gender: json['gender'] as String?,

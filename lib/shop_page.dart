@@ -532,32 +532,7 @@ class _ShopOfferCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (offer.premium)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF7069FA),
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(8),
-                        bottomLeft: Radius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'PREMIUM',
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+
             ],
           ),
 
