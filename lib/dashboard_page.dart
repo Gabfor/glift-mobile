@@ -810,6 +810,11 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           if (rawInterval < 1) rawInterval = 1;
           interval = rawInterval.ceilToDouble();
 
+          // Enforce multiples of 5 if interval is large enough
+          if (interval >= 5) {
+            interval = ((interval / 5).ceil() * 5).toDouble();
+          }
+
           chartMaxY = interval * (desiredGridLines - 1);
 
         // Calculate centered viewport
@@ -819,8 +824,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           final double dataCount = _history.length.toDouble();
           final double centerData = (dataCount - 1) / 2;
           final double viewRange = 6;
-          minX = centerData - viewRange / 2;
-          maxX = centerData + viewRange / 2;
+          // Use floor/ceil to ensure integer bounds and prevent fractional tick duplication
+          minX = (centerData - viewRange / 2).floorToDouble(); 
+          maxX = (centerData + viewRange / 2).ceilToDouble();
         }
 
         // Dynamic width calculation
@@ -940,6 +946,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           41, // Reduced to 41px as requested
                                       interval: 1,
                                       getTitlesWidget: (value, meta) {
+                                        // Strictly enforce integer labels
+                                        if (value % 1 != 0) return const SizedBox.shrink();
+
                                         final index = value.toInt();
                                         if (index >= 0 &&
                                             index < _history.length) {
