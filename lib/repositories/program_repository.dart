@@ -169,6 +169,7 @@ class ProgramRepository {
               programId: t.programId,
               lastSessionDate: lastDate,
               averageDurationMinutes: avgDuration,
+              sessionCount: trainingSessions.length,
             );
           }).toList();
 
@@ -213,6 +214,7 @@ class ProgramRepository {
                       visibleTrainingsWithStats[i] = remoteTraining.copyWith(
                         lastSessionDate: localDate,
                         averageDurationMinutes: localTraining.averageDurationMinutes,
+                        sessionCount: localTraining.sessionCount,
                       );
                    }
                  }
@@ -342,6 +344,7 @@ class ProgramRepository {
           final updatedTraining = training.copyWith(
             lastSessionDate: performedAt,
             averageDurationMinutes: newAverage,
+            sessionCount: (training.sessionCount ?? 0) + 1,
           );
 
           program.trainings[trainingIndex] = updatedTraining;

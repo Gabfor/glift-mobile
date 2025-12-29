@@ -7,6 +7,7 @@ class Training {
   final String? programId;
   final DateTime? lastSessionDate;
   final int? averageDurationMinutes;
+  final int? sessionCount;
 
   Training({
     required this.id,
@@ -17,6 +18,7 @@ class Training {
     this.programId,
     this.lastSessionDate,
     this.averageDurationMinutes,
+    this.sessionCount,
   });
 
   factory Training.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class Training {
           ? DateTime.tryParse(json['lastSessionDate']) 
           : null,
       averageDurationMinutes: json['averageDurationMinutes'],
+      sessionCount: json['sessionCount'],
     );
   }
 
@@ -43,6 +46,7 @@ class Training {
     'program_id': programId,
     'lastSessionDate': lastSessionDate?.toIso8601String(),
     'averageDurationMinutes': averageDurationMinutes,
+    'sessionCount': sessionCount,
   };
 
   Training copyWith({
@@ -54,6 +58,7 @@ class Training {
     String? programId,
     DateTime? lastSessionDate,
     int? averageDurationMinutes,
+    int? sessionCount,
   }) {
     return Training(
       id: id ?? this.id,
@@ -65,6 +70,7 @@ class Training {
       lastSessionDate: lastSessionDate ?? this.lastSessionDate,
       averageDurationMinutes:
           averageDurationMinutes ?? this.averageDurationMinutes,
+      sessionCount: sessionCount ?? this.sessionCount,
     );
   }
 }

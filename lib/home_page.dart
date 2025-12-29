@@ -506,23 +506,11 @@ class _TrainingCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    'Dernière séance : $lastSessionText',
-                    style: GoogleFonts.quicksand(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFC2BFC6),
-                    ),
-                  ),
+                  _buildStatLine('Dernière séance : ', lastSessionText),
                   const SizedBox(height: 2),
-                  Text(
-                    'Temps moyen : $averageTimeText',
-                    style: GoogleFonts.quicksand(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFC2BFC6),
-                    ),
-                  ),
+                  _buildStatLine('Nombre de séances effectuées : ', '${training.sessionCount ?? 0}'),
+                  const SizedBox(height: 2),
+                  _buildStatLine('Durée moyenne de la séance : ', averageTimeText),
                 ],
               ),
             ),
@@ -539,7 +527,7 @@ class _TrainingCard extends StatelessWidget {
       case SyncStatus.loading:
         return const _RotatingLoader();
       case SyncStatus.synced:
-        return SvgPicture.asset('assets/icons/good.svg', width: 20, height: 20);
+        return SvgPicture.asset('assets/icons/check_green.svg', width: 20, height: 20);
       case SyncStatus.notSynced:
         return SvgPicture.asset('assets/icons/notgood.svg', width: 20, height: 20);
     }
@@ -565,6 +553,31 @@ class _TrainingCard extends StatelessWidget {
     } else {
       return 'à l\'instant';
     }
+  }
+
+  Widget _buildStatLine(String label, String value) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: label,
+            style: GoogleFonts.quicksand(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFFC2BFC6),
+            ),
+          ),
+          TextSpan(
+            text: value,
+            style: GoogleFonts.quicksand(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF5D6494),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
