@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -811,7 +812,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
           chartMaxY = interval * (desiredGridLines - 1);
 
-          // Calculate centered viewport
+        // Calculate centered viewport
           // We want the spacing to be the same as if there were 7 points (range 0..6)
           // So the view range must always be 6.
           // We center the available data points within this range.
@@ -820,6 +821,35 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           final double viewRange = 6;
           minX = centerData - viewRange / 2;
           maxX = centerData + viewRange / 2;
+        }
+
+        // Dynamic width calculation
+        double reservedWidth = 65; // Default fallback
+        if (_history.isNotEmpty) {
+           final textStyle = GoogleFonts.quicksand(
+              color: const Color(0xFF3A416F),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+           );
+
+           // Measure the widest possible label
+           // We check 0, max, and maybe a middle value.
+           // Usually max value is the widest unless negative (not here) or decimal formatting changes length.
+           // Let's measure the max value label.
+           String maxLabel = '${_formatWeight(chartMaxY + realMinY)} $unitLabel';
+           
+           final TextPainter textPainter = TextPainter(
+             text: TextSpan(text: maxLabel, style: textStyle),
+             maxLines: 1,
+             textDirection: ui.TextDirection.ltr,
+           )..layout();
+           
+           // fixed reservedSize = text width + some padding (e.g. 10)
+           // If alignment is left, we need enough space for the text.
+           // The chart area starts after reservedSize.
+           reservedWidth = textPainter.width + 10;
+           // Minimum width to avoid too cramped look if value is small "0 kg"
+           if (reservedWidth < 40) reservedWidth = 40;
         }
 
         return Container(
@@ -857,7 +887,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
                               if (_touchedSpot != null) {
                                 final spot = _touchedSpot!;
-                                final chartWidth = constraints.maxWidth - 40;
+                                final chartWidth = constraints.maxWidth - reservedWidth; // Subtract reservedSize
                                 final chartHeight = constraints.maxHeight - 60;
 
                                 // Calculate xPercent based on the fixed view range (minX to maxX)
@@ -866,7 +896,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
                                 final yPercent = spot.y / chartMaxY;
 
-                                final spotPxX = 40 + xPercent * chartWidth;
+                                // spotPxX starts after reservedWidth
+                                final spotPxX = reservedWidth + xPercent * chartWidth;
                                 final spotPxY = chartHeight * (1 - yPercent);
 
                                 tooltipLeft = spotPxX;
@@ -952,17 +983,21 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   leftTitles: AxisTitles(
                                     sideTitles: SideTitles(
                                       showTitles: true,
-                                      reservedSize: 40,
+                                      reservedSize: reservedWidth,
                                       interval: interval,
                                       getTitlesWidget: (value, meta) {
                                         final realValue = value + realMinY;
                                         final displayValue = realValue.round();
-                                        return Text(
-                                          '$displayValue $unitLabel',
-                                          style: GoogleFonts.quicksand(
-                                            color: const Color(0xFF3A416F),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
+                                        return Container(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            '$displayValue $unitLabel',
+                                            style: GoogleFonts.quicksand(
+                                              color: const Color(0xFF3A416F),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                            textAlign: TextAlign.left,
                                           ),
                                         );
                                       },
