@@ -63,6 +63,7 @@ class _MainPageState extends State<MainPage> {
         biometricAuthService: widget.biometricAuthService,
         initialProgramId: widget.initialProgramId,
         onNavigateToDashboard: _navigateToDashboard,
+        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
       ),
       StorePage(
         supabase: widget.supabase,

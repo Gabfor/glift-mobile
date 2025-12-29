@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +29,7 @@ class HomePage extends StatefulWidget {
     required this.biometricAuthService,
     this.onNavigateToDashboard,
     this.initialProgramId,
+    this.onNavigationVisibilityChanged,
   });
 
   final String? initialProgramId;
@@ -35,6 +39,7 @@ class HomePage extends StatefulWidget {
   final BiometricAuthService biometricAuthService;
   final void Function({String? programId, String? trainingId})?
       onNavigateToDashboard;
+  final ValueChanged<bool>? onNavigationVisibilityChanged;
 
   @override
   State<HomePage> createState() => HomePageState();
@@ -42,10 +47,12 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   late final ProgramRepository _programRepository;
-  late final PageController _pageController;
+  late PageController _pageController;
   late final ScrollController _programScrollController;
   final List<GlobalKey> _programKeys = [];
+  final GlobalKey _pageViewKey = GlobalKey(); // Key to preserve PageView state
   List<Program>? _programs;
+
   String? _selectedProgramId;
   String? _pendingProgramId;
   String? _newlyDownloadedId;
@@ -53,10 +60,16 @@ class HomePageState extends State<HomePage> {
   SyncStatus _syncStatus = SyncStatus.loading;
   String? _error;
 
+  bool _isNavigationVisible = true;
+  double _lastScrollOffset = 0;
+  Timer? _navigationInactivityTimer;
+
+
   @override
   void initState() {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
+    // Initialize PageController. Initial page will be set correctly when _programs loads.
     _pageController = PageController();
     _programScrollController = ScrollController();
     _selectedProgramId = widget.initialProgramId;
@@ -83,6 +96,7 @@ class HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _navigationInactivityTimer?.cancel();
     _pageController.dispose();
     _programScrollController.dispose();
     super.dispose();
@@ -198,24 +212,55 @@ class HomePageState extends State<HomePage> {
       final selectedId = _programs![index].id;
       if (selectedId != _selectedProgramId || forceScroll) {
         final isDifferentProgram = selectedId != _selectedProgramId;
+        
+        // Handle layout change logic BEFORE updating state/jumping
+        // If layout needs to change (e.g. Fixed -> Scrollable), we might need a new controller
+        final currentScrollable = _shouldUseFullPageScroll(_selectedProgramId);
+        final nextScrollable = _shouldUseFullPageScroll(selectedId);
+        
+        if (currentScrollable != nextScrollable) {
+           _pageController.dispose();
+           _pageController = PageController(initialPage: index);
+           // We don't jump because the new controller starts at 'index'
+        } else {
+           _pageController.jumpToPage(index);
+        }
+
         setState(() {
           _selectedProgramId = selectedId;
-          // Clear indicator only on manual selection of a different program
           if (isDifferentProgram && !forceScroll) {
             _newlyDownloadedId = null;
           }
         });
-        _pageController.jumpToPage(index);
+        
         _scrollProgramIntoView(index, alignment: alignment);
       }
     }
   }
 
   void _onPageChanged(int index) {
+      if (_programs == null) return;
+      
+      final newProgramId = _programs![index].id;
+      final currentScrollable = _shouldUseFullPageScroll(_selectedProgramId);
+      final nextScrollable = _shouldUseFullPageScroll(newProgramId);
+
+      // If layout changes, we must replace the controller to avoid offset issues / NestedScrollView crashes
+      // when PageView is reparented without a GlobalKey.
+      if (currentScrollable != nextScrollable) {
+         _pageController.dispose();
+         _pageController = PageController(initialPage: index);
+      }
+
     setState(() {
-      _selectedProgramId = _programs![index].id;
+      _selectedProgramId = newProgramId;
     });
-    _scrollProgramIntoView(index);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _scrollProgramIntoView(index);
+      }
+    });
   }
 
   void _scrollProgramIntoView(int index, {double alignment = 0.5}) {
@@ -239,14 +284,90 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  bool _shouldUseFullPageScroll(String? programId) {
+    if (_programs == null || programId == null) return false;
+    final index = _programs!.indexWhere((p) => p.id == programId);
+    if (index == -1) return false;
+    return _programs![index].trainings.length > 4;
+  }
+
+  void _showNavigation() {
+    if (_isNavigationVisible) return;
+
+    setState(() {
+      _isNavigationVisible = true;
+    });
+
+    widget.onNavigationVisibilityChanged?.call(true);
+  }
+
+  void _hideNavigation() {
+    if (!_isNavigationVisible) return;
+
+    setState(() {
+      _isNavigationVisible = false;
+    });
+
+    widget.onNavigationVisibilityChanged?.call(false);
+  }
+
+  void _resetNavigationInactivityTimer() {
+    _navigationInactivityTimer?.cancel();
+    _navigationInactivityTimer = Timer(
+      const Duration(seconds: 2),
+      _showNavigation,
+    );
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+
+    // Ignore horizontal scrolls
+    if (notification.metrics.axis == Axis.horizontal) {
+      return false;
+    }
+
+    if (notification is ScrollUpdateNotification) {
+      _resetNavigationInactivityTimer();
+
+      final currentOffset = max(notification.metrics.pixels, 0.0).toDouble();
+
+      if (currentOffset <= 0) {
+       _lastScrollOffset = 0;
+       _showNavigation();
+       return false;
+      }
+
+      final delta = currentOffset - _lastScrollOffset;
+
+      if (delta > 10) {
+        _hideNavigation();
+      } else if (delta < -10) {
+        _showNavigation();
+      }
+
+      _lastScrollOffset = currentOffset;
+    }
+
+    return false;
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
-    return GliftPageLayout(
-      header: _buildHeader(),
-      scrollable: false,
-      padding: EdgeInsets.zero,
-      headerPadding: EdgeInsets.zero,
-      child: _buildBody(),
+    final isPageScrollable = _shouldUseFullPageScroll(_selectedProgramId);
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: GliftPageLayout(
+        header: _buildHeader(),
+        scrollable: false,
+        fullPageScroll: isPageScrollable,
+        padding: EdgeInsets.zero,
+        headerPadding: EdgeInsets.zero,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -272,7 +393,8 @@ class HomePageState extends State<HomePage> {
         if (_programs != null && _programs!.isNotEmpty) ...[
           const SizedBox(height: 8),
           SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          key: const PageStorageKey('program_header_scroll'),
+          scrollDirection: Axis.horizontal,
             controller: _programScrollController,
             child: Row(
               children: [
@@ -350,7 +472,9 @@ class HomePageState extends State<HomePage> {
       return GliftPullToRefresh(
         onRefresh: _handleRefresh,
         child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: const _TopBouncingScrollPhysics(),
+          ),
           padding: const EdgeInsets.only(top: 200),
           children: [
             Center(
@@ -366,8 +490,9 @@ class HomePageState extends State<HomePage> {
     }
 
     return PageView.builder(
+      // key: _pageViewKey, // Removed to avoid NestedScrollView assertion issues on reparenting
       controller: _pageController,
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(), // Horizontal scrolling
       onPageChanged: _onPageChanged,
       itemCount: _programs!.length,
       itemBuilder: (context, index) {
@@ -375,6 +500,9 @@ class HomePageState extends State<HomePage> {
         return GliftPullToRefresh(
           onRefresh: _handleRefresh,
           child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: const _TopBouncingScrollPhysics(),
+            ),
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
             itemCount: program.trainings.length + 1,
             separatorBuilder: (context, separatorIndex) =>
@@ -438,6 +566,33 @@ class HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+}
+
+class _TopBouncingScrollPhysics extends BouncingScrollPhysics {
+  const _TopBouncingScrollPhysics({super.parent});
+
+  @override
+  _TopBouncingScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _TopBouncingScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    // If overscrolling at the bottom (value > maxScrollExtent)
+    if (value > position.maxScrollExtent) {
+      // Apply clamping logic for bottom
+      if (value > position.pixels &&
+          position.pixels >= position.maxScrollExtent) {
+        return value - position.pixels;
+      }
+      if (position.maxScrollExtent < value &&
+          position.pixels < position.maxScrollExtent) {
+        return value - position.maxScrollExtent;
+      }
+    }
+    // Allow top overscroll (bounce)
+    return super.applyBoundaryConditions(position, value);
   }
 }
 
