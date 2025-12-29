@@ -476,10 +476,10 @@ class _TrainingCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFFD7D4DC)),
           boxShadow: [
             BoxShadow(
@@ -489,36 +489,101 @@ class _TrainingCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
                     training.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.quicksand(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: const Color(0xFF3A416F),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  _buildStatLine('Dernière séance : ', lastSessionText),
-                  const SizedBox(height: 2),
-                  _buildStatLine('Nombre de séances effectuées : ', '${training.sessionCount ?? 0}'),
-                  const SizedBox(height: 2),
-                  _buildStatLine('Durée moyenne de la séance : ', averageTimeText),
-                ],
-              ),
+                ),
+                const SizedBox(width: 10),
+                _buildStatusIcon(),
+              ],
             ),
-            const SizedBox(width: 20),
-            _buildStatusIcon(),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    iconPath: 'assets/icons/training_calendar.svg',
+                    value: lastSessionText,
+                    label: 'Dernière fois',
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatItem(
+                    iconPath: 'assets/icons/training_dumbell.svg',
+                    value: '${training.sessionCount ?? 0} x',
+                    label: (training.sessionCount ?? 0) > 1 ? 'Effectuées' : 'Effectué',
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatItem(
+                    iconPath: 'assets/icons/training_clock.svg',
+                    value: averageTimeText,
+                    label: 'Durée moyenne',
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required String iconPath,
+    required String value,
+    required String label,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SvgPicture.asset(
+          iconPath,
+          width: 24,
+          height: 24,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: GoogleFonts.quicksand(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF3A416F),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                label,
+                style: GoogleFonts.quicksand(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF5D6494),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -527,9 +592,13 @@ class _TrainingCard extends StatelessWidget {
       case SyncStatus.loading:
         return const _RotatingLoader();
       case SyncStatus.synced:
-        return SvgPicture.asset('assets/icons/check_green.svg', width: 20, height: 20);
+        return SvgPicture.asset(
+          'assets/icons/check_green.svg',
+          width: 20,
+          height: 20,
+        );
       case SyncStatus.notSynced:
-        return SvgPicture.asset('assets/icons/notgood.svg', width: 20, height: 20);
+        return SvgPicture.asset('assets/icons/notgood.svg', width: 24, height: 24);
     }
   }
 
@@ -537,47 +606,26 @@ class _TrainingCard extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(date);
 
+    if (difference.inDays > 365) {
+      return '+1 an';
+    }
+
     String formatUnit(int value, String singular, String plural) {
       return value == 1 ? singular : plural;
     }
 
     if (difference.inDays > 0) {
       final days = difference.inDays;
-      return 'il y a $days ${formatUnit(days, 'jour', 'jours')}';
+      return '$days ${formatUnit(days, 'jour', 'jours')}';
     } else if (difference.inHours > 0) {
       final hours = difference.inHours;
-      return 'il y a $hours ${formatUnit(hours, 'heure', 'heures')}';
+      return '$hours ${formatUnit(hours, 'heure', 'heures')}';
     } else if (difference.inMinutes > 0) {
       final minutes = difference.inMinutes;
-      return 'il y a $minutes ${formatUnit(minutes, 'minute', 'minutes')}';
+      return '$minutes ${formatUnit(minutes, 'min', 'min')}';
     } else {
-      return 'à l\'instant';
+      return 'À l\'instant';
     }
-  }
-
-  Widget _buildStatLine(String label, String value) {
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: label,
-            style: GoogleFonts.quicksand(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFFC2BFC6),
-            ),
-          ),
-          TextSpan(
-            text: value,
-            style: GoogleFonts.quicksand(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF5D6494),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
