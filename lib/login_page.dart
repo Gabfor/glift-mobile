@@ -409,7 +409,7 @@ class _InputFieldState extends State<_InputField> {
               color: Colors.white,
               border: Border.all(
                 color: _borderColor(),
-                width: widget.isFocused ? 1.5 : 1,
+                width: 1.5,
               ),
               borderRadius: BorderRadius.circular(5),
             ),
@@ -432,9 +432,9 @@ class _InputFieldState extends State<_InputField> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
-                  contentPadding: EdgeInsets.only(
-                    left: widget.isFocused ? 14.5 : 15, // Compensate 0.5px border
-                    right: widget.isFocused ? 14.5 : 15,
+                  contentPadding: const EdgeInsets.only(
+                    left: 14.5,
+                    right: 14.5,
                   ),
                 ),
                 onChanged: widget.onChanged,
@@ -523,7 +523,7 @@ class _PasswordField extends StatelessWidget {
             color: Colors.white,
             border: Border.all(
               color: _borderColor(),
-              width: isFocused ? 1.5 : 1,
+              width: 1.5,
             ),
             borderRadius: BorderRadius.circular(5),
           ),
@@ -549,9 +549,9 @@ class _PasswordField extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
-                    contentPadding: EdgeInsets.only(
-                      left: isFocused ? 14.5 : 15, // Compensate 0.5px border
-                      right: 40 + (isFocused ? 14.5 : 15), // Right padding for icon + shift
+                    contentPadding: const EdgeInsets.only(
+                      left: 14.5,
+                      right: 54.5, // 40 + 14.5
                     ),
                   ),
                   onChanged: onChanged,
