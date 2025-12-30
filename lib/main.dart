@@ -181,6 +181,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   static final List<OnboardingPageData> _pages = [
     const OnboardingPageData(
+      tagline: 'OUTIL DE CRÉATION',
+      title: 'Créez et personnalisez facilement vos programmes de musculation',
+      description:
+          'Créez vos programmes de musculation rapidement ou optez pour un de nos programmes prêt à l\'emploi.',
+      imageAsset: 'assets/images/onboarding_creer.svg',
+      imageScale: 1.35,
+    ),
+    const OnboardingPageData(
       tagline: 'OUTIL DE SUIVI',
       title:
           'Entraînez-vous efficacement et tirer profits de chaque minute d’entraînement',
@@ -287,11 +295,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                       },
                     ),
                   ),
+                  const SizedBox(height: 5),
                   _PageIndicator(
                     currentPage: _currentPage,
                     totalPages: _pages.length,
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 25),
                   ConnectButton(
                     isEnabled: !_isConnecting,
                     isLoading: _isConnecting,
@@ -336,12 +345,14 @@ class OnboardingPageData {
     required this.title,
     required this.description,
     required this.imageAsset,
+    this.imageScale,
   });
 
   final String tagline;
   final String title;
   final String description;
   final String imageAsset;
+  final double? imageScale;
 }
 
 class OnboardingSlide extends StatelessWidget {
@@ -356,7 +367,9 @@ class OnboardingSlide extends StatelessWidget {
         final availableHeight = constraints.maxHeight;
         final availableWidth = constraints.maxWidth;
 
-        final imageSize = 320.0;
+
+
+
 
         return SingleChildScrollView(
           child: ConstrainedBox(
@@ -366,11 +379,17 @@ class OnboardingSlide extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
-                Center(
-                  child: EmbeddedRasterImage(
-                    svgAsset: data.imageAsset,
-                    width: imageSize,
-                    height: imageSize,
+                SizedBox(
+                  height: 340,
+                  child: Center(
+                    child: Transform.scale(
+                      scale: data.imageScale ?? 1.0,
+                      child: EmbeddedRasterImage(
+                        svgAsset: data.imageAsset,
+                        width: 320,
+                        height: 320,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 42),
