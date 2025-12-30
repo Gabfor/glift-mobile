@@ -54,7 +54,9 @@ class _MainPageState extends State<MainPage> {
         biometricAuthService: widget.biometricAuthService,
         initialProgramId: widget.initialProgramId,
         initialTrainingId: widget.initialTrainingId,
+
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+        onNavigateToStore: _navigateToStore,
       ),
       HomePage(
         key: _homeKey,
@@ -64,6 +66,7 @@ class _MainPageState extends State<MainPage> {
         initialProgramId: widget.initialProgramId,
         onNavigateToDashboard: _navigateToDashboard,
         onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+        onNavigateToStore: _navigateToStore,
       ),
       StorePage(
         supabase: widget.supabase,
@@ -104,9 +107,16 @@ class _MainPageState extends State<MainPage> {
     // Refresh Dashboard as well so it's ready when user switches to it
     _dashboardKey.currentState?.refreshData(programId: programId);
 
-    // Slight delay to ensure the widget is built/visible before refreshing
-    Future.delayed(const Duration(milliseconds: 100), () {
+    // Use post-frame callback to ensure widget is built if it wasn't, but minimize delay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _homeKey.currentState?.refresh(programId: programId);
+    });
+  }
+
+  void _navigateToStore() {
+    setState(() {
+      _currentIndex = 2; // Index of StorePage
+      _isBottomNavVisible = true;
     });
   }
 

@@ -18,6 +18,7 @@ import 'training_details_page.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
+import 'widgets/empty_programs_widget.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -30,6 +31,7 @@ class HomePage extends StatefulWidget {
     this.onNavigateToDashboard,
     this.initialProgramId,
     this.onNavigationVisibilityChanged,
+    this.onNavigateToStore,
   });
 
   final String? initialProgramId;
@@ -40,6 +42,7 @@ class HomePage extends StatefulWidget {
   final void Function({String? programId, String? trainingId})?
       onNavigateToDashboard;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
+  final VoidCallback? onNavigateToStore;
 
   @override
   State<HomePage> createState() => HomePageState();
@@ -90,6 +93,10 @@ class HomePageState extends State<HomePage> {
       _selectedProgramId = programId;
       _pendingProgramId = programId;
       _newlyDownloadedId = programId;
+      // Force loading state when switching programs or after download
+      setState(() {
+        _isLoading = true;
+      });
     }
     _fetchPrograms();
   }
@@ -136,7 +143,7 @@ class HomePageState extends State<HomePage> {
           if (_selectedProgramId == null) {
             _selectedProgramId = localPrograms.first.id;
           }
-          _isLoading = false; // Show content immediately from cache
+          // _isLoading = false; // Intentionally keeping loading state to prevent flash of deleted programs
         });
       }
     } catch (e) {
@@ -471,18 +478,22 @@ class HomePageState extends State<HomePage> {
     if (_programs == null || _programs!.isEmpty) {
       return GliftPullToRefresh(
         onRefresh: _handleRefresh,
-        child: ListView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
-            parent: const _TopBouncingScrollPhysics(),
+            parent: _TopBouncingScrollPhysics(),
           ),
-          padding: const EdgeInsets.only(top: 200),
-          children: [
-            Center(
-              child: Text(
-                'Aucun programme disponible',
-                style: GoogleFonts.quicksand(
-                    fontSize: 16, color: GliftTheme.body),
-              ),
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: widget.onNavigateToStore != null
+                  ? EmptyProgramsWidget(onGoToStore: widget.onNavigateToStore!)
+                  : Center(
+                      child: Text(
+                        'Aucun programme disponible',
+                        style: GoogleFonts.quicksand(
+                            fontSize: 16, color: GliftTheme.body),
+                      ),
+                    ),
             ),
           ],
         ),

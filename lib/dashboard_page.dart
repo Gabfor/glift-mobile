@@ -17,6 +17,7 @@ import 'models/training_row.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
+import 'widgets/empty_programs_widget.dart';
 import 'models/dashboard_preferences.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -30,6 +31,7 @@ class DashboardPage extends StatefulWidget {
     this.initialProgramId,
     this.initialTrainingId,
     this.onNavigationVisibilityChanged,
+    this.onNavigateToStore,
   });
 
   final SupabaseClient supabase;
@@ -38,6 +40,7 @@ class DashboardPage extends StatefulWidget {
   final String? initialProgramId;
   final String? initialTrainingId;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
+  final VoidCallback? onNavigateToStore;
 
   @override
   State<DashboardPage> createState() => DashboardPageState();
@@ -357,18 +360,22 @@ class DashboardPageState extends State<DashboardPage> {
         onRefresh: () async {
           await refreshData(programId: _selectedProgramId);
         },
-        child: ListView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(top: 200),
-          children: [
-            Center(
-              child: Text(
-                'Aucun programme disponible',
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
-                  fontSize: 16,
-                ),
-              ),
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: widget.onNavigateToStore != null
+                  ? EmptyProgramsWidget(onGoToStore: widget.onNavigateToStore!)
+                  : Center(
+                      child: Text(
+                        'Aucun programme disponible',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF3A416F),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
