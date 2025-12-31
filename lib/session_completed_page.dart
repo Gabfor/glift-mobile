@@ -183,13 +183,9 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                          children: [
                            // Top Icon (Check)
                            SvgPicture.asset(
-                             'assets/icons/check_small.svg',
-                             width: 48, // Made bigger as requested (was 35)
-                             height: 48,
-                             colorFilter: const ColorFilter.mode(
-                               Color(0xFF00D591), // Green from Terminé button
-                               BlendMode.srcIn,
-                             ),
+                             'assets/icons/check_green.svg',
+                             width: 35,
+                             height: 35,
                            ),
                            const SizedBox(height: 16),
                            

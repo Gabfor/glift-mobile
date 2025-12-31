@@ -1621,10 +1621,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   }
 
   Future<void> _handleClose(int index, String type) async {
-    setState(() {
-      _activeRepsIndex = null;
-      _activeWeightIndex = null;
-    });
+    if (mounted) {
+      setState(() {
+        _activeRepsIndex = null;
+        _activeWeightIndex = null;
+      });
+    }
 
     // Notify parent to persist updates
     await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());

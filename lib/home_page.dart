@@ -121,6 +121,8 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+
+
   Future<void> _handleRefresh() async {
     setState(() {
       _syncStatus = SyncStatus.loading;
@@ -159,6 +161,7 @@ class HomePageState extends State<HomePage> {
 
     try {
       final programs = await _programRepository.getPrograms();
+
       if (mounted) {
         setState(() {
           _programs = programs;
@@ -468,7 +471,24 @@ class HomePageState extends State<HomePage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const GliftLoader();
+      return Stack(
+        children: [
+          const GliftLoader(),
+          // Pre-cache vital icons while loading
+          Offstage(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset('assets/icons/training_calendar.svg', width: 0, height: 0),
+                SvgPicture.asset('assets/icons/training_dumbell.svg', width: 0, height: 0),
+                SvgPicture.asset('assets/icons/training_clock.svg', width: 0, height: 0),
+                SvgPicture.asset('assets/icons/check_green.svg', width: 0, height: 0),
+                SvgPicture.asset('assets/icons/notgood.svg', width: 0, height: 0),
+              ],
+            ),
+          ),
+        ],
+      );
     }
 
     if (_error != null) {

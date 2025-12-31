@@ -241,6 +241,24 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           Positioned(
             left: 0,
             right: 0,
+            bottom: 0,
+            child: Container(
+              height: 150,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Color(0x8C2E3142),
+                    Color(0x002E3142),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
             bottom: 30, // Adjust as needed for safe area/padding
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
