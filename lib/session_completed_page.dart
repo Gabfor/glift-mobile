@@ -16,6 +16,9 @@ class SessionCompletedPage extends StatefulWidget {
     required this.durationMinutes,
     required this.totalVolume,
     required this.totalReps,
+    this.averageDuration,
+    this.previousTotalVolume,
+    this.previousTotalReps,
     this.programId,
     this.trainingId,
     required this.supabase,
@@ -27,6 +30,9 @@ class SessionCompletedPage extends StatefulWidget {
   final int durationMinutes;
   final double totalVolume;
   final int totalReps;
+  final int? averageDuration;
+  final double? previousTotalVolume;
+  final int? previousTotalReps;
   final String? programId;
   final String? trainingId;
   final SupabaseClient supabase;
@@ -81,7 +87,8 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
           supabase: widget.supabase,
           authRepository: widget.authRepository,
           biometricAuthService: widget.biometricAuthService,
-          // No initialProgramId/TrainingId -> Defaults to Sessions (Index 1)
+          initialProgramId: widget.programId,
+          initialIndex: 1, // Go to 'Séances' tab explicitly
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
@@ -96,12 +103,46 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
     String text = volume % 1 == 0 ? volume.toInt().toString() : volume.toStringAsFixed(1);
     final buffer = StringBuffer();
     for (int i = 0; i < text.length; i++) {
-      if (i > 0 && (text.length - i) % 3 == 0) {
-        buffer.write(' ');
-      }
-      buffer.write(text[i]);
+        if (i > 0 && (text.length - i) % 3 == 0) {
+            buffer.write(' ');
+        }
+        buffer.write(text[i]);
     }
     return buffer.toString();
+  }
+
+  String? _getDurationIcon() {
+    debugPrint('DEBUG: Duration: ${widget.durationMinutes}, Avg: ${widget.averageDuration}');
+    if (widget.averageDuration == null) return null;
+    if (widget.durationMinutes > widget.averageDuration!) {
+      return 'assets/icons/Arrow_red_up.svg';
+    } else if (widget.durationMinutes < widget.averageDuration!) {
+      return 'assets/icons/Arrow_green_down.svg';
+    }
+    return null;
+  }
+
+  String? _getVolumeIcon() {
+    debugPrint('DEBUG: Volume: ${widget.totalVolume}, Prev: ${widget.previousTotalVolume}');
+    if (widget.previousTotalVolume == null) return null;
+    // Compare with epsilon for double equality if needed, but strict > / < is fine
+    if (widget.totalVolume > widget.previousTotalVolume!) {
+      return 'assets/icons/Arrow_green_up.svg';
+    } else if (widget.totalVolume < widget.previousTotalVolume!) {
+      return 'assets/icons/Arrow_red_down.svg';
+    }
+    return null;
+  }
+
+  String? _getRepsIcon() {
+    debugPrint('DEBUG: Reps: ${widget.totalReps}, Prev: ${widget.previousTotalReps}');
+    if (widget.previousTotalReps == null) return null;
+    if (widget.totalReps > widget.previousTotalReps!) {
+      return 'assets/icons/Arrow_green_up.svg';
+    } else if (widget.totalReps < widget.previousTotalReps!) {
+      return 'assets/icons/Arrow_red_down.svg';
+    }
+    return null;
   }
 
   @override
@@ -114,138 +155,154 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
           Positioned.fill(
             child: GestureDetector(
               onTap: _dismiss,
+              behavior: HitTestBehavior.opaque, // Ensure clicks are caught even if transparent parts exist
               child: Container(
                 color: Colors.black.withOpacity(0.5),
               ),
             ),
           ),
           
-          Dialog(
-             insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-             backgroundColor: Colors.transparent, // Using transparent to control the Container directly
-             shadowColor: Colors.transparent,
-             elevation: 0,
-             child: Center(
+          Center(
+             child: Padding(
+               padding: const EdgeInsets.symmetric(horizontal: 20),
                child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Top Icon
-                        SvgPicture.asset(
-                          'assets/icons/check_green.svg', // User requested check_green.svg
-                          width: 35,
-                          height: 35,
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Title
-                        Text(
-                          'Félicitations !',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 18, 
-                            fontWeight: FontWeight.w700, // Bold
-                            color: const Color(0xFF3A416F),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
+                 decoration: BoxDecoration(
+                   color: Colors.white,
+                   borderRadius: BorderRadius.circular(20),
+                 ),
+                 // Remove padding allow Stack to position elements freely
+                 clipBehavior: Clip.hardEdge, // Ensure ripple/content stays inside bounds
+                 child: Stack(
+                   children: [
+                     // Content
+                     Padding(
+                       // Top padding 44 matches ExitTrainingModal to clear the close button area effectively
+                       padding: const EdgeInsets.fromLTRB(24, 44, 24, 24),
+                       child: Column(
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           // Top Icon (Check)
+                           SvgPicture.asset(
+                             'assets/icons/check_small.svg',
+                             width: 48, // Made bigger as requested (was 35)
+                             height: 48,
+                             colorFilter: const ColorFilter.mode(
+                               Color(0xFF00D591), // Green from Terminé button
+                               BlendMode.srcIn,
+                             ),
+                           ),
+                           const SizedBox(height: 16),
+                           
+                           // Title
+                           Text(
+                             'Félicitations !',
+                             textAlign: TextAlign.center,
+                             style: GoogleFonts.quicksand(
+                               fontSize: 18, 
+                               fontWeight: FontWeight.w700, 
+                               color: const Color(0xFF3A416F),
+                             ),
+                           ),
+                           const SizedBox(height: 8),
 
-                        // Subtitle
-                        Text(
-                          'Vous avez terminé une nouvelle séance d’entraînement.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700, // Bold matching mockup look
-                            color: const Color(0xFF3A416F),
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
+                           // Subtitle
+                           Text(
+                             'Vous avez terminé une nouvelle séance d’entraînement.',
+                             textAlign: TextAlign.center,
+                             style: GoogleFonts.quicksand(
+                               fontSize: 14,
+                               fontWeight: FontWeight.w700,
+                               color: const Color(0xFF3A416F),
+                               height: 1.4,
+                             ),
+                           ),
+                           const SizedBox(height: 32),
 
-                        // Stats Grid
-                        Row(
-                          children: [
-                            Expanded(child: _buildStatItem(
-                              icon: 'assets/icons/training_dumbell.svg', // Fallback if specific one not found, or use 'dumbbell.svg'
-                              value: '${widget.sessionCount}${widget.sessionCount == 1 ? 'ʳᵉ' : 'ᵉ'} séance',
-                              label: 'Effectuées',
-                            )),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildStatItem(
-                              icon: 'assets/icons/training_clock.svg', // Or 'assets/icons/stopwatch.svg' or check_green etc. mockup has clock
-                              value: '${widget.durationMinutes} min', // Mockup says '42 min'
-                              label: 'Durée de la séance',
-                            )),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            Expanded(child: _buildStatItem(
-                              icon: 'assets/icons/Poids.svg', // User requested Poids.svg
-                              value: '${_formatVolume(widget.totalVolume)} kg',
-                              label: 'Soulevés',
-                            )),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildStatItem(
-                              icon: 'assets/icons/Rép.svg', // User requested Rép.svg
-                              value: '${widget.totalReps} rép.', // Text changed to "rép."
-                              label: 'Effectuées',
-                            )),
-                          ],
-                        ),
-                        const SizedBox(height: 32),
+                           // Stats Grid
+                           Row(
+                             children: [
+                               Expanded(child: _buildStatItem(
+                                 icon: 'assets/icons/training_dumbell.svg',
+                                 value: '${widget.sessionCount}${widget.sessionCount == 1 ? 'ʳᵉ' : 'ᵉ'} séance',
+                                 label: 'Effectuées',
+                               )),
+                               const SizedBox(width: 16),
+                               Expanded(child: _buildStatItem(
+                                 icon: 'assets/icons/training_clock.svg',
+                                 value: '${widget.durationMinutes} min',
+                                 label: 'Durée de la séance',
+                                 comparisonIconPath: _getDurationIcon(),
+                               )),
+                             ],
+                           ),
+                           const SizedBox(height: 24),
+                           Row(
+                             children: [
+                               Expanded(child: _buildStatItem(
+                                 icon: 'assets/icons/Poids.svg',
+                                 value: '${_formatVolume(widget.totalVolume)} kg',
+                                 label: 'Soulevés',
+                                 comparisonIconPath: _getVolumeIcon(),
+                               )),
+                               const SizedBox(width: 16),
+                               Expanded(child: _buildStatItem(
+                                 icon: 'assets/icons/Rép.svg',
+                                 value: '${widget.totalReps} rép.',
+                                 label: 'Effectuées',
+                                 comparisonIconPath: _getRepsIcon(),
+                               )),
+                             ],
+                           ),
+                           const SizedBox(height: 32),
 
-                        // CTA Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _goToDashboard,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7069FA), // Purple
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            child: Text(
-                              'Voir le tableau de bord',
-                              style: GoogleFonts.quicksand(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                           // CTA Button
+                           SizedBox(
+                             width: double.infinity,
+                             height: 50,
+                             child: ElevatedButton(
+                               onPressed: _goToDashboard,
+                               style: ElevatedButton.styleFrom(
+                                 backgroundColor: const Color(0xFF7069FA),
+                                 elevation: 0,
+                                 shape: RoundedRectangleBorder(
+                                   borderRadius: BorderRadius.circular(25),
+                                 ),
+                               ),
+                               child: Text(
+                                 'Voir le tableau de bord',
+                                 style: GoogleFonts.quicksand(
+                                   fontSize: 16,
+                                   fontWeight: FontWeight.w700,
+                                   color: Colors.white,
+                                 ),
+                               ),
+                             ),
+                           ),
+                         ],
+                       ),
+                     ),
 
-                    // Close Button (Top right of the card)
-                    Positioned(
-                      right: -12, 
-                      top: -28, // Adjust to match mockup visual
-                      child: IconButton(
-                        icon: const Icon(Icons.close),
-                        color: const Color(0xFF3A416F),
-                        iconSize: 24,
-                        onPressed: _dismiss,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ),
-                  ],
-                ),
+                     // Close Button (Positioned top-right)
+                     Positioned(
+                       top: 8, 
+                       right: 8, 
+                       child: GestureDetector(
+                         onTap: _dismiss,
+                         behavior: HitTestBehavior.opaque,
+                         child: Container(
+                           width: 48, 
+                           height: 48,
+                           alignment: Alignment.center,
+                           child: const Icon(
+                             Icons.close,
+                             color: Color(0xFF3A416F),
+                             size: 24,
+                           ),
+                         ),
+                       ),
+                     ),
+                   ],
+                 ),
                ),
              ),
           ),
@@ -258,6 +315,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
     required String icon,
     required String value,
     required String label,
+    String? comparisonIconPath,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center, // Align to center
@@ -273,14 +331,30 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                value,
-                style: GoogleFonts.quicksand(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700, // Bold
-                  color: const Color(0xFF3A416F),
-                  height: 1.2,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible( // Use Flexible to prevent overflow if value is long
+                    child: Text(
+                      value,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700, // Bold
+                        color: const Color(0xFF3A416F),
+                        height: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                   if (comparisonIconPath != null) ...[
+                    const SizedBox(width: 4),
+                    SvgPicture.asset(
+                      comparisonIconPath,
+                      width: 12,
+                      height: 12,
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 2),
               Text(

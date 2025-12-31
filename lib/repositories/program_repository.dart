@@ -476,6 +476,137 @@ class ProgramRepository {
       throw Exception('Erreur lors de la sauvegarde de la séance: $e');
     }
   }
+  Future<Map<String, dynamic>> getPreviousSessionStats({
+    required String userId,
+    required String trainingId,
+  }) async {
+    try {
+      // 1. Get all previous sessions for average duration
+      final sessionsResponse = await _supabase
+          .from('training_sessions')
+          .select('duration, performed_at, id')
+          .eq('user_id', userId)
+          .eq('training_id', trainingId)
+          .order('performed_at', ascending: false); // Newest first
+
+      final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+
+      if (sessions.isEmpty) {
+        return {
+          'averageDuration': null,
+          'lastVolume': null,
+          'lastReps': null,
+        };
+      }
+
+      // Calculate average duration
+      final durations = sessions
+          .map((s) => s['duration'] as int?)
+          .where((d) => d != null)
+          .toList();
+      
+      int? avgDuration;
+      if (durations.isNotEmpty) {
+        final total = durations.fold<int>(0, (sum, d) => sum + d!);
+        avgDuration = (total / durations.length).round();
+      }
+
+      // 2. Get details of the most recent session (sessions[0]) to calculate Volume and Reps
+      final lastSessionId = sessions[0]['id'];
+      
+      // Fetch sets for the last session
+      // We need to join: training_sessions -> training_session_exercises -> training_session_sets
+      // Supabase join syntax:
+      final setsResponse = await _supabase
+          .from('training_session_exercises')
+          .select('id, training_session_sets(repetitions, weights)')
+          .eq('session_id', lastSessionId);
+
+      final exercises = (setsResponse as List<dynamic>);
+      
+      double lastVolume = 0.0;
+      int lastReps = 0;
+
+      for (final exercise in exercises) {
+        final sets = (exercise['training_session_sets'] as List<dynamic>);
+        for (final set in sets) {
+          final reps = set['repetitions'] as int? ?? 0;
+           // Weights are stored as List<dynamic> (jsonb) or just handle as List
+           // In saveTrainingSession we store as List<String>.
+           // In DB it might be jsonb.
+           // Let's check how we handle it. In saveTrainingSession: 'weights': weightsList
+           // where weightsList is List<String>.
+           
+           final weightsData = set['weights'];
+           double weightVal = 0.0;
+           
+           if (weightsData is List) {
+             if (weightsData.isNotEmpty) {
+               // Usually for a standard set, we have as many weights as reps? 
+               // Or if it's one weight for the whole set?
+               // The DB schema for 'weights' column in 'training_session_sets' seems to be an array.
+               // We sum volume = reps * weight. 
+               // But wait, if we have 10 reps and [10, 10, 10...] weights?
+               // Or usually it's [20] for the whole set?
+               // Let's assume uniform weight for the set or sum them up?
+               // Standard volume = reps * weight.
+               // If weights is [20, 20, 20...], then it's 20 * reps? NO.
+               // GLIFT logic: weight is usually constant per set.
+               // Let's look at `_finishTraining` in `ActiveTrainingPage` to see how volume is calculated CURRENTLY.
+               
+               // In ActiveTrainingPage:
+               // final weight = double.tryParse(weightsList.length > i ? weightsList[i] : '0') ?? 0.0;
+               // totalVolume += (reps * weight);
+               // Wait, the loop `for (int i = 0; i < repsList.length; i++)` iterates over SETS (series).
+               // `repsList` is List of strings for the ROW (exercise). e.g. ["10", "10", "10"] for 3 sets.
+               // So `reps` is reps for ONE set.
+               // `weight` is weight for ONE set.
+               // So specific set volume = reps * weight.
+               
+               // Back to `getPreviousSessionStats`:
+               // `exercise` is one Exercise in the session.
+               // `sets` is the list of sets performed for that exercise.
+               // `set` is one SET.
+               // `set['weights']` is what we stored. In `saveTrainingSession`:
+               // `final weightsList = List<String>.filled(reps, weightToUse);`
+               // So we store a list of weights, one per rep!
+               // So `set['weights']` is `["20.0", "20.0", ...]` (length = reps).
+               // So we can take the first element as the weight for the set?
+               // Yes, provided all are same. Or we can sum them? No volume is sets * reps * weight.
+               // If we store `["20", "20"]` for 2 reps. 
+               // Volume = 2 * 20 = 40.
+               // Or sum of elements? 20+20=40. Yes.
+               // So we can just sum the numeric values in the weights list.
+               
+               for (final w in weightsData) {
+                 final wStr = w.toString();
+                 final wDouble = double.tryParse(wStr) ?? 0.0;
+                 weightVal += wDouble;
+               }
+             }
+           }
+           
+           lastVolume += weightVal;
+           lastReps += reps;
+        }
+      }
+
+      return {
+        'averageDuration': avgDuration,
+        'lastVolume': lastVolume,
+        'lastReps': lastReps,
+      };
+
+    } catch (e) {
+      debugPrint('Error getting previous session stats: $e');
+      return {
+          'averageDuration': null,
+          'lastVolume': null,
+          'lastReps': null,
+      };
+    }
+  }
+
   Future<int> getTotalSessionCount(String userId) async {
     try {
       final response = await _supabase

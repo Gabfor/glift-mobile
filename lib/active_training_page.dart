@@ -505,6 +505,15 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       if (completedRowsData.isNotEmpty) {
         final userId = widget.supabase.auth.currentUser?.id;
         if (userId != null) {
+          // Fetch previous stats for comparison BEFORE saving the new one
+          // This ensures we compare against history, not including the current one
+          final previousStats = await _programRepository.getPreviousSessionStats(
+            userId: userId,
+            trainingId: widget.training.id,
+          );
+          
+          debugPrint('DEBUG: Previous Stats: $previousStats');
+
           final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
           // Save history
           await _programRepository.saveTrainingSession(
@@ -513,78 +522,77 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             completedRows: completedRowsData,
             duration: duration > 0 ? duration : 1, // Minimum 1 min
           );
-        }
+          
+          // ... (rest of the stats calculation) ...
+          
+          if (mounted) {
+             // ... updating templates ... 
+          }
+          
+           // Update templates (last used weights)
+          await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
+            row.id,
+            repetitions: row.repetitions,
+            weights: row.weights,
+            efforts: row.efforts,
+          )));
 
-        // Update templates (last used weights)
-        await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
-          row.id,
-          repetitions: row.repetitions,
-          weights: row.weights,
-          efforts: row.efforts,
-        )));
-      }
 
-      if (mounted) {
+          // Calculate session count for this specific training
+          final sessionCount = (widget.training.sessionCount ?? 0) + 1;
+          
+          // Calculate Statistics
+          int totalReps = 0;
+          double totalVolume = 0.0;
 
+          for (final row in completedRowsData) {
+              final repsList = row.repetitions;
+              final weightsList = row.weights;
+              
+              for (int i = 0; i < repsList.length; i++) {
+                  final reps = int.tryParse(repsList[i]) ?? 0;
+                  final weight = double.tryParse(weightsList.length > i ? weightsList[i] : '0') ?? 0.0;
+                  
+                  totalReps += reps;
+                  totalVolume += (reps * weight);
+              }
+          }
 
-        // Calculate session count for this specific training
-        // We add 1 because we just completed a new session
-        final sessionCount = (widget.training.sessionCount ?? 0) + 1;
-        
-        // Calculate Statistics
-        int totalReps = 0;
-        double totalVolume = 0.0;
+          final displayDuration = duration > 0 ? duration : 1;
+          
+          final avgDuration = previousStats['averageDuration'] as int?;
+          final prevVolume = previousStats['lastVolume'] as double?;
+          final prevReps = previousStats['lastReps'] as int?;
 
-        for (final row in completedRowsData) {
-            final repsList = row.repetitions;
-            final weightsList = row.weights;
-            
-            // Assume lists are parallel and valid as per data model
-            for (int i = 0; i < repsList.length; i++) {
-                final reps = int.tryParse(repsList[i]) ?? 0;
-                final weight = double.tryParse(weightsList.length > i ? weightsList[i] : '0') ?? 0.0;
-                
-                totalReps += reps;
-                totalVolume += (reps * weight);
-            }
-        }
+          if (!mounted) return;
 
-        final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
-        final displayDuration = duration > 0 ? duration : 1;
-
-        if (!mounted) return;
-
-        // Navigate to completion screen as an overlay (transparent route)
-        if (mounted) {
-          await Navigator.of(context).push(
-            PageRouteBuilder(
-              opaque: false, // Transparent background
-              pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
-                sessionCount: sessionCount,
-                durationMinutes: displayDuration,
-                totalVolume: totalVolume,
-                totalReps: totalReps,
-                programId: widget.training.programId,
-                trainingId: widget.training.id,
-                supabase: widget.supabase,
-                authRepository: widget.authRepository,
-                biometricAuthService: widget.biometricAuthService,
+          // Navigate to completion screen as an overlay (transparent route)
+          if (mounted) {
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                opaque: false, // Transparent background
+                pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
+                  sessionCount: sessionCount,
+                  durationMinutes: displayDuration,
+                  totalVolume: totalVolume,
+                  totalReps: totalReps,
+                  averageDuration: avgDuration,
+                  previousTotalVolume: prevVolume,
+                  previousTotalReps: prevReps,
+                  programId: widget.training.programId,
+                  trainingId: widget.training.id,
+                  supabase: widget.supabase,
+                  authRepository: widget.authRepository,
+                  biometricAuthService: widget.biometricAuthService,
+                ),
+                transitionDuration: const Duration(milliseconds: 200),
+                reverseTransitionDuration: const Duration(milliseconds: 200),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                },
               ),
-              transitionDuration: const Duration(milliseconds: 200),
-              reverseTransitionDuration: const Duration(milliseconds: 200),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                    return FadeTransition(opacity: animation, child: child);
-              },
-            ),
-          );
-          // When the dialog is closed, we don't need to do anything special here 
-          // because SessionCompletedPage handles navigation to Dashboard.
-          // However, if SessionCompletedPage pops only itself (e.g. back gesture), we might be left here.
-          // But _close logic in SessionCompletedPage does pushAndRemoveUntil.
-          // IF user dismisses via back button, we might want to exit? 
-          // The modal has no back button, only "X" and CTA which navigate away.
-          // Standard system back gesture? We technically remain on this page if popped.
-          // Ideally SessionCompletedPage should force navigation.
+            );
+          }
         }
       }
     } catch (e) {
@@ -2115,7 +2123,12 @@ class _FinishButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check, color: Colors.white, size: 16),
+              SvgPicture.asset(
+                'assets/icons/check_small.svg',
+                width: 16,
+                height: 16,
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
               const SizedBox(width: 8),
               Text(
                 'J\'ai terminé !',

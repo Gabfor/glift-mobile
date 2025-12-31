@@ -18,6 +18,7 @@ class MainPage extends StatefulWidget {
     required this.biometricAuthService,
     this.initialProgramId,
     this.initialTrainingId,
+    this.initialIndex,
   });
 
   final SupabaseClient supabase;
@@ -25,6 +26,7 @@ class MainPage extends StatefulWidget {
   final BiometricAuthService biometricAuthService;
   final String? initialProgramId;
   final String? initialTrainingId;
+  final int? initialIndex;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -42,7 +44,9 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     // Use Dashboard as default if an initial program ID is provided
-    if (widget.initialProgramId != null) {
+    if (widget.initialIndex != null) {
+      _currentIndex = widget.initialIndex!;
+    } else if (widget.initialProgramId != null) {
       _currentIndex = 0;
     }
     
