@@ -16,7 +16,7 @@ class ExitTrainingModal extends StatelessWidget {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            padding: const EdgeInsets.fromLTRB(24, 44, 24, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               // Removed crossAxisAlignment: CrossAxisAlignment.start to default to center
@@ -125,7 +125,7 @@ class ExitTrainingModal extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(true),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF5C5C),
+                            backgroundColor: const Color(0xFFEF4F4E),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),

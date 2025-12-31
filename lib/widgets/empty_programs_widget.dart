@@ -95,7 +95,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Accéder au Store',
+                      'Aller sur le Store',
                       style: GoogleFonts.quicksand(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
