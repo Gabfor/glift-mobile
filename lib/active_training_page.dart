@@ -527,35 +527,64 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       if (mounted) {
 
 
-        // Fetch session count for the completion screen
-        int sessionCount = 1;
-        final userId = widget.supabase.auth.currentUser?.id;
-        if (userId != null) {
-          sessionCount = await _programRepository.getTotalSessionCount(userId);
-        }
+        // Calculate session count for this specific training
+        // We add 1 because we just completed a new session
+        final sessionCount = (widget.training.sessionCount ?? 0) + 1;
         
+        // Calculate Statistics
+        int totalReps = 0;
+        double totalVolume = 0.0;
+
+        for (final row in completedRowsData) {
+            final repsList = row.repetitions;
+            final weightsList = row.weights;
+            
+            // Assume lists are parallel and valid as per data model
+            for (int i = 0; i < repsList.length; i++) {
+                final reps = int.tryParse(repsList[i]) ?? 0;
+                final weight = double.tryParse(weightsList.length > i ? weightsList[i] : '0') ?? 0.0;
+                
+                totalReps += reps;
+                totalVolume += (reps * weight);
+            }
+        }
+
         final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
         final displayDuration = duration > 0 ? duration : 1;
 
         if (!mounted) return;
 
-        // Navigate to completion screen
+        // Navigate to completion screen as an overlay (transparent route)
         if (mounted) {
-          await Navigator.of(context).pushReplacement(
+          await Navigator.of(context).push(
             PageRouteBuilder(
+              opaque: false, // Transparent background
               pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
                 sessionCount: sessionCount,
                 durationMinutes: displayDuration,
+                totalVolume: totalVolume,
+                totalReps: totalReps,
                 programId: widget.training.programId,
                 trainingId: widget.training.id,
                 supabase: widget.supabase,
                 authRepository: widget.authRepository,
                 biometricAuthService: widget.biometricAuthService,
               ),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
+              transitionDuration: const Duration(milliseconds: 200),
+              reverseTransitionDuration: const Duration(milliseconds: 200),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+              },
             ),
           );
+          // When the dialog is closed, we don't need to do anything special here 
+          // because SessionCompletedPage handles navigation to Dashboard.
+          // However, if SessionCompletedPage pops only itself (e.g. back gesture), we might be left here.
+          // But _close logic in SessionCompletedPage does pushAndRemoveUntil.
+          // IF user dismisses via back button, we might want to exit? 
+          // The modal has no back button, only "X" and CTA which navigate away.
+          // Standard system back gesture? We technically remain on this page if popped.
+          // Ideally SessionCompletedPage should force navigation.
         }
       }
     } catch (e) {

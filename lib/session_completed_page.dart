@@ -14,6 +14,8 @@ class SessionCompletedPage extends StatefulWidget {
     super.key,
     required this.sessionCount,
     required this.durationMinutes,
+    required this.totalVolume,
+    required this.totalReps,
     this.programId,
     this.trainingId,
     required this.supabase,
@@ -23,6 +25,8 @@ class SessionCompletedPage extends StatefulWidget {
 
   final int sessionCount;
   final int durationMinutes;
+  final double totalVolume;
+  final int totalReps;
   final String? programId;
   final String? trainingId;
   final SupabaseClient supabase;
@@ -37,10 +41,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
   @override
   void initState() {
     super.initState();
-    // Evict the image from cache to ensure the GIF restarts
-    final imageProvider = AssetImage('assets/images/congrats.gif');
-    imageProvider.evict();
-    
+    // No longer using gif, but good to trigger vibration
     _triggerVibration();
   }
 
@@ -54,7 +55,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
     }
   }
 
-  void _close() {
+  void _goToDashboard() {
     HapticFeedback.lightImpact();
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
@@ -72,143 +73,228 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
     );
   }
 
+  void _dismiss() {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => MainPage(
+          supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
+          // No initialProgramId/TrainingId -> Defaults to Sessions (Index 1)
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+      (route) => false,
+    );
+  }
+
+  String _formatVolume(double volume) {
+    // Format volume with space as thousand separator e.g. "3 577"
+    // Remove decimal if zero
+    String text = volume % 1 == 0 ? volume.toInt().toString() : volume.toStringAsFixed(1);
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      if (i > 0 && (text.length - i) % 3 == 0) {
+        buffer.write(' ');
+      }
+      buffer.write(text[i]);
+    }
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: Colors.transparent, // Let the stack handle opacity for tap detection
       body: Stack(
         children: [
-
-          // Background Image (Top aligned)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.65,
-            child: Image.asset(
-              'assets/images/congrats.gif',
-              fit: BoxFit.contain,
-              alignment: Alignment.topCenter,
+          // Background dismiss layer
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _dismiss,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+              ),
             ),
           ),
           
-          // Content (Bottom aligned)
-          Positioned.fill(
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+          Dialog(
+             insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+             backgroundColor: Colors.transparent, // Using transparent to control the Container directly
+             shadowColor: Colors.transparent,
+             elevation: 0,
+             child: Center(
+               child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    Text(
-                      'Félicitations,\nvous avez terminé une nouvelle\nséance d’entrainement !',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.quicksand(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF3A416F),
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600, // Semibold for base text
-                          color: const Color(0xFF5D6494),
-                          height: 1.5,
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Top Icon
+                        SvgPicture.asset(
+                          'assets/icons/check_green.svg', // User requested check_green.svg
+                          width: 35,
+                          height: 35,
                         ),
-                        children: [
-                          const TextSpan(text: 'C’était votre '),
-                          TextSpan(
-                            text: '${widget.sessionCount}',
-                            style: GoogleFonts.quicksand(
-                              fontWeight: FontWeight.w700, // Bold
-                              color: const Color(0xFF3A416F),
-                            ),
+                        const SizedBox(height: 16),
+                        
+                        // Title
+                        Text(
+                          'Félicitations !',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.quicksand(
+                            fontSize: 18, 
+                            fontWeight: FontWeight.w700, // Bold
+                            color: const Color(0xFF3A416F),
                           ),
-                          WidgetSpan(
-                            child: Transform.translate(
-                              offset: const Offset(0, -6.0),
-                              child: Text(
-                                widget.sessionCount == 1 ? 'ʳᵉ' : 'ᵉ',
-                                style: GoogleFonts.quicksand(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF3A416F),
-                                ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Subtitle
+                        Text(
+                          'Vous avez terminé une nouvelle séance d’entraînement.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.quicksand(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700, // Bold matching mockup look
+                            color: const Color(0xFF3A416F),
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Stats Grid
+                        Row(
+                          children: [
+                            Expanded(child: _buildStatItem(
+                              icon: 'assets/icons/training_dumbell.svg', // Fallback if specific one not found, or use 'dumbbell.svg'
+                              value: '${widget.sessionCount}${widget.sessionCount == 1 ? 'ʳᵉ' : 'ᵉ'} séance',
+                              label: 'Effectuées',
+                            )),
+                            const SizedBox(width: 16),
+                            Expanded(child: _buildStatItem(
+                              icon: 'assets/icons/training_clock.svg', // Or 'assets/icons/stopwatch.svg' or check_green etc. mockup has clock
+                              value: '${widget.durationMinutes} min', // Mockup says '42 min'
+                              label: 'Durée de la séance',
+                            )),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(child: _buildStatItem(
+                              icon: 'assets/icons/Poids.svg', // User requested Poids.svg
+                              value: '${_formatVolume(widget.totalVolume)} kg',
+                              label: 'Soulevés',
+                            )),
+                            const SizedBox(width: 16),
+                            Expanded(child: _buildStatItem(
+                              icon: 'assets/icons/Rép.svg', // User requested Rép.svg
+                              value: '${widget.totalReps} rép.', // Text changed to "rép."
+                              label: 'Effectuées',
+                            )),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+
+                        // CTA Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _goToDashboard,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF7069FA), // Purple
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                            child: Text(
+                              'Voir le tableau de bord',
+                              style: GoogleFonts.quicksand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
                               ),
                             ),
                           ),
-                          TextSpan(
-                            text: ' séance',
-                            style: GoogleFonts.quicksand(
-                              fontWeight: FontWeight.w700, // Bold
-                              color: const Color(0xFF3A416F),
-                            ),
-                          ),
-                          const TextSpan(text: ' et vous vous êtes entraîné pendant '),
-                          TextSpan(
-                            text: '${widget.durationMinutes} minute${widget.durationMinutes > 1 ? 's' : ''}',
-                            style: GoogleFonts.quicksand(
-                              fontWeight: FontWeight.w700, // Bold
-                              color: const Color(0xFF3A416F),
-                            ),
-                          ),
-                          const TextSpan(text: '.'),
-                        ],
+                        ),
+                      ],
+                    ),
+
+                    // Close Button (Top right of the card)
+                    Positioned(
+                      right: -12, 
+                      top: -28, // Adjust to match mockup visual
+                      child: IconButton(
+                        icon: const Icon(Icons.close),
+                        color: const Color(0xFF3A416F),
+                        iconSize: 24,
+                        onPressed: _dismiss,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ),
-                    // Adjusted spacing to match mockup: Distance between text and button
-                    const SizedBox(height: 100), // 30px (gap) + 50px (button) + 20px (bottom padding)
                   ],
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: SafeArea(
-              child: GestureDetector(
-                onTap: _close,
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF7069FA), // Active color from TimerPage
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Voir le tableau de bord',
-                    style: GoogleFonts.quicksand(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            right: 20,
-            child: GestureDetector(
-              onTap: _close,
-              child: SvgPicture.asset(
-                'assets/icons/close.svg',
-                width: 30,
-                height: 30,
-              ),
-            ),
+               ),
+             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required String icon,
+    required String value,
+    required String label,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center, // Align to center
+      children: [
+        SvgPicture.asset(
+          icon,
+          width: 24,
+          height: 24,
+          // Removed colorFilter to use original SVG colors
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: GoogleFonts.quicksand(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700, // Bold
+                  color: const Color(0xFF3A416F),
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: GoogleFonts.quicksand(
+                  fontSize: 10, // Small label
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF5D6494), // Greyish text
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
