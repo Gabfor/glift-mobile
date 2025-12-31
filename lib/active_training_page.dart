@@ -18,6 +18,7 @@ import '../timer_page.dart';
 import 'widgets/note_modal.dart';
 import 'widgets/exit_training_modal.dart';
 import 'widgets/superset_group_card.dart';
+import 'widgets/animated_checkmark.dart';
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
 import '../services/vibration_service.dart';
@@ -1699,7 +1700,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final effectiveIsCompleted = widget.isCompleted || _isCompleting;
     final effectiveIsIgnored = widget.isIgnored || _isIgnoring;
 
-    final content = Column(
+    final bodyContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -1937,7 +1938,17 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             ),
           );
         }),
+      ],
+    );
 
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: _isCompleting ? 0.3 : 1.0,
+          child: bodyContent,
+        ),
         if (widget.showActions) ...[
           const SizedBox(height: 5),
 
@@ -2000,14 +2011,33 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final padding = EdgeInsets.fromLTRB(20, 20, 20, widget.showActions ? 15 : 5);
 
     if (widget.showDecoration) {
-      return Container(
-        padding: padding,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
-        ),
-        child: content,
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
+            ),
+            child: content,
+          ),
+          if (_isCompleting)
+            AnimatedCheckmark(
+              onAnimationComplete: () async {
+                await Future.delayed(const Duration(milliseconds: 200));
+                if (mounted) {
+                   widget.onComplete();
+                   // Determine if we should reset state or if row disappears
+                   // Usually widget moves, so we might not need to reset, but safer to do so
+                   setState(() {
+                      _isCompleting = false;
+                   });
+                }
+              },
+            ),
+        ],
       );
     }
 
@@ -2075,24 +2105,13 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   }
 
   Future<void> _handleComplete() async {
-    // Immediate feedback
+    // Immediate feedback for button tap
     HapticFeedback.lightImpact();
+    
+    // Trigger the animation sequence in build()
     setState(() {
       _isCompleting = true;
     });
-
-    // Small delay to let the user see the visual change
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Call parent action
-    widget.onComplete();
-
-    // Reset state (though widget might move/dispose)
-    if (mounted) {
-      setState(() {
-        _isCompleting = false;
-      });
-    }
   }
 }
 
