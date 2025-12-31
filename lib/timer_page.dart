@@ -32,6 +32,7 @@ class TimerPage extends StatefulWidget {
     this.autoStart = true,
     this.isActiveTraining = false,
     this.onSave,
+    this.onMinimize,
     TimerAlertService? alertService,
     VibrationService? vibrationService,
   })  : alertService = alertService ?? NotificationService.instance,
@@ -43,7 +44,9 @@ class TimerPage extends StatefulWidget {
   final bool enableSound;
   final bool autoStart;
   final bool isActiveTraining;
+
   final Future<void> Function(int)? onSave;
+  final ValueChanged<InlineTimerData>? onMinimize; // New callback for instant minimization
   final TimerAlertService alertService;
   final VibrationService vibrationService;
 
@@ -283,15 +286,26 @@ class _TimerPageState extends State<TimerPage> {
     _timer?.cancel();
     _timer = null;
 
-    Navigator.of(context).pop(
-      InlineTimerData(
-        remainingSeconds: _remainingSeconds,
-        isRunning: _isRunning,
-        durationInSeconds: _lastEditedDuration,
-        enableSound: widget.enableSound,
-        enableVibration: widget.enableVibration,
-      ),
+    final data = InlineTimerData(
+      remainingSeconds: _remainingSeconds,
+      isRunning: _isRunning,
+      durationInSeconds: _lastEditedDuration,
+      enableSound: widget.enableSound,
+      enableVibration: widget.enableVibration,
     );
+
+    if (widget.onMinimize != null) {
+      widget.onMinimize!(data);
+      // Instant removal of route
+      final route = ModalRoute.of(context);
+      if (route != null) {
+        Navigator.of(context).removeRoute(route);
+      } else {
+        Navigator.of(context).pop(data);
+      }
+    } else {
+      Navigator.of(context).pop(data);
+    }
   }
 
   void _handleOutsideTap() {

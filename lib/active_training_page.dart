@@ -73,7 +73,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
     _inlineTimerAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 220),
+      duration: Duration.zero,
       vsync: this,
     );
     // Initialize with a default value, it will be reset if needed but good to have
@@ -416,19 +416,45 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     _activeTimerRowIndex = index;
 
-    final result = await Navigator.of(context).push<InlineTimerData>(
-      MaterialPageRoute(
-        builder: (context) => TimerPage(
-          durationInSeconds: inlineData?.durationInSeconds ?? duration,
-          initialRemainingSeconds: inlineData?.remainingSeconds,
-          enableSound: inlineData?.enableSound ?? true,
-          enableVibration: inlineData?.enableVibration ?? SettingsService.instance.getVibrationEnabled(),
-          autoStart: inlineData?.isRunning ?? true,
-          isActiveTraining: true,
-          onSave: (value) => _handleRestUpdate(index, value),
-        ),
+    // Determine entry transition duration
+    // If maximizing (forceFullScreen coming from miniature), entry should be instant.
+    // If initial open (Plein écran setting), entry should animate.
+    final entryDuration = (forceFullScreen)
+        ? Duration.zero
+        : const Duration(milliseconds: 300);
+
+    final route = PageRouteBuilder<InlineTimerData>(
+      transitionDuration: entryDuration,
+      reverseTransitionDuration: const Duration(milliseconds: 300), // Keep exit animation for Close
+      pageBuilder: (context, animation, secondaryAnimation) => TimerPage(
+        durationInSeconds: inlineData?.durationInSeconds ?? duration,
+        initialRemainingSeconds: inlineData?.remainingSeconds,
+        enableSound: inlineData?.enableSound ?? true,
+        enableVibration: inlineData?.enableVibration ??
+            SettingsService.instance.getVibrationEnabled(),
+        autoStart: inlineData?.isRunning ?? true,
+        isActiveTraining: true,
+        onSave: (value) => _handleRestUpdate(index, value),
+        onMinimize: _activateInlineTimer, // Handle instant minimize
       ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // If instant, return child directly (or handle in duration)
+        if (entryDuration == Duration.zero) return child;
+
+        const begin = Offset(1.0, 0.0); // From Right
+        const end = Offset.zero;
+        const curve = Curves.easeInOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
     );
+
+    final result = await Navigator.of(context).push<InlineTimerData>(route);
 
     if (!mounted) return;
     if (result != null) {
