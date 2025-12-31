@@ -333,6 +333,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                   Flexible( // Use Flexible to prevent overflow if value is long
                     child: Text(
                       value,
+                      maxLines: 1,
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700, // Bold
