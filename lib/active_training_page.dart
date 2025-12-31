@@ -16,6 +16,7 @@ import 'widgets/numeric_keypad.dart';
 import '../theme/glift_theme.dart';
 import '../timer_page.dart';
 import 'widgets/note_modal.dart';
+import 'widgets/exit_training_modal.dart';
 import 'widgets/superset_group_card.dart';
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
@@ -712,7 +713,16 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       header: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () async {
+              final shouldExit = await showDialog<bool>(
+                context: context,
+                builder: (context) => const ExitTrainingModal(),
+              );
+              
+              if (shouldExit == true && context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
             child: Container(
               width: 42,
               height: 42,
