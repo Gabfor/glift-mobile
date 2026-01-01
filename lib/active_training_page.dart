@@ -2198,6 +2198,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   Future<void> _handleComplete() async {
     // Immediate feedback for button tap
     HapticFeedback.lightImpact();
+
+    if (widget.isCompleted) {
+      widget.onComplete();
+      return;
+    }
     
     // Trigger the animation sequence in build()
     setState(() {
