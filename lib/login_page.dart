@@ -409,9 +409,19 @@ class _InputFieldState extends State<_InputField> {
               color: Colors.white,
               border: Border.all(
                 color: _borderColor(),
-                width: 1.5,
+                width: 1.0,
               ),
               borderRadius: BorderRadius.circular(5),
+              boxShadow: (widget.isFocused || widget.isError)
+                  ? [
+                      BoxShadow(
+                        color: _borderColor(),
+                        offset: Offset.zero,
+                        blurRadius: 0,
+                        spreadRadius: 1.0,
+                      ),
+                    ]
+                  : [],
             ),
             child: Center(
               child: TextField(
@@ -523,9 +533,19 @@ class _PasswordField extends StatelessWidget {
             color: Colors.white,
             border: Border.all(
               color: _borderColor(),
-              width: 1.5,
+              width: 1.0,
             ),
             borderRadius: BorderRadius.circular(5),
+            boxShadow: (isFocused || isError)
+                ? [
+                    BoxShadow(
+                      color: _borderColor(),
+                      offset: Offset.zero,
+                      blurRadius: 0,
+                      spreadRadius: 1.0,
+                    ),
+                  ]
+                : [],
           ),
           child: Stack(
             children: [
