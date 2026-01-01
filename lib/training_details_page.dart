@@ -46,12 +46,25 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   bool _isLoading = true;
   String? _error;
   bool _isScrolling = false;
+  final ScrollController _scrollController = ScrollController();
+
   Timer? _scrollEndTimer;
+  
+  // Single active focus manager
+  final ValueNotifier<String?> _activeFocusId = ValueNotifier(null);
 
   // Keypad state
   int? _activeRowIndex;
   int? _activeSeriesIndex;
   String? _activeFieldType; // 'reps' or 'weight'
+
+  @override
+  void dispose() {
+    _activeFocusId.dispose();
+    _scrollEndTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -160,6 +173,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       _currentDecimalHandler = null;
       _currentCloseHandler = null;
     });
+    // Reset focus tracking
+    _activeFocusId.value = null;
   }
 
   Future<void> _openActiveTraining() async {
@@ -291,11 +306,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     );
   }
 
-  @override
-  void dispose() {
-    _scrollEndTimer?.cancel();
-    super.dispose();
-  }
+
 
   Widget _buildBody() {
     if (_isLoading) {
@@ -344,6 +355,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
               showDecoration: false,
               showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+              activeFocusId: _activeFocusId,
             );
           }).toList(),
         ));
@@ -363,6 +375,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               _handleMaterialUpdate(rowIndex, material),
           showDecoration: true,
           showTimer: SettingsService.instance.getShowRepos(),
+          activeFocusId: _activeFocusId,
         ));
         i++;
       }
@@ -381,8 +394,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       child: GliftPullToRefresh(
         onRefresh: _fetchDetails,
         child: ListView.separated(
+          // controller: _scrollController,
           padding: EdgeInsets.fromLTRB(
-              20, 20, 20, _currentInputHandler != null ? 360 : 100),
+              20, 20, 20, _currentInputHandler != null ? MediaQuery.of(context).size.height * 0.8 : 100),
           itemCount: items.length,
           separatorBuilder: (context, index) => const SizedBox(height: 20),
           itemBuilder: (context, index) => items[index],
@@ -392,29 +406,34 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   void _scrollIntoView(BuildContext focusContext) {
-    final controller = PrimaryScrollController.of(context);
-    if (controller == null || !controller.hasClients) return;
+
+    debugPrint("DEBUG: Details Page _scrollIntoView");
+
+    // Use Scrollable.of(focusContext) to get the nearest scrollable (the ListView)
+    ScrollableState? scrollable = Scrollable.of(focusContext);
+    
+    if (scrollable == null) {
+       debugPrint("DEBUG: Details Page - No Scrollable found");
+       return;
+    }
 
     final renderObject = focusContext.findRenderObject();
     if (renderObject is! RenderBox) return;
 
     final objectOffset = renderObject.localToGlobal(Offset.zero);
-    final objectHeight = renderObject.size.height;
-    const keypadHeight = 320.0; // Approximate height of the custom numeric keypad
+    const targetTop = 100.0;
+    final scrollDelta = objectOffset.dy - targetTop;
+    
+    debugPrint("DEBUG: Details Delta: $scrollDelta");
 
-    final screenHeight = MediaQuery.of(context).size.height;
-    final availableHeight = screenHeight - keypadHeight - 40; // Extra space for safety
-    final objectBottom = objectOffset.dy + objectHeight;
+    if (scrollDelta.abs() > 10) {
+      final position = scrollable.position;
+      final targetOffset = (position.pixels + scrollDelta)
+          .clamp(position.minScrollExtent, position.maxScrollExtent);
 
-    if (objectBottom > availableHeight) {
-      final scrollAmount = objectBottom - availableHeight;
-      final targetOffset = (controller.offset + scrollAmount)
-          .clamp(controller.position.minScrollExtent, controller.position.maxScrollExtent)
-          as double;
-
-      controller.animateTo(
+      position.animateTo(
         targetOffset,
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
@@ -563,6 +582,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.onRestUpdate,
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
+    required this.activeFocusId,
     this.showDecoration = true,
     this.showTimer = true,
   });
@@ -580,7 +600,9 @@ class _ExerciseCard extends StatefulWidget {
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
   final bool showDecoration;
+
   final bool showTimer;
+  final ValueNotifier<String?> activeFocusId;
 
   @override
   State<_ExerciseCard> createState() => _ExerciseCardState();
@@ -604,6 +626,50 @@ class _ExerciseCardState extends State<_ExerciseCard>
   void initState() {
     super.initState();
     _initializeState();
+
+    widget.activeFocusId.addListener(_handleFocusChange);
+  }
+  
+  @override
+  void dispose() {
+    widget.activeFocusId.removeListener(_handleFocusChange);
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    // If global focus is NOT us (or is null), clear local
+    if (widget.activeFocusId.value == null || !widget.activeFocusId.value!.startsWith('${widget.row.id}_')) {
+       if (_activeRepsIndex != null || _activeWeightIndex != null) {
+          setState(() {
+            _activeRepsIndex = null;
+            _activeWeightIndex = null;
+          });
+       }
+    } else {
+       // Check if specific index matches
+       final parts = widget.activeFocusId.value!.split('_');
+       if (parts.length >= 3) {
+         final type = parts[1];
+         final index = int.tryParse(parts[2]);
+         if (index != null) {
+           if (type == 'reps') {
+             if (_activeRepsIndex != index) {
+                setState(() {
+                  _activeRepsIndex = index;
+                  _activeWeightIndex = null;
+                });
+             }
+           } else {
+             if (_activeWeightIndex != index) {
+                setState(() {
+                   _activeWeightIndex = index;
+                   _activeRepsIndex = null;
+                });
+             }
+           }
+         }
+       }
+    }
   }
 
   @override
@@ -650,6 +716,10 @@ class _ExerciseCardState extends State<_ExerciseCard>
       _effortStates.map((state) => _effortStateToValue(state)).toList();
 
   void _activateCell(BuildContext focusContext, int index, String type) {
+    // Notify others
+    final uniqueId = '${widget.row.id}_${type}_$index';
+    widget.activeFocusId.value = uniqueId;
+    
     setState(() {
       if (type == 'reps') {
         _activeRepsIndex = index;

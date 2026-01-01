@@ -65,7 +65,11 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   ValueChanged<String>? _currentInputHandler;
   VoidCallback? _currentBackspaceHandler;
   VoidCallback? _currentDecimalHandler;
+
   VoidCallback? _currentCloseHandler;
+  
+  // Single active focus manager
+  final ValueNotifier<String?> _activeFocusId = ValueNotifier(null);
 
   DateTime? _startTime;
 
@@ -80,6 +84,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     // Initialize with a default value, it will be reset if needed but good to have
     _startTime = DateTime.now();
     _fetchDetails();
+  }
+  
+  @override
+  void dispose() {
+    _activeFocusId.dispose();
+    _inlineTimerAnimationController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchDetails() async {
@@ -224,42 +235,41 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       _currentDecimalHandler = null;
       _currentCloseHandler = null;
     });
+    // Clear the active focus ID so all cells reset their state
+    _activeFocusId.value = null;
   }
 
   void _scrollIntoView(BuildContext focusContext) {
-    final controller = PrimaryScrollController.of(context);
-    // If no primary scroll controller found, try using _scrollController if attached (fallback)
-    // But since we removed it from ListView, it won't be attached unless we attached it elsewhere.
-    // In NestedScrollView scenarios, PrimaryScrollController should be available.
+    debugPrint("DEBUG: _scrollIntoView called");
     
-    // Safety check just in case
-    // Note: PrimaryScrollController.of(context) might return null on some versions, but usually returns a controller.
+    // Use Scrollable.of(focusContext) to get the nearest scrollable (the List)
+    // This avoids issues with PrimaryScrollController lookup failures
+    ScrollableState? scrollable = Scrollable.of(focusContext);
     
+    if (scrollable == null) {
+      debugPrint("DEBUG: No Scrollable found!");
+      return;
+    }
+
     final renderObject = focusContext.findRenderObject();
     if (renderObject is! RenderBox) return;
 
     final objectOffset = renderObject.localToGlobal(Offset.zero);
-    final objectHeight = renderObject.size.height;
-    const keypadHeight = 320.0;
+    const targetTop = 100.0;
+    final scrollDelta = objectOffset.dy - targetTop;
+    
+    debugPrint("DEBUG: Scroll Delta: $scrollDelta");
 
-    final screenHeight = MediaQuery.of(context).size.height;
-    final availableHeight = screenHeight - keypadHeight - 40;
-    final objectBottom = objectOffset.dy + objectHeight;
-
-    if (objectBottom > availableHeight) {
-      final scrollAmount = objectBottom - availableHeight;
-      // We need the scroll offset. PrimaryScrollController usually has it.
-      if (controller.hasClients) {
-          final targetOffset = (controller.offset + scrollAmount)
-              .clamp(controller.position.minScrollExtent, controller.position.maxScrollExtent)
-              as double;
-
-          controller.animateTo(
-            targetOffset,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-          );
-      }
+    if (scrollDelta.abs() > 10) {
+      final position = scrollable.position;
+      final targetOffset = (position.pixels + scrollDelta)
+          .clamp(position.minScrollExtent, position.maxScrollExtent);
+          
+      position.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -774,6 +784,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     return GliftPageLayout(
       resizeToAvoidBottomInset: false,
+      scrollable: false, // Ensure ListView handles scrolling directly
       header: Row(
         children: [
           GestureDetector(
@@ -827,7 +838,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           ),
         ],
       ),
-      scrollable: false,
+
       padding: EdgeInsets.zero,
       overlay: _inlineTimerData != null
           ? Positioned(
@@ -998,6 +1009,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 showDecoration: false,
                 showActions: false,
                 showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+                activeFocusId: _activeFocusId,
               );
             }).toList(),
           ));
@@ -1034,6 +1046,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             showDecoration: true,
             showActions: true,
             showTimer: SettingsService.instance.getShowRepos(),
+            activeFocusId: _activeFocusId,
           ));
           i++;
         }
@@ -1051,11 +1064,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     items.addAll(buildRowItems(completedRows, isActiveSubset: false));
 
+    final mediaQuery = MediaQuery.of(context);
     final bottomPadding = _currentInputHandler != null
-        ? 340.0
+        ? mediaQuery.size.height * 0.8 // Massive padding to ensure we can scroll anything to top
         : (allProcessed ? 100.0 : 20.0);
 
     return ListView.builder(
+      // controller: _scrollController, // Removed explicit controller to allow NestedScrollView to handle it
       padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPadding),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -1068,13 +1083,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     );
   }
 
-  @override
-  void dispose() {
-    _inlineTimerAnimation?.removeListener(_inlineTimerAnimationListener ?? () {});
-    _inlineTimerAnimationController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
+
 }
 
 class _TrainingListItem extends StatelessWidget {
@@ -1147,6 +1156,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     required this.onOpenTimer,
     required this.onAutoTriggerTimer,
     required this.onCloseTimer,
+    required this.activeFocusId,
     this.showDecoration = true,
     this.showActions = true,
     this.showTimer = true,
@@ -1154,6 +1164,7 @@ class _ActiveExerciseCard extends StatefulWidget {
 
   final int index;
   final TrainingRow row;
+  final ValueNotifier<String?> activeFocusId;
   final Function({
     required ValueChanged<String> onInput,
     required VoidCallback onBackspace,
@@ -1496,6 +1507,54 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     _repetitions = List<String>.from(widget.row.repetitions);
     _weights = List<String>.from(widget.row.weights);
     _completedSets = _normalizedCompletion(widget.initialCompletedSets);
+    
+    // Listen for focus changes to clear local state if another cell is focused
+    widget.activeFocusId.addListener(_handleFocusChange);
+  }
+  
+  @override
+  void dispose() {
+    widget.activeFocusId.removeListener(_handleFocusChange);
+    super.dispose();
+  }
+  
+  void _handleFocusChange() {
+    // If the global focus ID is null or belongs to another cell, clear our local focus
+    if (widget.activeFocusId.value == null || !widget.activeFocusId.value!.startsWith('${widget.row.id}_')) {
+       if (_activeRepsIndex != null || _activeWeightIndex != null) {
+          setState(() {
+            _activeRepsIndex = null;
+            _activeWeightIndex = null;
+          });
+       }
+    } else {
+       // It belongs to THIS row. But is it one of OUR cells?
+       // Format: rowid_type_index
+       final parts = widget.activeFocusId.value!.split('_');
+       if (parts.length >= 3) {
+         final type = parts[1];
+         final index = int.tryParse(parts[2]);
+         
+         if (index != null) {
+           // If the active focus is NOT the one we currently have locally, update local
+           if (type == 'reps') {
+             if (_activeRepsIndex != index) {
+                setState(() {
+                  _activeRepsIndex = index; // Should be set by activateCell, but just in case
+                  _activeWeightIndex = null;
+                });
+             }
+           } else {
+             if (_activeWeightIndex != index) {
+                setState(() {
+                   _activeWeightIndex = index;
+                   _activeRepsIndex = null;
+                });
+             }
+           }
+         }
+       }
+    }
   }
 
   List<bool> _normalizedCompletion(List<bool> values) {
@@ -1554,6 +1613,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
       _effortStates.map((state) => _effortStateToValue(state)).toList();
 
   void _activateCell(BuildContext focusContext, int index, String type) {
+    // Generate unique ID for this cell
+    final uniqueId = '${widget.row.id}_${type}_$index';
+    
+    // Notify everyone (including ourselves via listener, but we set local first for responsiveness)
+    widget.activeFocusId.value = uniqueId;
+    
     setState(() {
       if (type == 'reps') {
         _activeRepsIndex = index;
@@ -1622,11 +1687,21 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   }
 
   Future<void> _handleClose(int index, String type) async {
+    // Determine the unique ID for the *next* logical cell or just clear?
+    // User requested: "Quand je ferme le clavier, ça doit également déslectionner la cellule"
+    // So we just clear everything.
+    
     if (mounted) {
       setState(() {
         _activeRepsIndex = null;
         _activeWeightIndex = null;
       });
+      // Also clear global focus (handled by onFocus callback in parent? 
+      // The parent callback sets _currentInputHandler to null, which is good.
+      // But we should also clear the notifier if we initiated the close.
+      // Actually parent's _closeKeypad does reset the notifier.
+      // We don't have direct access to parent's _closeKeypad here, 
+      // but 'widget.onFocus' callback's 'onClose' usually triggers parent logic.
     }
 
     // Notify parent to persist updates
