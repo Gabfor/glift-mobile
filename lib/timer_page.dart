@@ -70,6 +70,8 @@ class _TimerPageState extends State<TimerPage> {
   late final FocusNode _secondsFocusNode;
   bool _isEditingMinutes = false;
   bool _isEditingSeconds = false;
+  bool _isFirstInputMinutes = false;
+  bool _isFirstInputSeconds = false;
 
   @override
   void initState() {
@@ -169,6 +171,8 @@ class _TimerPageState extends State<TimerPage> {
     }
     _pauseTimerForEdit();
     _minutesController.text = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    // Emulate "select all" behavior by clearing on next input
+    _isFirstInputMinutes = true;
     setState(() {
       _isEditingMinutes = true;
       _isEditingSeconds = false;
@@ -183,6 +187,8 @@ class _TimerPageState extends State<TimerPage> {
     }
     _pauseTimerForEdit();
     _secondsController.text = (_remainingSeconds % 60).toString().padLeft(2, '0');
+    // Emulate "select all" behavior by clearing on next input
+    _isFirstInputSeconds = true;
     setState(() {
       _isEditingSeconds = true;
       _isEditingMinutes = false;
@@ -222,6 +228,26 @@ class _TimerPageState extends State<TimerPage> {
   void _handleMinutesTextChange() {
     if (!_isEditingMinutes) return;
 
+    final text = _minutesController.text;
+    if (_isFirstInputMinutes && text.length > 2) {
+      final selection = _minutesController.selection;
+      if (text.length == 3 && selection.isValid && selection.baseOffset > 0) {
+        final newChar = text[selection.baseOffset - 1];
+        _minutesController.value = TextEditingValue(
+          text: newChar,
+          selection: const TextSelection.collapsed(offset: 1),
+        );
+        _isFirstInputMinutes = false;
+      } else if (text.length < 2) {
+         _isFirstInputMinutes = false;
+      }
+    } else if (text.length > 2) {
+      _minutesController.value = TextEditingValue(
+        text: text.substring(0, 2),
+        selection: const TextSelection.collapsed(offset: 2),
+      );
+    }
+
     final pendingMinutes = int.tryParse(_minutesController.text) ?? 0;
     final pendingDuration = _computePendingDuration(minutesOverride: pendingMinutes);
 
@@ -233,6 +259,26 @@ class _TimerPageState extends State<TimerPage> {
 
   void _handleSecondsTextChange() {
     if (!_isEditingSeconds) return;
+
+    final text = _secondsController.text;
+    if (_isFirstInputSeconds && text.length > 2) {
+      final selection = _secondsController.selection;
+      if (text.length == 3 && selection.isValid && selection.baseOffset > 0) {
+        final newChar = text[selection.baseOffset - 1];
+        _secondsController.value = TextEditingValue(
+          text: newChar,
+          selection: const TextSelection.collapsed(offset: 1),
+        );
+        _isFirstInputSeconds = false;
+      } else if (text.length < 2) {
+         _isFirstInputSeconds = false;
+      }
+    } else if (text.length > 2) {
+      _secondsController.value = TextEditingValue(
+        text: text.substring(0, 2),
+        selection: const TextSelection.collapsed(offset: 2),
+      );
+    }
 
     final pendingSeconds = int.tryParse(_secondsController.text) ?? 0;
     final pendingDuration = _computePendingDuration(secondsOverride: pendingSeconds);
@@ -564,7 +610,7 @@ class _EditableTimeValue extends StatelessWidget {
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(maxLength),
+                        // Removed LengthLimitingTextInputFormatter
                       ],
                       textAlign: TextAlign.center,
                       style: GoogleFonts.quicksand(

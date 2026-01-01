@@ -25,6 +25,8 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
   late final FocusNode _secondsFocusNode;
   bool _isEditingMinutes = false;
   bool _isEditingSeconds = false;
+  bool _isFirstInputMinutes = false;
+  bool _isFirstInputSeconds = false;
 
   @override
   void initState() {
@@ -56,6 +58,8 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
       _finishSecondsEdit();
     }
     _minutesController.text = (_durationInSeconds ~/ 60).toString().padLeft(2, '0');
+    // Emulate "select all" behavior by clearing on next input
+    _isFirstInputMinutes = true;
     setState(() {
       _isEditingMinutes = true;
       _isEditingSeconds = false;
@@ -68,6 +72,8 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
       _finishMinutesEdit();
     }
     _secondsController.text = (_durationInSeconds % 60).toString().padLeft(2, '0');
+    // Emulate "select all" behavior by clearing on next input
+    _isFirstInputSeconds = true;
     setState(() {
       _isEditingSeconds = true;
       _isEditingMinutes = false;
@@ -100,11 +106,55 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
   }
 
   void _handleMinutesTextChange() {
-    // Only used for real-time validation if needed, but we save on finish
+    if (!_isEditingMinutes) return;
+    
+    final text = _minutesController.text;
+    if (_isFirstInputMinutes && text.length > 2) {
+      final selection = _minutesController.selection;
+      if (text.length == 3 && selection.isValid && selection.baseOffset > 0) {
+        final newChar = text[selection.baseOffset - 1];
+        _minutesController.value = TextEditingValue(
+          text: newChar,
+          selection: const TextSelection.collapsed(offset: 1),
+        );
+        _isFirstInputMinutes = false;
+        return;
+      }
+      if (text.length < 2) {
+         _isFirstInputMinutes = false;
+      }
+    } else if (text.length > 2) {
+      _minutesController.value = TextEditingValue(
+        text: text.substring(0, 2),
+        selection: const TextSelection.collapsed(offset: 2),
+      );
+    }
   }
 
   void _handleSecondsTextChange() {
-    // Only used for real-time validation if needed, but we save on finish
+    if (!_isEditingSeconds) return;
+
+    final text = _secondsController.text;
+    if (_isFirstInputSeconds && text.length > 2) {
+      final selection = _secondsController.selection;
+      if (text.length == 3 && selection.isValid && selection.baseOffset > 0) {
+        final newChar = text[selection.baseOffset - 1];
+        _secondsController.value = TextEditingValue(
+          text: newChar,
+          selection: const TextSelection.collapsed(offset: 1),
+        );
+        _isFirstInputSeconds = false;
+        return;
+      }
+      if (text.length < 2) {
+         _isFirstInputSeconds = false;
+      }
+    } else if (text.length > 2) {
+      _secondsController.value = TextEditingValue(
+        text: text.substring(0, 2),
+        selection: const TextSelection.collapsed(offset: 2),
+      );
+    }
   }
 
   void _finishMinutesEdit() {
@@ -115,6 +165,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
       _isEditingMinutes = false;
     });
   }
+
 
   void _finishSecondsEdit() {
     final pendingDuration =
@@ -320,7 +371,7 @@ class _EditableTimeValue extends StatelessWidget {
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(maxLength),
+                        // Note: Removed LengthLimitingTextInputFormatter to allow logic interception
                       ],
                       textAlign: TextAlign.center,
                       style: GoogleFonts.quicksand(
