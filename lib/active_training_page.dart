@@ -25,6 +25,7 @@ import '../services/vibration_service.dart';
 import '../session_completed_page.dart';
 import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
+import '../main_page.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -518,6 +519,16 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     }
   }
 
+  Future<void> _triggerVibration() async {
+    const vibrationService = DeviceVibrationService();
+    final hasVibrator = await vibrationService.hasVibrator();
+    if (hasVibrator) {
+      await vibrationService.vibrate();
+    } else {
+      await vibrationService.fallback();
+    }
+  }
+
   Future<void> _finishTraining() async {
     if (_rows == null) return;
 
@@ -594,30 +605,53 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
           // Navigate to completion screen as an overlay (transparent route)
           if (mounted) {
-            await Navigator.of(context).push(
-              PageRouteBuilder(
-                opaque: false, // Transparent background
-                pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
-                  sessionCount: sessionCount,
-                  durationMinutes: displayDuration,
-                  totalVolume: totalVolume,
-                  totalReps: totalReps,
-                  averageDuration: avgDuration,
-                  previousTotalVolume: prevVolume,
-                  previousTotalReps: prevReps,
-                  programId: widget.training.programId,
-                  trainingId: widget.training.id,
-                  supabase: widget.supabase,
-                  authRepository: widget.authRepository,
-                  biometricAuthService: widget.biometricAuthService,
+            if (SettingsService.instance.getShowSummary()) {
+              await Navigator.of(context).push(
+                PageRouteBuilder(
+                  opaque: false, // Transparent background
+                  pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
+                    sessionCount: sessionCount,
+                    durationMinutes: displayDuration,
+                    totalVolume: totalVolume,
+                    totalReps: totalReps,
+                    averageDuration: avgDuration,
+                    previousTotalVolume: prevVolume,
+                    previousTotalReps: prevReps,
+                    programId: widget.training.programId,
+                    trainingId: widget.training.id,
+                    supabase: widget.supabase,
+                    authRepository: widget.authRepository,
+                    biometricAuthService: widget.biometricAuthService,
+                  ),
+                  transitionDuration: const Duration(milliseconds: 200),
+                  reverseTransitionDuration: const Duration(milliseconds: 200),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                  },
                 ),
-                transitionDuration: const Duration(milliseconds: 200),
-                reverseTransitionDuration: const Duration(milliseconds: 200),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                },
-              ),
-            );
+              );
+            } else {
+               // Trigger vibration manually since we skip the page that does it
+               _triggerVibration();
+
+               // Directly navigate to sessions list (index 1)
+               if (mounted) {
+                 Navigator.of(context).pushAndRemoveUntil(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => MainPage(
+                        supabase: widget.supabase,
+                        authRepository: widget.authRepository,
+                        biometricAuthService: widget.biometricAuthService,
+                        initialProgramId: widget.training.programId,
+                        initialTrainingId: widget.training.id,
+                      ),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                    (route) => false,
+                  );
+               }
+            }
           }
         }
       }

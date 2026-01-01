@@ -41,6 +41,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _rest = true;
   bool _tracking = true;
   bool _superset = true;
+  bool _showSummary = true;
   bool _autoTrigger = true;
   bool _vibrations = true;
   bool _sound = true;
@@ -71,6 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _vibrations = settings.getVibrationEnabled();
         _links = settings.getShowLinks();
         _notes = settings.getShowNotes();
+        _showSummary = settings.getShowSummary();
 
         _rest = settings.getShowRepos();
         debugPrint('SettingsPage: Loaded _rest = $_rest'); // DEBUG
@@ -138,6 +140,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _notes = settings.getShowNotes();
               _suivi = settings.getShowSuivi();
               _superset = settings.getShowSuperset();
+              _showSummary = settings.getShowSummary();
               _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
@@ -249,6 +252,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) {
                   setState(() => _superset = v);
                   SettingsService.instance.saveShowSuperset(v);
+                },
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Récapitulatif',
+                value: _showSummary,
+                onChanged: (v) {
+                  setState(() => _showSummary = v);
+                  SettingsService.instance.saveShowSummary(v);
                 },
               ),
             ],
@@ -423,6 +434,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
                   ],
                 ),
+                onTap: () {},
+              ),
+              _SettingsTile(
+                title: 'Besoin d\'aide ?',
+                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
                 onTap: () {},
               ),
               _SettingsTile(

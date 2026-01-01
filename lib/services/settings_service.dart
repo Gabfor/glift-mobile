@@ -90,6 +90,12 @@ class SettingsService {
                 await _prefs.setBool(_kShowSuperset, showSuperset);
             }
         }
+        if (response['show_summary'] != null) {
+            final showSummary = response['show_summary'] as bool;
+            if (showSummary != getShowSummary()) {
+                await _prefs.setBool(_kShowSummary, showSummary);
+            }
+        }
       }
     } catch (e) {
       // Create preference row if it doesn't exist? Or just ignore.
@@ -108,6 +114,7 @@ class SettingsService {
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
   static const String _kShowEffort = 'show_effort';
   static const String _kShowRepos = 'show_repos';
+
 
   // Notifiers
   final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
@@ -377,6 +384,31 @@ class SettingsService {
   bool getShowSuperset() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowSuperset) ?? true;
+  }
+
+  // Show Summary
+  static const String _kShowSummary = 'show_summary';
+
+  Future<void> saveShowSummary(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowSummary, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_summary': show,
+        });
+      } catch (e) {
+        print('Error saving show_summary to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowSummary() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowSummary) ?? true;
   }
 
   Future<void> _initIfNeeded() async {
