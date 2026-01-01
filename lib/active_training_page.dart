@@ -1790,76 +1790,75 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final effectiveIsCompleted = widget.isCompleted || _isCompleting;
     final effectiveIsIgnored = widget.isIgnored || _isIgnoring;
 
-    final bodyContent = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final headerContent = Row(
       children: [
+        Expanded(
+          child: hasLink
+              ? GestureDetector(
+                  onTap: _launchVideoUrl,
+                  child: Text(
+                    widget.row.exercise,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.quicksand(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF7069FA),
+                      decoration: TextDecoration.underline,
+                      decorationColor: const Color(0xFF7069FA),
+                    ),
+                  ),
+                )
+              : Text(
+                  widget.row.exercise,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF3A416F),
+                  ),
+                ),
+        ),
+        const SizedBox(width: 20),
         Row(
           children: [
-            Expanded(
-              child: hasLink
-                  ? GestureDetector(
-                      onTap: _launchVideoUrl,
-                      child: Text(
-                        widget.row.exercise,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF7069FA),
-                          decoration: TextDecoration.underline,
-                          decorationColor: const Color(0xFF7069FA),
-                        ),
-                      ),
-                    )
-                  : Text(
-                      widget.row.exercise,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
-                      ),
-                    ),
-            ),
-            const SizedBox(width: 20),
-            Row(
-              children: [
-                if (widget.showTimer) ...[
-                  GestureDetector(
-                    onTap: () {
-                      int duration = int.tryParse(widget.row.rest) ?? 0;
-    if (duration == 0) {
-      duration = SettingsService.instance.getDefaultRestTime();
-    }
-                      widget.onOpenTimer(widget.index, duration);
-                    },
-                    child: SvgPicture.asset(
-                      hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                ],
-                if (SettingsService.instance.getShowNotes())
-                  GestureDetector(
-                    onTap: _showNoteModal,
-                    child: SvgPicture.asset(
-                      hasNote
-                          ? 'assets/icons/note_on.svg'
-                          : 'assets/icons/note_off.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-              ],
-            ),
+            if (widget.showTimer) ...[
+              GestureDetector(
+                onTap: () {
+                  int duration = int.tryParse(widget.row.rest) ?? 0;
+                  if (duration == 0) {
+                    duration = SettingsService.instance.getDefaultRestTime();
+                  }
+                  widget.onOpenTimer(widget.index, duration);
+                },
+                child: SvgPicture.asset(
+                  hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              const SizedBox(width: 20),
+            ],
+            if (SettingsService.instance.getShowNotes())
+              GestureDetector(
+                onTap: _showNoteModal,
+                child: SvgPicture.asset(
+                  hasNote
+                      ? 'assets/icons/note_on.svg'
+                      : 'assets/icons/note_off.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
           ],
         ),
-        const SizedBox(height: 20),
+      ],
+    );
 
+    final gridContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         // Header Row
         Row(
           children: [
@@ -2034,10 +2033,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        headerContent,
+        const SizedBox(height: 20),
         AnimatedOpacity(
           duration: const Duration(milliseconds: 300),
           opacity: _isCompleting ? 0.3 : 1.0,
-          child: bodyContent,
+          child: gridContent,
         ),
         if (widget.showActions) ...[
           const SizedBox(height: 5),
