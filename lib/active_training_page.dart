@@ -255,10 +255,25 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     if (renderObject is! RenderBox) return;
 
     final objectOffset = renderObject.localToGlobal(Offset.zero);
-    const targetTop = 100.0;
+    final screenHeight = MediaQuery.of(focusContext).size.height;
+    
+    // Define safe zone (same as training details)
+    const safeTop = 90.0;
+    final safeBottom = screenHeight * 0.40;
+
+    debugPrint("DEBUG: Cell Y: ${objectOffset.dy}, Safe Zone: $safeTop - $safeBottom");
+
+    if (objectOffset.dy >= safeTop && objectOffset.dy <= safeBottom) {
+       debugPrint("DEBUG: Cell in safe zone, skipping scroll");
+       return;
+    }
+
+    // Target position: Center of the safe zone
+    final targetTop = (safeTop + safeBottom) / 2;
+
     final scrollDelta = objectOffset.dy - targetTop;
     
-    debugPrint("DEBUG: Scroll Delta: $scrollDelta");
+    debugPrint("DEBUG: Scroll Delta: $scrollDelta (Target: $targetTop)");
 
     if (scrollDelta.abs() > 10) {
       final position = scrollable.position;

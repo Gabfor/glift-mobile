@@ -421,10 +421,28 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     if (renderObject is! RenderBox) return;
 
     final objectOffset = renderObject.localToGlobal(Offset.zero);
-    const targetTop = 100.0;
+    final screenHeight = MediaQuery.of(focusContext).size.height;
+    
+    // Define safe zone: below header (approx 80-100) and STRONGLY above keypad
+    // Keypad is approx 35-40% of screen. We want a buffer.
+    // Setting safeBottom to 40% ensures anything in the bottom half gets scrolled up.
+    const safeTop = 90.0;
+    final safeBottom = screenHeight * 0.40; 
+
+    debugPrint("DEBUG: Cell Y: ${objectOffset.dy}, Safe Zone: $safeTop - $safeBottom");
+
+    // If cell is already in the safe zone (visible and above keypad), do NOT scroll
+    if (objectOffset.dy >= safeTop && objectOffset.dy <= safeBottom) {
+       debugPrint("DEBUG: Cell in safe zone, skipping scroll");
+       return;
+    }
+
+    // Target position: Center of the safe zone (more comfortable than top)
+    final targetTop = (safeTop + safeBottom) / 2;
+    
     final scrollDelta = objectOffset.dy - targetTop;
     
-    debugPrint("DEBUG: Details Delta: $scrollDelta");
+    debugPrint("DEBUG: Details Delta: $scrollDelta (Target: $targetTop)");
 
     if (scrollDelta.abs() > 10) {
       final position = scrollable.position;
