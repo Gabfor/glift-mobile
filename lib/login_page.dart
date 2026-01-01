@@ -418,7 +418,7 @@ class _InputFieldState extends State<_InputField> {
                         color: _borderColor(),
                         offset: Offset.zero,
                         blurRadius: 0,
-                        spreadRadius: 1.0,
+                        spreadRadius: 0.5,
                       ),
                     ]
                   : [],
@@ -542,7 +542,7 @@ class _PasswordField extends StatelessWidget {
                       color: _borderColor(),
                       offset: Offset.zero,
                       blurRadius: 0,
-                      spreadRadius: 1.0,
+                      spreadRadius: 0.5,
                     ),
                   ]
                 : [],
