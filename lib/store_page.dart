@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:glift_mobile/widgets/download_restricted_modal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
@@ -749,10 +750,17 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap:
-                            _isDownloadable && !_isDownloading && !_isRestricted
-                                ? _handleDownload
-                                : null,
+                        onTap: () {
+                          if (_isRestricted) {
+                            showDialog(
+                              context: context,
+                              builder: (context) =>
+                                  DownloadRestrictedModal(),
+                            );
+                          } else if (_isDownloadable && !_isDownloading) {
+                            _handleDownload();
+                          }
+                        },
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
