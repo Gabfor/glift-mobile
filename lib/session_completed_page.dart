@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
+
 import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/main_page.dart';
@@ -147,7 +148,13 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _dismiss();
+      },
+      child: Scaffold(
       backgroundColor: Colors.transparent, // Let the stack handle opacity for tap detection
       body: Stack(
         children: [
@@ -304,6 +311,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
           ),
         ],
       ),
+    ),
     );
   }
 

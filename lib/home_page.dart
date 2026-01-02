@@ -76,7 +76,7 @@ class HomePageState extends State<HomePage> {
     _pageController = PageController();
     _programScrollController = ScrollController();
     _selectedProgramId = widget.initialProgramId;
-    _newlyDownloadedId = widget.initialProgramId;
+
     _fetchPrograms();
   }
 
