@@ -201,9 +201,9 @@ class _StorePageState extends State<StorePage> {
           }
         }
 
-        // Téléchargement
-        if (matches && selectedFilters.containsKey('Téléchargement')) {
-          final selected = selectedFilters['Téléchargement']!;
+        // Disponible
+        if (matches && selectedFilters.containsKey('Disponible')) {
+          final selected = selectedFilters['Disponible']!;
           if (selected.isNotEmpty) {
             final userPlan = SettingsService.instance.getSubscriptionPlan();
             final programPlan = program.plan;
@@ -312,7 +312,7 @@ class _StorePageState extends State<StorePage> {
         options: partners.toList()..sort(),
       ),
       FilterSection(
-        title: 'Téléchargement',
+        title: 'Disponible',
         options: ['Oui', 'Non'],
       ),
     ];
