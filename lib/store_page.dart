@@ -41,7 +41,7 @@ class _StorePageState extends State<StorePage> {
   static const List<Map<String, String>> _sortOptions = [
     {'value': 'popularity', 'label': 'Popularité'},
     {'value': 'newest', 'label': 'Nouveauté'},
-    {'value': 'expiration', 'label': 'Ancienneté'},
+    {'value': 'oldest', 'label': 'Ancienneté'},
   ];
 
   late final StoreRepository _repository;
@@ -74,7 +74,9 @@ class _StorePageState extends State<StorePage> {
 
   Future<void> _loadPrograms() async {
     try {
-      final programs = await _repository.getStorePrograms();
+      final programs = await _repository.getStorePrograms(
+        sortBy: _selectedSort,
+      );
       if (mounted) {
         setState(() {
           _programs = programs;
@@ -227,28 +229,7 @@ class _StorePageState extends State<StorePage> {
       }).toList();
     }
 
-    // Sort
-    switch (_selectedSort) {
-      case 'newest':
-        // Assuming there is a date field, otherwise fallback to default or title
-        // For now, let's sort by title as a placeholder if no date exists
-        // Or if StoreProgram has a date, use it.
-        // Checking StoreProgram definition (implied): it has title, sessions, duration, etc.
-        // If no date, maybe just keep default order or sort by title?
-        // Let's assume default order for 'newest' if no date is available, or add a TODO.
-        // Actually, ShopPage used startDate. StoreProgram might not have it.
-        // Let's check StoreProgram structure later if needed. For now, I'll just leave it as is or sort by title?
-        // Let's just implement the switch but keep default for now if fields are missing.
-        break;
-      case 'expiration':
-        // Store programs usually don't expire?
-        // Maybe 'popularity' (e.g. number of downloads/sessions)?
-        // I'll implement the structure but maybe just return filtered for now until I know the fields.
-        break;
-      case 'popularity':
-      default:
-        break;
-    }
+
 
     return filtered;
   }
@@ -400,6 +381,7 @@ class _StorePageState extends State<StorePage> {
                                             setState(() {
                                               _selectedSort = value;
                                               FilterService().storeSort = value;
+                                              _loadPrograms();
                                             });
                                           },
                                         ),
