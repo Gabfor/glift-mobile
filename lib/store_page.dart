@@ -519,7 +519,6 @@ class _StoreProgramCard extends StatefulWidget {
 class _StoreProgramCardState extends State<_StoreProgramCard> {
   bool _isDownloading = false;
   bool _isRestricted = false;
-  bool _checkingEligibility = false;
 
   bool get _isDownloadable =>
       widget.isAuthenticated && widget.program.linkedProgramId != null;
@@ -530,34 +529,26 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
     _checkEligibility();
   }
 
+  @override
+  void didUpdateWidget(_StoreProgramCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.program != oldWidget.program ||
+        widget.isAuthenticated != oldWidget.isAuthenticated) {
+      _checkEligibility();
+    }
+  }
+
   Future<void> _checkEligibility() async {
     if (!widget.isAuthenticated) return;
 
-    final plan = SettingsService.instance.getSubscriptionPlan();
-    if (plan == 'basic') {
-      // Rule 1: More than 1 session -> Restricted
-      final sessions = int.tryParse(widget.program.sessions) ?? 0;
-      if (sessions > 1) {
-        if (mounted) setState(() => _isRestricted = true);
-        return;
-      }
+    final userPlan = SettingsService.instance.getSubscriptionPlan();
+    final programPlan = widget.program.plan;
 
-      // Rule 2: 1 session but > 10 exercises -> Restricted
-      // We need to fetch exercise count.
-      if (sessions == 1) {
-        if (mounted) setState(() => _checkingEligibility = true);
-        
-        final count = await widget.repository.getProgramExerciseCount(widget.program.id);
-        
-        if (mounted) {
-          setState(() {
-            _checkingEligibility = false;
-            if (count > 10) {
-              _isRestricted = true;
-            }
-          });
-        }
-      }
+    // Logic: Restricted if user is basic AND program is premium.
+    if (userPlan == 'basic' && programPlan == 'premium') {
+      if (mounted) setState(() => _isRestricted = true);
+    } else {
+      if (mounted) setState(() => _isRestricted = false);
     }
   }
 
@@ -604,25 +595,21 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
   @override
   Widget build(BuildContext context) {
     final program = widget.program;
-    final buttonColor = _checkingEligibility
-        ? const Color(0xFFF2F1F6)
-        : (_isRestricted
-            ? const Color(0xFFF2F1F6) // Gray background for restricted
-            : (_isDownloading
-                ? const Color(0xFFF2F1F6)
-                : (_isDownloadable
-                    ? const Color(0xFF7069FA)
-                    : const Color(0xFFF2F1F6))));
+    final buttonColor = _isRestricted
+        ? const Color(0xFFF2F1F6) // Gray background for restricted
+        : (_isDownloading
+            ? const Color(0xFFF2F1F6)
+            : (_isDownloadable
+                ? const Color(0xFF7069FA)
+                : const Color(0xFFF2F1F6)));
 
-    final textColor = _checkingEligibility
-        ? const Color(0xFFD7D4DC)
-        : (_isRestricted
-            ? const Color(0xFFD7D4DC) // Gray text for restricted
-            : (_isDownloading
-                ? const Color(0xFFD7D4DC)
-                : (_isDownloadable
-                    ? Colors.white
-                    : const Color(0xFFD7D4DC))));
+    final textColor = _isRestricted
+        ? const Color(0xFFD7D4DC) // Gray text for restricted
+        : (_isDownloading
+            ? const Color(0xFFD7D4DC)
+            : (_isDownloadable
+                ? Colors.white
+                : const Color(0xFFD7D4DC)));
 
     return Container(
       decoration: BoxDecoration(
@@ -738,7 +725,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                     Expanded(
                       child: GestureDetector(
                         onTap:
-                            _isDownloadable && !_isDownloading && !_isRestricted && !_checkingEligibility
+                            _isDownloadable && !_isDownloading && !_isRestricted
                                 ? _handleDownload
                                 : null,
                         child: Container(
@@ -750,7 +737,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              if (_checkingEligibility || _isDownloading) ...[
+                              if (_isDownloading) ...[
                                 const GliftLoader(
                                   size: 20,
                                   strokeWidth: 2,
@@ -774,11 +761,9 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                                 const SizedBox(width: 8),
                               ],
                               Text(
-                                _checkingEligibility
-                                    ? 'Vérification...'
-                                    : (_isDownloading
-                                        ? 'Téléchargement...'
-                                        : 'Télécharger'),
+                                _isDownloading
+                                    ? 'Téléchargement...'
+                                    : 'Télécharger',
                                 style: GoogleFonts.quicksand(
                                   color: textColor,
                                   fontSize: 16,
