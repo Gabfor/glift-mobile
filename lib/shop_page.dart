@@ -33,7 +33,7 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   static const List<Map<String, String>> _sortOptions = [
-    {'value': 'popularity', 'label': 'Popularité'},
+    {'value': 'relevance', 'label': 'Pertinence'},
     {'value': 'newest', 'label': 'Nouveauté'},
     {'value': 'expiration', 'label': 'Expiration'},
   ];
@@ -48,6 +48,9 @@ class _ShopPageState extends State<ShopPage> {
     'Sport': {'Boxe', 'Musculation'},
   };
 
+  String? _userGender;
+  String? _userGoal;
+
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
   Timer? _navigationRevealTimer;
@@ -61,9 +64,10 @@ class _ShopPageState extends State<ShopPage> {
     // Initialize from service
     final filterService = FilterService();
     _selectedFiltersMap = Map.from(filterService.shopFilters);
-    _selectedSort = filterService.shopSort;
+    _selectedSort = filterService.shopSort == 'popularity' ? 'relevance' : filterService.shopSort;
 
     _loadOffers();
+    _loadUserProfile();
   }
 
   @override
@@ -101,6 +105,28 @@ class _ShopPageState extends State<ShopPage> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final userId = widget.supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final data = await widget.supabase
+          .from('profiles')
+          .select('gender, main_goal')
+          .eq('id', userId)
+          .single();
+
+      if (mounted) {
+        setState(() {
+          _userGender = data['gender'] as String?;
+          _userGoal = data['main_goal'] as String?;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading user profile: $e');
     }
   }
 
@@ -213,9 +239,40 @@ class _ShopPageState extends State<ShopPage> {
           return dateA.compareTo(dateB); // Ascending (soonest first)
         });
         break;
-      case 'popularity':
+      case 'relevance':
+        filtered.sort((a, b) {
+          int scoreA = 0;
+          int scoreB = 0;
+
+          // Goal match (+5)
+          if (_userGoal != null && a.type.any((t) => t.toLowerCase() == _userGoal!.toLowerCase())) {
+            scoreA += 5;
+          }
+          if (_userGoal != null && b.type.any((t) => t.toLowerCase() == _userGoal!.toLowerCase())) {
+            scoreB += 5;
+          }
+
+          // Gender match (+2)
+          // Matches if user gender equals offer gender OR offer is neutral/mixed
+          if (_userGender != null) {
+            final genderA = a.gender?.toLowerCase();
+            final isWildcardA = genderA != null && (genderA == 'tous' || genderA == 'mixte' || genderA == 'unisexe');
+            if (isWildcardA || (genderA != null && genderA == _userGender!.toLowerCase())) {
+              scoreA += 2;
+            }
+
+            final genderB = b.gender?.toLowerCase();
+            final isWildcardB = genderB != null && (genderB == 'tous' || genderB == 'mixte' || genderB == 'unisexe');
+            if (isWildcardB || (genderB != null && genderB == _userGender!.toLowerCase())) {
+              scoreB += 2;
+            }
+          }
+
+          return scoreB.compareTo(scoreA); // Descending score
+        });
+        break;
       default:
-        // Default order (as received from DB or specific logic if available)
+        // Default order
         break;
     }
 
