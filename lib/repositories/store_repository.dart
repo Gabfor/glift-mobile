@@ -166,4 +166,39 @@ class StoreRepository {
       rethrow;
     }
   }
+
+  Future<int> getProgramExerciseCount(String storeProgramId) async {
+    try {
+      // 1. Get linked_program_id
+      final storeData = await _supabase
+          .from('program_store')
+          .select('linked_program_id')
+          .eq('id', storeProgramId)
+          .single();
+
+      final String? linkedProgramId = storeData['linked_program_id'];
+      if (linkedProgramId == null) return 0;
+
+      // 2. Get training IDs
+      final List<dynamic> adminTrainings = await _supabase
+          .from('trainings_admin')
+          .select('id')
+          .eq('program_id', linkedProgramId);
+
+      if (adminTrainings.isEmpty) return 0;
+
+      final trainingIds = adminTrainings.map((t) => t['id'].toString()).toList();
+
+      // 3. Get count of rows
+      final count = await _supabase
+          .from('training_rows_admin')
+          .count(CountOption.exact)
+          .filter('training_id', 'in', trainingIds);
+      
+      return count;
+    } catch (e) {
+      print('Error getting exercise count: $e');
+      return 0;
+    }
+  }
 }

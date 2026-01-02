@@ -24,11 +24,16 @@ class SettingsService {
     await syncFromSupabase();
   }
 
+  static const String _kShowEffort = 'show_effort';
+  static const String _kShowRepos = 'show_repos';
+  static const String _kSubscriptionPlan = 'subscription_plan';
+
   Future<void> syncFromSupabase() async {
     final user = _supabase?.auth.currentUser;
     if (user == null) return;
 
     try {
+      // 1. Sync Preferences
       final response = await _supabase!
           .from('preferences')
           .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi, show_superset')
@@ -97,6 +102,21 @@ class SettingsService {
             }
         }
       }
+
+      // 2. Sync Profile (Subscription Plan)
+      final profileResponse = await _supabase!
+          .from('profiles')
+          .select('subscription_plan')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (profileResponse != null && profileResponse['subscription_plan'] != null) {
+        final plan = profileResponse['subscription_plan'] as String;
+        if (plan != getSubscriptionPlan()) {
+          await _prefs.setString(_kSubscriptionPlan, plan);
+        }
+      }
+
     } catch (e) {
       // Create preference row if it doesn't exist? Or just ignore.
       // Usually preferences are created on signup.
@@ -112,8 +132,7 @@ class SettingsService {
   static const String _kSoundEffect = 'timer_sound_effect';
   static const String _kSoundEnabled = 'timer_sound_enabled';
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
-  static const String _kShowEffort = 'show_effort';
-  static const String _kShowRepos = 'show_repos';
+  // Note: _kShowEffort, _kShowRepos, _kSubscriptionPlan are defined above
 
 
   // Notifiers
@@ -409,6 +428,12 @@ class SettingsService {
   bool getShowSummary() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowSummary) ?? true;
+  }
+
+  // Subscription Plan
+  String getSubscriptionPlan() {
+    if (!_initialized) return 'basic';
+    return _prefs.getString(_kSubscriptionPlan) ?? 'basic';
   }
 
   Future<void> _initIfNeeded() async {

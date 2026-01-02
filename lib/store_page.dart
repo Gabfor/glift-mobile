@@ -16,6 +16,7 @@ import 'widgets/filter_modal.dart';
 import 'widgets/glift_sort_dropdown.dart';
 
 import 'services/filter_service.dart';
+import 'services/settings_service.dart';
 import 'theme/glift_theme.dart';
 
 class StorePage extends StatefulWidget {
@@ -517,9 +518,48 @@ class _StoreProgramCard extends StatefulWidget {
 
 class _StoreProgramCardState extends State<_StoreProgramCard> {
   bool _isDownloading = false;
+  bool _isRestricted = false;
+  bool _checkingEligibility = false;
 
   bool get _isDownloadable =>
       widget.isAuthenticated && widget.program.linkedProgramId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkEligibility();
+  }
+
+  Future<void> _checkEligibility() async {
+    if (!widget.isAuthenticated) return;
+
+    final plan = SettingsService.instance.getSubscriptionPlan();
+    if (plan == 'basic') {
+      // Rule 1: More than 1 session -> Restricted
+      final sessions = int.tryParse(widget.program.sessions) ?? 0;
+      if (sessions > 1) {
+        if (mounted) setState(() => _isRestricted = true);
+        return;
+      }
+
+      // Rule 2: 1 session but > 10 exercises -> Restricted
+      // We need to fetch exercise count.
+      if (sessions == 1) {
+        if (mounted) setState(() => _checkingEligibility = true);
+        
+        final count = await widget.repository.getProgramExerciseCount(widget.program.id);
+        
+        if (mounted) {
+          setState(() {
+            _checkingEligibility = false;
+            if (count > 10) {
+              _isRestricted = true;
+            }
+          });
+        }
+      }
+    }
+  }
 
   Future<void> _handleDownload() async {
     if (_isDownloading) return;
@@ -564,7 +604,26 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
   @override
   Widget build(BuildContext context) {
     final program = widget.program;
-    // ... rest of the build method stays similar, but using _isDownloading ...
+    final buttonColor = _checkingEligibility
+        ? const Color(0xFFF2F1F6)
+        : (_isRestricted
+            ? const Color(0xFFF2F1F6) // Gray background for restricted
+            : (_isDownloading
+                ? const Color(0xFFF2F1F6)
+                : (_isDownloadable
+                    ? const Color(0xFF7069FA)
+                    : const Color(0xFFF2F1F6))));
+
+    final textColor = _checkingEligibility
+        ? const Color(0xFFD7D4DC)
+        : (_isRestricted
+            ? const Color(0xFFD7D4DC) // Gray text for restricted
+            : (_isDownloading
+                ? const Color(0xFFD7D4DC)
+                : (_isDownloadable
+                    ? Colors.white
+                    : const Color(0xFFD7D4DC))));
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -678,51 +737,50 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: _isDownloadable && !_isDownloading
-                            ? _handleDownload
-                            : null,
+                        onTap:
+                            _isDownloadable && !_isDownloading && !_isRestricted && !_checkingEligibility
+                                ? _handleDownload
+                                : null,
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            color: _isDownloading
-                                ? const Color(0xFFF2F1F6)
-                                : (_isDownloadable
-                                    ? const Color(0xFF7069FA)
-                                    : const Color(0xFFF2F1F6)),
+                            color: buttonColor,
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _isDownloading
-                                  ? const GliftLoader(
-                                      size: 20,
-                                      strokeWidth: 2,
-                                      color: Color(0xFFD7D4DC),
-                                      centered: false,
-                                    )
-                                  : SvgPicture.asset(
-                                      _isDownloadable
-                                          ? 'assets/icons/download.svg'
-                                          : 'assets/icons/locked.svg',
-                                      width: _isDownloadable ? 20 : 15,
-                                      height: _isDownloadable ? 20 : 15,
-                                      colorFilter: ColorFilter.mode(
-                                        _isDownloadable
-                                            ? Colors.white
-                                            : const Color(0xFFD7D4DC),
-                                        BlendMode.srcIn,
-                                      ),
-                                    ),
-                              const SizedBox(width: 8),
+                              if (_checkingEligibility || _isDownloading) ...[
+                                const GliftLoader(
+                                  size: 20,
+                                  strokeWidth: 2,
+                                  color: Color(0xFFD7D4DC),
+                                  centered: false,
+                                ),
+                                const SizedBox(width: 8),
+                              ] else ...[
+                                SvgPicture.asset(
+                                  // Restricted = locked
+                                  _isRestricted || !_isDownloadable
+                                      ? 'assets/icons/locked.svg'
+                                      : 'assets/icons/download.svg',
+                                  width: 20,
+                                  height: 20,
+                                  colorFilter: ColorFilter.mode(
+                                    textColor,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
                               Text(
-                                _isDownloading ? 'Téléchargement...' : 'Télécharger',
+                                _checkingEligibility
+                                    ? 'Vérification...'
+                                    : (_isDownloading
+                                        ? 'Téléchargement...'
+                                        : 'Télécharger'),
                                 style: GoogleFonts.quicksand(
-                                  color: _isDownloading
-                                      ? const Color(0xFFD7D4DC)
-                                      : (_isDownloadable
-                                          ? Colors.white
-                                          : const Color(0xFFD7D4DC)),
+                                  color: textColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -752,6 +810,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
       ),
     );
   }
+
 
   Widget _buildTag(String text) {
     return Container(
