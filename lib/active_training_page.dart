@@ -915,16 +915,18 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
               left: 0,
               right: 0,
               bottom: 0,
-              child: Container(
-                height: 150,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      const Color(0x8C2E3142),
-                      const Color(0x002E3142),
-                    ],
+              child: IgnorePointer(
+                child: Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        const Color(0x8C2E3142),
+                        const Color(0x002E3142),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1116,7 +1118,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final mediaQuery = MediaQuery.of(context);
     final bottomPadding = _currentInputHandler != null
         ? mediaQuery.size.height * 0.8 // Massive padding to ensure we can scroll anything to top
-        : (allProcessed ? 100.0 : 20.0);
+        : (allProcessed ? 160.0 : 20.0);
 
     return ListView.builder(
       // controller: _scrollController, // Removed explicit controller to allow NestedScrollView to handle it
