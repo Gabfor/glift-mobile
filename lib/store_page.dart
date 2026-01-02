@@ -201,6 +201,27 @@ class _StorePageState extends State<StorePage> {
           }
         }
 
+        // Téléchargement
+        if (matches && selectedFilters.containsKey('Téléchargement')) {
+          final selected = selectedFilters['Téléchargement']!;
+          if (selected.isNotEmpty) {
+            final userPlan = SettingsService.instance.getSubscriptionPlan();
+            final programPlan = program.plan;
+            final isAuthenticated = widget.supabase.auth.currentUser != null;
+            final hasLinkedProgram = program.linkedProgramId != null;
+
+            final isRestricted = (userPlan == 'basic' && programPlan == 'premium');
+            final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
+
+            bool matchOui = selected.contains('Oui') && canDownload;
+            bool matchNon = selected.contains('Non') && !canDownload;
+
+            if (!matchOui && !matchNon) {
+              matches = false;
+            }
+          }
+        }
+
         return matches;
       }).toList();
     }
@@ -289,6 +310,10 @@ class _StorePageState extends State<StorePage> {
       FilterSection(
         title: 'Partenaire', // Formerly Boutique
         options: partners.toList()..sort(),
+      ),
+      FilterSection(
+        title: 'Téléchargement',
+        options: ['Oui', 'Non'],
       ),
     ];
 
