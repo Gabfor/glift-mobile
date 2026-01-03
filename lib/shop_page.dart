@@ -544,7 +544,9 @@ class _ShopOfferCard extends StatelessWidget {
                   top: Radius.circular(8),
                 ),
                 child: Image.network(
-                  offer.image,
+                  (offer.imageMobile != null && offer.imageMobile!.isNotEmpty)
+                      ? offer.imageMobile!
+                      : offer.image,
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,

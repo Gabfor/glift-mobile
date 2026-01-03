@@ -16,6 +16,7 @@ class ShopOffer {
   final String? modal;
   final String? condition;
   final String? gender;
+  final String? imageMobile;
 
   ShopOffer({
     required this.id,
@@ -35,6 +36,7 @@ class ShopOffer {
     this.modal,
     this.condition,
     this.gender,
+    this.imageMobile,
   });
 
   factory ShopOffer.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class ShopOffer {
       modal: json['modal'] as String?,
       condition: json['condition'] as String?,
       gender: json['gender'] as String?,
+      imageMobile: json['image_mobile'] as String?, // New field
     );
   }
 }
