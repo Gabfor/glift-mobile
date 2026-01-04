@@ -355,68 +355,153 @@ class _StorePageState extends State<StorePage> {
 
 
 
-  void _showFilterModal() {
-    final goals = <String>{};
-    final partners = <String>{};
-    final levels = <String>{};
-    final durations = <String>{};
-    final genders = <String>{};
-    final locations = <String>{};
+  // Helper to get available options for a section based on current filtered programs (excluding that section)
+  Set<String> _getAvailableOptions(String section, {required List<StoreProgram> currentPrograms}) {
+    final options = <String>{};
+    final userPlan = SettingsService.instance.getSubscriptionPlan();
+    final isAuthenticated = widget.supabase.auth.currentUser != null;
 
-    for (final program in _programs) {
-      if (program.goal.isNotEmpty) goals.add(program.goal);
-      if (program.partnerName != null && program.partnerName!.isNotEmpty) {
-        partners.add(program.partnerName!);
-      }
-      if (program.level.isNotEmpty && program.level != 'Tous niveaux') {
-        levels.add(program.level);
-      }
-      if (program.duration.isNotEmpty) {
-        durations.add('${program.duration} minutes');
-      }
-      if (program.gender.isNotEmpty && program.gender != 'Tous') {
-        genders.add(program.gender);
-      }
-      if (program.location != null && program.location!.isNotEmpty) {
-        final locs = program.location!.split(',');
-        for (var loc in locs) {
-          locations.add(loc.trim());
-        }
+    for (final program in currentPrograms) {
+      switch (section) {
+        case 'Sexe':
+          if (program.gender.isNotEmpty) {
+             final g = program.gender;
+             if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
+               options.add('Femme');
+               options.add('Homme');
+             } else {
+               options.add(g);
+             }
+          }
+          break;
+        case 'Niveau':
+          if (program.level.isNotEmpty) {
+            final l = program.level;
+            if (l == 'Tous niveaux') { // Wildcard enables all standard levels if we want, or just "Tous niveaux" option?
+              // The UI shows "Tous niveaux" usually. Or specific ones.
+              // Let's assume we just add what's there. 
+              options.add(l);
+            } else {
+               options.add(l);
+            }
+          }
+          break;
+        case 'Lieu':
+          if (program.location != null && program.location!.isNotEmpty) {
+            final locs = program.location!.split(',');
+            for (var loc in locs) {
+              options.add(loc.trim());
+            }
+          }
+          break;
+        case 'Objectif':
+          if (program.goal.isNotEmpty) options.add(program.goal);
+          break;
+        case 'Durée max.':
+          if (program.duration.isNotEmpty) options.add('${program.duration} minutes');
+          break;
+        case 'Partenaire':
+           if (program.partnerName != null && program.partnerName!.isNotEmpty) {
+             options.add(program.partnerName!);
+           }
+          break;
+        case 'Disponible':
+           // Determine availability
+           // "Oui" if downloadable
+           // "Non" if not
+            final programPlan = program.plan;
+            final hasLinkedProgram = program.linkedProgramId != null;
+
+            final isRestricted = (userPlan == 'basic' && programPlan == 'premium');
+            final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
+            
+            options.add(canDownload ? 'Oui' : 'Non');
+          break;
       }
     }
+    return options;
+  }
+
+  List<StoreProgram> _getProgramsFilteredExcludingSection(String sectionToExclude) {
+    final tempFilters = Map<String, Set<String>>.from(_selectedFiltersMap);
+    tempFilters.remove(sectionToExclude);
+    return _applyFilters(tempFilters);
+  }
+
+  void _showFilterModal() {
+    // Check user plan for "Disponible" visibility
+    final userPlan = SettingsService.instance.getSubscriptionPlan();
+    final isPremium = userPlan == 'premium'; // Assuming 'premium' is the value
+
+    // 1. Sexe
+    final sexPrograms = _getProgramsFilteredExcludingSection('Sexe');
+    final sexOptions = _getAvailableOptions('Sexe', currentPrograms: sexPrograms);
+
+    // 2. Niveau
+    final levelPrograms = _getProgramsFilteredExcludingSection('Niveau');
+    final levelOptions = _getAvailableOptions('Niveau', currentPrograms: levelPrograms);
+
+    // 3. Lieu
+    final locPrograms = _getProgramsFilteredExcludingSection('Lieu');
+    final locOptions = _getAvailableOptions('Lieu', currentPrograms: locPrograms);
+
+    // 4. Objectif
+    final goalPrograms = _getProgramsFilteredExcludingSection('Objectif');
+    final goalOptions = _getAvailableOptions('Objectif', currentPrograms: goalPrograms);
+
+    // 5. Durée
+    final durPrograms = _getProgramsFilteredExcludingSection('Durée max.');
+    final durOptions = _getAvailableOptions('Durée max.', currentPrograms: durPrograms);
+    
+    // 6. Partenaire
+    final partnerPrograms = _getProgramsFilteredExcludingSection('Partenaire');
+    final partnerOptions = _getAvailableOptions('Partenaire', currentPrograms: partnerPrograms);
+
+    // 7. Disponible (Only if not premium)
+    Set<String> availOptions = {};
+    if (!isPremium) {
+       final availPrograms = _getProgramsFilteredExcludingSection('Disponible');
+       availOptions = _getAvailableOptions('Disponible', currentPrograms: availPrograms);
+    }
+
 
     final sections = [
-      FilterSection(title: 'Sexe', options: genders.toList()..sort()),
+      FilterSection(title: 'Sexe', options: sexOptions.toList()..sort()),
       FilterSection(
         title: 'Niveau',
-        options: levels.toList()..sort(),
+        options: levelOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Lieu',
-        options: locations.toList()..sort(),
+        options: locOptions.toList()..sort(),
       ),
       FilterSection(
-        title: 'Objectif', // Formerly Catégorie
-        options: goals.toList()..sort(),
+        title: 'Objectif',
+        options: goalOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Durée max.',
-        options: durations.toList()..sort((a, b) {
-          // Extract numbers for correct sorting
+        options: durOptions.toList()..sort((a, b) {
           final intA = int.tryParse(a.split(' ')[0]) ?? 0;
           final intB = int.tryParse(b.split(' ')[0]) ?? 0;
-          return intA.compareTo(intB);
+          return intA.compareTo(intB); // Ascending
         }),
       ),
       FilterSection(
-        title: 'Partenaire', // Formerly Boutique
-        options: partners.toList()..sort(),
-      ),
-      FilterSection(
-        title: 'Disponible',
-        options: ['Oui', 'Non'],
+        title: 'Partenaire',
+        options: partnerOptions.toList()..sort(),
       ),
     ];
+    
+    // Add "Disponible" only if not premium
+    if (!isPremium) {
+      sections.add(
+        FilterSection(
+          title: 'Disponible',
+          options: availOptions.toList()..sort((a, b) => b.compareTo(a)), // Oui then Non usually
+        )
+      );
+    }
 
     showModalBottomSheet(
       context: context,

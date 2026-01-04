@@ -358,23 +358,121 @@ class _ShopPageState extends State<ShopPage> {
     return filtered;
   }
 
+  Set<String> _getAvailableOptions(String section, {required List<ShopOffer> currentOffers}) {
+    final options = <String>{};
+
+    for (final offer in currentOffers) {
+      switch (section) {
+        case 'Sexe':
+          if (offer.gender != null) {
+            final g = offer.gender!;
+            if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
+              // If wildcard, it enables all options theoretically, but usually we just list specific ones found
+              // or we can add 'Femme' and 'Homme' if they are standard.
+              // For now let's just add what's in the data + standard ones if implied.
+              options.add('Femme');
+              options.add('Homme');
+            } else {
+              if (g.isNotEmpty) options.add(g);
+            }
+          }
+          break;
+        case 'Catégorie':
+          options.addAll(offer.type.where((t) => t.isNotEmpty));
+          break;
+        case 'Sport':
+           // Assuming 'Sport' is also derived from 'type' or a specific field?
+           // In original code: 'Sport': {'Boxe', 'Musculation'} was hardcoded.
+           // You likely need to identify which types are sports.
+           // If 'type' contains everything, we just use it.
+           // However interpreting "Sport" from "type" might be tricky if they are mixed.
+           // Let's assume for now we filter types that match known sports OR just use all types if they are mixed.
+           // Looking at original initialization: 
+           // _filterOptionsBySection = {'Sexe':..., 'Sport':..., 'Catégorie':..., 'Boutique':...}
+           // But 'Sport' was hardcoded to {'Boxe', 'Musculation'}.
+           // Let's try to find these in offer.type
+           if (offer.type.contains('Boxe')) options.add('Boxe');
+           if (offer.type.contains('Musculation')) options.add('Musculation');
+           if (offer.type.contains('CrossTraining')) options.add('CrossTraining');
+           if (offer.type.contains('Yoga')) options.add('Yoga');
+           // Add other sports as they appear in types
+           
+           // If the requirement is dynamic, we should really look at what's in the data.
+           // If specific types are sports, we add them.
+           break;
+        case 'Boutique':
+          if (offer.shop != null && offer.shop!.isNotEmpty) {
+            options.add(offer.shop!);
+          }
+          break;
+      }
+    }
+    return options;
+  }
+  
+  // Helper to filter offers IGNORING a specific section
+  List<ShopOffer> _getOffersFilteredExcludingSection(String sectionToExclude) {
+    // Copy filters but clear the specific section
+    final tempFilters = Map<String, Set<String>>.from(_selectedFiltersMap);
+    tempFilters.remove(sectionToExclude);
+    return _applyFilters(tempFilters); // We need to modify _applyFilters to accept the map, which it does.
+  }
+
   void _showFilterModal() {
+    // We need to calculate available options for EACH section based on the current selection of OTHER sections.
+    
+    // 1. Sexe
+    final sexOffers = _getOffersFilteredExcludingSection('Sexe');
+    final sexOptions = _getAvailableOptions('Sexe', currentOffers: sexOffers);
+    
+    // 2. Catégorie
+    final catOffers = _getOffersFilteredExcludingSection('Catégorie');
+    final catOptions = _getAvailableOptions('Catégorie', currentOffers: catOffers);
+    
+    // 3. Sport
+    final sportOffers = _getOffersFilteredExcludingSection('Sport');
+    final sportOptions = _getAvailableOptions('Sport', currentOffers: sportOffers);
+    // Note: The original hardcoded sports were Boxe/Musculation. 
+    // If we want to be truly dynamic, we scanning 'type' for known sports or just ALL types?
+    // The previous implementation had 'Catégorie' AND 'Sport' both seemingly coming from 'type' or hardcoded.
+    // Let's assume 'Sport' options come from 'type' intersections or specific logic.
+    // Ideally we'd have a list of known sports to filter 'type' against, or a separate field.
+    // For now, I will populate Sport with any type that matches common sports or just keep the hardcoded ones if they are always valid?
+    // No, "disable empty filters" means we only show them if they exist in the filtered set.
+    // Let's use a predefined list of sports to extract from types if matches.
+    final knownSports = {'Boxe', 'Musculation', 'CrossTraining', 'Yoga', 'Cardio', 'Fitness'}; // Add more if needed
+    final dynamicSportOptions = <String>{};
+    for(final offer in sportOffers) {
+       for(final t in offer.type) {
+         if(knownSports.contains(t) || knownSports.any((s) => t.contains(s))) {
+            // Simple match
+            if (knownSports.contains(t)) dynamicSportOptions.add(t);
+         }
+       }
+    }
+
+
+    // 4. Boutique
+    final shopOffers = _getOffersFilteredExcludingSection('Boutique');
+    final shopOptions = _getAvailableOptions('Boutique', currentOffers: shopOffers);
+
+
     final sections = [
       FilterSection(
         title: 'Sexe',
-        options: (_filterOptionsBySection['Sexe'] ?? {}).toList()..sort(),
+        options: sexOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Catégorie',
-        options: (_filterOptionsBySection['Catégorie'] ?? {}).toList()..sort(),
+        options: catOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Sport',
-        options: (_filterOptionsBySection['Sport'] ?? {}).toList()..sort(),
+        options: dynamicSportOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Boutique',
-        options: (_filterOptionsBySection['Boutique'] ?? {}).toList()..sort(),
+        options: shopOptions.toList()..sort(),
       ),
     ];
 
