@@ -19,6 +19,7 @@ class StoreProgram {
   final String? location;
   final String? linkedProgramId;
   final String plan;
+  final String? imageMobile;
 
   StoreProgram({
     required this.id,
@@ -41,6 +42,7 @@ class StoreProgram {
     this.location,
     this.linkedProgramId,
     this.plan = 'starter',
+    this.imageMobile,
   });
 
   factory StoreProgram.fromJson(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class StoreProgram {
       location: json['location'] as String?,
       linkedProgramId: json['linked_program_id'] as String?,
       plan: json['plan'] as String? ?? 'starter',
+      imageMobile: json['image_mobile'] as String?,
     );
   }
 }
