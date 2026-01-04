@@ -39,6 +39,7 @@ class StorePage extends StatefulWidget {
 
 class _StorePageState extends State<StorePage> {
   static const List<Map<String, String>> _sortOptions = [
+    {'value': 'relevance', 'label': 'Pertinence'},
     {'value': 'popularity', 'label': 'Popularité'},
     {'value': 'newest', 'label': 'Nouveauté'},
     {'value': 'oldest', 'label': 'Ancienneté'},
@@ -74,9 +75,127 @@ class _StorePageState extends State<StorePage> {
 
   Future<void> _loadPrograms() async {
     try {
+      // 1. Fetch data based on sort (server-side for others, 'created_at' for relevance initially)
+      // IF relevance => sorting is client-side, so we just fetch all (or sorted by something else) then sort manually
       final programs = await _repository.getStorePrograms(
-        sortBy: _selectedSort,
+        sortBy: _selectedSort == 'relevance' ? 'newest' : _selectedSort,
       );
+
+      if (_selectedSort == 'relevance' && widget.supabase.auth.currentUser != null) {
+        try {
+          final userId = widget.supabase.auth.currentUser!.id;
+          final profileCheck = await widget.supabase
+              .from('profiles')
+              .select('gender, experience, main_goal, training_place, weekly_sessions')
+              .eq('id', userId)
+              .maybeSingle();
+
+          if (profileCheck != null) {
+            final p = Map<String, dynamic>.from(profileCheck);
+            final String? userGender = p['gender']?.toString().trim().toLowerCase();
+            final String? userYOP = p['experience']?.toString().trim();
+            final String? userGoal = p['main_goal']?.toString().trim();
+            final String? userLocation = p['training_place']?.toString().trim();
+            final String? userSessions = p['weekly_sessions']?.toString().trim();
+
+            debugPrint('--- DEBUG SORTING ---');
+            debugPrint('User Profile: Gender=$userGender, YOP=$userYOP, Goal=$userGoal, Loc=$userLocation, Sess=$userSessions');
+
+            programs.sort((a, b) {
+              int scoreA = 0;
+              int scoreB = 0;
+
+              // 1. Gender Rule
+              int getGenderScore(String programGender) {
+                final pg = programGender.trim().toLowerCase();
+                if (userGender == 'homme') {
+                  if (pg == 'homme' || pg == 'tous') return 5;
+                  if (pg == 'femme') return -5;
+                } else if (userGender == 'femme') {
+                  if (pg == 'femme' || pg == 'tous') return 5;
+                  if (pg == 'homme') return -5;
+                } else if (userGender == 'non binaire' || userGender == 'non-binaire') {
+                  if (pg == 'tous') return 3;
+                }
+                return 0;
+              }
+              if (userGender != null) {
+                scoreA += getGenderScore(a.gender);
+                scoreB += getGenderScore(b.gender);
+              }
+
+              // 2. Experience Rule
+              int getLevelScore(String programLevel) {
+                final pl = programLevel.trim().toLowerCase();
+                final isAllLevels = pl == 'tous niveaux';
+                if (userYOP == '0') {
+                  if (pl == 'débutant') return 5;
+                  if (isAllLevels) return 3;
+                } else if (['1', '2', '3'].contains(userYOP)) {
+                  if (pl == 'intermédiaire') return 5;
+                  if (isAllLevels) return 3;
+                } else if (['4', '5+'].contains(userYOP)) {
+                  if (pl == 'confirmé') return 5;
+                  if (isAllLevels) return 3;
+                }
+                return 0;
+              }
+              if (userYOP != null) {
+                scoreA += getLevelScore(a.level);
+                scoreB += getLevelScore(b.level);
+              }
+
+              // 3. Goal Rule
+              if (userGoal != null) {
+                final String pGoalA = a.goal.trim();
+                final String pGoalB = b.goal.trim();
+                if (userGoal == pGoalA) scoreA += 5;
+                if (userGoal == pGoalB) scoreB += 5;
+              }
+
+              // 4. Location Rule
+              if (userLocation != null) {
+                if (a.location != null && a.location!.trim() == userLocation) scoreA += 3;
+                if (b.location != null && b.location!.trim() == userLocation) scoreB += 3;
+              }
+
+              // 5. Sessions Rule
+              if (userSessions != null) {
+                 final uSessions = userSessions; // Already trimmed above
+                 final pSessionsA = a.sessions.toString().trim();
+                 if (pSessionsA.isNotEmpty && (pSessionsA == uSessions || uSessions.startsWith(pSessionsA))) {
+                   scoreA += 2;
+                 }
+
+                 final pSessionsB = b.sessions.toString().trim();
+                 if (pSessionsB.isNotEmpty && (pSessionsB == uSessions || uSessions.startsWith(pSessionsB))) {
+                   scoreB += 2;
+                 }
+              }
+              
+              // Debug print for top items or specific conflicts could be useful, 
+              // but for now let's just see if it runs.
+              // debugPrint('Program ${a.title}: $scoreA | Program ${b.title}: $scoreB');
+
+              if (scoreA != scoreB) {
+                return scoreB - scoreA;
+              }
+              
+              // Tie-breaker 1: Downloads
+              if (a.downloads != b.downloads) {
+                return b.downloads - a.downloads;
+              }
+
+              // Tie-breaker 2: Alphabetical
+              return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+            });
+          }
+        } catch (err) {
+          debugPrint('Error caught during relevance sort: $err');
+          // Proceed without sorting (fallback to 'newest' order from fetch)
+        }
+      }
+
       if (mounted) {
         setState(() {
           _programs = programs;

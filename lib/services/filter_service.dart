@@ -13,12 +13,12 @@ class FilterService {
 
   // Store state
   Map<String, Set<String>> storeFilters = {};
-  String storeSort = 'newest';
+  String storeSort = 'relevance';
 
   void reset() {
     shopFilters = {};
     shopSort = 'relevance';
     storeFilters = {};
-    storeSort = 'newest';
+    storeSort = 'relevance';
   }
 }
