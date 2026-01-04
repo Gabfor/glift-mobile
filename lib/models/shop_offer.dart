@@ -18,6 +18,8 @@ class ShopOffer {
   final String? gender;
   final String? imageMobile;
   final bool boost;
+  final int clickCount;
+  final String? createdAt;
 
   ShopOffer({
     required this.id,
@@ -39,6 +41,8 @@ class ShopOffer {
     this.gender,
     this.imageMobile,
     this.boost = false,
+    this.clickCount = 0,
+    this.createdAt,
   });
 
   factory ShopOffer.fromJson(Map<String, dynamic> json) {
@@ -83,6 +87,8 @@ class ShopOffer {
       gender: json['gender'] as String?,
       imageMobile: json['image_mobile'] as String?,
       boost: json['boost'] is bool ? json['boost'] as bool : (json['boost'].toString().toLowerCase() == 'true'),
+      clickCount: json['click_count'] as int? ?? 0,
+      createdAt: json['created_at'] as String?,
     );
   }
 }

@@ -34,6 +34,7 @@ class ShopPage extends StatefulWidget {
 class _ShopPageState extends State<ShopPage> {
   static const List<Map<String, String>> _sortOptions = [
     {'value': 'relevance', 'label': 'Pertinence'},
+    {'value': 'popularity', 'label': 'Popularité'},
     {'value': 'newest', 'label': 'Nouveauté'},
     {'value': 'expiration', 'label': 'Expiration'},
   ];
@@ -227,6 +228,22 @@ class _ShopPageState extends State<ShopPage> {
 
     // Sort
     switch (_selectedSort) {
+      case 'popularity':
+        filtered.sort((a, b) {
+          if (a.clickCount != b.clickCount) {
+             return b.clickCount.compareTo(a.clickCount);
+          }
+          // Tie-breaker 1: Created At
+          final dateA = DateTime.tryParse(a.createdAt ?? '') ?? DateTime(0);
+          final dateB = DateTime.tryParse(b.createdAt ?? '') ?? DateTime(0);
+          final dateCompare = dateB.compareTo(dateA); 
+          if (dateCompare != 0) {
+            return dateCompare;
+          }
+          // Tie-breaker 2: Name
+          return a.name.compareTo(b.name);
+        });
+        break;
       case 'newest':
         filtered.sort((a, b) {
           final dateA = DateTime.tryParse(a.startDate ?? '') ?? DateTime(0);
@@ -246,8 +263,6 @@ class _ShopPageState extends State<ShopPage> {
         final scoredOffers = filtered.map((offer) {
           int score = 0;
           int genderScore = 0;
-          int suppScore = 0;
-          int boostScore = 0;
           int expScore = 0;
           double diffHours = 0;
 
@@ -278,19 +293,16 @@ class _ShopPageState extends State<ShopPage> {
           // 2. Supplements Rule
           if (_userSupplements == 'Oui') {
              if (offer.type.any((t) => t.toLowerCase().contains('complément'))) {
-               suppScore = 5;
                score += 5;
              }
           } else if (_userSupplements == 'Non') {
              if (offer.type.any((t) => t.toLowerCase().contains('complément'))) {
-               suppScore = -5;
                score += -5;
              }
           }
 
           // 3. Boost Rule
           if (offer.boost) {
-            boostScore = 5;
             score += 5;
           }
 
