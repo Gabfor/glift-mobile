@@ -50,6 +50,7 @@ class _ShopPageState extends State<ShopPage> {
 
   String? _userGender;
   String? _userGoal;
+  String? _userSupplements;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -115,7 +116,7 @@ class _ShopPageState extends State<ShopPage> {
 
       final data = await widget.supabase
           .from('profiles')
-          .select('gender, main_goal')
+          .select('gender, main_goal, supplements')
           .eq('id', userId)
           .single();
 
@@ -123,6 +124,7 @@ class _ShopPageState extends State<ShopPage> {
         setState(() {
           _userGender = data['gender'] as String?;
           _userGoal = data['main_goal'] as String?;
+          _userSupplements = data['supplements'] as String?;
         });
       }
     } catch (e) {
@@ -241,34 +243,83 @@ class _ShopPageState extends State<ShopPage> {
         break;
       case 'relevance':
         filtered.sort((a, b) {
+          // Rules:
+          // 1. Gender: +5 if strict match, +3 if wildcard (for non-binary)
+          // 2. Supplements: +5 if user has supplements='Oui' and offer type='Compléments'
+          // 3. Boost: +5 if offer.boost is true
+          // 4. Expiration: +2 if <= 24h, +1 if <= 72h
+
           int scoreA = 0;
           int scoreB = 0;
 
-          // Goal match (+5)
-          if (_userGoal != null && a.type.any((t) => t.toLowerCase() == _userGoal!.toLowerCase())) {
-            scoreA += 5;
-          }
-          if (_userGoal != null && b.type.any((t) => t.toLowerCase() == _userGoal!.toLowerCase())) {
-            scoreB += 5;
-          }
-
-          // Gender match (+2)
-          // Matches if user gender equals offer gender OR offer is neutral/mixed
+          // 1. Gender Rules
           if (_userGender != null) {
-            final genderA = a.gender?.toLowerCase();
-            final isWildcardA = genderA != null && (genderA == 'tous' || genderA == 'mixte' || genderA == 'unisexe');
-            if (isWildcardA || (genderA != null && genderA == _userGender!.toLowerCase())) {
-              scoreA += 2;
+            final userG = _userGender!.toLowerCase();
+            
+            int getGenderScore(String? offerG) {
+              if (offerG == null) return 0;
+              final g = offerG.toLowerCase();
+              final isWildcard = g == 'tous' || g == 'mixte' || g == 'unisexe';
+
+              if (userG == 'homme') {
+                 if (g == 'homme' || isWildcard) return 5;
+                 if (g == 'femme') return -5;
+              } else if (userG == 'femme') {
+                 if (g == 'femme' || isWildcard) return 5;
+                 if (g == 'homme') return -5;
+              } else if (userG == 'non binaire' || userG == 'non-binaire') {
+                 if (isWildcard) return 3;
+              }
+              return 0;
             }
 
-            final genderB = b.gender?.toLowerCase();
-            final isWildcardB = genderB != null && (genderB == 'tous' || genderB == 'mixte' || genderB == 'unisexe');
-            if (isWildcardB || (genderB != null && genderB == _userGender!.toLowerCase())) {
-              scoreB += 2;
-            }
+            scoreA += getGenderScore(a.gender);
+            scoreB += getGenderScore(b.gender);
           }
 
-          return scoreB.compareTo(scoreA); // Descending score
+          // 2. Supplements Rule
+          if (_userSupplements == 'Oui') {
+             if (a.type.any((t) => t.toLowerCase().contains('complément'))) scoreA += 5;
+             if (b.type.any((t) => t.toLowerCase().contains('complément'))) scoreB += 5;
+          } else if (_userSupplements == 'Non') {
+             if (a.type.any((t) => t.toLowerCase().contains('complément'))) scoreA -= 5;
+             if (b.type.any((t) => t.toLowerCase().contains('complément'))) scoreB -= 5;
+          }
+
+          // 3. Boost Rule
+          if (a.boost) scoreA += 5;
+          if (b.boost) scoreB += 5;
+
+          // 4. Expiration Rule
+          int getExpirationScore(String? endDateStr) {
+            if (endDateStr == null) return 0;
+            final end = DateTime.tryParse(endDateStr);
+            if (end == null) return 0;
+            
+            final diff = end.difference(DateTime.now());
+            if (diff.inHours <= 24 && !diff.isNegative) return 2;
+            if (diff.inHours > 24 && diff.inHours <= 72) return 1;
+            return 0;
+          }
+
+          scoreA += getExpirationScore(a.endDate);
+          scoreB += getExpirationScore(b.endDate);
+
+          if (scoreA != scoreB) {
+            return scoreB.compareTo(scoreA); // Descending score
+          }
+
+          // Tie-breaker 1: Expiration Date (Ascending - ends soonest first)
+          final dateA = DateTime.tryParse(a.endDate ?? '') ?? DateTime(2100);
+          final dateB = DateTime.tryParse(b.endDate ?? '') ?? DateTime(2100);
+          
+          final dateCompare = dateA.compareTo(dateB);
+          if (dateCompare != 0) {
+            return dateCompare;
+          }
+
+          // Tie-breaker 2: Name (Alphabetical)
+          return a.name.compareTo(b.name);
         });
         break;
       default:

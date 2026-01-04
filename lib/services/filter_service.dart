@@ -9,7 +9,7 @@ class FilterService {
 
   // Shop state
   Map<String, Set<String>> shopFilters = {};
-  String shopSort = 'newest';
+  String shopSort = 'relevance';
 
   // Store state
   Map<String, Set<String>> storeFilters = {};
@@ -17,7 +17,7 @@ class FilterService {
 
   void reset() {
     shopFilters = {};
-    shopSort = 'newest';
+    shopSort = 'relevance';
     storeFilters = {};
     storeSort = 'newest';
   }
