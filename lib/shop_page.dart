@@ -119,7 +119,7 @@ class _ShopPageState extends State<ShopPage> {
           .select('gender, main_goal, supplements')
           .eq('id', userId)
           .single();
-
+      
       if (mounted) {
         setState(() {
           _userGender = data['gender'] as String?;
@@ -242,15 +242,14 @@ class _ShopPageState extends State<ShopPage> {
         });
         break;
       case 'relevance':
-        filtered.sort((a, b) {
-          // Rules:
-          // 1. Gender: +5 if strict match, +3 if wildcard (for non-binary)
-          // 2. Supplements: +5 if user has supplements='Oui' and offer type='Compléments'
-          // 3. Boost: +5 if offer.boost is true
-          // 4. Expiration: +2 if <= 24h, +1 if <= 72h
-
-          int scoreA = 0;
-          int scoreB = 0;
+        // Pre-calculate scores for sorting and logging
+        final scoredOffers = filtered.map((offer) {
+          int score = 0;
+          int genderScore = 0;
+          int suppScore = 0;
+          int boostScore = 0;
+          int expScore = 0;
+          double diffHours = 0;
 
           // 1. Gender Rules
           if (_userGender != null) {
@@ -272,46 +271,61 @@ class _ShopPageState extends State<ShopPage> {
               }
               return 0;
             }
-
-            scoreA += getGenderScore(a.gender);
-            scoreB += getGenderScore(b.gender);
+            genderScore = getGenderScore(offer.gender);
+            score += genderScore;
           }
 
           // 2. Supplements Rule
           if (_userSupplements == 'Oui') {
-             if (a.type.any((t) => t.toLowerCase().contains('complément'))) scoreA += 5;
-             if (b.type.any((t) => t.toLowerCase().contains('complément'))) scoreB += 5;
+             if (offer.type.any((t) => t.toLowerCase().contains('complément'))) {
+               suppScore = 5;
+               score += 5;
+             }
           } else if (_userSupplements == 'Non') {
-             if (a.type.any((t) => t.toLowerCase().contains('complément'))) scoreA -= 5;
-             if (b.type.any((t) => t.toLowerCase().contains('complément'))) scoreB -= 5;
+             if (offer.type.any((t) => t.toLowerCase().contains('complément'))) {
+               suppScore = -5;
+               score += -5;
+             }
           }
 
           // 3. Boost Rule
-          if (a.boost) scoreA += 5;
-          if (b.boost) scoreB += 5;
-
-          // 4. Expiration Rule
-          int getExpirationScore(String? endDateStr) {
-            if (endDateStr == null) return 0;
-            final end = DateTime.tryParse(endDateStr);
-            if (end == null) return 0;
-            
-            final diff = end.difference(DateTime.now());
-            if (diff.inHours <= 24 && !diff.isNegative) return 2;
-            if (diff.inHours > 24 && diff.inHours <= 72) return 1;
-            return 0;
+          if (offer.boost) {
+            boostScore = 5;
+            score += 5;
           }
 
-          scoreA += getExpirationScore(a.endDate);
-          scoreB += getExpirationScore(b.endDate);
+          // 4. Expiration Rule
+          if (offer.endDate != null) {
+            final end = DateTime.tryParse(offer.endDate!);
+            if (end != null) {
+              final diff = end.difference(DateTime.now());
+              diffHours = diff.inSeconds / 3600.0; // Use precise hours
+              if (diffHours <= 24 && diffHours > 0) {
+                expScore = 2;
+              } else if (diffHours > 24 && diffHours <= 72) {
+                expScore = 1;
+              }
+            }
+            score += expScore;
+          }
 
-          if (scoreA != scoreB) {
-            return scoreB.compareTo(scoreA); // Descending score
+
+          return _ScoredOffer(
+            offer: offer, 
+            score: score, 
+          );
+        }).toList();
+
+        // Sort based on pre-calculated scores
+
+        scoredOffers.sort((a, b) {
+          if (a.score != b.score) {
+            return b.score.compareTo(a.score);
           }
 
           // Tie-breaker 1: Expiration Date (Ascending - ends soonest first)
-          final dateA = DateTime.tryParse(a.endDate ?? '') ?? DateTime(2100);
-          final dateB = DateTime.tryParse(b.endDate ?? '') ?? DateTime(2100);
+          final dateA = DateTime.tryParse(a.offer.endDate ?? '') ?? DateTime(2100);
+          final dateB = DateTime.tryParse(b.offer.endDate ?? '') ?? DateTime(2100);
           
           final dateCompare = dateA.compareTo(dateB);
           if (dateCompare != 0) {
@@ -319,8 +333,10 @@ class _ShopPageState extends State<ShopPage> {
           }
 
           // Tie-breaker 2: Name (Alphabetical)
-          return a.name.compareTo(b.name);
+          return a.offer.name.compareTo(b.offer.name);
         });
+
+        filtered = scoredOffers.map((s) => s.offer).toList();
         break;
       default:
         // Default order
@@ -397,7 +413,10 @@ class _ShopPageState extends State<ShopPage> {
         padding: EdgeInsets.zero,
         child: GliftPullToRefresh(
           onRefresh: () async {
-            await _loadOffers();
+            await Future.wait([
+              _loadOffers(),
+              _loadUserProfile(),
+            ]);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -1002,4 +1021,14 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
       ],
     );
   }
+}
+
+class _ScoredOffer {
+  final ShopOffer offer;
+  final int score;
+
+  _ScoredOffer({
+    required this.offer,
+    required this.score,
+  });
 }
