@@ -11,6 +11,7 @@ import 'auth/biometric_auth_service.dart';
 import 'login_page.dart';
 import 'models/program.dart';
 import 'models/training.dart';
+import 'package:glift_mobile/widgets/unlock_training_modal.dart';
 import 'repositories/program_repository.dart';
 import 'theme/glift_theme.dart';
 import 'services/settings_service.dart';
@@ -160,6 +161,7 @@ class HomePageState extends State<HomePage> {
     }
 
     try {
+      await SettingsService.instance.syncFromSupabase();
       final programs = await _programRepository.getPrograms();
 
       if (mounted) {
@@ -555,6 +557,14 @@ class HomePageState extends State<HomePage> {
                 training: training,
                 syncStatus: _syncStatus,
                 onTap: () async {
+                  if (training.locked) {
+                     await showDialog(
+                      context: context,
+                      builder: (context) => const UnlockTrainingModal(),
+                    );
+                    return;
+                  }
+
                   final result = await Navigator.of(context).push(
                     PageRouteBuilder(
                       pageBuilder: (_, __, ___) => TrainingDetailsPage(
@@ -774,6 +784,14 @@ class _TrainingCard extends StatelessWidget {
   }
 
   Widget _buildStatusIcon() {
+    if (training.locked) {
+      return SvgPicture.asset(
+        'assets/icons/locked.svg',
+        width: 20,
+        height: 20,
+      );
+    }
+
     switch (syncStatus) {
       case SyncStatus.loading:
         return const _RotatingLoader();

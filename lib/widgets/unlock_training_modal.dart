@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DownloadRestrictedModal extends StatelessWidget {
-  const DownloadRestrictedModal({super.key});
+class UnlockTrainingModal extends StatelessWidget {
+  const UnlockTrainingModal({super.key});
 
   Future<void> _launchURL() async {
     final Uri url = Uri.parse('https://glift.io/compte#mon-abonnement');
@@ -42,7 +42,7 @@ class DownloadRestrictedModal extends StatelessWidget {
                 // Title
                 Center(
                   child: Text(
-                    'Téléchargement impossible',
+                    'Entraînement bloqué',
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -55,7 +55,7 @@ class DownloadRestrictedModal extends StatelessWidget {
 
                 // Warning Text 1
                 Text(
-                  'Votre abonnement ne vous permet pas de télécharger ce programme “Premium”.',
+                  'Votre formule d’abonnement actuelle vous limite à un seul entraînement utilisable.',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -87,7 +87,7 @@ class DownloadRestrictedModal extends StatelessWidget {
                       ),
                       const TextSpan(
                         text:
-                            ' vous serez redirigé vers votre compte où vous pourrez modifier votre formule d’abonnement et débloquer l’accès à tous les programmes.',
+                            ' vous serez redirigé vers votre compte où vous pourrez modifier votre formule d’abonnement et débloquer tous vos entraînements.',
                       ),
                     ],
                   ),

@@ -4,6 +4,7 @@ class Training {
   final bool app;
   final bool dashboard;
   final int position;
+  final bool locked; // New field
   final String? programId;
   final DateTime? lastSessionDate;
   final int? averageDurationMinutes;
@@ -15,6 +16,7 @@ class Training {
     required this.app,
     required this.dashboard,
     required this.position,
+    required this.locked,
     this.programId,
     this.lastSessionDate,
     this.averageDurationMinutes,
@@ -28,6 +30,7 @@ class Training {
       app: json['app'] as bool? ?? false,
       dashboard: json['dashboard'] as bool? ?? true,
       position: json['position'] as int? ?? 0,
+      locked: json['locked'] as bool? ?? false, // Defaults to false
       programId: json['program_id']?.toString(),
       lastSessionDate: json['lastSessionDate'] != null 
           ? DateTime.tryParse(json['lastSessionDate']) 
@@ -43,6 +46,7 @@ class Training {
     'app': app,
     'dashboard': dashboard,
     'position': position,
+    'locked': locked,
     'program_id': programId,
     'lastSessionDate': lastSessionDate?.toIso8601String(),
     'averageDurationMinutes': averageDurationMinutes,
@@ -55,6 +59,7 @@ class Training {
     bool? app,
     bool? dashboard,
     int? position,
+    bool? locked,
     String? programId,
     DateTime? lastSessionDate,
     int? averageDurationMinutes,
@@ -66,6 +71,7 @@ class Training {
       app: app ?? this.app,
       dashboard: dashboard ?? this.dashboard,
       position: position ?? this.position,
+      locked: locked ?? this.locked,
       programId: programId ?? this.programId,
       lastSessionDate: lastSessionDate ?? this.lastSessionDate,
       averageDurationMinutes:

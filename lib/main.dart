@@ -23,28 +23,44 @@ import 'services/notification_service.dart';
 import 'services/settings_service.dart';
 
 Future<void> main() async {
+  debugPrint('DEBUG: Starting main()');
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint('DEBUG: WidgetsFlutterBinding initialized');
+  
   await initializeDateFormatting('fr_FR', null);
+  debugPrint('DEBUG: Date formatting initialized');
+  
   await NotificationService.instance.initialize();
+  debugPrint('DEBUG: NotificationService initialized');
+  
   await SettingsService.instance.init();
+  debugPrint('DEBUG: SettingsService initialized');
+  
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  debugPrint('DEBUG: Orientation set');
 
   final supabase = SupabaseClient(supabaseUrl, supabaseAnonKey);
+  debugPrint('DEBUG: Supabase client created');
+
+  SettingsService.instance.initSupabase(supabase);
+  
   final authRepository = SupabaseAuthRepository(supabase);
   final biometricAuthService = BiometricAuthService(
     supabase: supabase,
     localAuth: LocalAuthentication(),
     secureStorage: const FlutterSecureStorage(),
   );
+  debugPrint('DEBUG: Services created, calling runApp');
 
   runApp(GliftApp(
     supabase: supabase,
     authRepository: authRepository,
     biometricAuthService: biometricAuthService,
   ));
+  debugPrint('DEBUG: runApp called');
 }
 
 class GliftApp extends StatelessWidget {

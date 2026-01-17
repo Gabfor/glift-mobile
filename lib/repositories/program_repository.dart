@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/program.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
+import '../services/settings_service.dart';
 
 class ProgramRepository {
   final SupabaseClient _supabase;
@@ -12,6 +13,102 @@ class ProgramRepository {
   ProgramRepository(this._supabase);
 
   static const String _programsCacheKey = 'cached_programs';
+
+  /// Ensures that all trainings have the correct 'locked' status based on the user's subscription plan.
+  /// If inconsistencies are found, it updates the database and the returned objects.
+  Future<List<Program>> _ensureLockedConsistency(List<Program> programs) async {
+    final userPlan = SettingsService.instance.getSubscriptionPlan(); // 'basic' or 'premium'
+    // debugPrint('Enforcing locked consistency for plan: $userPlan');
+
+    final bool isPremium = userPlan == 'premium';
+    
+    // Find the global first training (First program by position -> First training by position)
+    // Programs are already sorted by position in getPrograms
+    // Trainings inside programs need to be sorted by position to be sure
+    
+    String? firstTrainingId;
+    
+    // Locate the very first training available in the list
+    for (final program in programs) {
+        // We assume program.trainings are sorted by position locally or we sort them here temporarily to check
+        // but `_processProgramsResponse` does not sort them by position explicitly? 
+        // usage in `visibleTrainingsWithStats.sort` sorts by DATE. 
+        // We need 'position' to determine which is the "first" intended training.
+        // Wait, `visibleTrainingsWithStats.sort` sorts by `lastSessionDate`!
+        // This messes up the "first training" logic if it relies on display order.
+        // BUT the rules say "First training of the first program".
+        // Usually "first" implies `position` in the DB.
+        // So I should look at `position`.
+        
+        final sortedByPos = List<Training>.from(program.trainings)..sort((a, b) => a.position.compareTo(b.position));
+        
+        if (sortedByPos.isNotEmpty) {
+            firstTrainingId = sortedByPos.first.id;
+            break; // Found the global first training
+        }
+    }
+
+    final List<Map<String, dynamic>> updates = [];
+    bool hasChanges = false;
+
+    for (int i = 0; i < programs.length; i++) {
+      final program = programs[i];
+      final List<Training> updatedTrainings = [];
+
+      for (final training in program.trainings) {
+        bool shouldBeLocked = true;
+
+        if (isPremium) {
+          shouldBeLocked = false;
+        } else {
+          // PROG BASIC
+          // Unlocked ONLY if it is the first training of the first program
+          if (training.id == firstTrainingId) {
+            shouldBeLocked = false;
+          } else {
+            shouldBeLocked = true;
+          }
+        }
+
+        if (training.locked != shouldBeLocked) {
+        //   debugPrint('Fixing locked status for ${training.name}: was ${training.locked}, becoming $shouldBeLocked');
+          updates.add({
+            'id': training.id,
+            'locked': shouldBeLocked,
+          });
+          updatedTrainings.add(training.copyWith(locked: shouldBeLocked));
+          hasChanges = true;
+        } else {
+          updatedTrainings.add(training);
+        }
+      }
+      
+      if (hasChanges) {
+          // Update the program with the modified trainings
+           programs[i] = Program(
+            id: program.id,
+            name: program.name,
+            trainings: updatedTrainings,
+            position: program.position,
+            dashboard: program.dashboard,
+            app: program.app,
+          );
+      }
+    }
+
+    if (updates.isNotEmpty) {
+      // Bulk update to DB
+      // Supabase generic upsert or update. 
+      // upsert works if we provide primary key.
+      try {
+        await _supabase.from('trainings').upsert(updates, onConflict: 'id');
+      } catch (e) {
+        debugPrint('Error syncing locked status to DB: $e');
+      }
+    }
+
+    return programs;
+  }
 
   Future<List<Program>> getLocalPrograms() async {
     try {
@@ -50,7 +147,7 @@ class ProgramRepository {
         final response = await _supabase
             .from('programs')
             .select(
-      'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, program_id)',
+      'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, locked, program_id)',
             )
             .eq('user_id', userId)
             .order('position', ascending: true);
@@ -64,7 +161,8 @@ class ProgramRepository {
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
         final localPrograms = await getLocalPrograms();
 
-        final programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
+        var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
+        programs = await _ensureLockedConsistency(programs);
         await saveLocalPrograms(programs);
         return programs;
       } catch (_) {
@@ -72,7 +170,7 @@ class ProgramRepository {
         final response = await _supabase
             .from('programs')
             .select(
-      'id, name, position, dashboard, trainings(id, name, position, app, program_id)',
+      'id, name, position, dashboard, trainings(id, name, position, app, locked, program_id)',
             )
             .eq('user_id', userId)
             .order('position', ascending: true);
@@ -88,7 +186,8 @@ class ProgramRepository {
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
         final localPrograms = await getLocalPrograms();
 
-        final programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
+        var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
+        programs = await _ensureLockedConsistency(programs);
         await saveLocalPrograms(programs);
         return programs;
       }
@@ -170,6 +269,7 @@ class ProgramRepository {
               lastSessionDate: lastDate,
               averageDurationMinutes: avgDuration,
               sessionCount: trainingSessions.length,
+              locked: t.locked,
             );
           }).toList();
 
