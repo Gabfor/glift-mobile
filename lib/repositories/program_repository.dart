@@ -18,97 +18,137 @@ class ProgramRepository {
   /// If inconsistencies are found, it updates the database and the returned objects.
   Future<List<Program>> _ensureLockedConsistency(List<Program> programs) async {
     final userPlan = SettingsService.instance.getSubscriptionPlan(); // 'basic' or 'premium'
-    // debugPrint('Enforcing locked consistency for plan: $userPlan');
 
     final bool isPremium = userPlan == 'premium';
     
-    // Find the global first training (First program by position -> First training by position)
-    // Programs are already sorted by position in getPrograms
-    // Trainings inside programs need to be sorted by position to be sure
-    
-    String? firstTrainingId;
-    
-    // Locate the very first training available in the list
-    for (final program in programs) {
-        // We assume program.trainings are sorted by position locally or we sort them here temporarily to check
-        // but `_processProgramsResponse` does not sort them by position explicitly? 
-        // usage in `visibleTrainingsWithStats.sort` sorts by DATE. 
-        // We need 'position' to determine which is the "first" intended training.
-        // Wait, `visibleTrainingsWithStats.sort` sorts by `lastSessionDate`!
-        // This messes up the "first training" logic if it relies on display order.
-        // BUT the rules say "First training of the first program".
-        // Usually "first" implies `position` in the DB.
-        // So I should look at `position`.
+    String? targetUnlockedId;
+
+    if (!isPremium) {
+      // Check current state (Freeze logic match Web)
+      // If 0 or 1 training is unlocked, we respect the current state and do not intervene.
+      int unlockedCount = 0;
+      for (final p in programs) {
+         for (final t in p.trainings) {
+            if (t.locked == false) unlockedCount++;
+         }
+      }
+      
+      if (unlockedCount <= 1) {
+         return programs;
+      }
+
+      // Find the "First Visible" training
+      for (final program in programs) {
         
-        final sortedByPos = List<Training>.from(program.trainings)..sort((a, b) => a.position.compareTo(b.position));
-        
-        if (sortedByPos.isNotEmpty) {
-            firstTrainingId = sortedByPos.first.id;
-            break; // Found the global first training
+        if (!program.app) {
+           continue;
         }
+
+        final sortedTrainings = List<Training>.from(program.trainings)
+          ..sort((a, b) => a.position.compareTo(b.position));
+        
+        for (final training in sortedTrainings) {
+          if (training.app) {
+            targetUnlockedId = training.id;
+            break;
+          }
+        }
+        if (targetUnlockedId != null) break;
+      }
+
+      // Fallback
+      if (targetUnlockedId == null && programs.isNotEmpty) {
+           final firstProgram = programs.first;
+           final sortedTrainings = List<Training>.from(firstProgram.trainings)
+             ..sort((a, b) => a.position.compareTo(b.position));
+           
+           if (sortedTrainings.isNotEmpty) {
+             targetUnlockedId = sortedTrainings.first.id;
+           }
+      }
     }
 
     final List<Map<String, dynamic>> updates = [];
     bool hasChanges = false;
 
     for (int i = 0; i < programs.length; i++) {
-      final program = programs[i];
-      final List<Training> updatedTrainings = [];
+        final program = programs[i];
+        final List<Training> updatedTrainings = [];
+        bool programChanged = false;
 
-      for (final training in program.trainings) {
-        bool shouldBeLocked = true;
+        for (final training in program.trainings) {
+            bool shouldBeLocked;
+            
+            if (isPremium) {
+                shouldBeLocked = false;
+            } else {
+                if (training.id == targetUnlockedId) {
+                    shouldBeLocked = false;
+                } else {
+                    shouldBeLocked = true;
+                }
+            }
 
-        if (isPremium) {
-          shouldBeLocked = false;
-        } else {
-          // PROG BASIC
-          // Unlocked ONLY if it is the first training of the first program
-          if (training.id == firstTrainingId) {
-            shouldBeLocked = false;
-          } else {
-            shouldBeLocked = true;
-          }
+            if (training.locked != shouldBeLocked) {
+                // debugPrint('Fixing locked status for ${training.name}: was ${training.locked}, becoming $shouldBeLocked');
+                updates.add({
+                    'id': training.id,
+                    'locked': shouldBeLocked,
+                });
+                updatedTrainings.add(training.copyWith(locked: shouldBeLocked));
+                programChanged = true;
+                hasChanges = true;
+            } else {
+                updatedTrainings.add(training);
+            }
         }
-
-        if (training.locked != shouldBeLocked) {
-        //   debugPrint('Fixing locked status for ${training.name}: was ${training.locked}, becoming $shouldBeLocked');
-          updates.add({
-            'id': training.id,
-            'locked': shouldBeLocked,
-          });
-          updatedTrainings.add(training.copyWith(locked: shouldBeLocked));
-          hasChanges = true;
-        } else {
-          updatedTrainings.add(training);
+        
+        if (programChanged) {
+            programs[i] = Program(
+                id: program.id,
+                name: program.name,
+                trainings: updatedTrainings,
+                position: program.position,
+                dashboard: program.dashboard,
+                app: program.app,
+            );
         }
-      }
-      
-      if (hasChanges) {
-          // Update the program with the modified trainings
-           programs[i] = Program(
-            id: program.id,
-            name: program.name,
-            trainings: updatedTrainings,
-            position: program.position,
-            dashboard: program.dashboard,
-            app: program.app,
-          );
-      }
     }
 
     if (updates.isNotEmpty) {
-      // Bulk update to DB
-      // Supabase generic upsert or update. 
-      // upsert works if we provide primary key.
       try {
-        await _supabase.from('trainings').upsert(updates, onConflict: 'id');
+        await Future.wait(updates.map((update) => 
+            _supabase.from('trainings').update(update).eq('id', update['id'])
+        ));
       } catch (e) {
-        debugPrint('Error syncing locked status to DB: $e');
+        debugPrint('❌ Error syncing locked status to DB: $e');
       }
+    } else {
     }
 
     return programs;
   }
+
+  /// Filters out hidden programs and trainings for the UI.
+  List<Program> _filterVisiblePrograms(List<Program> programs) {
+      return programs.map((p) {
+          final visibleTrainings = p.trainings.where((t) => t.app).toList();
+          if (visibleTrainings.isEmpty) return null;
+          
+          return Program(
+              id: p.id,
+              name: p.name,
+              trainings: visibleTrainings,
+              position: p.position,
+              dashboard: p.dashboard,
+              app: p.app,
+          );
+      })
+      .where((p) => p != null && p.app)
+      .cast<Program>()
+      .toList();
+  }
+
 
   Future<List<Program>> getLocalPrograms() async {
     try {
@@ -163,6 +203,7 @@ class ProgramRepository {
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
+        programs = _filterVisiblePrograms(programs);
         await saveLocalPrograms(programs);
         return programs;
       } catch (_) {
@@ -188,6 +229,7 @@ class ProgramRepository {
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
+        programs = _filterVisiblePrograms(programs);
         await saveLocalPrograms(programs);
         return programs;
       }
@@ -226,13 +268,8 @@ class ProgramRepository {
         .map((json) {
           final program = Program.fromJson(json as Map<String, dynamic>);
 
-          // Filter trainings to only show those visible in app
-          final visibleTrainings = program.trainings
-              .where((t) => t.app)
-              .toList();
-
-          // Calculate stats for each visible training
-          final visibleTrainingsWithStats = visibleTrainings.map((t) {
+          // Calculate stats for all trainings
+          final visibleTrainingsWithStats = program.trainings.map((t) {
             final trainingSessions = sessions.where((s) => s['training_id'].toString() == t.id).toList();
             
             DateTime? lastDate;
@@ -345,7 +382,6 @@ class ProgramRepository {
             app: program.app,
           );
         })
-        .where((p) => p.trainings.isNotEmpty && p.app)
         .toList();
   }
 
