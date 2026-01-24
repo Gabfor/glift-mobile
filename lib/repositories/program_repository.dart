@@ -395,12 +395,106 @@ class ProgramRepository {
           .order('order', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;
-      return data.map((json) => TrainingRow.fromJson(json)).toList();
+      var rows = data.map((json) => TrainingRow.fromJson(json)).toList();
+      
+      // Ensure consistency for supersets (if one is locked, all must be locked)
+      rows = await _ensureExerciseLockedConsistency(rows);
+      
+      return rows;
     } catch (e) {
       throw Exception(
         'Erreur lors du chargement du détail de l\'entraînement: $e',
       );
     }
+  }
+
+  Future<List<TrainingRow>> _ensureExerciseLockedConsistency(List<TrainingRow> rows) async {
+    final userPlan = SettingsService.instance.getSubscriptionPlan();
+    final isPremium = userPlan == 'premium';
+    
+    // 1. Calculate base lock status based on limit (10) and plan
+    // We use a temporary list or map to hold this intermediate state
+    final List<bool> baseLockStatus = [];
+    for (int i = 0; i < rows.length; i++) {
+        if (isPremium) {
+            baseLockStatus.add(false);
+        } else {
+            // Basic plan: First 10 (indices 0-9) are free, rest (10+) are locked.
+            baseLockStatus.add(i >= 10);
+        }
+    }
+
+    // 2. Determine lock status for each superset based on the BASE status
+    // If any exercise in a superset is base-locked, the whole superset becomes locked.
+    final Map<String, bool> supersetLockStatus = {};
+    for (int i = 0; i < rows.length; i++) {
+      final row = rows[i];
+      if (row.supersetId != null) {
+        final isRowLocked = baseLockStatus[i];
+        
+        // If current status is already true, it stays true.
+        // If not, we set it to this row's status.
+        final currentStatus = supersetLockStatus[row.supersetId];
+        if (currentStatus == true) continue; 
+        
+        supersetLockStatus[row.supersetId!] = isRowLocked;
+      }
+    }
+
+    final List<Map<String, dynamic>> updates = [];
+    final List<TrainingRow> updatedRows = [];
+
+    // 3. Apply final status
+    for (int i = 0; i < rows.length; i++) {
+      final row = rows[i];
+      bool shouldBeLocked;
+
+      if (row.supersetId != null) {
+        // Use the aggregated superset status
+        shouldBeLocked = supersetLockStatus[row.supersetId] ?? false;
+      } else {
+        // Use the base limit status
+        shouldBeLocked = baseLockStatus[i];
+      }
+
+      if (row.locked != shouldBeLocked) {
+        updates.add({
+          'id': row.id,
+          'locked': shouldBeLocked,
+        });
+        
+        updatedRows.add(TrainingRow(
+          id: row.id,
+          trainingId: row.trainingId,
+          exercise: row.exercise,
+          series: row.series,
+          repetitions: row.repetitions,
+          weights: row.weights,
+          efforts: row.efforts,
+          rest: row.rest,
+          note: row.note,
+          material: row.material,
+          videoUrl: row.videoUrl,
+          order: row.order,
+          supersetId: row.supersetId,
+          locked: shouldBeLocked,
+        ));
+      } else {
+        updatedRows.add(row);
+      }
+    }
+
+    if (updates.isNotEmpty) {
+      try {
+        await Future.wait(updates.map((update) => 
+            _supabase.from('training_rows').update(update).eq('id', update['id'])
+        ));
+      } catch (e) {
+        debugPrint('❌ Error syncing exercise locked status to DB: $e');
+      }
+    }
+
+    return updatedRows;
   }
 
   Future<void> updateTrainingRow(

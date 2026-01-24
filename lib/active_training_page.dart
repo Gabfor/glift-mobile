@@ -833,7 +833,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   @override
   Widget build(BuildContext context) {
     final allProcessed = _rows != null &&
-        (_completedRows.length + _ignoredRows.length == _rows!.length);
+        _rows!.every((row) => _isRowProcessed(row.id) || row.locked);
     final mediaQuery = MediaQuery.of(context);
     final inlineTimerWidth = mediaQuery.size.width - 40;
 
@@ -1833,13 +1833,14 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         SettingsService.instance.getShowLinks();
     final effectiveIsCompleted = widget.isCompleted || _isCompleting;
     final effectiveIsIgnored = widget.isIgnored || _isIgnoring;
+    final isLocked = widget.row.locked;
 
     final headerContent = Row(
       children: [
         Expanded(
           child: hasLink
               ? GestureDetector(
-                  onTap: _launchVideoUrl,
+                  onTap: isLocked ? null : _launchVideoUrl,
                   child: Text(
                     widget.row.exercise,
                     maxLines: 1,
@@ -1847,8 +1848,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     style: GoogleFonts.quicksand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF7069FA),
-                      decoration: TextDecoration.underline,
+                      color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
+                      decoration: isLocked ? null : TextDecoration.underline,
                       decorationColor: const Color(0xFF7069FA),
                     ),
                   ),
@@ -1860,43 +1861,53 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F),
                   ),
                 ),
         ),
-        const SizedBox(width: 20),
-        Row(
-          children: [
-            if (widget.showTimer) ...[
-              GestureDetector(
-                onTap: () {
-                  int duration = int.tryParse(widget.row.rest) ?? 0;
-                  if (duration == 0) {
-                    duration = SettingsService.instance.getDefaultRestTime();
-                  }
-                  widget.onOpenTimer(widget.index, duration);
-                },
-                child: SvgPicture.asset(
-                  hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
-                  width: 24,
-                  height: 24,
+        if (isLocked) ...[
+          const SizedBox(width: 20),
+          SvgPicture.asset(
+            'assets/icons/locked.svg',
+            width: 24,
+            height: 24,
+            colorFilter: const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn),
+          ),
+        ] else ...[
+          const SizedBox(width: 20),
+          Row(
+            children: [
+              if (widget.showTimer) ...[
+                GestureDetector(
+                  onTap: () {
+                    int duration = int.tryParse(widget.row.rest) ?? 0;
+                    if (duration == 0) {
+                      duration = SettingsService.instance.getDefaultRestTime();
+                    }
+                    widget.onOpenTimer(widget.index, duration);
+                  },
+                  child: SvgPicture.asset(
+                    hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
+                    width: 24,
+                    height: 24,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 20),
+                const SizedBox(width: 20),
+              ],
+              if (SettingsService.instance.getShowNotes())
+                GestureDetector(
+                  onTap: _showNoteModal,
+                  child: SvgPicture.asset(
+                    hasNote
+                        ? 'assets/icons/note_on.svg'
+                        : 'assets/icons/note_off.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
             ],
-            if (SettingsService.instance.getShowNotes())
-              GestureDetector(
-                onTap: _showNoteModal,
-                child: SvgPicture.asset(
-                  hasNote
-                      ? 'assets/icons/note_on.svg'
-                      : 'assets/icons/note_off.svg',
-                  width: 24,
-                  height: 24,
-                ),
-              ),
-          ],
-        ),
+          ),
+        ],
       ],
     );
 
@@ -1963,7 +1974,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           style: GoogleFonts.quicksand(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF3A416F),
+                            color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F),
                           ),
                         ),
                       ),
@@ -1976,7 +1987,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 Expanded(
                   flex: 86,
                   child: GestureDetector(
-                    onTap: () => _activateCell(context, index, 'reps'),
+                    onTap: () => isLocked ? null : _activateCell(context, index, 'reps'),
                     child: Container(
                       height: 40,
                       alignment: Alignment.center,
@@ -2005,7 +2016,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 Expanded(
                   flex: 86,
                   child: GestureDetector(
-                    onTap: () => _activateCell(context, index, 'weight'),
+                    onTap: () => isLocked ? null : _activateCell(context, index, 'weight'),
                     child: Container(
                       height: 40,
                       alignment: Alignment.center,
@@ -2038,7 +2049,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     flex: 68,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      onTap: () => _cycleEffortState(index),
+                      onTap: () => isLocked ? null : _cycleEffortState(index),
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
@@ -2050,7 +2061,13 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           ),
                         ),
                         alignment: Alignment.center,
-                        child: Image.asset(
+                        child: isLocked
+                         ? Image.asset(
+                          visuals.iconPath.replaceAll('.png', '_nb.png'),
+                          width: 26,
+                          height: 26,
+                         )
+                         : Image.asset(
                           visuals.iconPath,
                           width: 26,
                           height: 26,
@@ -2066,11 +2083,16 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   Expanded(
                     flex: 40,
                     child: GestureDetector(
-                      onTap: () => _toggleSetCompletion(index),
+                      onTap: () => isLocked ? null : _toggleSetCompletion(index),
                       child: SvgPicture.asset(
-                        isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg',
+                        isLocked
+                          ? 'assets/icons/Suivi_gris.svg' // Or a locked version if exists? Using gray as fallback
+                          : (isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg'),
                         width: 24,
                         height: 24,
+                        colorFilter: isLocked 
+                            ? const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn) 
+                            : null,
                       ),
                     ),
                   ),
@@ -2104,13 +2126,13 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 icon: 'assets/icons/croix_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
-                color: effectiveIsCompleted
+                color: effectiveIsCompleted || isLocked
                     ? const Color(0xFFECE9F1)
                     : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
                 backgroundColor:
                     effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
-                isDisabled: effectiveIsCompleted,
-                onTap: (effectiveIsCompleted || _isIgnoring)
+                isDisabled: effectiveIsCompleted || isLocked,
+                onTap: (effectiveIsCompleted || _isIgnoring || isLocked)
                     ? null
                     : () {
                         _handleIgnore();
@@ -2121,11 +2143,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 icon: 'assets/icons/arrow_small.svg',
                 iconWidth: 12,
                 iconHeight: 12,
-                color: (widget.isLast || effectiveIsCompleted)
+                color: (widget.isLast || effectiveIsCompleted || isLocked)
                     ? const Color(0xFFECE9F1)
                     : const Color(0xFFC2BFC6),
-                isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring,
-                onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring)
+                isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring || isLocked,
+                onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring || isLocked)
                     ? null
                     : () {
                         _handleMoveDown();
@@ -2136,14 +2158,14 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   icon: 'assets/icons/check_small.svg',
                   iconWidth: 12,
                   iconHeight: 12,
-                  color: effectiveIsIgnored
+                  color: effectiveIsIgnored || isLocked
                       ? const Color(0xFFECE9F1)
                       : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
                   backgroundColor:
                       effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
                   isPrimary: true,
-                  isDisabled: effectiveIsIgnored,
-                  onTap: _handleComplete,
+                  isDisabled: effectiveIsIgnored || isLocked,
+                  onTap: isLocked ? null : _handleComplete,
                 ),
             ],
           ),
