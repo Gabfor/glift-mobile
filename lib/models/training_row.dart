@@ -12,6 +12,7 @@ class TrainingRow {
   final String? material;
   final int order;
   final String? supersetId;
+  final bool locked;
 
   TrainingRow({
     required this.id,
@@ -27,6 +28,7 @@ class TrainingRow {
     this.videoUrl,
     required this.order,
     this.supersetId,
+    required this.locked,
   });
 
   factory TrainingRow.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class TrainingRow {
       videoUrl: (json['video_url'] ?? json['link']) as String?,
       order: json['order'] as int,
       supersetId: json['superset_id'] as String?,
+      locked: json['locked'] as bool? ?? false,
     );
   }
 }

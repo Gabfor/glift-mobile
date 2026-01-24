@@ -323,6 +323,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -355,9 +356,11 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         efforts: oldRow.efforts,
         rest: newDuration.toString(),
         note: oldRow.note,
+        material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -387,6 +390,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -504,9 +508,11 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         efforts: oldRow.efforts,
         rest: oldRow.rest,
         note: note,
+        material: oldRow.material,
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -1019,11 +1025,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           // Check if it is effectively the last block
           final isLast = rowIndex + group.length >= _rows!.length ||
               (isActiveSubset && group.any((r) => lastActiveRowIds.contains(r.id)));
+          final isLocked = group.any((r) => r.locked);
 
           items.add(SupersetGroupCard(
             isCompleted: isCompleted,
             isIgnored: isIgnored,
             isLast: isLast,
+            isLocked: isLocked,
             onComplete: () => _completeBlock(rowIndex, group.length),
             onIgnore: () => _ignoreBlock(rowIndex, group.length),
             onMoveDown: () => _moveBlockDown(rowIndex),
@@ -1921,6 +1929,16 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
           final visuals = SettingsService.instance.getShowEffort()
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
+
+          final isColored = visuals.backgroundColor != Colors.white;
+          final lockedColor = isColored ? const Color(0xFFF2F1F6) : const Color(0xFFF8F9FA);
+
+          final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
+          final textColor = widget.row.locked ? const Color(0xFFD7D4DC) : visuals.textColor;
+          final borderColor = widget.row.locked ? const Color(0xFFECE9F1) : (
+             (index == _activeRepsIndex ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1))
+          );
+          final borderWidth = (!widget.row.locked && _activeRepsIndex == index) ? 2.0 : 1.0;
           final isCompleted = _completedSets[index];
 
           return Padding(
@@ -1963,13 +1981,11 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
+                        color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _activeRepsIndex == index
-                              ? const Color(0xFFA1A5FD)
-                              : const Color(0xFFECE9F1),
-                          width: _activeRepsIndex == index ? 2 : 1,
+                          color: borderColor,
+                          width: borderWidth,
                         ),
                       ),
                       child: Text(
@@ -1977,7 +1993,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: visuals.textColor,
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -1994,13 +2010,13 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
+                        color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _activeWeightIndex == index
-                              ? const Color(0xFFA1A5FD)
-                              : const Color(0xFFECE9F1),
-                          width: _activeWeightIndex == index ? 2 : 1,
+                          color: widget.row.locked ? const Color(0xFFECE9F1) : (
+                            _activeWeightIndex == index ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1)
+                          ),
+                          width: (!widget.row.locked && _activeWeightIndex == index) ? 2 : 1,
                         ),
                       ),
                       child: Text(
@@ -2008,7 +2024,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: visuals.textColor,
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -2026,7 +2042,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
+                          color: bgColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: const Color(0xFFECE9F1),

@@ -9,7 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
+import 'widgets/unlock_exercise_modal.dart';
 import 'widgets/glift_loader.dart';
+
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/note_modal.dart';
@@ -341,7 +343,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           j++;
         }
 
+        final isLocked = group.any((r) => r.locked);
         items.add(_SupersetGroupContainer(
+          isLocked: isLocked,
           children: group.map((r) {
             final rIndex = _rows!.indexOf(r);
             return _ExerciseCard(
@@ -476,6 +480,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -512,6 +517,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -546,6 +552,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -578,6 +585,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         videoUrl: oldRow.videoUrl,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
       );
     });
 
@@ -853,6 +861,13 @@ class _ExerciseCardState extends State<_ExerciseCard>
     );
   }
 
+  void _showLockedModal() {
+    showDialog(
+      context: context,
+      builder: (context) => const UnlockExerciseModal(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -873,7 +888,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
             Expanded(
               child: hasLink
                   ? GestureDetector(
-                      onTap: _launchVideoUrl,
+                      onTap: () => widget.row.locked ? _showLockedModal() : _launchVideoUrl(),
                       child: Text(
                         widget.row.exercise,
                         maxLines: 1,
@@ -881,8 +896,8 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF7069FA),
-                          decoration: TextDecoration.underline,
+                          color: widget.row.locked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
+                          decoration: widget.row.locked ? null : TextDecoration.underline,
                           decorationColor: const Color(0xFF7069FA),
                         ),
                       ),
@@ -894,55 +909,65 @@ class _ExerciseCardState extends State<_ExerciseCard>
                       style: GoogleFonts.quicksand(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: widget.row.locked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F),
                       ),
                     ),
             ),
-            const SizedBox(width: 20),
-            Row(
-              children: [
-                if (widget.showTimer) ...[
-                  GestureDetector(
-                    onTap: () {
-                      int duration = int.tryParse(widget.row.rest) ?? 0;
-                      if (duration == 0) {
-                        duration = SettingsService.instance.getDefaultRestTime();
-                      }
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => TimerPage(
-                            durationInSeconds: duration,
-                            autoStart: false,
-                            enableVibration: SettingsService.instance.getVibrationEnabled(),
-                            enableSound: SettingsService.instance.getSoundEnabled(),
-                            onSave: widget.onRestUpdate,
+            if (widget.row.locked) ...[
+              const SizedBox(width: 8),
+              SvgPicture.asset(
+                'assets/icons/locked.svg',
+                width: 20,
+                height: 20,
+                colorFilter: const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn),
+              ),
+            ] else ...[
+              const SizedBox(width: 20),
+              Row(
+                children: [
+                  if (widget.showTimer) ...[
+                    GestureDetector(
+                      onTap: () {
+                        int duration = int.tryParse(widget.row.rest) ?? 0;
+                        if (duration == 0) {
+                          duration = SettingsService.instance.getDefaultRestTime();
+                        }
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => TimerPage(
+                              durationInSeconds: duration,
+                              autoStart: false,
+                              enableVibration: SettingsService.instance.getVibrationEnabled(),
+                              enableSound: SettingsService.instance.getSoundEnabled(),
+                              onSave: widget.onRestUpdate,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: SvgPicture.asset(
-                      hasRest
-                          ? 'assets/icons/timer_on.svg'
-                          : 'assets/icons/timer_off.svg',
-                      width: 24,
-                      height: 24,
+                        );
+                      },
+                      child: SvgPicture.asset(
+                        hasRest
+                            ? 'assets/icons/timer_on.svg'
+                            : 'assets/icons/timer_off.svg',
+                        width: 24,
+                        height: 24,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 20),
+                    const SizedBox(width: 20),
+                  ],
+                  if (SettingsService.instance.getShowNotes())
+                    GestureDetector(
+                      onTap: _showNoteModal,
+                      child: SvgPicture.asset(
+                        hasNote
+                            ? 'assets/icons/note_on.svg'
+                            : 'assets/icons/note_off.svg',
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
                 ],
-                if (SettingsService.instance.getShowNotes())
-                  GestureDetector(
-                    onTap: _showNoteModal,
-                    child: SvgPicture.asset(
-                      hasNote
-                          ? 'assets/icons/note_on.svg'
-                          : 'assets/icons/note_off.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-              ],
-            ),
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 20),
@@ -967,6 +992,16 @@ class _ExerciseCardState extends State<_ExerciseCard>
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
 
+          // Override for locked
+          final isColored = visuals.backgroundColor != Colors.white;
+          final lockedColor = isColored ? const Color(0xFFF2F1F6) : const Color(0xFFF8F9FA);
+
+          final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
+          final textColor = widget.row.locked ? const Color(0xFFD7D4DC) : visuals.textColor;
+          final borderColor = widget.row.locked ? const Color(0xFFECE9F1) : (
+             (index == _activeRepsIndex || index == _activeWeightIndex) ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1)
+          );
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
@@ -988,8 +1023,8 @@ class _ExerciseCardState extends State<_ExerciseCard>
                           style: GoogleFonts.quicksand(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF3A416F),
-                          ),
+                            color: const Color(0xFFD7D4DC),
+                          ).copyWith(color: widget.row.locked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F)),
                         ),
                       ),
                     ),
@@ -999,18 +1034,16 @@ class _ExerciseCardState extends State<_ExerciseCard>
                 Expanded(
                   flex: 86,
                   child: GestureDetector(
-                    onTap: () => _activateCell(context, index, 'reps'),
+                    onTap: () => widget.row.locked ? _showLockedModal() : _activateCell(context, index, 'reps'),
                     child: Container(
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
+                        color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _activeRepsIndex == index
-                              ? const Color(0xFFA1A5FD)
-                              : const Color(0xFFECE9F1),
-                          width: _activeRepsIndex == index ? 2 : 1,
+                          color: borderColor,
+                          width: (!widget.row.locked && _activeRepsIndex == index) ? 2 : 1,
                         ),
                       ),
                       child: Text(
@@ -1018,7 +1051,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: visuals.textColor,
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -1028,18 +1061,16 @@ class _ExerciseCardState extends State<_ExerciseCard>
                 Expanded(
                   flex: 86,
                   child: GestureDetector(
-                    onTap: () => _activateCell(context, index, 'weight'),
+                    onTap: () => widget.row.locked ? _showLockedModal() : _activateCell(context, index, 'weight'),
                     child: Container(
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: visuals.backgroundColor,
+                        color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _activeWeightIndex == index
-                              ? const Color(0xFFA1A5FD)
-                              : const Color(0xFFECE9F1),
-                          width: _activeWeightIndex == index ? 2 : 1,
+                          color: borderColor,
+                          width: (!widget.row.locked && _activeWeightIndex == index) ? 2 : 1,
                         ),
                       ),
                       child: Text(
@@ -1047,7 +1078,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: visuals.textColor,
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -1058,19 +1089,25 @@ class _ExerciseCardState extends State<_ExerciseCard>
                   Expanded(
                     flex: 68,
                     child: GestureDetector(
-                      onTap: () => _cycleEffortState(index),
+                      onTap: () => widget.row.locked ? _showLockedModal() : _cycleEffortState(index),
                       child: Container(
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: visuals.backgroundColor,
+                          color: bgColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: const Color(0xFFECE9F1),
                             width: 1,
                           ),
                         ),
-                        child: Image.asset(
+                        child: widget.row.locked 
+                         ? Image.asset(
+                          visuals.iconPath.replaceAll('.png', '_nb.png'),
+                          width: 24,
+                          height: 24,
+                         )
+                         : Image.asset(
                           visuals.iconPath,
                           width: 24,
                           height: 24,
@@ -1103,6 +1140,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
       child: content,
     );
   }
+
 
   Future<void> _cycleEffortState(int index) async {
     setState(() {
@@ -1283,8 +1321,9 @@ class _GridHeader extends StatelessWidget {
 
 class _SupersetGroupContainer extends StatelessWidget {
   final List<Widget> children;
+  final bool isLocked;
 
-  const _SupersetGroupContainer({required this.children});
+  const _SupersetGroupContainer({required this.children, this.isLocked = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1294,7 +1333,9 @@ class _SupersetGroupContainer extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       child: CustomPaint(
-        foregroundPainter: DashedBorderPainter(color: const Color(0xFF7069FA)),
+        foregroundPainter: DashedBorderPainter(
+          color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
+        ),
         child: Column(
           children: children,
         ),

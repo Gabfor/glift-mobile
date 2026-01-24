@@ -12,6 +12,7 @@ class SupersetGroupCard extends StatefulWidget {
   final bool isCompleted;
   final bool isIgnored;
   final bool isLast;
+  final bool isLocked;
 
   const SupersetGroupCard({
     super.key,
@@ -22,6 +23,7 @@ class SupersetGroupCard extends StatefulWidget {
     required this.isCompleted,
     required this.isIgnored,
     required this.isLast,
+    this.isLocked = false,
   });
 
   @override
@@ -87,7 +89,9 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: CustomPaint(
-        foregroundPainter: DashedBorderPainter(color: const Color(0xFF7069FA)),
+        foregroundPainter: DashedBorderPainter(
+          color: widget.isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
+        ),
         child: Column(
           children: [
             ...widget.children,
