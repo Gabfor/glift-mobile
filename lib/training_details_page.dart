@@ -1094,7 +1094,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: bgColor,
+                          color: widget.row.locked ? lockedColor : Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: const Color(0xFFECE9F1),
