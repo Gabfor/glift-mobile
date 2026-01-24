@@ -2052,8 +2052,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                         alignment: Alignment.center,
                         child: Image.asset(
                           visuals.iconPath,
-                          width: 24,
-                          height: 24,
+                          width: 26,
+                          height: 26,
                         ),
                       ),
                     ),

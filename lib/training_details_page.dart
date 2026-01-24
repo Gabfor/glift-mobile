@@ -1104,13 +1104,13 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         child: widget.row.locked 
                          ? Image.asset(
                           visuals.iconPath.replaceAll('.png', '_nb.png'),
-                          width: 24,
-                          height: 24,
+                          width: 26,
+                          height: 26,
                          )
                          : Image.asset(
                           visuals.iconPath,
-                          width: 24,
-                          height: 24,
+                          width: 26,
+                          height: 26,
                         ),
                       ),
                     ),
