@@ -286,6 +286,7 @@ class ProgramRepository {
 
               // Calculate average duration
               final durations = trainingSessions
+                  .take(5) // Only calculate average on last 5 sessions
                   .map((s) => s['duration'] as int?)
                   .where((d) => d != null)
                   .toList();
@@ -637,6 +638,7 @@ class ProgramRepository {
 
       // Calculate average duration
       final durations = sessions
+          .take(5) // Only calculate average on last 5 sessions
           .map((s) => s['duration'] as int?)
           .where((d) => d != null)
           .toList();
