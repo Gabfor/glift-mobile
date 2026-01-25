@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
+import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 import '../services/settings_service.dart';
 
 class NoteModal extends StatefulWidget {
@@ -22,7 +25,7 @@ class NoteModal extends StatefulWidget {
 }
 
 class _NoteModalState extends State<NoteModal> {
-  late final TextEditingController _controller;
+  late final quill.QuillController _controller;
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   bool _hasChanged = false;
@@ -38,9 +41,26 @@ class _NoteModalState extends State<NoteModal> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialNote);
+    
+    // Initialize Quill Controller with HTML content
+    try {
+      final delta = HtmlToDelta().convert(widget.initialNote ?? '');
+      _controller = quill.QuillController(
+        document: quill.Document.fromDelta(delta),
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+    } catch (e) {
+      // Fallback for empty or invalid HTML
+      _controller = quill.QuillController.basic();
+    }
+
     _materialController = TextEditingController(text: widget.initialMaterial);
-    _controller.addListener(_onTextChanged);
+    
+    // Listen for changes
+    _controller.document.changes.listen((_) {
+      _onTextChanged();
+    });
+
     _focusNode.addListener(_onFocusChange);
     _materialFocusNode.addListener(_onMaterialFocusChange);
     _scrollController.addListener(_onScroll);
@@ -48,13 +68,11 @@ class _NoteModalState extends State<NoteModal> {
   }
 
   void _onTextChanged() {
-    final currentText = _controller.text;
-    final initialText = widget.initialNote ?? '';
-    final hasChanged = currentText != initialText;
-    
-    if (hasChanged != _hasChanged) {
+    // Simple check: if document length > 1 (newline is always present) and diff from init
+    // For now, always mark as changed if edited, or we can improve this logic later.
+    if (!_hasChanged) {
       setState(() {
-        _hasChanged = hasChanged;
+        _hasChanged = true;
       });
     }
     
@@ -104,7 +122,6 @@ class _NoteModalState extends State<NoteModal> {
 
   @override
   void dispose() {
-    _controller.removeListener(_onTextChanged);
     _controller.dispose();
     _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
@@ -115,7 +132,19 @@ class _NoteModalState extends State<NoteModal> {
     super.dispose();
   }
 
-
+  String _getHtmlFromController() {
+    final delta = _controller.document.toDelta();
+    // Convert Delta to HTML
+    final converter = QuillDeltaToHtmlConverter(
+      delta.toJson(),
+      ConverterOptions(
+        converterOptions: OpConverterOptions(
+          inlineStylesFlag: true,
+        ),
+      ),
+    );
+    return converter.convert();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +159,7 @@ class _NoteModalState extends State<NoteModal> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: EdgeInsets.only(
-          top: 20, // Trait à 20px du haut (padding top of container)
+          top: 20,
           left: 20,
           right: 20,
           bottom: (MediaQuery.of(context).viewInsets.bottom > 0
@@ -160,12 +189,10 @@ class _NoteModalState extends State<NoteModal> {
                   if (!_isEditingMaterial) {
                     setState(() {
                       _isEditingMaterial = true;
-                      // Pre-fill controller if empty (though logic below handles it)
-                       if (_materialController.text.isEmpty && widget.initialMaterial != null) {
+                      if (_materialController.text.isEmpty && widget.initialMaterial != null) {
                         _materialController.text = widget.initialMaterial!;
                       }
                     });
-                     // Schedule focus request
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _materialFocusNode.requestFocus();
                     });
@@ -184,7 +211,7 @@ class _NoteModalState extends State<NoteModal> {
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.baseline, // Baseline alignment
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             Text(
@@ -193,7 +220,7 @@ class _NoteModalState extends State<NoteModal> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF3A416F),
-                                height: 1.3, // Standardize height
+                                height: 1.3,
                               ),
                             ),
                             Expanded(
@@ -206,7 +233,7 @@ class _NoteModalState extends State<NoteModal> {
                                       fontWeight: FontWeight.w600,
                                       color: const Color(0xFF5D6494),
                                       height: 1.3,
-                                      letterSpacing: 0.0, // Force consistent spacing
+                                      letterSpacing: 0.0,
                                     ),
                                     strutStyle: const StrutStyle(
                                       fontSize: 16,
@@ -216,7 +243,7 @@ class _NoteModalState extends State<NoteModal> {
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
                                       isDense: true,
-                                      isCollapsed: true, // Key for alignment
+                                      isCollapsed: true,
                                       contentPadding: EdgeInsets.zero,
                                       hintText: 'Ex: Haltères, Barre...',
                                       hintStyle: GoogleFonts.quicksand(
@@ -251,7 +278,7 @@ class _NoteModalState extends State<NoteModal> {
                                           ? const Color(0xFF5D6494)
                                           : const Color(0xFFD7D4DC),
                                       height: 1.3,
-                                      letterSpacing: 0.0, // Force consistent spacing
+                                      letterSpacing: 0.0,
                                     ),
                                     strutStyle: const StrutStyle(
                                       fontSize: 16,
@@ -300,88 +327,192 @@ class _NoteModalState extends State<NoteModal> {
                     color: _isFocused ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
                     width: _isFocused ? 2 : 1, 
                   ),
+                  color: Colors.white,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: Stack(
+                  child: Column(
                     children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                          left: _isFocused ? 14 : 15,
-                          right: _isFocused ? 14 : 15,
-                          top: _isFocused ? 0 : 1,
-                          bottom: _isFocused ? 0 : 1,
-                        ),
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          scrollController: _scrollController,
-                          expands: true,
-                          maxLines: null,
-                          textAlignVertical: TextAlignVertical.top,
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16, // 16px
-                            fontWeight: FontWeight.w600, // Semibold
-                            color: const Color(0xFF5D6494),
-                          ),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Ajoutez vos notes ici',
-                            hintStyle: GoogleFonts.quicksand(
-                              fontSize: 16, // 16px
-                              fontWeight: FontWeight.w600, // Semibold
-                              color: const Color(0xFFD7D4DC),
+                       quill.QuillSimpleToolbar(
+                        controller: _controller,
+                        config: quill.QuillSimpleToolbarConfig(
+                          multiRowsDisplay: false, // Force single row like web
+                          // flutter_quill multiplies this by 1.4 for total height
+                          // 35.7 * 1.4 ≈ 50px (Matches Material block height)
+                          toolbarSize: 35.7, 
+                          
+                          // Enabled options (Web match)
+                          showBoldButton: true,
+                          showItalicButton: true,
+                          showUnderLineButton: true,
+                          showStrikeThrough: true,
+                          showListBullets: true,
+                          showListNumbers: true,
+                          
+                          // Disabled options (Default is true for many of these)
+                          showFontFamily: false,
+                          showFontSize: false,
+                          showListCheck: false,
+                          showQuote: false,
+                          showLink: false,
+                          showCodeBlock: false,
+                          showInlineCode: false,
+                          showIndent: false,
+                          showHeaderStyle: false,
+                          showColorButton: false,
+                          showBackgroundColorButton: false,
+                          showClearFormat: false,
+                          showAlignmentButtons: false,
+                          showSearchButton: false,
+                          showSubscript: false,
+                          showSuperscript: false,
+                          showUndo: false,
+                          showRedo: false,
+                          showDirection: false,
+                          showSmallButton: false,
+
+                          color: Colors.white,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom: BorderSide(color: Color(0xFFD7D4DC), width: 1),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color.fromRGBO(93, 100, 148, 0.05),
+                                offset: Offset(0, 4),
+                                blurRadius: 6,
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 20,
-                        left: 0,
-                        right: 0,
-                        height: 20,
-                        child: IgnorePointer(
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 150),
-                            opacity: _showTopGradient ? 1.0 : 0.0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.white,
-                                    Colors.white.withValues(alpha: 0),
-                                  ],
+                          buttonOptions: quill.QuillSimpleToolbarButtonOptions(
+                            base: quill.QuillToolbarBaseButtonOptions(
+                              iconTheme: quill.QuillIconTheme(
+                                iconButtonSelectedData: const quill.IconButtonData(
+                                  style: ButtonStyle(
+                                   backgroundColor: WidgetStatePropertyAll(Color(0xFFFAFAFF)),
+                                   iconColor: WidgetStatePropertyAll(Color(0xFF3A416F)),
+                                  ),
+                                ),
+                                iconButtonUnselectedData: const quill.IconButtonData(
+                                  style: ButtonStyle(
+                                   iconColor: WidgetStatePropertyAll(Color(0xFF5D6494)),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                      Positioned(
-                        bottom: 20,
-                        left: 0,
-                        right: 0,
-                        height: 20,
-                        child: IgnorePointer(
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 150),
-                            opacity: _showBottomGradient ? 1.0 : 0.0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.white,
-                                    Colors.white.withValues(alpha: 0),
-                                  ],
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: quill.QuillEditor.basic(
+                                controller: _controller,
+                                focusNode: _focusNode,
+                                scrollController: _scrollController,
+                                config: quill.QuillEditorConfig(
+                                  placeholder: 'Ajoutez vos notes ici',
+                                  // Custom style builder to enforce specific font weights
+                                  customStyleBuilder: (attribute) {
+                                    if (attribute.key == 'bold') {
+                                      return GoogleFonts.quicksand(
+                                        fontWeight: FontWeight.w700,
+                                      );
+                                    }
+                                    return GoogleFonts.quicksand();
+                                  },
+                                  customStyles: quill.DefaultStyles(
+                                    paragraph: quill.DefaultTextBlockStyle(
+                                      GoogleFonts.quicksand(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF5D6494),
+                                      ),
+                                      const quill.HorizontalSpacing(0, 0),
+                                      const quill.VerticalSpacing(0, 0),
+                                      const quill.VerticalSpacing(0, 0),
+                                      null,
+                                    ),
+                                    placeHolder: quill.DefaultTextBlockStyle(
+                                       GoogleFonts.quicksand(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFFD7D4DC),
+                                      ),
+                                      const quill.HorizontalSpacing(0, 0),
+                                      const quill.VerticalSpacing(0, 0),
+                                      const quill.VerticalSpacing(0, 0),
+                                      null,
+                                    ),
+                                    lists: quill.DefaultListBlockStyle(
+                                      GoogleFonts.quicksand(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF5D6494),
+                                      ),
+                                      const quill.HorizontalSpacing(0, 0),
+                                      const quill.VerticalSpacing(0, 0),
+                                      const quill.VerticalSpacing(0, 0),
+                                      null,
+                                      null,
+                                      indentWidthBuilder: (block, context, indent, width) => const quill.HorizontalSpacing(15.0, 0.0), 
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              height: 20,
+                              child: IgnorePointer(
+                                child: AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 150),
+                                  opacity: _showTopGradient ? 1.0 : 0.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.white,
+                                          Colors.white.withValues(alpha: 0),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: 20,
+                              child: IgnorePointer(
+                                child: AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 150),
+                                  opacity: _showBottomGradient ? 1.0 : 0.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        colors: [
+                                          Colors.white,
+                                          Colors.white.withValues(alpha: 0),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -396,7 +527,7 @@ class _NoteModalState extends State<NoteModal> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_hasChanged) {
-                    widget.onSave(_controller.text);
+                    widget.onSave(_getHtmlFromController());
                     Navigator.of(context).pop();
                   } else {
                     FocusScope.of(context).unfocus();

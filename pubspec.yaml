@@ -28,6 +28,9 @@ dependencies:
   shared_preferences: ^2.5.4
   custom_refresh_indicator: ^4.0.1
   audioplayers: ^6.5.1
+  flutter_quill: ^11.5.0
+  flutter_quill_delta_from_html: ^1.5.3
+  vsc_quill_delta_to_html: ^1.0.5
 
 dev_dependencies:
   flutter_test:
