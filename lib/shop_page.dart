@@ -709,7 +709,7 @@ class _ShopOfferCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFD7D4DC)),
       ),
       child: Column(
@@ -721,7 +721,7 @@ class _ShopOfferCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(8),
+                  top: Radius.circular(15),
                 ),
                 child: Image.network(
                   (offer.imageMobile != null && offer.imageMobile!.isNotEmpty)

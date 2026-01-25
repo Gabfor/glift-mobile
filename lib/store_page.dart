@@ -826,7 +826,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFD7D4DC)),
       ),
       child: Column(
@@ -838,7 +838,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(8),
+                  top: Radius.circular(15),
                 ),
                 child: Image.network(
                   (program.imageMobile != null && program.imageMobile!.isNotEmpty)
