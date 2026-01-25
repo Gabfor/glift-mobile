@@ -430,6 +430,7 @@ class _NoteModalState extends State<NoteModal> {
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF5D6494),
+                                        height: 1.3,
                                       ),
                                       const quill.HorizontalSpacing(0, 0),
                                       const quill.VerticalSpacing(0, 0),
@@ -452,6 +453,9 @@ class _NoteModalState extends State<NoteModal> {
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF5D6494),
+                                        height: 1.3,
+                                      ).copyWith(
+                                        leadingDistribution: TextLeadingDistribution.even,
                                       ),
                                       const quill.HorizontalSpacing(0, 0),
                                       const quill.VerticalSpacing(0, 0),
