@@ -22,6 +22,7 @@ class SettingsService {
   Future<void> initSupabase(SupabaseClient client) async {
     _supabase = client;
     await syncFromSupabase();
+    await syncSiteSettings();
   }
 
   static const String _kShowEffort = 'show_effort';
@@ -132,11 +133,45 @@ class SettingsService {
   static const String _kSoundEffect = 'timer_sound_effect';
   static const String _kSoundEnabled = 'timer_sound_enabled';
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
+  static const String _kLogoUrl = 'logo_url';
+  static const String _kLogoAlt = 'logo_alt';
   // Note: _kShowEffort, _kShowRepos, _kSubscriptionPlan are defined above
 
+  Future<void> syncSiteSettings() async {
+    try {
+      final response = await _supabase!
+          .from('settings')
+          .select('key, value');
+      
+      if (response != null) {
+        for (final row in response as List) {
+           final key = row['key'] as String;
+           final value = row['value'] as String;
+           if (key == 'logo_url') {
+               await _prefs.setString(_kLogoUrl, value);
+           } else if (key == 'logo_alt') {
+               await _prefs.setString(_kLogoAlt, value);
+           }
+        }
+      }
+    } catch (e) {
+      print('Error syncing site settings: $e');
+    }
+  }
 
   // Notifiers
   final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
+
+  // Logo
+  String? getLogoUrl() {
+    if (!_initialized) return null;
+    return _prefs.getString(_kLogoUrl);
+  }
+
+  String? getLogoAlt() {
+    if (!_initialized) return null;
+    return _prefs.getString(_kLogoAlt);
+  }
 
   // Display Type
   Future<void> saveDisplayType(String type) async {

@@ -474,13 +474,42 @@ class _Logo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logoUrl = SettingsService.instance.getLogoUrl();
+
+    Widget logo;
+    if (logoUrl != null && logoUrl.isNotEmpty) {
+      if (logoUrl.toLowerCase().endsWith('.svg')) {
+        logo = SvgPicture.network(
+          logoUrl,
+          fit: BoxFit.contain,
+          placeholderBuilder: (BuildContext context) => SvgPicture.asset(
+            'assets/images/logo_app.svg',
+            fit: BoxFit.contain,
+          ),
+        );
+      } else {
+         logo = Image.network(
+          logoUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return SvgPicture.asset(
+              'assets/images/logo_app.svg',
+              fit: BoxFit.contain,
+            );
+          },
+        );
+      }
+    } else {
+      logo = SvgPicture.asset(
+        'assets/images/logo_app.svg',
+        fit: BoxFit.contain,
+      );
+    }
+
     return SizedBox(
       width: size,
       height: size,
-      child: SvgPicture.asset(
-        'assets/images/logo_app.svg',
-        fit: BoxFit.contain,
-      ),
+      child: logo,
     );
   }
 }
