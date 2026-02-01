@@ -724,7 +724,8 @@ class _ShopOfferCard extends StatelessWidget {
                   top: Radius.circular(15),
                 ),
                 child: Image.network(
-                  (offer.imageMobile != null && offer.imageMobile!.isNotEmpty)
+                  (offer.imageMobile != null &&
+                          offer.imageMobile!.isNotEmpty)
                       ? offer.imageMobile!
                       : offer.image,
                   height: 180,
@@ -771,7 +772,6 @@ class _ShopOfferCard extends StatelessWidget {
                     ),
                   ),
                 ),
-
             ],
           ),
 
@@ -795,7 +795,8 @@ class _ShopOfferCard extends StatelessWidget {
                 Wrap(
                   spacing: 5,
                   runSpacing: 5,
-                  children: offer.type.map((t) => _buildTag(t)).toList(),
+                  children:
+                      offer.type.map((t) => _buildTag(t)).toList(),
                 ),
                 const SizedBox(height: 15),
 
@@ -818,7 +819,16 @@ class _ShopOfferCard extends StatelessWidget {
                   width: double.infinity,
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      try {
+                        await supabase.rpc('increment_offer_click',
+                            params: {'offer_id': offer.id});
+                      } catch (_) {
+                        // Ignore error
+                      }
+
+                      // ignore: use_build_context_synchronously
+                      if (!context.mounted) return;
                       showDialog(
                         context: context,
                         builder: (context) => OfferDetailsModal(
@@ -834,13 +844,29 @@ class _ShopOfferCard extends StatelessWidget {
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      'Profiter de cette offre',
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'En profiter',
+                          style: GoogleFonts.quicksand(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SvgPicture.asset(
+                          'assets/icons/arrow.svg',
+                          width: 25,
+                          height: 25,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
