@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'utils/dialog_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
@@ -829,7 +830,7 @@ class _ShopOfferCard extends StatelessWidget {
 
                       // ignore: use_build_context_synchronously
                       if (!context.mounted) return;
-                      showDialog(
+                      showFadeDialog(
                         context: context,
                         builder: (context) => OfferDetailsModal(
                           offer: offer,

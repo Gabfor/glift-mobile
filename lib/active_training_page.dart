@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'utils/dialog_utils.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
@@ -844,7 +845,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         children: [
           GestureDetector(
             onTap: () async {
-              final shouldExit = await showDialog<bool>(
+              final shouldExit = await showFadeDialog<bool>(
                 context: context,
                 builder: (context) => const ExitTrainingModal(),
               );

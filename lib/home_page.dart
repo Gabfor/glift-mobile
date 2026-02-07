@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'utils/dialog_utils.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
@@ -558,7 +559,7 @@ class HomePageState extends State<HomePage> {
                 syncStatus: _syncStatus,
                 onTap: () async {
                   if (training.locked) {
-                     await showDialog(
+                     await showFadeDialog(
                       context: context,
                       builder: (context) => const UnlockTrainingModal(),
                     );

@@ -11,6 +11,7 @@ import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'widgets/unlock_exercise_modal.dart';
 import 'widgets/glift_loader.dart';
+import 'utils/dialog_utils.dart';
 
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
@@ -862,7 +863,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
   }
 
   void _showLockedModal() {
-    showDialog(
+    showFadeDialog(
       context: context,
       builder: (context) => const UnlockExerciseModal(),
     );

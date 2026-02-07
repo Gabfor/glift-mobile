@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'utils/dialog_utils.dart';
+import 'package:flutter/services.dart';
 import 'widgets/download_restricted_modal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -940,7 +942,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                       child: GestureDetector(
                         onTap: () {
                           if (_isRestricted) {
-                            showDialog(
+                            showFadeDialog(
                               context: context,
                               builder: (context) =>
                                   DownloadRestrictedModal(),
