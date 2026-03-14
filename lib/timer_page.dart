@@ -54,8 +54,9 @@ class TimerPage extends StatefulWidget {
   State<TimerPage> createState() => _TimerPageState();
 }
 
-class _TimerPageState extends State<TimerPage> {
+class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   late int _remainingSeconds;
+  DateTime? _endTime;
   Timer? _timer;
   bool _isRunning = false;
   bool _wasRunningBeforeEdit = false;
@@ -87,8 +88,27 @@ class _TimerPageState extends State<TimerPage> {
     _secondsFocusNode = FocusNode();
     _minutesFocusNode.addListener(_handleMinutesFocusChange);
     _secondsFocusNode.addListener(_handleSecondsFocusChange);
+    _minutesFocusNode.addListener(_handleMinutesFocusChange);
+    _secondsFocusNode.addListener(_handleSecondsFocusChange);
+    WidgetsBinding.instance.addObserver(this);
     if (widget.autoStart) {
       _startTimer();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isRunning && _endTime != null) {
+      final now = DateTime.now();
+      final diff = _endTime!.difference(now).inSeconds;
+      setState(() {
+        _remainingSeconds = diff > 0 ? diff : 0;
+      });
+      if (_remainingSeconds <= 0 && _timer != null) {
+         _timer?.cancel();
+         _timer = null;
+         _onTimerCompleted();
+      }
     }
   }
 
@@ -99,8 +119,10 @@ class _TimerPageState extends State<TimerPage> {
     _secondsController.removeListener(_handleSecondsTextChange);
     _minutesController.dispose();
     _secondsController.dispose();
+    _secondsController.dispose();
     _minutesFocusNode.dispose();
     _secondsFocusNode.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -115,17 +137,30 @@ class _TimerPageState extends State<TimerPage> {
 
     setState(() {
       _isRunning = true;
+      _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
 
+    if (widget.enableSound || widget.enableVibration) {
+       widget.alertService.scheduleTimerNotification(scheduledTime: _endTime!);
+    }
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
-        setState(() {
-          _remainingSeconds--;
-        });
-      } else {
-        timer.cancel();
-        _timer = null;
-        _onTimerCompleted();
+      if (_endTime != null) {
+        final now = DateTime.now();
+        final diff = _endTime!.difference(now).inSeconds;
+        
+        if (diff > 0) {
+          setState(() {
+            _remainingSeconds = diff;
+          });
+        } else {
+          setState(() {
+            _remainingSeconds = 0;
+          });
+          timer.cancel();
+          _timer = null;
+          _onTimerCompleted();
+        }
       }
     });
   }
@@ -133,6 +168,8 @@ class _TimerPageState extends State<TimerPage> {
   void _pauseTimer() {
     _timer?.cancel();
     _timer = null;
+    _endTime = null;
+    widget.alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
     });
@@ -141,6 +178,8 @@ class _TimerPageState extends State<TimerPage> {
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+    _endTime = null;
+    widget.alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
       _remainingSeconds = _lastEditedDuration;
@@ -331,6 +370,14 @@ class _TimerPageState extends State<TimerPage> {
 
     _timer?.cancel();
     _timer = null;
+    
+    // NOTE: In inline mode, the active training page also recreates a timer 
+    // or tracks it via ActiveTrainingData / InlineTimerData. 
+    // If it's running, we keep the background notification scheduled, since 
+    // the active_training_page might not re-schedule it until the user expands it.
+    // However, if we pop and it's not minimized properly, the notification fires anyway.
+    // Usually inline mode just visually updates based on _remainingSeconds.
+    // We will NOT cancel the notification here if isRunning is true, so it still works!
 
     final data = InlineTimerData(
       remainingSeconds: _remainingSeconds,

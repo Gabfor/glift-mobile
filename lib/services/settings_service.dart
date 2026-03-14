@@ -165,7 +165,17 @@ class SettingsService {
   // Logo
   String? getLogoUrl() {
     if (!_initialized) return null;
-    return _prefs.getString(_kLogoUrl);
+    String? url = _prefs.getString(_kLogoUrl);
+    if (url != null) {
+      if (url.startsWith('https://')) {
+        url = 'https://' + url.substring(8).replaceAll('//', '/');
+      } else if (url.startsWith('http://')) {
+        url = 'http://' + url.substring(7).replaceAll('//', '/');
+      } else {
+        url = url.replaceAll('//', '/');
+      }
+    }
+    return url;
   }
 
   String? getLogoAlt() {
