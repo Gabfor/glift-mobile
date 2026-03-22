@@ -1278,10 +1278,11 @@ class _InlineRestTimer extends StatefulWidget {
   State<_InlineRestTimer> createState() => _InlineRestTimerState();
 }
 
-class _InlineRestTimerState extends State<_InlineRestTimer> {
+class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingObserver {
   late int _remainingSeconds;
   late bool _isRunning;
   Timer? _timer;
+  DateTime? _endTime;
 
   late final TimerAlertService _alertService;
   late final VibrationService _vibrationService;
@@ -1294,8 +1295,26 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
     _alertService = NotificationService.instance;
     _vibrationService = const DeviceVibrationService();
 
+    WidgetsBinding.instance.addObserver(this);
+
     if (_isRunning) {
       _startTimer();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isRunning && _endTime != null) {
+      final now = DateTime.now();
+      final diff = _endTime!.difference(now).inSeconds;
+      setState(() {
+        _remainingSeconds = diff > 0 ? diff : 0;
+      });
+      if (_remainingSeconds <= 0 && _timer != null) {
+         _timer?.cancel();
+         _timer = null;
+         _onTimerCompleted();
+      }
     }
   }
 
@@ -1305,6 +1324,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
     if (widget.data != oldWidget.data) {
       _timer?.cancel();
       _timer = null;
+      _endTime = null;
       setState(() {
         _remainingSeconds = widget.data.remainingSeconds;
         _isRunning = widget.data.isRunning;
@@ -1317,6 +1337,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     super.dispose();
   }
@@ -1332,17 +1353,26 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
 
     setState(() {
       _isRunning = true;
+      _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
-        setState(() {
-          _remainingSeconds--;
-        });
-      } else {
-        timer.cancel();
-        _timer = null;
-        _onTimerCompleted();
+      if (_endTime != null) {
+        final now = DateTime.now();
+        final diff = _endTime!.difference(now).inSeconds;
+        
+        if (diff > 0) {
+          setState(() {
+            _remainingSeconds = diff;
+          });
+        } else {
+          setState(() {
+            _remainingSeconds = 0;
+          });
+          timer.cancel();
+          _timer = null;
+          _onTimerCompleted();
+        }
       }
     });
   }
@@ -1350,6 +1380,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
   void _pauseTimer() {
     _timer?.cancel();
     _timer = null;
+    _endTime = null;
     setState(() {
       _isRunning = false;
     });
@@ -1358,6 +1389,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> {
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+    _endTime = null;
     setState(() {
       _isRunning = false;
       _remainingSeconds = widget.data.durationInSeconds;

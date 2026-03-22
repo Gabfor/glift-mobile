@@ -77,7 +77,7 @@ SPEC CHECKSUMS:
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_keyboard_visibility_temp_fork: 95b2d534bacf6ac62e7fcbe5c2a9e2c2a17ce06f
-  flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
+  flutter_local_notifications: 643a3eda1ce1c0599413ca31672536d423dee214
   flutter_ringtone_player: a77c42464250845611eaa44c27e8714acc800138
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
