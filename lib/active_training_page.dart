@@ -1325,6 +1325,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
       _timer?.cancel();
       _timer = null;
       _endTime = null;
+      _alertService.cancelTimerNotification();
       setState(() {
         _remainingSeconds = widget.data.remainingSeconds;
         _isRunning = widget.data.isRunning;
@@ -1356,6 +1357,10 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
       _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
 
+    if (widget.data.enableSound || widget.data.enableVibration) {
+      _alertService.scheduleTimerNotification(scheduledTime: _endTime!);
+    }
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_endTime != null) {
         final now = DateTime.now();
@@ -1381,6 +1386,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
     _timer?.cancel();
     _timer = null;
     _endTime = null;
+    _alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
     });
@@ -1390,6 +1396,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
     _timer?.cancel();
     _timer = null;
     _endTime = null;
+    _alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
       _remainingSeconds = widget.data.durationInSeconds;
