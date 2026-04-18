@@ -9,7 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
+import 'package:flutter/services.dart';
 import 'widgets/unlock_exercise_modal.dart';
+import 'widgets/edit_training_name_modal.dart';
 import 'widgets/glift_loader.dart';
 import 'utils/dialog_utils.dart';
 
@@ -60,6 +62,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   int? _activeRowIndex;
   int? _activeSeriesIndex;
   String? _activeFieldType; // 'reps' or 'weight'
+  late String _trainingName;
+  bool _wasEdited = false;
 
   @override
   void dispose() {
@@ -73,6 +77,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   void initState() {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
+    _trainingName = widget.training.name;
     _fetchDetails();
   }
 
@@ -200,6 +205,31 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
+  Future<void> _handleEditName() async {
+    await HapticFeedback.lightImpact();
+
+    final newName = await showFadeDialog<String>(
+      context: context,
+      builder: (context) => EditTrainingNameModal(initialName: _trainingName),
+    );
+
+    if (newName != null && newName != _trainingName && mounted) {
+      try {
+        await _programRepository.updateTrainingName(widget.training.id, newName);
+        setState(() {
+          _trainingName = newName;
+          _wasEdited = true;
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de la mise à jour: $e')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GliftPageLayout(
@@ -207,7 +237,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       header: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => Navigator.of(context).pop(_wasEdited),
             child: Container(
               width: 42,
               height: 42,
@@ -232,15 +262,18 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                     height: 1.86,
                   ),
                 ),
-                Text(
-                  widget.training.name,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    height: 1.62,
+                GestureDetector(
+                  onLongPress: _handleEditName,
+                  child: Text(
+                    _trainingName,
+                    style: GoogleFonts.quicksand(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      height: 1.62,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

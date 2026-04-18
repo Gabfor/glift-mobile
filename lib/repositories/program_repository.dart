@@ -839,6 +839,34 @@ class ProgramRepository {
     }
   }
 
+  Future<void> updateTrainingName(String trainingId, String name) async {
+    try {
+      await _supabase
+          .from('trainings')
+          .update({'name': name})
+          .eq('id', trainingId);
+
+      // Update local cache
+      final programs = await getLocalPrograms();
+      bool changed = false;
+      for (var p in programs) {
+        for (var i = 0; i < p.trainings.length; i++) {
+          if (p.trainings[i].id == trainingId) {
+            p.trainings[i] = p.trainings[i].copyWith(name: name);
+            changed = true;
+            break;
+          }
+        }
+        if (changed) break;
+      }
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du nom de l\'entraînement: $e');
+    }
+  }
+
   Future<int> getTotalSessionCount(String userId) async {
     try {
       final response = await _supabase
