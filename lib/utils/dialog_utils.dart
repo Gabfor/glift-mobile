@@ -14,7 +14,7 @@ Future<T?> showFadeDialog<T>({
     },
     barrierDismissible: barrierDismissible,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    barrierColor: barrierColor ?? Colors.black54,
+    barrierColor: barrierColor ?? const Color(0x992E3142),
     transitionDuration: transitionDuration,
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return FadeTransition(
