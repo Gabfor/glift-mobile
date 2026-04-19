@@ -631,13 +631,14 @@ class HomePageState extends State<HomePage> {
                     ),
                   );
 
-                  if (result == true) {
-                    // Reload programs to refresh stats (last session, average time)
+                  if (result is Map && result['finished'] == true) {
                     _fetchPrograms();
                     widget.onNavigateToDashboard?.call(
                       programId: program.id,
                       trainingId: training.id,
                     );
+                  } else if (result is Map && result['edited'] == true) {
+                    _fetchPrograms();
                   }
                 },
               );
@@ -711,15 +712,18 @@ class HomePageState extends State<HomePage> {
         ),
       );
 
-      if (result == true) {
+      if (result is Map && result['finished'] == true) {
         _fetchPrograms();
         widget.onNavigateToDashboard?.call(
           programId: program.id,
           trainingId: newTraining.id,
         );
       } else {
-        // Did not edit anything, we clean up the ghost training right away
-        await _programRepository.deleteEmptyGhostTraining(newTraining.id);
+        // Did not edit anything or just edited name/contents (not finished)
+        // If it was a new training that wasn't edited, we clean it up
+        if (result == null) {
+           await _programRepository.deleteEmptyGhostTraining(newTraining.id);
+        }
         _fetchPrograms();
       }
     } catch (e) {

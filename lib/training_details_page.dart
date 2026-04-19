@@ -201,7 +201,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     );
 
     if (result == true && mounted) {
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop({'finished': true});
     }
   }
 
@@ -236,12 +236,18 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GliftPageLayout(
-      resizeToAvoidBottomInset: false, // Prevent resize
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        Navigator.of(context).pop(_wasEdited ? {'edited': true} : null);
+      },
+      child: GliftPageLayout(
+        resizeToAvoidBottomInset: false, // Prevent resize
       header: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(_wasEdited),
+            onTap: () => Navigator.of(context).pop(_wasEdited ? {'edited': true} : null),
             child: Container(
               width: 42,
               height: 42,
@@ -343,6 +349,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             ),
         ],
       ),
+      ),
     );
   }
 
@@ -387,11 +394,12 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           children: group.map((r) {
             final rIndex = _rows!.indexOf(r);
             return _ExerciseCard(
-              key: ValueKey(r.id), // Add key for efficient updates
+              key: ValueKey(r.id),
               row: r,
               onFocus: _handleFocus,
               onUpdate: (reps, weights, efforts) =>
                   _handleRowUpdate(rIndex, reps, weights, efforts),
+              onExerciseUpdate: (name) => _handleExerciseUpdate(rIndex, name),
               onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
               onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
               onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
@@ -410,6 +418,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           onFocus: _handleFocus,
           onUpdate: (reps, weights, efforts) =>
               _handleRowUpdate(rowIndex, reps, weights, efforts),
+          onExerciseUpdate: (name) => _handleExerciseUpdate(rowIndex, name),
           onRestUpdate: (newDuration) =>
               _handleRestUpdate(rowIndex, newDuration),
           onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
@@ -496,6 +505,37 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    }
+  }
+
+  Future<void> _handleExerciseUpdate(int index, String exercise) async {
+    if (_rows == null) return;
+
+    setState(() {
+      final oldRow = _rows![index];
+      _rows![index] = TrainingRow(
+        id: oldRow.id,
+        trainingId: oldRow.trainingId,
+        exercise: exercise,
+        series: oldRow.series,
+        repetitions: oldRow.repetitions,
+        weights: oldRow.weights,
+        efforts: oldRow.efforts,
+        rest: oldRow.rest,
+        note: oldRow.note,
+        material: oldRow.material,
+        videoUrl: oldRow.videoUrl,
+        order: oldRow.order,
+        supersetId: oldRow.supersetId,
+        locked: oldRow.locked,
+      );
+      _wasEdited = true;
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(_rows![index].id, exercise: exercise);
+    } catch (e) {
+      debugPrint('Error updating exercise name: $e');
     }
   }
 
@@ -647,6 +687,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.row,
     required this.onFocus,
     required this.onUpdate,
+    required this.onExerciseUpdate,
     required this.onRestUpdate,
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
@@ -664,6 +705,7 @@ class _ExerciseCard extends StatefulWidget {
     required BuildContext focusContext,
   }) onFocus;
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
+  final Future<void> Function(String) onExerciseUpdate;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
@@ -910,6 +952,21 @@ class _ExerciseCardState extends State<_ExerciseCard>
     );
   }
 
+  Future<void> _showExerciseNameModal() async {
+    final newName = await showFadeDialog<String>(
+      context: context,
+      builder: (context) => EditNameModal(
+        initialName: widget.row.exercise,
+        title: 'Nom de l’exercice',
+        description: 'Vous pouvez modifier le nom de cet exercice ci-dessous.',
+      ),
+    );
+
+    if (newName != null && newName != widget.row.exercise) {
+      widget.onExerciseUpdate(newName);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -928,32 +985,31 @@ class _ExerciseCardState extends State<_ExerciseCard>
         Row(
           children: [
             Expanded(
-              child: hasLink
-                  ? GestureDetector(
-                      onTap: () => widget.row.locked ? _showLockedModal() : _launchVideoUrl(),
-                      child: Text(
-                        widget.row.exercise,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: widget.row.locked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
-                          decoration: widget.row.locked ? null : TextDecoration.underline,
-                          decorationColor: const Color(0xFF7069FA),
-                        ),
-                      ),
-                    )
-                  : Text(
-                      widget.row.exercise,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: widget.row.locked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F),
-                      ),
-                    ),
+              child: GestureDetector(
+                onTap: () {
+                  if (widget.row.locked) {
+                    _showLockedModal();
+                  } else if (hasLink) {
+                    _launchVideoUrl();
+                  } else {
+                    _showExerciseNameModal();
+                  }
+                },
+                child: Text(
+                  widget.row.exercise.isEmpty ? "Nom de l'exercice" : widget.row.exercise,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: widget.row.locked || widget.row.exercise.isEmpty
+                        ? const Color(0xFFD7D4DC)
+                        : (hasLink ? const Color(0xFF7069FA) : const Color(0xFF3A416F)),
+                    decoration: (hasLink && !widget.row.locked) ? TextDecoration.underline : null,
+                    decorationColor: const Color(0xFF7069FA),
+                  ),
+                ),
+              ),
             ),
             if (widget.row.locked) ...[
               const SizedBox(width: 8),
