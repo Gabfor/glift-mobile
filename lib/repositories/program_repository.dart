@@ -867,6 +867,31 @@ class ProgramRepository {
     }
   }
 
+  Future<void> updateProgramName(String programId, String name) async {
+    try {
+      await _supabase
+          .from('programs')
+          .update({'name': name})
+          .eq('id', programId);
+
+      // Update local cache
+      final programs = await getLocalPrograms();
+      bool changed = false;
+      for (var i = 0; i < programs.length; i++) {
+        if (programs[i].id == programId) {
+          programs[i] = programs[i].copyWith(name: name);
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du nom du programme: $e');
+    }
+  }
+
   Future<int> getTotalSessionCount(String userId) async {
     try {
       final response = await _supabase

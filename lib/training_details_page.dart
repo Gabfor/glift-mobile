@@ -11,7 +11,7 @@ import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
 import 'package:flutter/services.dart';
 import 'widgets/unlock_exercise_modal.dart';
-import 'widgets/edit_training_name_modal.dart';
+import 'widgets/edit_name_modal.dart';
 import 'widgets/glift_loader.dart';
 import 'utils/dialog_utils.dart';
 
@@ -210,7 +210,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     final newName = await showFadeDialog<String>(
       context: context,
-      builder: (context) => EditTrainingNameModal(initialName: _trainingName),
+      builder: (context) => EditNameModal(
+        initialName: _trainingName,
+        title: 'Nom de l’entraînement',
+        description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
+      ),
     );
 
     if (newName != null && newName != _trainingName && mounted) {

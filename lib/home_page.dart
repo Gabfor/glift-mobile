@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'utils/dialog_utils.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
@@ -21,6 +22,7 @@ import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/empty_programs_widget.dart';
+import 'widgets/edit_name_modal.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -298,10 +300,40 @@ class HomePageState extends State<HomePage> {
   }
 
   bool _shouldUseFullPageScroll(String? programId) {
-    if (_programs == null || programId == null) return false;
-    final index = _programs!.indexWhere((p) => p.id == programId);
-    if (index == -1) return false;
-    return _programs![index].trainings.length > 4;
+    if (programId == null || _programs == null) return false;
+    final program = _programs!.firstWhere((p) => p.id == programId);
+    return program.dashboard;
+  }
+
+  Future<void> _handleEditProgramName(Program program) async {
+    await HapticFeedback.lightImpact();
+
+    final newName = await showFadeDialog<String>(
+      context: context,
+      builder: (context) => EditNameModal(
+        initialName: program.name,
+        title: 'Nom du programme',
+        description: 'Vous pouvez modifier le nom de ce programme ci-dessous.',
+      ),
+    );
+
+    if (newName != null && newName != program.name && mounted) {
+      try {
+        await _programRepository.updateProgramName(program.id, newName);
+        setState(() {
+          final index = _programs!.indexWhere((p) => p.id == program.id);
+          if (index != -1) {
+            _programs![index] = _programs![index].copyWith(name: newName);
+          }
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de la mise à jour: $e')),
+          );
+        }
+      }
+    }
   }
 
   void _showNavigation() {
@@ -436,14 +468,17 @@ class HomePageState extends State<HomePage> {
                                 shape: BoxShape.circle,
                               ),
                             ),
-                          Text(
-                            program.name,
-                            style: GoogleFonts.quicksand(
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                          GestureDetector(
+                            onLongPress: isSelected ? () => _handleEditProgramName(program) : null,
+                            child: Text(
+                              program.name,
+                              style: GoogleFonts.quicksand(
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.5),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ],

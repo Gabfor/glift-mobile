@@ -43,4 +43,22 @@ class Program {
     'dashboard': dashboard,
     'app': app,
   };
+
+  Program copyWith({
+    String? id,
+    String? name,
+    List<Training>? trainings,
+    int? position,
+    bool? dashboard,
+    bool? app,
+  }) {
+    return Program(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      trainings: trainings ?? this.trainings,
+      position: position ?? this.position,
+      dashboard: dashboard ?? this.dashboard,
+      app: app ?? this.app,
+    );
+  }
 }

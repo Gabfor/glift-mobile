@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../theme/glift_theme.dart';
 
-class EditTrainingNameModal extends StatefulWidget {
+class EditNameModal extends StatefulWidget {
+  final String title;
+  final String description;
   final String initialName;
 
-  const EditTrainingNameModal({
+  const EditNameModal({
     super.key,
+    required this.title,
+    required this.description,
     required this.initialName,
   });
 
   @override
-  State<EditTrainingNameModal> createState() => _EditTrainingNameModalState();
+  State<EditNameModal> createState() => _EditNameModalState();
 }
 
-class _EditTrainingNameModalState extends State<EditTrainingNameModal> {
+class _EditNameModalState extends State<EditNameModal> {
   late TextEditingController _controller;
   bool _isFocused = false;
   final FocusNode _focusNode = FocusNode();
@@ -67,7 +70,7 @@ class _EditTrainingNameModalState extends State<EditTrainingNameModal> {
                 // Title
                 Center(
                   child: Text(
-                    'Nom de l’entraînement',
+                    widget.title,
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -80,7 +83,7 @@ class _EditTrainingNameModalState extends State<EditTrainingNameModal> {
                 
                 // Description Text
                 Text(
-                  'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
+                  widget.description,
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
