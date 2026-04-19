@@ -1039,5 +1039,27 @@ class ProgramRepository {
     
     return training;
   }
+  Future<void> deleteEmptyGhostTraining(String trainingId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      // Delete from DB
+      await _supabase
+          .from('trainings')
+          .delete()
+          .eq('id', trainingId)
+          .eq('user_id', userId);
+
+      // Remove from local cache
+      final localPrograms = await getLocalPrograms();
+      for (final program in localPrograms) {
+        program.trainings.removeWhere((t) => t.id == trainingId);
+      }
+      await saveLocalPrograms(localPrograms);
+    } catch (e) {
+      debugPrint('Error deleting empty ghost training: $e');
+    }
+  }
 }
 

@@ -572,7 +572,7 @@ class HomePageState extends State<HomePage> {
               parent: const _TopBouncingScrollPhysics(),
             ),
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
-            itemCount: program.trainings.length + 1,
+            itemCount: program.trainings.length + 2,
             separatorBuilder: (context, separatorIndex) =>
                 SizedBox(height: separatorIndex == 0 ? 10 : 16),
             itemBuilder: (context, itemIndex) {
@@ -652,30 +652,29 @@ class HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => _handleAddTraining(program),
       child: Container(
-        height: 104,
-        margin: const EdgeInsets.only(top: 10),
+        height: 104, // Matching existing thumbnails height (approx 104 with paddings)
         decoration: BoxDecoration(
-          color: const Color(0xFF7069FA).withOpacity(0.03),
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: CustomPaint(
           painter: _DashedRectPainter(
-            color: const Color(0xFF7069FA).withOpacity(0.3),
-            strokeWidth: 1.5,
+            color: const Color(0xFFA1A5FD), // Matches tailwind border-[#A1A5FD]
+            strokeWidth: 2.0, // Matches border-[2px]
             gap: 6,
           ),
           child: Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.add, color: Color(0xFF7069FA), size: 22),
+                const Icon(Icons.add, color: Color(0xFFA1A5FD), size: 22),
                 const SizedBox(width: 8),
                 Text(
                   'Ajouter un entraînement',
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF7069FA).withOpacity(0.5),
+                    fontWeight: FontWeight.w600, // Matches font-semibold
+                    color: const Color(0xFFA1A5FD),
                   ),
                 ),
               ],
@@ -719,7 +718,8 @@ class HomePageState extends State<HomePage> {
           trainingId: newTraining.id,
         );
       } else {
-        // Just refresh to show the new training in the list
+        // Did not edit anything, we clean up the ghost training right away
+        await _programRepository.deleteEmptyGhostTraining(newTraining.id);
         _fetchPrograms();
       }
     } catch (e) {

@@ -520,6 +520,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         supersetId: oldRow.supersetId,
         locked: oldRow.locked,
       );
+      _wasEdited = true;
     });
 
     try {
@@ -557,6 +558,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         supersetId: oldRow.supersetId,
         locked: oldRow.locked,
       );
+      _wasEdited = true;
     });
 
     try {
@@ -592,6 +594,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         supersetId: oldRow.supersetId,
         locked: oldRow.locked,
       );
+      _wasEdited = true;
     });
 
     try {
@@ -625,6 +628,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         supersetId: oldRow.supersetId,
         locked: oldRow.locked,
       );
+      _wasEdited = true;
     });
 
     try {
