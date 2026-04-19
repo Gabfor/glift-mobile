@@ -129,12 +129,9 @@ class ProgramRepository {
     return programs;
   }
 
-  /// Filters out hidden programs and trainings for the UI.
   List<Program> _filterVisiblePrograms(List<Program> programs) {
-      return programs.map((p) {
+      final processed = programs.map((p) {
           final visibleTrainings = p.trainings.where((t) => t.app).toList();
-          if (visibleTrainings.isEmpty) return null;
-          
           return Program(
               id: p.id,
               name: p.name,
@@ -143,10 +140,15 @@ class ProgramRepository {
               dashboard: p.dashboard,
               app: p.app,
           );
-      })
-      .where((p) => p != null && p.app)
-      .cast<Program>()
-      .toList();
+      }).where((p) => p.app).toList();
+
+      return processed.asMap().entries.where((entry) {
+        final p = entry.value;
+        final isEmpty = p.trainings.isEmpty;
+        final isLast = entry.key == processed.length - 1;
+        
+        return !isEmpty || isLast;
+      }).map((e) => e.value).toList();
   }
 
 
@@ -246,25 +248,30 @@ class ProgramRepository {
   ) async {
     if (data.isEmpty) {
       // Create default program if none exists
-      final newProgram = await _supabase
-          .from('programs')
-          .insert({'name': 'Nom du programme', 'user_id': userId})
-          .select()
-          .single();
+      try {
+        final newProgram = await _supabase
+            .from('programs')
+            .insert({'name': 'Nom du programme', 'user_id': userId, 'position': 0})
+            .select()
+            .single();
 
-      return [
-        Program(
-          id: newProgram['id'],
-          name: newProgram['name'],
-          trainings: [],
-          position: newProgram['position'],
-          dashboard: newProgram['dashboard'] ?? true,
-          app: newProgram['app'] ?? true,
-        ),
-      ];
+        return [
+          Program(
+            id: newProgram['id'].toString(),
+            name: newProgram['name'] as String,
+            trainings: [],
+            position: newProgram['position'] as int? ?? 0,
+            dashboard: newProgram['dashboard'] as bool? ?? true,
+            app: newProgram['app'] as bool? ?? true,
+          ),
+        ];
+      } catch (e) {
+        debugPrint('Error creating first default program: $e');
+        return [];
+      }
     }
 
-    return data
+    var resultList = data
         .map((json) {
           final program = Program.fromJson(json as Map<String, dynamic>);
 
@@ -384,7 +391,53 @@ class ProgramRepository {
           );
         })
         .toList();
+
+    // MIRROR WEB BEHAVIOR: Ensure there is at least one empty program at the end
+    // If no empty program exists, we create one directly in Supabase
+    bool hasEmpty = resultList.any((p) => p.trainings.isEmpty && p.app);
+    
+    if (!hasEmpty) {
+       try {
+           final newProgram = await _supabase
+               .from('programs')
+               .insert({
+                   'name': 'Nom du programme', 
+                   'user_id': userId, 
+                   'position': resultList.length
+               })
+               .select()
+               .single();
+               
+           resultList.add(Program(
+               id: newProgram['id'].toString(),
+               name: newProgram['name'] as String,
+               trainings: [],
+               position: newProgram['position'] as int? ?? resultList.length,
+               dashboard: newProgram['dashboard'] as bool? ?? true,
+               app: newProgram['app'] as bool? ?? true,
+           ));
+       } catch (e) {
+           debugPrint('Error creating empty trailing program: $e');
+           // Fallback for UI so it doesn't break if offline or error
+           resultList.add(Program(
+               id: 'virtual_fallback_${DateTime.now().millisecondsSinceEpoch}',
+               name: 'Nom du programme',
+               trainings: [],
+               position: resultList.length,
+               dashboard: true,
+               app: true,
+           ));
+       }
+    } else {
+       // Move ALL empty programs to the end seamlessly
+       final nonEmpty = resultList.where((p) => p.trainings.isNotEmpty).toList();
+       final emptyPrograms = resultList.where((p) => p.trainings.isEmpty).toList();
+       resultList = [...nonEmpty, ...emptyPrograms];
+    }
+    
+    return resultList;
   }
+
 
   Future<List<TrainingRow>> getTrainingDetails(String trainingId) async {
     try {
@@ -905,4 +958,86 @@ class ProgramRepository {
       return 0;
     }
   }
+
+  Future<Program> createProgram(String name) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) throw Exception('Utilisateur non connecté');
+
+    final response = await _supabase
+        .from('programs')
+        .insert({
+          'name': name,
+          'user_id': userId,
+          'app': true,
+          'dashboard': true,
+          'position': 0, // Should probably be calculated but 0 is fine for now
+        })
+        .select('id, name, position, dashboard, app')
+        .single();
+
+    final program = Program.fromJson({
+      ...response,
+      'trainings': [],
+    });
+    
+    // Update local cache
+    final localPrograms = await getLocalPrograms();
+    localPrograms.add(program);
+    await saveLocalPrograms(localPrograms);
+    
+    return program;
+  }
+
+  Future<Training> createTraining(String programId, [String name = 'Nouveau entraînement']) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) throw Exception('Utilisateur non connecté');
+
+    final response = await _supabase
+        .from('trainings')
+        .insert({
+          'name': name,
+          'program_id': programId,
+          'user_id': userId,
+          'app': true,
+          'dashboard': true,
+          'position': 0,
+        })
+        .select()
+        .single();
+
+    final training = Training.fromJson(response);
+    
+    // Create default training row to match web behavior
+    try {
+      await _supabase.from('training_rows').insert({
+        'training_id': training.id,
+        'user_id': userId,
+        'order': 0,
+        'series': 4,
+        'repetitions': List.generate(4, (_) => ''),
+        'poids': List.generate(4, (_) => ''),
+        'repos': '',
+        'effort': List.generate(4, (_) => 'parfait'),
+        'checked': false,
+        'exercice': '',
+        'materiel': '',
+        'superset_id': null,
+        'link': '',
+        'note': '',
+      });
+    } catch (e) {
+      debugPrint('Error creating default training row: $e');
+    }
+    
+    // Update local cache
+    final localPrograms = await getLocalPrograms();
+    final index = localPrograms.indexWhere((p) => p.id == programId);
+    if (index != -1) {
+      localPrograms[index].trainings.add(training);
+      await saveLocalPrograms(localPrograms);
+    }
+    
+    return training;
+  }
 }
+

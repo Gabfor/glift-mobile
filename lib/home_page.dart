@@ -166,7 +166,6 @@ class HomePageState extends State<HomePage> {
     try {
       await SettingsService.instance.syncFromSupabase();
       final programs = await _programRepository.getPrograms();
-
       if (mounted) {
         setState(() {
           _programs = programs;
@@ -588,6 +587,10 @@ class HomePageState extends State<HomePage> {
                 );
               }
 
+              if (itemIndex == program.trainings.length + 1) {
+                return _buildAddTrainingCard(program);
+              }
+
               final training = program.trainings[itemIndex - 1];
               return _TrainingCard(
                 training: training,
@@ -644,7 +647,91 @@ class HomePageState extends State<HomePage> {
       },
     );
   }
+
+  Widget _buildAddTrainingCard(Program program) {
+    return GestureDetector(
+      onTap: () => _handleAddTraining(program),
+      child: Container(
+        height: 104,
+        margin: const EdgeInsets.only(top: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF7069FA).withOpacity(0.03),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: CustomPaint(
+          painter: _DashedRectPainter(
+            color: const Color(0xFF7069FA).withOpacity(0.3),
+            strokeWidth: 1.5,
+            gap: 6,
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.add, color: Color(0xFF7069FA), size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Ajouter un entraînement',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF7069FA).withOpacity(0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleAddTraining(Program program) async {
+    try {
+      HapticFeedback.mediumImpact();
+
+      final newTraining = await _programRepository.createTraining(program.id);
+      
+      if (!mounted) return;
+
+      final result = await Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => TrainingDetailsPage(
+            training: newTraining,
+            supabase: widget.supabase,
+            authRepository: widget.authRepository,
+            biometricAuthService: widget.biometricAuthService,
+          ),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            const begin = Offset(0, 1);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(position: animation.drive(tween), child: child);
+          },
+        ),
+      );
+
+      if (result == true) {
+        _fetchPrograms();
+        widget.onNavigateToDashboard?.call(
+          programId: program.id,
+          trainingId: newTraining.id,
+        );
+      } else {
+        // Just refresh to show the new training in the list
+        _fetchPrograms();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la création: $e')),
+        );
+      }
+    }
+  }
 }
+
 
 class _TopBouncingScrollPhysics extends BouncingScrollPhysics {
   const _TopBouncingScrollPhysics({super.parent});
@@ -907,3 +994,48 @@ class _RotatingLoaderState extends State<_RotatingLoader>
     );
   }
 }
+
+class _DashedRectPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double gap;
+
+  _DashedRectPainter({
+    required this.color,
+    this.strokeWidth = 1.0,
+    this.gap = 5.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final double radius = 20.0;
+    final RRect rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(strokeWidth / 2, strokeWidth / 2, size.width - strokeWidth, size.height - strokeWidth),
+      Radius.circular(radius),
+    );
+
+    final Path path = Path()..addRRect(rrect);
+
+    double distance = 0.0;
+    for (final pathMetric in path.computeMetrics()) {
+      while (distance < pathMetric.length) {
+        final double end = min(distance + gap, pathMetric.length);
+        canvas.drawPath(
+          pathMetric.extractPath(distance, end),
+          paint,
+        );
+        distance += gap * 2;
+      }
+      distance = 0.0;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
