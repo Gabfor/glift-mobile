@@ -214,6 +214,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         initialName: _trainingName,
         title: 'Nom de l’entraînement',
         description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
+        fieldLabel: 'Nom de l’entraînement',
       ),
     );
 
@@ -399,7 +400,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               onFocus: _handleFocus,
               onUpdate: (reps, weights, efforts) =>
                   _handleRowUpdate(rIndex, reps, weights, efforts),
-              onExerciseUpdate: (name) => _handleExerciseUpdate(rIndex, name),
+              onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
               onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
               onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
               onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
@@ -418,7 +419,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           onFocus: _handleFocus,
           onUpdate: (reps, weights, efforts) =>
               _handleRowUpdate(rowIndex, reps, weights, efforts),
-          onExerciseUpdate: (name) => _handleExerciseUpdate(rowIndex, name),
+          onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
           onRestUpdate: (newDuration) =>
               _handleRestUpdate(rowIndex, newDuration),
           onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
@@ -508,7 +509,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
-  Future<void> _handleExerciseUpdate(int index, String exercise) async {
+  Future<void> _handleExerciseUpdate(int index, String exercise, String? link) async {
     if (_rows == null) return;
 
     setState(() {
@@ -524,7 +525,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         rest: oldRow.rest,
         note: oldRow.note,
         material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
+        videoUrl: link,
         order: oldRow.order,
         supersetId: oldRow.supersetId,
         locked: oldRow.locked,
@@ -533,7 +534,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     });
 
     try {
-      await _programRepository.updateTrainingRow(_rows![index].id, exercise: exercise);
+      await _programRepository.updateTrainingRow(_rows![index].id, exercise: exercise, videoUrl: link, updateVideoUrl: true);
     } catch (e) {
       debugPrint('Error updating exercise name: $e');
     }
@@ -705,7 +706,7 @@ class _ExerciseCard extends StatefulWidget {
     required BuildContext focusContext,
   }) onFocus;
   final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
-  final Future<void> Function(String) onExerciseUpdate;
+  final Future<void> Function(String, String?) onExerciseUpdate;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
@@ -953,17 +954,26 @@ class _ExerciseCardState extends State<_ExerciseCard>
   }
 
   Future<void> _showExerciseNameModal() async {
-    final newName = await showFadeDialog<String>(
+    await HapticFeedback.lightImpact();
+
+    final result = await showFadeDialog<dynamic>(
       context: context,
       builder: (context) => EditNameModal(
         initialName: widget.row.exercise,
         title: 'Nom de l’exercice',
-        description: 'Vous pouvez modifier le nom de cet exercice ci-dessous.',
+        description: 'Vous pouvez modifier le nom de cet exercice et/ou ajouter un lien ci-dessous.',
+        fieldLabel: 'Nom de l’exercice',
+        showLinkField: true,
+        initialLink: widget.row.videoUrl,
       ),
     );
 
-    if (newName != null && newName != widget.row.exercise) {
-      widget.onExerciseUpdate(newName);
+    if (result != null && result is Map) {
+      final newName = result['name'] as String;
+      final newLink = result['link'] as String?;
+      if (newName != widget.row.exercise || newLink != widget.row.videoUrl) {
+        widget.onExerciseUpdate(newName, newLink);
+      }
     }
   }
 
@@ -991,7 +1001,10 @@ class _ExerciseCardState extends State<_ExerciseCard>
                     _showLockedModal();
                   } else if (hasLink) {
                     _launchVideoUrl();
-                  } else {
+                  }
+                },
+                onLongPress: () {
+                  if (!widget.row.locked) {
                     _showExerciseNameModal();
                   }
                 },

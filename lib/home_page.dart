@@ -313,6 +313,7 @@ class HomePageState extends State<HomePage> {
         initialName: program.name,
         title: 'Nom du programme',
         description: 'Vous pouvez modifier le nom de ce programme ci-dessous.',
+        fieldLabel: 'Nom du programme',
       ),
     );
 

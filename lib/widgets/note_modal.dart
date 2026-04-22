@@ -180,7 +180,7 @@ class _NoteModalState extends State<NoteModal> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             
             // Material Section
             if (SettingsService.instance.getMaterialEnabled())
@@ -215,12 +215,11 @@ class _NoteModalState extends State<NoteModal> {
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             Text(
-                              'Matériel : ',
+                              'Matériel',
                               style: GoogleFonts.quicksand(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF3A416F),
-                                height: 1.3,
                               ),
                             ),
                             Expanded(
@@ -309,16 +308,16 @@ class _NoteModalState extends State<NoteModal> {
                 ),
               ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             Text(
               'Notes',
               style: GoogleFonts.quicksand(
-                fontSize: 18,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF3A416F),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
