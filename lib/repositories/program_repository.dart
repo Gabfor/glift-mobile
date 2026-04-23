@@ -552,6 +552,7 @@ class ProgramRepository {
 
   Future<void> updateTrainingRow(
     String rowId, {
+    int? series,
     String? exercise,
     List<String>? repetitions,
     List<String>? weights,
@@ -593,6 +594,7 @@ class ProgramRepository {
       final preparedWeights = _prepareNumericValues(weights);
       final preparedEfforts = _prepareEfforts(efforts);
 
+      if (series != null) updates['series'] = series;
       if (preparedRepetitions != null) updates['repetitions'] = preparedRepetitions;
       if (preparedWeights != null) updates['poids'] = preparedWeights;
       if (preparedEfforts != null) updates['effort'] = preparedEfforts;

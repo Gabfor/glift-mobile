@@ -398,8 +398,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               key: ValueKey(r.id),
               row: r,
               onFocus: _handleFocus,
-              onUpdate: (reps, weights, efforts) =>
-                  _handleRowUpdate(rIndex, reps, weights, efforts),
+              onUpdate: (series, reps, weights, efforts) =>
+                  _handleRowUpdate(rIndex, series, reps, weights, efforts),
               onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
               onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
               onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
@@ -417,8 +417,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           key: ValueKey(row.id),
           row: row,
           onFocus: _handleFocus,
-          onUpdate: (reps, weights, efforts) =>
-              _handleRowUpdate(rowIndex, reps, weights, efforts),
+          onUpdate: (series, reps, weights, efforts) =>
+              _handleRowUpdate(rowIndex, series, reps, weights, efforts),
           onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
           onRestUpdate: (newDuration) =>
               _handleRestUpdate(rowIndex, newDuration),
@@ -575,6 +575,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   Future<void> _handleRowUpdate(
     int index,
+    int series,
     List<String> repetitions,
     List<String> weights,
     List<String> efforts,
@@ -587,7 +588,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         id: oldRow.id,
         trainingId: oldRow.trainingId,
         exercise: oldRow.exercise,
-        series: oldRow.series,
+        series: series,
         repetitions: repetitions,
         weights: weights,
         efforts: efforts,
@@ -605,6 +606,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     try {
       await _programRepository.updateTrainingRow(
         _rows![index].id,
+        series: series,
         repetitions: repetitions,
         weights: weights,
         efforts: efforts,
@@ -705,7 +707,7 @@ class _ExerciseCard extends StatefulWidget {
     required VoidCallback onClose,
     required BuildContext focusContext,
   }) onFocus;
-  final Future<void> Function(List<String>, List<String>, List<String>) onUpdate;
+  final Future<void> Function(int, List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(String, String?) onExerciseUpdate;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
@@ -879,7 +881,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
     });
 
     try {
-      await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+      await widget.onUpdate(widget.row.series, _repetitions, _weights, _effortsAsStrings());
     } catch (e) {
       debugPrint('Error saving input: $e');
     }
@@ -903,7 +905,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
     });
 
     try {
-      await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+      await widget.onUpdate(widget.row.series, _repetitions, _weights, _effortsAsStrings());
     } catch (e) {
       debugPrint('Error saving backspace: $e');
     }
@@ -915,7 +917,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
       _activeWeightIndex = null;
     });
 
-    await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    await widget.onUpdate(widget.row.series, _repetitions, _weights, _effortsAsStrings());
   }
 
   Future<void> _launchVideoUrl() async {
@@ -975,6 +977,53 @@ class _ExerciseCardState extends State<_ExerciseCard>
         widget.onExerciseUpdate(newName, newLink);
       }
     }
+  }
+
+  Future<void> _handleAddSet() async {
+    await HapticFeedback.lightImpact();
+    if (widget.row.locked) {
+      _showLockedModal();
+      return;
+    }
+    
+    if (widget.row.series >= 6) return;
+
+    final newSeries = widget.row.series + 1;
+    final newReps = List<String>.from(_repetitions)..add('-');
+    final newWeights = List<String>.from(_weights)..add('-');
+    final newEffortsStr = _effortsAsStrings()..add('parfait');
+
+    _repetitions = newReps;
+    _weights = newWeights;
+    _effortStates.add(_EffortState.neutral);
+
+    await widget.onUpdate(newSeries, newReps, newWeights, newEffortsStr);
+  }
+
+  Future<void> _handleRemoveSet() async {
+    await HapticFeedback.lightImpact();
+    if (widget.row.locked) {
+      _showLockedModal();
+      return;
+    }
+
+    if (widget.row.series <= 1) return;
+
+    final newSeries = widget.row.series - 1;
+    final newReps = List<String>.from(_repetitions);
+    if (newReps.isNotEmpty) newReps.removeLast();
+    
+    final newWeights = List<String>.from(_weights);
+    if (newWeights.isNotEmpty) newWeights.removeLast();
+    
+    final newEffortsStr = _effortsAsStrings();
+    if (newEffortsStr.isNotEmpty) newEffortsStr.removeLast();
+
+    _repetitions = newReps;
+    _weights = newWeights;
+    if (_effortStates.isNotEmpty) _effortStates.removeLast();
+
+    await widget.onUpdate(newSeries, newReps, newWeights, newEffortsStr);
   }
 
   @override
@@ -1231,12 +1280,35 @@ class _ExerciseCardState extends State<_ExerciseCard>
             ),
           );
         }),
+        const SizedBox(height: 5),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: widget.row.series > 1 && !widget.row.locked ? _handleRemoveSet : null,
+              child: SvgPicture.asset(
+                (widget.row.series > 1 && !widget.row.locked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg',
+                width: 24,
+                height: 24,
+              ),
+            ),
+            const SizedBox(width: 20),
+            GestureDetector(
+              onTap: (SettingsService.instance.getSubscriptionPlan() != 'premium' || widget.row.series >= 6 || widget.row.locked) ? null : _handleAddSet,
+              child: SvgPicture.asset(
+                (SettingsService.instance.getSubscriptionPlan() != 'premium' || widget.row.series >= 6 || widget.row.locked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
+                width: 24,
+                height: 24,
+              ),
+            ),
+          ],
+        ),
       ],
     );
 
     if (widget.showDecoration) {
       return Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
@@ -1247,7 +1319,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
       child: content,
     );
   }
@@ -1262,7 +1334,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
       };
     });
 
-    await widget.onUpdate(_repetitions, _weights, _effortsAsStrings());
+    await widget.onUpdate(widget.row.series, _repetitions, _weights, _effortsAsStrings());
   }
 
   _EffortVisuals _visualsForState(_EffortState state) {
