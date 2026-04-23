@@ -205,6 +205,30 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
+  Future<void> _handleAddExercise() async {
+    await HapticFeedback.lightImpact();
+    final userPlan = SettingsService.instance.getSubscriptionPlan();
+    final isPremium = userPlan == 'premium';
+
+    if (!isPremium && _rows != null && _rows!.length >= 10) {
+      showFadeDialog(
+        context: context,
+        builder: (context) => const UnlockExerciseModal(),
+      );
+      return;
+    }
+
+    try {
+      final newRow = await _programRepository.addTrainingRow(widget.training.id, _rows?.length ?? 0);
+      setState(() {
+        _rows!.add(newRow);
+        _wasEdited = true;
+      });
+    } catch (e) {
+      debugPrint('Error adding exercise: $e');
+    }
+  }
+
   Future<void> _handleEditName() async {
     await HapticFeedback.lightImpact();
 
@@ -304,16 +328,18 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(
-              height: 150,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Color(0x8C2E3142),
-                    Color(0x002E3142),
-                  ],
+            child: IgnorePointer(
+              child: Container(
+                height: 150,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Color(0x8C2E3142),
+                      Color(0x002E3142),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -432,6 +458,33 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         i++;
       }
     }
+
+    items.add(
+      GestureDetector(
+        onTap: _handleAddExercise,
+        child: CustomPaint(
+          foregroundPainter: DashedBorderPainter(
+            color: const Color(0xFFA1A5FD),
+          ),
+          child: Container(
+            height: 60,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Text(
+              '+ Ajouter un exercice',
+              style: GoogleFonts.quicksand(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFA1A5FD),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
@@ -1294,9 +1347,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
             ),
             const SizedBox(width: 20),
             GestureDetector(
-              onTap: (SettingsService.instance.getSubscriptionPlan() != 'premium' || widget.row.series >= 6 || widget.row.locked) ? null : _handleAddSet,
+              onTap: (widget.row.series >= 6 || widget.row.locked) ? null : _handleAddSet,
               child: SvgPicture.asset(
-                (SettingsService.instance.getSubscriptionPlan() != 'premium' || widget.row.series >= 6 || widget.row.locked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
+                (widget.row.series >= 6 || widget.row.locked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
                 width: 24,
                 height: 24,
               ),

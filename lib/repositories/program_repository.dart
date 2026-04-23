@@ -550,6 +550,38 @@ class ProgramRepository {
     return updatedRows;
   }
 
+  Future<TrainingRow> addTrainingRow(String trainingId, int order) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) throw Exception('Utilisateur non connecté');
+
+    try {
+      final response = await _supabase
+          .from('training_rows')
+          .insert({
+            'training_id': trainingId,
+            'user_id': userId,
+            'order': order,
+            'series': 4,
+            'repetitions': List.generate(4, (_) => ''),
+            'poids': List.generate(4, (_) => ''),
+            'repos': '',
+            'effort': List.generate(4, (_) => 'parfait'),
+            'checked': false,
+            'exercice': '',
+            'materiel': '',
+            'superset_id': null,
+            'link': '',
+            'note': '',
+          })
+          .select()
+          .single();
+
+      return TrainingRow.fromJson(response);
+    } catch (e) {
+      throw Exception('Erreur lors de l\'ajout de l\'exercice: $e');
+    }
+  }
+
   Future<void> updateTrainingRow(
     String rowId, {
     int? series,
