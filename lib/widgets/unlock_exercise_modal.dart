@@ -4,7 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UnlockExerciseModal extends StatelessWidget {
-  const UnlockExerciseModal({super.key});
+  final String title;
+  final String description;
+
+  const UnlockExerciseModal({
+    super.key,
+    this.title = 'Exercice bloqué',
+    this.description = 'Cet exercice est bloqué car votre formule d’abonnement actuelle vous limite à 10 exercices utilisables.',
+  });
 
   Future<void> _launchURL() async {
     final Uri url = Uri.parse('https://glift.io/compte#mon-abonnement');
@@ -42,7 +49,7 @@ class UnlockExerciseModal extends StatelessWidget {
                 // Title
                 Center(
                   child: Text(
-                    'Exercice bloqué',
+                    title,
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -55,7 +62,7 @@ class UnlockExerciseModal extends StatelessWidget {
 
                 // Warning Text 1
                 Text(
-                  'Cet exercice est bloqué car votre formule d’abonnement actuelle vous limite à 10 exercices utilisables.',
+                  description,
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

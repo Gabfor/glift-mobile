@@ -213,7 +213,10 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     if (!isPremium && _rows != null && _rows!.length >= 10) {
       showFadeDialog(
         context: context,
-        builder: (context) => const UnlockExerciseModal(),
+        builder: (context) => const UnlockExerciseModal(
+          title: "Ajout d'exercice impossible",
+          description: "Votre formule d’abonnement actuelle vous limite à 10 exercices utilisables.",
+        ),
       );
       return;
     }
@@ -459,12 +462,16 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       }
     }
 
+    final isPremium = SettingsService.instance.getSubscriptionPlan() == 'premium';
+    final isAddExerciseLocked = !isPremium && _rows != null && _rows!.length >= 10;
+    final addExerciseColor = isAddExerciseLocked ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
+
     items.add(
       GestureDetector(
         onTap: _handleAddExercise,
         child: CustomPaint(
           foregroundPainter: DashedBorderPainter(
-            color: const Color(0xFFA1A5FD),
+            color: addExerciseColor,
           ),
           child: Container(
             height: 60,
@@ -478,7 +485,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               style: GoogleFonts.quicksand(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFFA1A5FD),
+                color: addExerciseColor,
               ),
             ),
           ),
