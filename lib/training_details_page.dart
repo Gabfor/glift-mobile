@@ -483,6 +483,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                 showDecoration: false,
                 showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
                 activeFocusId: _activeFocusId,
+                isLast: _rows!.length == 1,
               );
             }).toList(),
           ));
@@ -505,6 +506,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             showDecoration: true,
             showTimer: SettingsService.instance.getShowRepos(),
             activeFocusId: _activeFocusId,
+            isLast: _rows!.length == 1,
           ));
           i++;
         }
@@ -807,9 +809,11 @@ class _ExerciseCard extends StatefulWidget {
     required this.activeFocusId,
     this.showDecoration = true,
     this.showTimer = true,
+    this.isLast = false,
   });
 
   final TrainingRow row;
+  final bool isLast;
   final Function({
     required ValueChanged<String> onInput,
     required VoidCallback onBackspace,
@@ -1078,6 +1082,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
         fieldLabel: 'Nom de l’exercice',
         showLinkField: true,
         initialLink: widget.row.videoUrl,
+        isDeleteEnabled: !(widget.isLast && (widget.row.exercise == null || widget.row.exercise!.isEmpty)),
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();
@@ -1284,9 +1289,6 @@ class _ExerciseCardState extends State<_ExerciseCard>
 
           final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
           final textColor = widget.row.locked ? const Color(0xFFD7D4DC) : visuals.textColor;
-          final borderColor = widget.row.locked ? const Color(0xFFECE9F1) : (
-             (index == _activeRepsIndex || index == _activeWeightIndex) ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1)
-          );
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -1328,7 +1330,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: borderColor,
+                          color: (!widget.row.locked && _activeRepsIndex == index) ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1),
                           width: (!widget.row.locked && _activeRepsIndex == index) ? 2 : 1,
                         ),
                       ),
@@ -1355,7 +1357,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: borderColor,
+                          color: (!widget.row.locked && _activeWeightIndex == index) ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1),
                           width: (!widget.row.locked && _activeWeightIndex == index) ? 2 : 1,
                         ),
                       ),

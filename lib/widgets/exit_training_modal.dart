@@ -44,7 +44,7 @@ class ExitTrainingModal extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Warning Text 1
                 Text(

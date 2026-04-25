@@ -20,7 +20,10 @@ class EditNameModal extends StatefulWidget {
     this.showLinkField = false,
     this.initialLink,
     this.onDelete,
+    this.isDeleteEnabled = true,
   });
+
+  final bool isDeleteEnabled;
 
   @override
   State<EditNameModal> createState() => _EditNameModalState();
@@ -105,7 +108,7 @@ class _EditNameModalState extends State<EditNameModal> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Description Text
                 Center(
@@ -410,18 +413,17 @@ class _EditNameModalState extends State<EditNameModal> {
             ),
           ),
           
-          // Delete Button (Top Left)
           if (widget.onDelete != null)
             Positioned(
               left: 8,
               top: 8,
               child: IconButton(
                 icon: SvgPicture.asset(
-                  'assets/icons/delete_red.svg',
+                  widget.isDeleteEnabled ? 'assets/icons/delete_red.svg' : 'assets/icons/delete_grey.svg',
                   width: 25,
                   height: 25,
                 ),
-                onPressed: widget.onDelete,
+                onPressed: widget.isDeleteEnabled ? widget.onDelete : null,
                 padding: const EdgeInsets.all(8),
                 constraints: const BoxConstraints(),
                 style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),

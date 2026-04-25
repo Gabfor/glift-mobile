@@ -50,7 +50,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Question Text
                 Text(
