@@ -1027,7 +1027,7 @@ class ProgramRepository {
     return program;
   }
 
-  Future<Training> createTraining(String programId, [String name = 'Nouveau entraînement']) async {
+  Future<Training> createTraining(String programId, [String name = "Nom de l'entraînement"]) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) throw Exception('Utilisateur non connecté');
 
@@ -1099,6 +1099,19 @@ class ProgramRepository {
     } catch (e) {
       debugPrint('Error deleting empty ghost training: $e');
     }
+  }
+
+  Future<void> deleteProgram(String programId) async {
+    await _supabase.from('trainings').delete().eq('program_id', programId);
+    await _supabase.from('programs').delete().eq('id', programId);
+  }
+
+  Future<void> deleteTraining(String trainingId) async {
+    await _supabase.from('trainings').delete().eq('id', trainingId);
+  }
+
+  Future<void> deleteTrainingRow(String rowId) async {
+    await _supabase.from('training_rows').delete().eq('id', rowId);
   }
 }
 

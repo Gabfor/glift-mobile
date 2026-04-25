@@ -23,6 +23,7 @@ import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/empty_programs_widget.dart';
 import 'widgets/edit_name_modal.dart';
+import 'widgets/delete_confirmation_modal.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -314,6 +315,22 @@ class HomePageState extends State<HomePage> {
         title: 'Nom du programme',
         description: 'Vous pouvez modifier le nom de ce programme ci-dessous.',
         fieldLabel: 'Nom du programme',
+        onDelete: () async {
+          // Close EditNameModal first
+          Navigator.of(context).pop();
+          
+          final confirm = await showFadeDialog<bool>(
+            context: context,
+            builder: (context) => const DeleteConfirmationModal(
+              question: 'Voulez-vous vraiment supprimer ce programme ?',
+              objectName: 'le programme',
+            ),
+          );
+          if (confirm == true) {
+            await _programRepository.deleteProgram(program.id);
+            _fetchPrograms();
+          }
+        },
       ),
     );
 
@@ -326,6 +343,49 @@ class HomePageState extends State<HomePage> {
             _programs![index] = _programs![index].copyWith(name: newName);
           }
         });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de la mise à jour: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _handleEditTrainingName(Training training) async {
+    await HapticFeedback.lightImpact();
+
+    final newName = await showFadeDialog<String>(
+      context: context,
+      builder: (context) => EditNameModal(
+        initialName: training.name,
+        title: 'Nom de l’entraînement',
+        description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
+        fieldLabel: 'Nom de l’entraînement',
+        onDelete: () async {
+          // Close EditNameModal first
+          Navigator.of(context).pop();
+
+          final confirm = await showFadeDialog<bool>(
+            context: context,
+            builder: (context) => const DeleteConfirmationModal(
+              question: 'Voulez-vous vraiment supprimer cet entraînement ?',
+              objectName: 'l’entraînement',
+            ),
+          );
+          if (confirm == true) {
+            await _programRepository.deleteTraining(training.id);
+            _fetchPrograms();
+          }
+        },
+      ),
+    );
+
+    if (newName != null && newName != training.name && mounted) {
+      try {
+        await _programRepository.updateTrainingName(training.id, newName);
+        _fetchPrograms();
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -596,6 +656,7 @@ class HomePageState extends State<HomePage> {
               return _TrainingCard(
                 training: training,
                 syncStatus: _syncStatus,
+                onLongPress: () => _handleEditTrainingName(training),
                 onTap: () async {
                   if (training.locked) {
                      await showFadeDialog(
@@ -769,11 +830,13 @@ class _TrainingCard extends StatelessWidget {
   const _TrainingCard({
     required this.training,
     required this.onTap,
+    this.onLongPress,
     required this.syncStatus,
   });
 
   final Training training;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final SyncStatus syncStatus;
 
   @override
@@ -799,6 +862,7 @@ class _TrainingCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

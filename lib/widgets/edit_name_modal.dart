@@ -9,6 +9,7 @@ class EditNameModal extends StatefulWidget {
   final String? fieldLabel;
   final bool showLinkField;
   final String? initialLink;
+  final VoidCallback? onDelete;
 
   const EditNameModal({
     super.key,
@@ -18,6 +19,7 @@ class EditNameModal extends StatefulWidget {
     this.fieldLabel,
     this.showLinkField = false,
     this.initialLink,
+    this.onDelete,
   });
 
   @override
@@ -407,6 +409,24 @@ class _EditNameModalState extends State<EditNameModal> {
               style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
             ),
           ),
+          
+          // Delete Button (Top Left)
+          if (widget.onDelete != null)
+            Positioned(
+              left: 8,
+              top: 8,
+              child: IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/delete_red.svg',
+                  width: 25,
+                  height: 25,
+                ),
+                onPressed: widget.onDelete,
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+                style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+              ),
+            ),
         ],
       ),
     );

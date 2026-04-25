@@ -12,6 +12,7 @@ import '../repositories/program_repository.dart';
 import 'package:flutter/services.dart';
 import 'widgets/unlock_exercise_modal.dart';
 import 'widgets/edit_name_modal.dart';
+import 'widgets/delete_confirmation_modal.dart';
 import 'widgets/glift_loader.dart';
 import 'utils/dialog_utils.dart';
 
@@ -232,6 +233,30 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
+  Future<void> _handleDeleteRow(int index) async {
+    if (_rows == null || index < 0 || index >= _rows!.length) return;
+
+    final rowToDelete = _rows![index];
+    try {
+      await _programRepository.deleteTrainingRow(rowToDelete.id);
+      setState(() {
+        _rows!.removeAt(index);
+        _wasEdited = true;
+      });
+
+      // If no rows left, add a new empty one automatically
+      if (_rows!.isEmpty) {
+        await _handleAddExercise();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la suppression: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _handleEditName() async {
     await HapticFeedback.lightImpact();
 
@@ -242,6 +267,22 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         title: 'Nom de l’entraînement',
         description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
+        onDelete: () async {
+          // Close EditNameModal first
+          Navigator.of(context).pop();
+
+          final confirm = await showFadeDialog<bool>(
+            context: context,
+            builder: (context) => const DeleteConfirmationModal(
+              question: 'Voulez-vous vraiment supprimer cet entraînement ?',
+              objectName: 'l’entraînement',
+            ),
+          );
+          if (confirm == true) {
+            await _programRepository.deleteTraining(widget.training.id);
+            if (mounted) Navigator.of(context).pop({'edited': true});
+          }
+        },
       ),
     );
 
@@ -394,71 +435,79 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       return Center(child: Text('Erreur: $_error', style: const TextStyle(color: Colors.red)));
     }
 
+    final items = <Widget>[];
+    
     if (_rows == null || _rows!.isEmpty) {
-      return Center(
-        child: Text(
-          'Aucun exercice dans cet entraînement',
-          style: GoogleFonts.quicksand(
-            fontSize: 16,
-            color: GliftTheme.title,
+      items.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: Text(
+              'Aucun exercice dans cet entraînement',
+              style: GoogleFonts.quicksand(
+                fontSize: 16,
+                color: GliftTheme.title,
+              ),
+            ),
           ),
         ),
       );
-    }
-    
-    final items = <Widget>[];
-    int i = 0;
-    while (i < _rows!.length) {
-      final row = _rows![i];
-      if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
-        final group = <TrainingRow>[row];
-        int j = i + 1;
-        while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {
-          group.add(_rows![j]);
-          j++;
-        }
+    } else {
+      int i = 0;
+      while (i < _rows!.length) {
+        final row = _rows![i];
+        if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
+          final group = <TrainingRow>[row];
+          int j = i + 1;
+          while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {
+            group.add(_rows![j]);
+            j++;
+          }
 
-        final isLocked = group.any((r) => r.locked);
-        items.add(_SupersetGroupContainer(
-          isLocked: isLocked,
-          children: group.map((r) {
-            final rIndex = _rows!.indexOf(r);
-            return _ExerciseCard(
-              key: ValueKey(r.id),
-              row: r,
-              onFocus: _handleFocus,
-              onUpdate: (series, reps, weights, efforts) =>
-                  _handleRowUpdate(rIndex, series, reps, weights, efforts),
-              onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
-              onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
-              onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
-              onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
-              showDecoration: false,
-              showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
-              activeFocusId: _activeFocusId,
-            );
-          }).toList(),
-        ));
-        i = j;
-      } else {
-        final rowIndex = i;
-        items.add(_ExerciseCard(
-          key: ValueKey(row.id),
-          row: row,
-          onFocus: _handleFocus,
-          onUpdate: (series, reps, weights, efforts) =>
-              _handleRowUpdate(rowIndex, series, reps, weights, efforts),
-          onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
-          onRestUpdate: (newDuration) =>
-              _handleRestUpdate(rowIndex, newDuration),
-          onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
-          onMaterialUpdate: (material) =>
-              _handleMaterialUpdate(rowIndex, material),
-          showDecoration: true,
-          showTimer: SettingsService.instance.getShowRepos(),
-          activeFocusId: _activeFocusId,
-        ));
-        i++;
+          final isLocked = group.any((r) => r.locked);
+          items.add(_SupersetGroupContainer(
+            isLocked: isLocked,
+            children: group.map<Widget>((r) {
+              final rIndex = _rows!.indexOf(r);
+              return _ExerciseCard(
+                key: ValueKey(r.id),
+                row: r,
+                onFocus: _handleFocus,
+                onUpdate: (series, reps, weights, efforts) =>
+                    _handleRowUpdate(rIndex, series, reps, weights, efforts),
+                onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
+                onDelete: () => _handleDeleteRow(rIndex),
+                onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
+                onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
+                onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+                showDecoration: false,
+                showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+                activeFocusId: _activeFocusId,
+              );
+            }).toList(),
+          ));
+          i = j;
+        } else {
+          final rowIndex = i;
+          items.add(_ExerciseCard(
+            key: ValueKey(row.id),
+            row: row,
+            onFocus: _handleFocus,
+            onUpdate: (series, reps, weights, efforts) =>
+                _handleRowUpdate(rowIndex, series, reps, weights, efforts),
+            onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
+            onDelete: () => _handleDeleteRow(rowIndex),
+            onRestUpdate: (newDuration) =>
+                _handleRestUpdate(rowIndex, newDuration),
+            onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+            onMaterialUpdate: (material) =>
+                _handleMaterialUpdate(rowIndex, material),
+            showDecoration: true,
+            showTimer: SettingsService.instance.getShowRepos(),
+            activeFocusId: _activeFocusId,
+          ));
+          i++;
+        }
       }
     }
 
@@ -751,6 +800,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.onFocus,
     required this.onUpdate,
     required this.onExerciseUpdate,
+    required this.onDelete,
     required this.onRestUpdate,
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
@@ -769,6 +819,7 @@ class _ExerciseCard extends StatefulWidget {
   }) onFocus;
   final Future<void> Function(int, List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(String, String?) onExerciseUpdate;
+  final Future<void> Function() onDelete;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
@@ -1027,6 +1078,21 @@ class _ExerciseCardState extends State<_ExerciseCard>
         fieldLabel: 'Nom de l’exercice',
         showLinkField: true,
         initialLink: widget.row.videoUrl,
+        onDelete: () async {
+          // Close EditNameModal first
+          Navigator.of(context).pop();
+
+          final confirm = await showFadeDialog<bool>(
+            context: context,
+            builder: (context) => const DeleteConfirmationModal(
+              question: 'Voulez-vous vraiment supprimer cet exercice ?',
+              objectName: 'l’exercice',
+            ),
+          );
+          if (confirm == true) {
+            widget.onDelete();
+          }
+        },
       ),
     );
 
