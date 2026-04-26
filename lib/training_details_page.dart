@@ -465,8 +465,13 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           }
 
           final isLocked = group.any((r) => r.locked);
+          final groupIndices = group.map((r) => _rows!.indexOf(r)).toList();
+          
           items.add(_SupersetGroupContainer(
             isLocked: isLocked,
+            series: group.first.series,
+            onAddSet: () => _handleSupersetSetsUpdate(groupIndices, true),
+            onRemoveSet: () => _handleSupersetSetsUpdate(groupIndices, false),
             children: group.map<Widget>((r) {
               final rIndex = _rows!.indexOf(r);
               return _ExerciseCard(
@@ -480,7 +485,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                 onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
                 onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
                 onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+                onDeleteSuperset: (supersetId) => _handleDeleteSuperset(supersetId),
                 showDecoration: false,
+                hideSetControls: true, // Hide individual set controls in superset
                 showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
                 activeFocusId: _activeFocusId,
                 isLast: _rows!.length == 1,
@@ -503,6 +510,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
             onMaterialUpdate: (material) =>
                 _handleMaterialUpdate(rowIndex, material),
+            onDeleteSuperset: (_) async {}, // No-op for non-superset
             showDecoration: true,
             showTimer: SettingsService.instance.getShowRepos(),
             activeFocusId: _activeFocusId,
@@ -793,6 +801,105 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       });
     }
   }
+
+  Future<void> _handleSupersetSetsUpdate(List<int> rowIndexes, bool isAddition) async {
+    await HapticFeedback.lightImpact();
+    if (_rows == null) return;
+
+    final updatedRows = List<TrainingRow>.from(_rows!);
+    final List<Future> updates = [];
+
+    for (final index in rowIndexes) {
+      final row = updatedRows[index];
+      if (row.locked) continue;
+
+      int newSeries = row.series;
+      List<String> newReps = List<String>.from(row.repetitions);
+      List<String> newWeights = List<String>.from(row.weights);
+      List<String> newEfforts = List<String>.from(row.efforts);
+
+      if (isAddition) {
+        if (newSeries >= 6) continue;
+        newSeries++;
+        newReps.add('-');
+        newWeights.add('-');
+        newEfforts.add('parfait');
+      } else {
+        if (newSeries <= 1) continue;
+        newSeries--;
+        if (newReps.isNotEmpty) newReps.removeLast();
+        if (newWeights.isNotEmpty) newWeights.removeLast();
+        if (newEfforts.isNotEmpty) newEfforts.removeLast();
+      }
+
+      updatedRows[index] = TrainingRow(
+        id: row.id,
+        trainingId: row.trainingId,
+        exercise: row.exercise,
+        series: newSeries,
+        repetitions: newReps,
+        weights: newWeights,
+        efforts: newEfforts,
+        rest: row.rest,
+        note: row.note,
+        material: row.material,
+        videoUrl: row.videoUrl,
+        order: row.order,
+        supersetId: row.supersetId,
+        locked: row.locked,
+      );
+
+      updates.add(_programRepository.updateTrainingRow(
+        row.id,
+        series: newSeries,
+        repetitions: newReps,
+        weights: newWeights,
+        efforts: newEfforts,
+      ));
+    }
+
+    setState(() {
+      _rows = updatedRows;
+      _wasEdited = true;
+    });
+
+    try {
+      await Future.wait(updates);
+    } catch (e) {
+      debugPrint('Error updating superset sets: $e');
+    }
+  }
+
+  Future<void> _handleDeleteSuperset(String supersetId) async {
+    if (_rows == null) return;
+
+    // Filter rows that belong to this superset
+    final rowsToDelete = _rows!.where((r) => r.supersetId == supersetId).toList();
+    
+    try {
+      // Delete from repository
+      for (final row in rowsToDelete) {
+        await _programRepository.deleteTrainingRow(row.id);
+      }
+      
+      setState(() {
+        // Remove from local state
+        _rows!.removeWhere((r) => r.supersetId == supersetId);
+        _wasEdited = true;
+      });
+
+      // If no rows left, add a new empty one automatically
+      if (_rows!.isEmpty) {
+        await _handleAddExercise();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la suppression du superset: $e')),
+        );
+      }
+    }
+  }
 }
 
 class _ExerciseCard extends StatefulWidget {
@@ -806,14 +913,17 @@ class _ExerciseCard extends StatefulWidget {
     required this.onRestUpdate,
     required this.onNoteUpdate,
     required this.onMaterialUpdate,
+    required this.onDeleteSuperset,
     required this.activeFocusId,
     this.showDecoration = true,
     this.showTimer = true,
     this.isLast = false,
+    this.hideSetControls = false,
   });
 
   final TrainingRow row;
   final bool isLast;
+  final bool hideSetControls;
   final Function({
     required ValueChanged<String> onInput,
     required VoidCallback onBackspace,
@@ -827,6 +937,7 @@ class _ExerciseCard extends StatefulWidget {
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
   final Future<void> Function(String) onMaterialUpdate;
+  final Future<void> Function(String) onDeleteSuperset;
   final bool showDecoration;
 
   final bool showTimer;
@@ -1087,15 +1198,23 @@ class _ExerciseCardState extends State<_ExerciseCard>
           // Close EditNameModal first
           Navigator.of(context).pop();
 
+          final isSuperset = widget.row.supersetId != null && SettingsService.instance.getShowSuperset();
+          
           final confirm = await showFadeDialog<bool>(
             context: context,
-            builder: (context) => const DeleteConfirmationModal(
-              question: 'Voulez-vous vraiment supprimer cet exercice ?',
-              objectName: 'l’exercice',
+            builder: (context) => DeleteConfirmationModal(
+              question: isSuperset 
+                  ? 'Voulez-vous vraiment supprimer ces exercices en superset ?'
+                  : 'Voulez-vous vraiment supprimer cet exercice ?',
+              objectName: isSuperset ? 'le superset' : 'l’exercice',
             ),
           );
           if (confirm == true) {
-            widget.onDelete();
+            if (isSuperset) {
+              widget.onDeleteSuperset(widget.row.supersetId!);
+            } else {
+              widget.onDelete();
+            }
           }
         },
       ),
@@ -1408,29 +1527,31 @@ class _ExerciseCardState extends State<_ExerciseCard>
             ),
           );
         }),
-        const SizedBox(height: 5),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: widget.row.series > 1 && !widget.row.locked ? _handleRemoveSet : null,
-              child: SvgPicture.asset(
-                (widget.row.series > 1 && !widget.row.locked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg',
-                width: 24,
-                height: 24,
+        if (!widget.hideSetControls) ...[
+          const SizedBox(height: 5),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: widget.row.series > 1 && !widget.row.locked ? _handleRemoveSet : null,
+                child: SvgPicture.asset(
+                  (widget.row.series > 1 && !widget.row.locked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg',
+                  width: 24,
+                  height: 24,
+                ),
               ),
-            ),
-            const SizedBox(width: 20),
-            GestureDetector(
-              onTap: (widget.row.series >= 6 || widget.row.locked) ? null : _handleAddSet,
-              child: SvgPicture.asset(
-                (widget.row.series >= 6 || widget.row.locked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
-                width: 24,
-                height: 24,
+              const SizedBox(width: 20),
+              GestureDetector(
+                onTap: (widget.row.series >= 6 || widget.row.locked) ? null : _handleAddSet,
+                child: SvgPicture.asset(
+                  (widget.row.series >= 6 || widget.row.locked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
+                  width: 24,
+                  height: 24,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     );
 
@@ -1633,8 +1754,17 @@ class _GridHeader extends StatelessWidget {
 class _SupersetGroupContainer extends StatelessWidget {
   final List<Widget> children;
   final bool isLocked;
+  final VoidCallback? onAddSet;
+  final VoidCallback? onRemoveSet;
+  final int series;
 
-  const _SupersetGroupContainer({required this.children, this.isLocked = false});
+  const _SupersetGroupContainer({
+    required this.children,
+    this.isLocked = false,
+    this.onAddSet,
+    this.onRemoveSet,
+    required this.series,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1648,7 +1778,33 @@ class _SupersetGroupContainer extends StatelessWidget {
           color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
         ),
         child: Column(
-          children: children,
+          children: [
+            ...children,
+            const SizedBox(height: 5),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: (series > 1 && !isLocked) ? onRemoveSet : null,
+                  child: SvgPicture.asset(
+                    (series > 1 && !isLocked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                GestureDetector(
+                  onTap: (series >= 6 || isLocked) ? null : onAddSet,
+                  child: SvgPicture.asset(
+                    (series >= 6 || isLocked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+          ],
         ),
       ),
     );

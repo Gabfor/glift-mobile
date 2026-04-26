@@ -315,6 +315,7 @@ class HomePageState extends State<HomePage> {
         title: 'Nom du programme',
         description: 'Vous pouvez modifier le nom de ce programme ci-dessous.',
         fieldLabel: 'Nom du programme',
+        isDeleteEnabled: !(program.name == 'Nom du programme' && program.trainings.isEmpty),
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();
