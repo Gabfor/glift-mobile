@@ -460,6 +460,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       reverseTransitionDuration: const Duration(milliseconds: 300), // Keep exit animation for Close
       pageBuilder: (context, animation, secondaryAnimation) => TimerPage(
         durationInSeconds: inlineData?.durationInSeconds ?? duration,
+        storedDurationInSeconds: int.tryParse(_rows![index].rest) ?? 0,
         initialRemainingSeconds: inlineData?.remainingSeconds,
         enableSound: inlineData?.enableSound ?? true,
         enableVibration: inlineData?.enableVibration ??

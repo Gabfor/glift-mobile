@@ -26,6 +26,7 @@ class TimerPage extends StatefulWidget {
   TimerPage({
     super.key,
     required this.durationInSeconds,
+    this.storedDurationInSeconds,
     this.initialRemainingSeconds,
     this.enableVibration = true,
     this.enableSound = true,
@@ -39,6 +40,7 @@ class TimerPage extends StatefulWidget {
         vibrationService = vibrationService ?? const DeviceVibrationService();
 
   final int durationInSeconds;
+  final int? storedDurationInSeconds; // New: Raw duration from DB
   final int? initialRemainingSeconds;
   final bool enableVibration;
   final bool enableSound;
@@ -79,7 +81,9 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     super.initState();
     _remainingSeconds = widget.initialRemainingSeconds ?? widget.durationInSeconds;
     _lastEditedDuration = widget.durationInSeconds;
-    _savedDuration = widget.durationInSeconds;
+    _savedDuration = widget.storedDurationInSeconds ?? widget.durationInSeconds;
+    _isModified = _lastEditedDuration != _savedDuration;
+    
     _minutesController = TextEditingController();
     _secondsController = TextEditingController();
     _minutesController.addListener(_handleMinutesTextChange);
