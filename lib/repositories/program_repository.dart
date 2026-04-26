@@ -644,6 +644,21 @@ class ProgramRepository {
     }
   }
 
+  Future<void> updateRowsOrder(List<String> rowIds) async {
+    try {
+      // Perform updates in parallel for better performance
+      final updates = <Future>[];
+      for (int i = 0; i < rowIds.length; i++) {
+        updates.add(
+          _supabase.from('training_rows').update({'order': i}).eq('id', rowIds[i]),
+        );
+      }
+      await Future.wait(updates);
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour de l\'ordre: $e');
+    }
+  }
+
   Future<void> updateRestDuration(String rowId, int restInSeconds) async {
     await updateTrainingRow(rowId, rest: restInSeconds.toString());
   }

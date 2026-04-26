@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -435,24 +436,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       return Center(child: Text('Erreur: $_error', style: const TextStyle(color: Colors.red)));
     }
 
-    final items = <Widget>[];
+    final reorderableItems = <Widget>[];
     
-    if (_rows == null || _rows!.isEmpty) {
-      items.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Center(
-            child: Text(
-              'Aucun exercice dans cet entraînement',
-              style: GoogleFonts.quicksand(
-                fontSize: 16,
-                color: GliftTheme.title,
-              ),
-            ),
-          ),
-        ),
-      );
-    } else {
+    if (_rows != null && _rows!.isNotEmpty) {
       int i = 0;
       while (i < _rows!.length) {
         final row = _rows![i];
@@ -467,54 +453,61 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           final isLocked = group.any((r) => r.locked);
           final groupIndices = group.map((r) => _rows!.indexOf(r)).toList();
           
-          items.add(_SupersetGroupContainer(
-            isLocked: isLocked,
-            series: group.first.series,
-            onAddSet: () => _handleSupersetSetsUpdate(groupIndices, true),
-            onRemoveSet: () => _handleSupersetSetsUpdate(groupIndices, false),
-            children: group.map<Widget>((r) {
-              final rIndex = _rows!.indexOf(r);
-              return _ExerciseCard(
-                key: ValueKey(r.id),
-                row: r,
-                onFocus: _handleFocus,
-                onUpdate: (series, reps, weights, efforts) =>
-                    _handleRowUpdate(rIndex, series, reps, weights, efforts),
-                onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
-                onDelete: () => _handleDeleteRow(rIndex),
-                onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
-                onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
-                onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
-                onDeleteSuperset: (supersetId) => _handleDeleteSuperset(supersetId),
-                showDecoration: false,
-                hideSetControls: true, // Hide individual set controls in superset
-                showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
-                activeFocusId: _activeFocusId,
-                isLast: _rows!.length == 1,
-              );
-            }).toList(),
+          reorderableItems.add(Padding(
+            key: ValueKey('superset_${row.supersetId}'),
+            padding: const EdgeInsets.only(bottom: 20),
+            child: _SupersetGroupContainer(
+              isLocked: isLocked,
+              series: group.first.series,
+              onAddSet: () => _handleSupersetSetsUpdate(groupIndices, true),
+              onRemoveSet: () => _handleSupersetSetsUpdate(groupIndices, false),
+              children: group.map<Widget>((r) {
+                final rIndex = _rows!.indexOf(r);
+                return _ExerciseCard(
+                  key: ValueKey(r.id),
+                  row: r,
+                  onFocus: _handleFocus,
+                  onUpdate: (series, reps, weights, efforts) =>
+                      _handleRowUpdate(rIndex, series, reps, weights, efforts),
+                  onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
+                  onDelete: () => _handleDeleteRow(rIndex),
+                  onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
+                  onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
+                  onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+                  onDeleteSuperset: (supersetId) => _handleDeleteSuperset(supersetId),
+                  showDecoration: false,
+                  hideSetControls: true, 
+                  showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+                  activeFocusId: _activeFocusId,
+                  isLast: _rows!.length == 1,
+                );
+              }).toList(),
+            ),
           ));
           i = j;
         } else {
           final rowIndex = i;
-          items.add(_ExerciseCard(
+          reorderableItems.add(Padding(
             key: ValueKey(row.id),
-            row: row,
-            onFocus: _handleFocus,
-            onUpdate: (series, reps, weights, efforts) =>
-                _handleRowUpdate(rowIndex, series, reps, weights, efforts),
-            onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
-            onDelete: () => _handleDeleteRow(rowIndex),
-            onRestUpdate: (newDuration) =>
-                _handleRestUpdate(rowIndex, newDuration),
-            onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
-            onMaterialUpdate: (material) =>
-                _handleMaterialUpdate(rowIndex, material),
-            onDeleteSuperset: (_) async {}, // No-op for non-superset
-            showDecoration: true,
-            showTimer: SettingsService.instance.getShowRepos(),
-            activeFocusId: _activeFocusId,
-            isLast: _rows!.length == 1,
+            padding: const EdgeInsets.only(bottom: 20),
+            child: _ExerciseCard(
+              row: row,
+              onFocus: _handleFocus,
+              onUpdate: (series, reps, weights, efforts) =>
+                  _handleRowUpdate(rowIndex, series, reps, weights, efforts),
+              onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
+              onDelete: () => _handleDeleteRow(rowIndex),
+              onRestUpdate: (newDuration) =>
+                  _handleRestUpdate(rowIndex, newDuration),
+              onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+              onMaterialUpdate: (material) =>
+                  _handleMaterialUpdate(rowIndex, material),
+              onDeleteSuperset: (_) async {}, 
+              showDecoration: true,
+              showTimer: SettingsService.instance.getShowRepos(),
+              activeFocusId: _activeFocusId,
+              isLast: _rows!.length == 1,
+            ),
           ));
           i++;
         }
@@ -525,8 +518,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     final isAddExerciseLocked = !isPremium && _rows != null && _rows!.length >= 10;
     final addExerciseColor = isAddExerciseLocked ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
 
-    items.add(
-      GestureDetector(
+    final addButton = Padding(
+      padding: EdgeInsets.only(bottom: _currentInputHandler != null ? MediaQuery.of(context).size.height * 0.8 : 100.0),
+      child: GestureDetector(
         onTap: _handleAddExercise,
         child: CustomPaint(
           foregroundPainter: DashedBorderPainter(
@@ -552,6 +546,47 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       ),
     );
 
+    final emptyPlaceholder = (_rows == null || _rows!.isEmpty) 
+      ? Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: Text(
+              'Aucun exercice dans cet entraînement',
+              style: GoogleFonts.quicksand(
+                fontSize: 16,
+                color: GliftTheme.title,
+              ),
+            ),
+          ),
+        )
+      : null;
+
+    Widget proxyDecorator(Widget child, int index, Animation<double> animation) {
+      return AnimatedBuilder(
+        animation: animation,
+        builder: (BuildContext context, Widget? child) {
+          return Material(
+            elevation: 0,
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5D6494).withOpacity(0.15),
+                    blurRadius: 21,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: child,
+            ),
+          );
+        },
+        child: child,
+      );
+    }
+
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         if (notification is ScrollUpdateNotification ||
@@ -564,13 +599,14 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       },
       child: GliftPullToRefresh(
         onRefresh: _fetchDetails,
-        child: ListView.separated(
-          // controller: _scrollController,
-          padding: EdgeInsets.fromLTRB(
-              20, 20, 20, _currentInputHandler != null ? MediaQuery.of(context).size.height * 0.8 : 100),
-          itemCount: items.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 20),
-          itemBuilder: (context, index) => items[index],
+        child: ReorderableListView(
+          onReorder: _handleReorder,
+          onReorderStart: (index) => HapticFeedback.mediumImpact(),
+          proxyDecorator: proxyDecorator,
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          header: emptyPlaceholder,
+          footer: addButton,
+          children: reorderableItems,
         ),
       ),
     );
@@ -799,6 +835,51 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       setState(() {
         _error = e.toString();
       });
+    }
+  }
+
+  Future<void> _handleReorder(int oldIndex, int newIndex) async {
+    if (_rows == null) return;
+
+    // Logic to handle reordering of logical units (single rows or supersets)
+    final units = <List<TrainingRow>>[];
+    int i = 0;
+    while (i < _rows!.length) {
+      final row = _rows![i];
+      if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
+        final group = <TrainingRow>[row];
+        int j = i + 1;
+        while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {
+          group.add(_rows![j]);
+          j++;
+        }
+        units.add(group);
+        i = j;
+      } else {
+        units.add([row]);
+        i++;
+      }
+    }
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+
+    setState(() {
+      final unit = units.removeAt(oldIndex);
+      units.insert(newIndex, unit);
+
+      // Flatten and update order
+      final newRows = units.expand((u) => u).toList();
+      _rows = newRows;
+      _wasEdited = true;
+    });
+
+    try {
+      final rowIds = _rows!.map((r) => r.id).toList();
+      await _programRepository.updateRowsOrder(rowIds);
+    } catch (e) {
+      debugPrint('Error updating order: $e');
     }
   }
 
