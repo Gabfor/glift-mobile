@@ -24,6 +24,7 @@ import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/empty_programs_widget.dart';
 import 'widgets/edit_name_modal.dart';
 import 'widgets/delete_confirmation_modal.dart';
+import 'widgets/add_training_locked_modal.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -713,6 +714,11 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _buildAddTrainingCard(Program program) {
+    final unlockedCount = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
+    final isPremium = SettingsService.instance.getSubscriptionPlan() == 'premium';
+    final isAddRestricted = !isPremium && unlockedCount > 0;
+    final themeColor = isAddRestricted ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
+
     return GestureDetector(
       onTap: () => _handleAddTraining(program),
       child: Container(
@@ -723,7 +729,7 @@ class HomePageState extends State<HomePage> {
         ),
         child: CustomPaint(
           painter: _DashedRectPainter(
-            color: const Color(0xFFA1A5FD), // Matches tailwind border-[#A1A5FD]
+            color: themeColor, // Matches tailwind border-[#A1A5FD] or grey
             strokeWidth: 2.0, // Matches border-[2px]
             gap: 6,
           ),
@@ -731,14 +737,14 @@ class HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.add, color: Color(0xFFA1A5FD), size: 22),
+                Icon(Icons.add, color: themeColor, size: 22),
                 const SizedBox(width: 8),
                 Text(
                   'Ajouter un entraînement',
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w600, // Matches font-semibold
-                    color: const Color(0xFFA1A5FD),
+                    color: themeColor,
                   ),
                 ),
               ],
@@ -751,6 +757,18 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _handleAddTraining(Program program) async {
     try {
+      final unlockedCount = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
+      final isPremium = SettingsService.instance.getSubscriptionPlan() == 'premium';
+      final isAddRestricted = !isPremium && unlockedCount > 0;
+
+      if (isAddRestricted) {
+        await showFadeDialog(
+          context: context,
+          builder: (context) => const AddTrainingLockedModal(),
+        );
+        return;
+      }
+
       HapticFeedback.mediumImpact();
 
       final newTraining = await _programRepository.createTraining(program.id);
