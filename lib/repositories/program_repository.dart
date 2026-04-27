@@ -1128,5 +1128,28 @@ class ProgramRepository {
   Future<void> deleteTrainingRow(String rowId) async {
     await _supabase.from('training_rows').delete().eq('id', rowId);
   }
+
+  Future<Map<String, dynamic>?> getDashboardPreferences(String userId) async {
+    try {
+      final response = await _supabase
+          .from('dashboard_preferences')
+          .select('exercise_settings')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (response != null && response['exercise_settings'] != null) {
+        final settings = response['exercise_settings'];
+        if (settings is String) {
+          return jsonDecode(settings) as Map<String, dynamic>;
+        } else if (settings is Map) {
+          return Map<String, dynamic>.from(settings);
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching dashboard preferences: $e');
+      return null;
+    }
+  }
 }
 

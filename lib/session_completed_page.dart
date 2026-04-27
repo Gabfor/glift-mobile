@@ -10,6 +10,10 @@ import 'package:glift_mobile/main_page.dart';
 import 'package:glift_mobile/services/vibration_service.dart';
 import 'theme/glift_theme.dart';
 
+import 'package:glift_mobile/models/training_row.dart';
+import 'package:glift_mobile/models/achieved_goal.dart';
+import 'package:confetti/confetti.dart';
+
 class SessionCompletedPage extends StatefulWidget {
   const SessionCompletedPage({
     super.key,
@@ -25,6 +29,7 @@ class SessionCompletedPage extends StatefulWidget {
     required this.supabase,
     required this.authRepository,
     required this.biometricAuthService,
+    this.achievedGoals = const [],
   });
 
   final int sessionCount;
@@ -39,17 +44,32 @@ class SessionCompletedPage extends StatefulWidget {
   final SupabaseClient supabase;
   final AuthRepository authRepository;
   final BiometricAuthService biometricAuthService;
+  final List<AchievedGoal> achievedGoals;
 
   @override
   State<SessionCompletedPage> createState() => _SessionCompletedPageState();
 }
 
 class _SessionCompletedPageState extends State<SessionCompletedPage> {
+  late ConfettiController _confettiController;
+  final PageController _pageController = PageController();
+  int _currentGoalIndex = 0;
+
   @override
   void initState() {
     super.initState();
-    // No longer using gif, but good to trigger vibration
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    if (widget.achievedGoals.isNotEmpty) {
+      _confettiController.play();
+    }
     _triggerVibration();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _triggerVibration() async {
@@ -169,6 +189,16 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
             ),
           ),
           
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive, // don't specify direction, explode everywhere
+              shouldLoop: false,
+              colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+            ),
+          ),
+
           Center(
              child: Padding(
                padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -239,26 +269,125 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                              ],
                            ),
                            const SizedBox(height: 24),
-                           Row(
-                             children: [
-                               Expanded(child: _buildStatItem(
-                                 icon: 'assets/icons/Poids.svg',
-                                 value: '${_formatVolume(widget.totalVolume)} kg',
-                                 label: 'Soulevés',
-                                 comparisonIconPath: _getVolumeIcon(),
-                               )),
-                               const SizedBox(width: 16),
-                               Expanded(child: _buildStatItem(
-                                 icon: 'assets/icons/Rép.svg',
-                                 value: '${widget.totalReps} rép.',
-                                 label: 'Effectuées',
-                                 comparisonIconPath: _getRepsIcon(),
-                               )),
-                             ],
-                           ),
-                           const SizedBox(height: 32),
+                            Row(
+                              children: [
+                                Expanded(child: _buildStatItem(
+                                  icon: 'assets/icons/Poids.svg',
+                                  value: '${_formatVolume(widget.totalVolume)} kg',
+                                  label: 'Soulevés',
+                                  comparisonIconPath: _getVolumeIcon(),
+                                )),
+                                const SizedBox(width: 16),
+                                Expanded(child: _buildStatItem(
+                                  icon: 'assets/icons/Rép.svg',
+                                  value: '${widget.totalReps} rép.',
+                                  label: 'Effectuées',
+                                  comparisonIconPath: _getRepsIcon(),
+                                )),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
 
-                           // CTA Button
+                            if (widget.achievedGoals.isNotEmpty) ...[
+                               Text(
+                                  widget.achievedGoals.length > 1
+                                      ? 'Vous avez également atteint ${widget.achievedGoals.length} objectifs !'
+                                      : 'Vous avez également atteint 1 objectif !',
+                                  style: GoogleFonts.quicksand(
+                                     fontSize: 14,
+                                     fontWeight: FontWeight.w700,
+                                     color: const Color(0xFF3A416F),
+                                     height: 1.4,
+                                  ),
+                                  textAlign: TextAlign.center,
+                               ),
+                               const SizedBox(height: 12),
+                               SizedBox(
+                                  height: 60,
+                                  child: PageView.builder(
+                                     controller: _pageController,
+                                     onPageChanged: (index) {
+                                        setState(() {
+                                           _currentGoalIndex = index;
+                                        });
+                                     },
+                                     itemCount: widget.achievedGoals.length,
+                                     itemBuilder: (context, index) {
+                                        final goal = widget.achievedGoals[index];
+                                        return Container(
+                                           margin: const EdgeInsets.symmetric(horizontal: 4),
+                                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                           decoration: BoxDecoration(
+                                              color: const Color(0xFFF6FDF7),
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: const Color(0xFFECE9F1)),
+                                           ),
+                                           child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                 SvgPicture.asset(
+                                                    'assets/icons/trophy_gold.svg',
+                                                    height: 20,
+                                                 ),
+                                                 const SizedBox(width: 12),
+                                                 Expanded(
+                                                    child: Column(
+                                                       mainAxisAlignment: MainAxisAlignment.center,
+                                                       crossAxisAlignment: CrossAxisAlignment.start,
+                                                       children: [
+                                                          Text(
+                                                             goal.metricDisplay,
+                                                             style: GoogleFonts.quicksand(
+                                                                fontSize: 14,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: const Color(0xFF3A416F),
+                                                             ),
+                                                          ),
+                                                          Text(
+                                                             goal.exerciseName,
+                                                             style: GoogleFonts.quicksand(
+                                                                fontSize: 11,
+                                                                fontWeight: FontWeight.w600,
+                                                                color: const Color(0xFF5D6494),
+                                                             ),
+                                                             maxLines: 1,
+                                                             overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                       ],
+                                                    ),
+                                                 ),
+                                              ],
+                                           ),
+                                        );
+                                     },
+                                  ),
+                               ),
+                               if (widget.achievedGoals.length > 1) ...[
+                                 const SizedBox(height: 20),
+                                 Row(
+                                   mainAxisAlignment: MainAxisAlignment.center,
+                                   children: List.generate(
+                                     widget.achievedGoals.length,
+                                     (index) => Container(
+                                       width: 8,
+                                       height: 8,
+                                       margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                                       decoration: BoxDecoration(
+                                         shape: BoxShape.circle,
+                                         color: _currentGoalIndex == index 
+                                            ? const Color(0xFFA1A5FD) 
+                                            : const Color(0xFFD7D4DC),
+                                       ),
+                                     ),
+                                   ),
+                                 ),
+                                 const SizedBox(height: 20),
+                               ] else ...[
+                                 const SizedBox(height: 32),
+                               ],
+                            ],
+
+                            // CTA Button
                            SizedBox(
                              width: double.infinity,
                              height: 50,

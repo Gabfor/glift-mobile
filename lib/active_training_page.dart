@@ -8,9 +8,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'utils/dialog_utils.dart';
-import '../models/training.dart';
-import '../models/training_row.dart';
-import '../repositories/program_repository.dart';
+import 'package:glift_mobile/models/training.dart';
+import 'package:glift_mobile/models/training_row.dart';
+import 'package:glift_mobile/models/achieved_goal.dart';
+import 'package:glift_mobile/repositories/program_repository.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/numeric_keypad.dart';
@@ -52,6 +53,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   List<TrainingRow>? _rows;
   bool _isLoading = true;
   String? _error;
+  Map<String, dynamic>? _exerciseSettings;
+  final Set<String> _achievedGoals = {};
   InlineTimerData? _inlineTimerData;
   double? _inlineTimerTop;
   int? _activeTimerRowIndex;
@@ -98,9 +101,17 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   Future<void> _fetchDetails() async {
     try {
       final rows = await _programRepository.getTrainingDetails(widget.training.id);
+      
+      Map<String, dynamic>? settings;
+      final userId = widget.supabase.auth.currentUser?.id;
+      if (userId != null) {
+        settings = await _programRepository.getDashboardPreferences(userId);
+      }
+
       if (mounted) {
         setState(() {
           _rows = rows;
+          _exerciseSettings = settings;
           // Set start time when data is loaded, time spent loading
           _isLoading = false;
         });
@@ -611,6 +622,25 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
           if (!mounted) return;
 
+          final achievedGoalsList = <AchievedGoal>[];
+          for (final r in completedRowsData) {
+            if (_achievedGoals.contains(r.id)) {
+               final exercises = _exerciseSettings?['exercises'];
+               if (exercises != null && exercises is Map) {
+                 final setting = exercises[r.id];
+                 if (setting != null && setting['goal'] != null) {
+                    final goal = setting['goal'];
+                    final target = (goal['target'] is num) ? (goal['target'] as num).toDouble() : double.tryParse(goal['target'].toString()) ?? 0;
+                    achievedGoalsList.add(AchievedGoal(
+                       exerciseName: r.exercise,
+                       target: target,
+                       type: goal['type'] as String,
+                    ));
+                 }
+               }
+            }
+          }
+
           // Navigate to completion screen as an overlay (transparent route)
           if (mounted) {
             if (SettingsService.instance.getShowSummary()) {
@@ -630,6 +660,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                     supabase: widget.supabase,
                     authRepository: widget.authRepository,
                     biometricAuthService: widget.biometricAuthService,
+                    achievedGoals: achievedGoalsList,
                   ),
                   transitionDuration: const Duration(milliseconds: 200),
                   reverseTransitionDuration: const Duration(milliseconds: 200),
@@ -682,6 +713,73 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
   bool _isRowProcessed(String rowId) => _isRowCompleted(rowId) || _isRowIgnored(rowId);
 
+  void _evaluateGoalForCompletedRow(String rowId) {
+    if (_exerciseSettings == null || _rows == null) return;
+
+    final exercises = _exerciseSettings!['exercises'];
+    if (exercises == null || exercises is! Map) return;
+
+    final exerciseSetting = exercises[rowId];
+    if (exerciseSetting == null || exerciseSetting['goal'] == null) return;
+
+    final goal = exerciseSetting['goal'];
+    final String type = goal['type'];
+    final double target = (goal['target'] is num) 
+        ? (goal['target'] as num).toDouble() 
+        : double.tryParse(goal['target'].toString()) ?? 0;
+
+    if (target <= 0) return;
+
+    final row = _rows!.firstWhere((r) => r.id == rowId, orElse: () => _rows!.first);
+    if (row.id != rowId) return;
+
+    List<double> weights = [];
+    List<int> reps = [];
+
+    for (int i = 0; i < row.weights.length; i++) {
+      final w = double.tryParse(row.weights[i].replaceAll(',', '.'));
+      if (w != null && w > 0) weights.add(w); // Ignore empty/0-weight for averages
+    }
+    for (int i = 0; i < row.repetitions.length; i++) {
+      final r = int.tryParse(row.repetitions[i].replaceAll(',', '.'));
+      if (r != null) reps.add(r);
+    }
+
+    double? value;
+    switch (type) {
+      case 'poids-maximum':
+        if (weights.isNotEmpty) value = weights.reduce((a, b) => a > b ? a : b);
+        break;
+      case 'poids-moyen':
+        if (weights.isNotEmpty) value = weights.reduce((a, b) => a + b) / weights.length;
+        break;
+      case 'poids-total':
+        if (weights.isNotEmpty) value = weights.reduce((a, b) => a + b);
+        break;
+      case 'repetition-maximum':
+        if (reps.isNotEmpty) value = reps.reduce((a, b) => a > b ? a : b).toDouble();
+        break;
+      case 'repetition-moyenne':
+        if (reps.isNotEmpty) value = reps.reduce((a, b) => a + b) / reps.length;
+        break;
+      case 'repetitions-totales':
+        if (reps.isNotEmpty) value = reps.reduce((a, b) => a + b).toDouble();
+        break;
+    }
+
+    if (value != null && value >= target) {
+      if (!_achievedGoals.contains(rowId)) {
+        setState(() {
+          _achievedGoals.add(rowId);
+        });
+      }
+    } else {
+      setState(() {
+        _achievedGoals.remove(rowId);
+      });
+    }
+  }
+
   Future<void> _completeRow(int index) async {
     if (_rows == null) return;
 
@@ -690,6 +788,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     setState(() {
       if (_isRowCompleted(row.id)) {
         _completedRows.remove(row.id);
+        _achievedGoals.remove(row.id);
         final item = _rows!.removeAt(index);
         final firstProcessedIndex =
             _rows!.indexWhere((element) => _isRowProcessed(element.id));
@@ -705,6 +804,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         _closeInlineTimer();
         final item = _rows!.removeAt(index);
         _rows!.add(item);
+        
+        // Evaluate the goal after marking as completed
+        _evaluateGoalForCompletedRow(row.id);
       }
     });
   }
