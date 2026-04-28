@@ -1151,5 +1151,16 @@ class ProgramRepository {
       return null;
     }
   }
+
+  Future<void> updateDashboardPreferences(String userId, Map<String, dynamic> exerciseSettings) async {
+    try {
+      await _supabase.from('dashboard_preferences').update({
+        'exercise_settings': exerciseSettings,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('user_id', userId);
+    } catch (e) {
+      debugPrint('Error updating dashboard preferences: $e');
+    }
+  }
 }
 

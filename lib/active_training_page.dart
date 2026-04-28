@@ -636,8 +636,28 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                        target: target,
                        type: goal['type'] as String,
                     ));
-                 }
+                  }
                }
+            }
+          }
+
+          // Mark achieved goals in the backend so they don't trigger again
+          if (achievedGoalsList.isNotEmpty && _exerciseSettings != null) {
+            bool settingsUpdated = false;
+            final exercises = _exerciseSettings!['exercises'];
+            if (exercises != null && exercises is Map) {
+              for (final r in completedRowsData) {
+                if (_achievedGoals.contains(r.id)) {
+                  final setting = exercises[r.id];
+                  if (setting != null && setting['goal'] != null) {
+                    setting['goal']['achieved'] = true;
+                    settingsUpdated = true;
+                  }
+                }
+              }
+            }
+            if (settingsUpdated && userId != null) {
+               await _programRepository.updateDashboardPreferences(userId, _exerciseSettings!);
             }
           }
 
@@ -723,6 +743,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     if (exerciseSetting == null || exerciseSetting['goal'] == null) return;
 
     final goal = exerciseSetting['goal'];
+    if (goal['achieved'] == true) return; // Skip if already achieved in a previous session
+
     final String type = goal['type'];
     final double target = (goal['target'] is num) 
         ? (goal['target'] as num).toDouble() 
