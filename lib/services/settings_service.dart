@@ -37,7 +37,7 @@ class SettingsService {
       // 1. Sync Preferences
       final response = await _supabase!
           .from('preferences')
-          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi, show_superset')
+          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi, show_superset, show_summary, show_goals')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -100,6 +100,12 @@ class SettingsService {
             final showSummary = response['show_summary'] as bool;
             if (showSummary != getShowSummary()) {
                 await _prefs.setBool(_kShowSummary, showSummary);
+            }
+        }
+        if (response['show_goals'] != null) {
+            final showGoals = response['show_goals'] as bool;
+            if (showGoals != getShowGoals()) {
+                await _prefs.setBool(_kShowGoals, showGoals);
             }
         }
       }
@@ -473,6 +479,31 @@ class SettingsService {
   bool getShowSummary() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowSummary) ?? true;
+  }
+
+  // Show Goals
+  static const String _kShowGoals = 'show_goals';
+
+  Future<void> saveShowGoals(bool show) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kShowGoals, show);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'show_goals': show,
+        });
+      } catch (e) {
+        print('Error saving show_goals to Supabase: $e');
+      }
+    }
+  }
+
+  bool getShowGoals() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kShowGoals) ?? true;
   }
 
   // Subscription Plan

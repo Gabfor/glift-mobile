@@ -571,28 +571,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           debugPrint('DEBUG: Previous Stats: $previousStats');
 
           final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
-          // Save history
-          await _programRepository.saveTrainingSession(
-            userId: userId,
-            trainingId: widget.training.id,
-            completedRows: completedRowsData,
-            duration: duration > 0 ? duration : 1, // Minimum 1 min
-          );
-          
-          // ... (rest of the stats calculation) ...
-          
-          if (mounted) {
-             // ... updating templates ... 
-          }
-          
-           // Update templates (last used weights)
-          await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
-            row.id,
-            repetitions: row.repetitions,
-            weights: row.weights,
-            efforts: row.efforts,
-          )));
-
+          final displayDuration = duration > 0 ? duration : 1;
 
           // Calculate session count for this specific training
           final sessionCount = (widget.training.sessionCount ?? 0) + 1;
@@ -613,8 +592,6 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                   totalVolume += (reps * weight);
               }
           }
-
-          final displayDuration = duration > 0 ? duration : 1;
           
           final avgDuration = previousStats['averageDuration'] as int?;
           final prevVolume = previousStats['lastVolume'] as double?;
@@ -641,25 +618,48 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             }
           }
 
-          // Mark achieved goals in the backend so they don't trigger again
-          if (achievedGoalsList.isNotEmpty && _exerciseSettings != null) {
-            bool settingsUpdated = false;
-            final exercises = _exerciseSettings!['exercises'];
-            if (exercises != null && exercises is Map) {
-              for (final r in completedRowsData) {
-                if (_achievedGoals.contains(r.id)) {
-                  final setting = exercises[r.id];
-                  if (setting != null && setting['goal'] != null) {
-                    setting['goal']['achieved'] = true;
-                    settingsUpdated = true;
+          // Launch slow backend updates in the background without awaiting them here
+          Future.microtask(() async {
+            try {
+              // Save history
+              await _programRepository.saveTrainingSession(
+                userId: userId,
+                trainingId: widget.training.id,
+                completedRows: completedRowsData,
+                duration: displayDuration,
+              );
+              
+              // Update templates (last used weights)
+              await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
+                row.id,
+                repetitions: row.repetitions,
+                weights: row.weights,
+                efforts: row.efforts,
+              )));
+
+              // Mark achieved goals in the backend so they don't trigger again
+              if (achievedGoalsList.isNotEmpty && _exerciseSettings != null) {
+                bool settingsUpdated = false;
+                final exercises = _exerciseSettings!['exercises'];
+                if (exercises != null && exercises is Map) {
+                  for (final r in completedRowsData) {
+                    if (_achievedGoals.contains(r.id)) {
+                      final setting = exercises[r.id];
+                      if (setting != null && setting['goal'] != null) {
+                        setting['goal']['achieved'] = true;
+                        settingsUpdated = true;
+                      }
+                    }
                   }
                 }
+                if (settingsUpdated) {
+                   await _programRepository.updateDashboardPreferences(userId, _exerciseSettings!);
+                }
               }
+            } catch (e) {
+              debugPrint('Error updating backend in background: $e');
             }
-            if (settingsUpdated && userId != null) {
-               await _programRepository.updateDashboardPreferences(userId, _exerciseSettings!);
-            }
-          }
+          });
 
           // Navigate to completion screen as an overlay (transparent route)
           if (mounted) {

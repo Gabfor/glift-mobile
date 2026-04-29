@@ -42,6 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _tracking = true;
   bool _superset = true;
   bool _showSummary = true;
+  bool _showGoals = true;
   bool _autoTrigger = true;
   bool _vibrations = true;
   bool _sound = true;
@@ -72,7 +73,10 @@ class _SettingsPageState extends State<SettingsPage> {
         _vibrations = settings.getVibrationEnabled();
         _links = settings.getShowLinks();
         _notes = settings.getShowNotes();
+        _suivi = settings.getShowSuivi();
+        _superset = settings.getShowSuperset();
         _showSummary = settings.getShowSummary();
+        _showGoals = settings.getShowGoals();
 
         _rest = settings.getShowRepos();
         debugPrint('SettingsPage: Loaded _rest = $_rest'); // DEBUG
@@ -141,6 +145,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _suivi = settings.getShowSuivi();
               _superset = settings.getShowSuperset();
               _showSummary = settings.getShowSummary();
+              _showGoals = settings.getShowGoals();
               _rest = settings.getShowRepos();
               _defaultRestTime = settings.getDefaultRestTime();
             });
@@ -260,6 +265,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) {
                   setState(() => _showSummary = v);
                   SettingsService.instance.saveShowSummary(v);
+                },
+              ),
+              _SettingsSwitchTile(
+                title: 'Activer Objectifs',
+                value: _showGoals,
+                onChanged: (v) {
+                  setState(() => _showGoals = v);
+                  SettingsService.instance.saveShowGoals(v);
                 },
               ),
             ],

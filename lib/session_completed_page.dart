@@ -13,6 +13,7 @@ import 'theme/glift_theme.dart';
 import 'package:glift_mobile/models/training_row.dart';
 import 'package:glift_mobile/models/achieved_goal.dart';
 import 'package:confetti/confetti.dart';
+import 'package:glift_mobile/services/settings_service.dart';
 
 class SessionCompletedPage extends StatefulWidget {
   const SessionCompletedPage({
@@ -54,12 +55,16 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
   late ConfettiController _confettiController;
   final PageController _pageController = PageController();
   int _currentGoalIndex = 0;
+  late List<AchievedGoal> _displayGoals;
 
   @override
   void initState() {
     super.initState();
+    final showGoals = SettingsService.instance.getShowGoals();
+    _displayGoals = showGoals ? widget.achievedGoals : [];
+
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
-    if (widget.achievedGoals.isNotEmpty) {
+    if (_displayGoals.isNotEmpty) {
       _confettiController.play();
     }
     _triggerVibration();
@@ -288,10 +293,10 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                             ),
                             const SizedBox(height: 32),
 
-                            if (widget.achievedGoals.isNotEmpty) ...[
+                            if (_displayGoals.isNotEmpty) ...[
                                Text(
-                                  widget.achievedGoals.length > 1
-                                      ? 'Vous avez également atteint ${widget.achievedGoals.length} objectifs !'
+                                  _displayGoals.length > 1
+                                      ? 'Vous avez également atteint ${_displayGoals.length} objectifs !'
                                       : 'Vous avez également atteint 1 objectif !',
                                   style: GoogleFonts.quicksand(
                                      fontSize: 14,
@@ -311,9 +316,9 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                            _currentGoalIndex = index;
                                         });
                                      },
-                                     itemCount: widget.achievedGoals.length,
+                                     itemCount: _displayGoals.length,
                                      itemBuilder: (context, index) {
-                                        final goal = widget.achievedGoals[index];
+                                        final goal = _displayGoals[index];
                                         return Container(
                                            margin: const EdgeInsets.symmetric(horizontal: 4),
                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -362,12 +367,12 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                      },
                                   ),
                                ),
-                               if (widget.achievedGoals.length > 1) ...[
+                               if (_displayGoals.length > 1) ...[
                                  const SizedBox(height: 20),
                                  Row(
                                    mainAxisAlignment: MainAxisAlignment.center,
                                    children: List.generate(
-                                     widget.achievedGoals.length,
+                                     _displayGoals.length,
                                      (index) => Container(
                                        width: 8,
                                        height: 8,

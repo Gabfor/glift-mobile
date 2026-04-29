@@ -624,10 +624,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
       final history = await widget.repository.getExerciseHistory(
         widget.exercise.id,
         widget.userId,
-        limit: 7, // Limit strictly to 7 points as requested
       );
 
-      final processedHistory = history.map((session) {
+      // We map the full history first
+      final allProcessedHistory = history.map((session) {
         final sets = (session['sets'] as List?) ?? [];
         double value = 0;
         final curveType = widget.settings.curveType;
@@ -659,31 +659,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           case 'poids-total':
             for (final set in sets) {
               final weights = (set['weights'] as List?) ?? [];
-              final reps = int.tryParse(set['repetitions']?.toString() ?? '0') ?? 0;
-              // If we have weights, sum them. Usually volume = weight * reps.
-              // Web implementation: `totalWeight += setTotalWeight`.
-              // where `setTotalWeight` = sum of weights array. 
-              // Wait, web logic:
-              // const setTotalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-              // totalWeight += setTotalWeight;
-              // It seems it sums the weights array directly? 
-              // Let's look at web logic again:
-              // `const setTotalWeight = weights.reduce((sum, weight) => sum + weight, 0);`
-              // `totalWeight += setTotalWeight;`
-              // Yes, it strictly sums the weights array. (Usually in this app `weights` array length = number of reps with that weight?).
-              // But `effectiveRepetitions` is used for reps count.
-              // For `poids-total` (Total Volume), usually it is Weight * Reps.
-              // But here `weights` array likely contains one entry per rep if it's drop set? Or is it `weights` field of a set?
-              // In this app, `weights` is `number[]`. 
-              // If `repetitions` is present, it might override length?
-              // Web: "weights.reduce(...)". This means strictly sum of values in weights array.
               double setWeightSum = 0;
               for (final w in weights) {
                  setWeightSum += double.tryParse(w.toString()) ?? 0;
               }
-              // If weights array represents the weight used for the set, and we have N reps.
-              // In Glift, `weights` is an array of weights for the set (e.g. [10, 10, 10] for 3 reps?).
-              // If so, simple sum is correct volume.
               value += setWeightSum;
             }
             break;
@@ -692,7 +671,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
              for (final set in sets) {
                 final reps = int.tryParse(set['repetitions']?.toString() ?? '0');
                 final weights = (set['weights'] as List?) ?? [];
-                // effective reps = reps ?? weights.length
                 final effectiveReps = reps ?? weights.length;
                 if (effectiveReps > value) value = effectiveReps.toDouble();
              }
@@ -723,7 +701,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
              break;
 
           default:
-             // Default to max weight
              for (final set in sets) {
               final weights = (set['weights'] as List?) ?? [];
               for (final w in weights) {
@@ -733,20 +710,25 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
             }
         }
 
-
         return {
           'date': DateTime.parse(session['session']['performed_at']),
           'value': value,
         };
       }).toList();
 
-      processedHistory.sort(
+      // Sort chronological (oldest to newest)
+      allProcessedHistory.sort(
         (a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime),
       );
 
+      // For the chart display, we strictly take the last 7 sessions
+      final chartHistory = allProcessedHistory.length > 7 
+          ? allProcessedHistory.sublist(allProcessedHistory.length - 7)
+          : allProcessedHistory;
+
       if (mounted) {
         setState(() {
-          _history = processedHistory;
+          _history = chartHistory;
           _isLoading = false;
         });
       }
@@ -824,16 +806,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
           chartMaxY = interval * (desiredGridLines - 1);
 
-        // Calculate centered viewport
-          // We want the spacing to be the same as if there were 7 points (range 0..6)
-          // So the view range must always be 6.
-          // We center the available data points within this range.
+          // Align data to the right of a fixed 7-point window (range of 6 units)
           final double dataCount = _history.length.toDouble();
-          final double centerData = (dataCount - 1) / 2;
-          final double viewRange = 6;
-          // Use floor/ceil to ensure integer bounds and prevent fractional tick duplication
-          minX = (centerData - viewRange / 2).floorToDouble(); 
-          maxX = (centerData + viewRange / 2).ceilToDouble();
+          maxX = dataCount > 0 ? dataCount - 1 : 6;
+          minX = maxX - 6;
         }
 
         // Dynamic width calculation
@@ -881,6 +857,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
             children: [
               Text(
                 widget.exercise.exercise,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.quicksand(
                   color: const Color(0xFF3A416F),
                   fontSize: 16,

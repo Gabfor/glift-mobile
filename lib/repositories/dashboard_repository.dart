@@ -77,28 +77,42 @@ class DashboardRepository {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getExerciseHistory(String trainingRowId, String userId, {int limit = 10}) async {
+  Future<List<Map<String, dynamic>>> getExerciseHistory(String trainingRowId, String userId, {int? limit}) async {
     try {
       final response = await _supabase
-          .from('training_session_exercises')
+          .from('training_sessions')
           .select('''
             id,
-            training_row_id,
-            session:training_sessions!inner (
-              performed_at,
-              user_id
-            ),
-            sets:training_session_sets (
-              repetitions,
-              weights
+            performed_at,
+            user_id,
+            exercises:training_session_exercises!inner (
+              id,
+              training_row_id,
+              sets:training_session_sets (
+                repetitions,
+                weights
+              )
             )
           ''')
-          .eq('training_row_id', trainingRowId)
-          .eq('training_sessions.user_id', userId)
-          .order('performed_at', referencedTable: 'training_sessions', ascending: false)
-          .limit(limit);
+          .eq('user_id', userId)
+          .eq('exercises.training_row_id', trainingRowId)
+          .order('performed_at', ascending: false);
 
-      return List<Map<String, dynamic>>.from(response as List);
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((sessionJson) {
+         final exercises = (sessionJson['exercises'] as List?) ?? [];
+         if (exercises.isEmpty) return null;
+         final exerciseJson = exercises.first;
+         return {
+            'id': exerciseJson['id'],
+            'training_row_id': exerciseJson['training_row_id'],
+            'session': {
+               'performed_at': sessionJson['performed_at'],
+               'user_id': sessionJson['user_id']
+            },
+            'sets': exerciseJson['sets']
+         };
+      }).where((e) => e != null).cast<Map<String, dynamic>>().toList();
     } catch (e) {
       throw Exception('Erreur lors du chargement de l\'historique: $e');
     }
