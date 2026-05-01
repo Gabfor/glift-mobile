@@ -298,9 +298,7 @@ class _StorePageState extends State<StorePage> {
           if (selected.isEmpty) {
             matches = false;
           } else if (program.location != null && program.location!.isNotEmpty) {
-             final pLocs = program.location!.split(',').map((e) => e.trim().toLowerCase());
-             final hasMatch = selected.any((s) => pLocs.contains(s.toLowerCase()));
-             if (!hasMatch) matches = false;
+             if (!selected.contains(program.location)) matches = false;
           }
           // If location is null/empty, we assume it applies everywhere/matches (Wildcard)
         }
@@ -390,10 +388,7 @@ class _StorePageState extends State<StorePage> {
           break;
         case 'Lieu':
           if (program.location != null && program.location!.isNotEmpty) {
-            final locs = program.location!.split(',');
-            for (var loc in locs) {
-              options.add(loc.trim());
-            }
+            options.add(program.location!.trim());
           }
           break;
         case 'Objectif':
