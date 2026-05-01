@@ -705,6 +705,51 @@ class _ShopOfferCard extends StatelessWidget {
 
   const _ShopOfferCard({required this.offer, required this.supabase});
 
+  Widget _buildNetworkImage(
+    String url, {
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.cover,
+    Widget? placeholder,
+    Widget? errorWidget,
+  }) {
+    final trimmedUrl = url.trim();
+    if (trimmedUrl.isEmpty) {
+      return errorWidget ?? const Icon(Icons.image_not_supported);
+    }
+
+    // Handle spaces and special characters
+    final encodedUrl = Uri.encodeFull(trimmedUrl);
+
+    if (encodedUrl.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.network(
+        encodedUrl,
+        width: width,
+        height: height,
+        fit: fit,
+        placeholderBuilder: (context) => placeholder ?? const SizedBox(),
+      );
+    }
+
+    return Image.network(
+      encodedUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return placeholder ??
+            const Center(
+              child: GliftLoader(size: 20),
+            );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('Error loading image: $encodedUrl -> $error');
+        return errorWidget ?? const Icon(Icons.image_not_supported);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -724,15 +769,18 @@ class _ShopOfferCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(15),
                 ),
-                child: Image.network(
-                  (offer.imageMobile != null &&
-                          offer.imageMobile!.isNotEmpty)
+                child: _buildNetworkImage(
+                  (offer.imageMobile != null && offer.imageMobile!.isNotEmpty)
                       ? offer.imageMobile!
                       : offer.image,
                   height: 180,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  placeholder: Container(
+                    height: 180,
+                    color: Colors.grey[300],
+                    child: const Center(child: Icon(Icons.image)),
+                  ),
+                  errorWidget: Container(
                     height: 180,
                     color: Colors.grey[300],
                     child: const Center(child: Icon(Icons.image_not_supported)),
@@ -763,11 +811,10 @@ class _ShopOfferCard extends StatelessWidget {
                         ],
                       ),
                       child: ClipOval(
-                        child: Image.network(
+                        child: _buildNetworkImage(
                           offer.brandImage!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.store),
+                          errorWidget: const Icon(Icons.store),
                         ),
                       ),
                     ),

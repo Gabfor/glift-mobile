@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'repositories/dashboard_repository.dart';
 import 'services/settings_service.dart';
 import 'auth/auth_repository.dart';
@@ -262,7 +263,7 @@ class DashboardPageState extends State<DashboardPage> {
 
   void _onTrainingChanged(int delta) {
     if (_trainings.isEmpty) return;
-
+    
     final newIndex = _selectedTrainingIndex + delta;
     if (newIndex >= 0 && newIndex < _trainings.length) {
       setState(() {
@@ -270,6 +271,26 @@ class DashboardPageState extends State<DashboardPage> {
         _isLoading = true;
       });
       _loadExercises(_trainings[newIndex]['id']);
+    }
+  }
+
+  Future<void> _onExerciseSettingsChanged(String exerciseId, ExerciseDisplaySetting newSetting) async {
+    final newExerciseSettings = Map<String, ExerciseDisplaySetting>.from(_preferences.exerciseSettings);
+    newExerciseSettings[exerciseId] = newSetting;
+    
+    final newPrefs = _preferences.copyWith(exerciseSettings: newExerciseSettings);
+    
+    setState(() {
+      _preferences = newPrefs;
+    });
+
+    try {
+      await _repository.updateDashboardPreferences(
+        widget.supabase.auth.currentUser!.id,
+        newPrefs,
+      );
+    } catch (e) {
+      debugPrint('Failed to save preferences: $e');
     }
   }
 
@@ -457,11 +478,12 @@ class DashboardPageState extends State<DashboardPage> {
                   return Column(
                     children: [
                       _ExerciseChartCard(
-                        key: ValueKey(exercise.id),
+                        key: ValueKey('${exercise.id}_${_preferences.getSettingsFor(exercise.id).curveType}'),
                         exercise: exercise,
                         repository: _repository,
                         userId: widget.supabase.auth.currentUser!.id,
                         settings: _preferences.getSettingsFor(exercise.id),
+                        onSettingsChanged: (newSetting) => _onExerciseSettingsChanged(exercise.id, newSetting),
                       ),
                       if (!isLast) const SizedBox(height: 20),
                     ],
@@ -569,6 +591,7 @@ class _ExerciseChartCard extends StatefulWidget {
   final DashboardRepository repository;
   final String userId;
   final ExerciseDisplaySetting settings;
+  final Function(ExerciseDisplaySetting) onSettingsChanged;
 
   const _ExerciseChartCard({
     super.key,
@@ -576,6 +599,7 @@ class _ExerciseChartCard extends StatefulWidget {
     required this.repository,
     required this.userId,
     required this.settings,
+    required this.onSettingsChanged,
   });
 
   @override
@@ -806,10 +830,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
           chartMaxY = interval * (desiredGridLines - 1);
 
-          // Align data to the right of a fixed 7-point window (range of 6 units)
-          final double dataCount = _history.length.toDouble();
-          maxX = dataCount > 0 ? dataCount - 1 : 6;
-          minX = maxX - 6;
+          // Align data to the center of a fixed 7-point window (range of 0 to 6)
+          final int dataCount = _history.length;
+          minX = 0;
+          maxX = 6;
         }
 
         // Dynamic width calculation
@@ -855,15 +879,39 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.exercise.exercise,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.exercise.exercise,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF3A416F),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      final isWeight = widget.settings.curveType.startsWith('poids');
+                      widget.onSettingsChanged(
+                        widget.settings.copyWith(
+                          curveType: isWeight ? 'repetition-maximum' : 'poids-maximum',
+                        ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      widget.settings.curveType.startsWith('poids')
+                          ? 'assets/icons/Poids.svg'
+                          : 'assets/icons/Rép.svg',
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               Expanded(
@@ -934,7 +982,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         // Strictly enforce integer labels
                                         if (value % 1 != 0) return const SizedBox.shrink();
 
-                                        final index = value.toInt();
+                                        final int dataCount = _history.length;
+                                        final int offset = (7 - dataCount) ~/ 2;
+                                        final index = (value - offset).toInt();
+                                        
                                         if (index >= 0 &&
                                             index < _history.length) {
                                           final date =
@@ -1020,8 +1071,10 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 lineBarsData: [
                                   LineChartBarData(
                                     spots: _history.asMap().entries.map((e) {
+                                      final int dataCount = _history.length;
+                                      final int offset = (7 - dataCount) ~/ 2;
                                       return FlSpot(
-                                        e.key.toDouble(),
+                                        e.key.toDouble() + offset,
                                         ((e.value['value'] as double) * conversion) - realMinY,
                                       );
                                     }).toList(),
@@ -1175,8 +1228,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 translation: const Offset(-0.5, -1.0),
                                 child: _TooltipWithArrow(
                                   backgroundColor: const Color(0xFF2D2E32),
-                                  label:
-                                      '${_formatWeight((_history[_touchedSpot!.x.toInt()]['value'] as double) * conversion)} $unitLabel',
+                                  label: () {
+                                    final int dataCount = _history.length;
+                                    final int offset = (7 - dataCount) ~/ 2;
+                                    final index = (_touchedSpot!.x - offset).toInt();
+                                    return '${_formatWeight((_history[index]['value'] as double) * conversion)} $unitLabel';
+                                  }(),
                                 ),
                               ),
                             ),

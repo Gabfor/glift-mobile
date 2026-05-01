@@ -54,23 +54,67 @@ class DashboardPreferences {
   ExerciseDisplaySetting getSettingsFor(String exerciseId) {
     return exerciseSettings[exerciseId] ?? ExerciseDisplaySetting.defaultValue();
   }
+
+  DashboardPreferences copyWith({
+    Map<String, ExerciseDisplaySetting>? exerciseSettings,
+    String? selectedProgramId,
+    String? selectedTrainingId,
+    String? selectedExerciseId,
+    bool? showStats,
+  }) {
+    return DashboardPreferences(
+      exerciseSettings: exerciseSettings ?? this.exerciseSettings,
+      selectedProgramId: selectedProgramId ?? this.selectedProgramId,
+      selectedTrainingId: selectedTrainingId ?? this.selectedTrainingId,
+      selectedExerciseId: selectedExerciseId ?? this.selectedExerciseId,
+      showStats: showStats ?? this.showStats,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final settingsMap = <String, dynamic>{};
+    exerciseSettings.forEach((key, value) {
+      settingsMap[key] = value.toJson();
+    });
+
+    return {
+      'exercise_settings': settingsMap,
+      'selected_program_id': selectedProgramId,
+      'selected_training_id': selectedTrainingId,
+      'selected_exercise_id': selectedExerciseId,
+      'show_stats': showStats,
+    };
+  }
 }
 
 class ExerciseDisplaySetting {
   final String curveType;
-  // recordCurveType, sessionCount, goal can be added if needed later
 
   ExerciseDisplaySetting({
     required this.curveType,
   });
 
   factory ExerciseDisplaySetting.defaultValue() {
-    return ExerciseDisplaySetting(curveType: 'poids-maximum'); // Default fallback
+    return ExerciseDisplaySetting(curveType: 'poids-maximum');
   }
 
   factory ExerciseDisplaySetting.fromJson(Map<String, dynamic> json) {
     return ExerciseDisplaySetting(
       curveType: json['curveType'] ?? 'poids-maximum',
     );
+  }
+
+  ExerciseDisplaySetting copyWith({
+    String? curveType,
+  }) {
+    return ExerciseDisplaySetting(
+      curveType: curveType ?? this.curveType,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'curveType': curveType,
+    };
   }
 }

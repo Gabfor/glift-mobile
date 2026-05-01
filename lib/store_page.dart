@@ -806,6 +806,52 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
     }
   }
 
+  Widget _buildNetworkImage(
+    String url, {
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.cover,
+    Widget? placeholder,
+    Widget? errorWidget,
+  }) {
+    final trimmedUrl = url.trim();
+    if (trimmedUrl.isEmpty) {
+      return errorWidget ?? const Icon(Icons.image_not_supported);
+    }
+
+    // Handle spaces and special characters
+    final encodedUrl = Uri.encodeFull(trimmedUrl);
+
+    if (encodedUrl.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.network(
+        encodedUrl,
+        width: width,
+        height: height,
+        fit: fit,
+        placeholderBuilder: (context) => placeholder ?? const SizedBox(),
+      );
+    }
+
+    return Image.network(
+      encodedUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return placeholder ??
+            const Center(
+              child: GliftLoader(size: 20),
+            );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('Error loading image: $encodedUrl -> $error');
+        return errorWidget ?? const Icon(Icons.image_not_supported);
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final program = widget.program;
@@ -842,14 +888,18 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(15),
                 ),
-                child: Image.network(
+                child: _buildNetworkImage(
                   (program.imageMobile != null && program.imageMobile!.isNotEmpty)
                       ? program.imageMobile!
                       : program.image,
                   height: 180,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  placeholder: Container(
+                    height: 180,
+                    color: Colors.grey[300],
+                    child: const Center(child: Icon(Icons.image)),
+                  ),
+                  errorWidget: Container(
                     height: 180,
                     color: Colors.grey[300],
                     child: const Center(child: Icon(Icons.image_not_supported)),
@@ -878,12 +928,11 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                         ],
                       ),
                       child: ClipOval(
-                        child: Image.network(
-                          program.partnerImage!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.person),
-                        ),
+                      child: _buildNetworkImage(
+                        program.partnerImage!,
+                        fit: BoxFit.cover,
+                        errorWidget: const Icon(Icons.person),
+                      ),
                       ),
                     ),
                   ),

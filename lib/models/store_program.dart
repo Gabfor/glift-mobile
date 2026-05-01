@@ -53,10 +53,10 @@ class StoreProgram {
       sessions: json['sessions']?.toString() ?? '',
       duration: json['duration']?.toString() ?? '',
       description: json['description'] as String? ?? '',
-      image: json['image'] as String? ?? '',
-      imageAlt: json['image_alt'] as String? ?? '',
-      partnerImage: json['partner_image'] as String?,
-      partnerImageAlt: json['partner_image_alt'] as String?,
+      image: (json['image'] as String? ?? '').trim(),
+      imageAlt: (json['image_alt'] as String? ?? '').trim(),
+      partnerImage: (json['partner_image'] as String?)?.trim(),
+      partnerImageAlt: (json['partner_image_alt'] as String?)?.trim(),
       partnerLink: json['partner_link'] as String?,
       link: json['link'] as String?,
       downloads: json['downloads'] as int? ?? 0,
@@ -67,7 +67,7 @@ class StoreProgram {
       location: json['location'] as String?,
       linkedProgramId: json['linked_program_id'] as String?,
       plan: json['plan'] as String? ?? 'starter',
-      imageMobile: json['image_mobile'] as String?,
+      imageMobile: (json['image_mobile'] as String?)?.trim(),
     );
   }
 }

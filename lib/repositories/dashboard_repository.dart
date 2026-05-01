@@ -138,4 +138,19 @@ class DashboardRepository {
       return DashboardPreferences();
     }
   }
+
+  Future<void> updateDashboardPreferences(String userId, DashboardPreferences prefs) async {
+    try {
+      await _supabase
+          .from('dashboard_preferences')
+          .upsert({
+            'user_id': userId,
+            ...prefs.toJson(),
+            'updated_at': DateTime.now().toIso8601String(),
+          });
+    } catch (e) {
+      print('Error updating preferences: $e');
+      throw Exception('Erreur lors de la sauvegarde des préférences: $e');
+    }
+  }
 }
