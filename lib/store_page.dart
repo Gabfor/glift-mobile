@@ -613,9 +613,10 @@ class _StorePageState extends State<StorePage> {
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 40),
                                 child: Text(
-                                  'Aucun programme disponible',
+                                  'Aucun programme disponible\navec ces filtres...',
+                                  textAlign: TextAlign.center,
                                   style: GoogleFonts.quicksand(
-                                    color: const Color(0xFFC2BFC6),
+                                    color: const Color(0xFF3A416F),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),

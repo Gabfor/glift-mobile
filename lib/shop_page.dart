@@ -578,9 +578,10 @@ class _ShopPageState extends State<ShopPage> {
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 40),
                                 child: Text(
-                                  'Aucune offre disponible',
+                                  'Aucune offre disponible\navec ces filtres...',
+                                  textAlign: TextAlign.center,
                                   style: GoogleFonts.quicksand(
-                                    color: const Color(0xFFC2BFC6),
+                                    color: const Color(0xFF3A416F),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
