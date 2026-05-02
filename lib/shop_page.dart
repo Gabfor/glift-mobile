@@ -155,75 +155,45 @@ class _ShopPageState extends State<ShopPage> {
     // Filter
     if (selectedFilters.isNotEmpty) {
       filtered = filtered.where((offer) {
-        bool matches = true;
-
-        // Helper to check if we should filter by a section
-        bool shouldFilter(String section) {
-          if (!selectedFilters.containsKey(section)) return false;
-          final selected = selectedFilters[section]!;
-          if (selected.isEmpty) return true; // Selected nothing -> matches nothing
-          
-          final available = _filterOptionsBySection[section] ?? {};
-          // If all available options are selected, don't filter (show items even if they don't have the tag)
-          if (selected.length == available.length && available.isNotEmpty) return false;
-          
-          return true;
-        }
-
         // Sexe
-        if (shouldFilter('Sexe')) {
+        if (selectedFilters.containsKey('Sexe')) {
           final selected = selectedFilters['Sexe']!;
-          if (selected.isEmpty) {
-            matches = false;
-          } else {
-            final gender = offer.gender?.toLowerCase();
-            
-            // Wildcard check
-            final isWildcard = gender != null && 
-                (gender == 'tous' || gender == 'mixte' || gender == 'unisexe');
-
-            if (isWildcard) {
-               matches = true;
-            } else {
-               // Match against selection
-               if (gender == null || !selected.any((s) => s.toLowerCase() == gender)) {
-                 matches = false;
-               }
-            }
+          if (selected.isNotEmpty) {
+             final hasUniversal = offer.genders.any((g) => g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte' || g.toLowerCase() == 'unisexe');
+             final hasSelected = offer.genders.any((g) => selected.any((s) => s.toLowerCase() == g.toLowerCase()));
+             
+             if (!hasUniversal && !hasSelected) return false;
           }
         }
 
         // Catégorie
-        if (matches && shouldFilter('Catégorie')) {
+        if (selectedFilters.containsKey('Catégorie')) {
           final selected = selectedFilters['Catégorie']!;
-           if (selected.isEmpty) {
-            matches = false;
-          } else if (!offer.type.any((type) => selected.contains(type))) {
-            matches = false;
+          if (selected.isNotEmpty) {
+             if (!offer.type.any((type) => selected.contains(type))) return false;
           }
         }
 
         // Sport
-        if (matches && shouldFilter('Sport')) {
+        if (selectedFilters.containsKey('Sport')) {
           final selected = selectedFilters['Sport']!;
-           if (selected.isEmpty) {
-            matches = false;
-          } else if (!offer.type.any((type) => selected.contains(type))) {
-            matches = false;
+          if (selected.isNotEmpty) {
+             if (offer.sport == null || !selected.any((s) => s.toLowerCase() == offer.sport!.toLowerCase())) return false;
           }
         }
 
         // Boutique
-        if (matches && shouldFilter('Boutique')) {
+        if (selectedFilters.containsKey('Boutique')) {
           final selected = selectedFilters['Boutique']!;
-           if (selected.isEmpty) {
-            matches = false;
-          } else if (offer.shop == null || !selected.contains(offer.shop)) {
-            matches = false;
+          if (selected.isNotEmpty) {
+             final hasUniversal = offer.shops.any((s) => s.toLowerCase() == 'tous');
+             final hasSelected = offer.shops.any((s) => selected.contains(s));
+             
+             if (!hasUniversal && !hasSelected) return false;
           }
         }
 
-        return matches;
+        return true;
       }).toList();
     }
 
@@ -365,45 +335,28 @@ class _ShopPageState extends State<ShopPage> {
     for (final offer in currentOffers) {
       switch (section) {
         case 'Sexe':
-          if (offer.gender != null) {
-            final g = offer.gender!;
-            if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
-              // If wildcard, it enables all options theoretically, but usually we just list specific ones found
-              // or we can add 'Femme' and 'Homme' if they are standard.
-              // For now let's just add what's in the data + standard ones if implied.
-              options.add('Femme');
-              options.add('Homme');
-            } else {
-              if (g.isNotEmpty) options.add(g);
-            }
+          for (var g in offer.genders) {
+             if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
+               options.add('Femme');
+               options.add('Homme');
+             } else {
+               if (g.isNotEmpty) options.add(g);
+             }
           }
           break;
         case 'Catégorie':
           options.addAll(offer.type.where((t) => t.isNotEmpty));
           break;
         case 'Sport':
-           // Assuming 'Sport' is also derived from 'type' or a specific field?
-           // In original code: 'Sport': {'Boxe', 'Musculation'} was hardcoded.
-           // You likely need to identify which types are sports.
-           // If 'type' contains everything, we just use it.
-           // However interpreting "Sport" from "type" might be tricky if they are mixed.
-           // Let's assume for now we filter types that match known sports OR just use all types if they are mixed.
-           // Looking at original initialization: 
-           // _filterOptionsBySection = {'Sexe':..., 'Sport':..., 'Catégorie':..., 'Boutique':...}
-           // But 'Sport' was hardcoded to {'Boxe', 'Musculation'}.
-           // Let's try to find these in offer.type
-           if (offer.type.contains('Boxe')) options.add('Boxe');
-           if (offer.type.contains('Musculation')) options.add('Musculation');
-           if (offer.type.contains('CrossTraining')) options.add('CrossTraining');
-           if (offer.type.contains('Yoga')) options.add('Yoga');
-           // Add other sports as they appear in types
-           
-           // If the requirement is dynamic, we should really look at what's in the data.
-           // If specific types are sports, we add them.
-           break;
+          if (offer.sport != null && offer.sport!.isNotEmpty) {
+            options.add(offer.sport!);
+          }
+          break;
         case 'Boutique':
-          if (offer.shop != null && offer.shop!.isNotEmpty) {
-            options.add(offer.shop!);
+          for (var s in offer.shops) {
+            if (s.isNotEmpty && s.toLowerCase() != 'tous') {
+              options.add(s);
+            }
           }
           break;
       }
@@ -433,24 +386,6 @@ class _ShopPageState extends State<ShopPage> {
     // 3. Sport
     final sportOffers = _getOffersFilteredExcludingSection('Sport');
     final sportOptions = _getAvailableOptions('Sport', currentOffers: sportOffers);
-    // Note: The original hardcoded sports were Boxe/Musculation. 
-    // If we want to be truly dynamic, we scanning 'type' for known sports or just ALL types?
-    // The previous implementation had 'Catégorie' AND 'Sport' both seemingly coming from 'type' or hardcoded.
-    // Let's assume 'Sport' options come from 'type' intersections or specific logic.
-    // Ideally we'd have a list of known sports to filter 'type' against, or a separate field.
-    // For now, I will populate Sport with any type that matches common sports or just keep the hardcoded ones if they are always valid?
-    // No, "disable empty filters" means we only show them if they exist in the filtered set.
-    // Let's use a predefined list of sports to extract from types if matches.
-    final knownSports = {'Boxe', 'Musculation', 'CrossTraining', 'Yoga', 'Cardio', 'Fitness'}; // Add more if needed
-    final dynamicSportOptions = <String>{};
-    for(final offer in sportOffers) {
-       for(final t in offer.type) {
-         if(knownSports.contains(t) || knownSports.any((s) => t.contains(s))) {
-            // Simple match
-            if (knownSports.contains(t)) dynamicSportOptions.add(t);
-         }
-       }
-    }
 
 
     // 4. Boutique
@@ -469,7 +404,7 @@ class _ShopPageState extends State<ShopPage> {
       ),
       FilterSection(
         title: 'Sport',
-        options: dynamicSportOptions.toList()..sort(),
+        options: sportOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Boutique',
@@ -843,8 +778,10 @@ class _ShopOfferCard extends StatelessWidget {
                 Wrap(
                   spacing: 5,
                   runSpacing: 5,
-                  children:
-                      offer.type.map((t) => _buildTag(t)).toList(),
+                  children: [
+                    ...offer.type.map((t) => _buildTag(t)),
+                    ...offer.genders.map((g) => _buildGenderTag(g)),
+                  ],
                 ),
                 const SizedBox(height: 15),
 
@@ -928,20 +865,53 @@ class _ShopOfferCard extends StatelessWidget {
 
   Widget _buildTag(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      height: 25,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F5FE),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: Text(
-        text,
-        style: GoogleFonts.redHatText(
-          color: const Color(0xFFA1A5FD),
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
+      child: Center(
+        widthFactor: 1.0,
+        child: Text(
+          text,
+          style: GoogleFonts.redHatText(
+            color: const Color(0xFFA1A5FD),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildGenderTag(String gender) {
+    String? asset;
+    final g = gender.toLowerCase();
+    if (g == 'femme') asset = 'assets/icons/femme.svg';
+    else if (g == 'homme') asset = 'assets/icons/homme.svg';
+    else if (g == 'tous' || g == 'mixte' || g == 'unisexe') asset = 'assets/icons/mixte.svg';
+
+    if (asset != null) {
+      return Container(
+        height: 25,
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF4F5FE),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Center(
+          widthFactor: 1.0,
+          child: SvgPicture.asset(
+            asset,
+            width: 14,
+            height: 14,
+          ),
+        ),
+      );
+    }
+
+    return _buildTag(gender);
   }
 
   Widget _buildInfoLine({

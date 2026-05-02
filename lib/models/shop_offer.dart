@@ -9,17 +9,18 @@ class ShopOffer {
   final String imageAlt;
   final String? brandImage;
   final String? brandImageAlt;
-  final String? shop;
+  final List<String> shops;
   final String? shopWebsite;
   final String? shopLink;
   final String? shipping;
   final String? modal;
   final String? condition;
-  final String? gender;
+  final List<String> genders;
   final String? imageMobile;
   final bool boost;
   final int clickCount;
   final String? createdAt;
+  final String? sport;
 
   ShopOffer({
     required this.id,
@@ -32,39 +33,65 @@ class ShopOffer {
     required this.imageAlt,
     this.brandImage,
     this.brandImageAlt,
-    this.shop,
+    required this.shops,
     this.shopWebsite,
     this.shopLink,
     this.shipping,
     this.modal,
     this.condition,
-    this.gender,
+    required this.genders,
     this.imageMobile,
     this.boost = false,
     this.clickCount = 0,
     this.createdAt,
+    this.sport,
   });
 
   factory ShopOffer.fromJson(Map<String, dynamic> json) {
-    List<String> parseTypes(dynamic value) {
+    List<String> parseList(dynamic value) {
+      if (value == null) return [];
+      
       if (value is List) {
-        return value.map((e) => e.toString()).toList();
-      } else if (value is String) {
-        // Try to parse JSON string if it's stored as stringified JSON
-        try {
-          // Simple check if it looks like a list
-          if (value.startsWith('[') && value.endsWith(']')) {
-             // In a real app we might use jsonDecode, but here we can just split by comma if simple
-             // or just return empty if complex parsing is needed without dart:convert
-             // For now let's assume simple comma separated if not json list
-             return value.replaceAll('[', '').replaceAll(']', '').split(',').map((e) => e.trim().replaceAll('"', '')).toList();
-          }
-           return value.split(',').map((e) => e.trim()).toList();
-        } catch (_) {
-          return [];
-        }
+        return value.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
       }
+      
+      if (value is String) {
+        final trimmed = value.trim();
+        if (trimmed.isEmpty) return [];
+        
+        // Handle JSON array string
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+          try {
+            // Simplified parsing for common cases
+            return trimmed
+                .replaceAll('[', '')
+                .replaceAll(']', '')
+                .split(',')
+                .map((e) => e.trim().replaceAll('"', '').replaceAll("'", ""))
+                .where((e) => e.isNotEmpty)
+                .toList();
+          } catch (_) {
+            return [];
+          }
+        }
+        
+        // Handle comma-separated string
+        return trimmed.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      }
+      
       return [];
+    }
+
+    String? normalizeSport(dynamic value) {
+      if (value == null) return null;
+      if (value is List) {
+        return value.isNotEmpty ? value[0].toString() : null;
+      }
+      if (value is String) {
+        final trimmed = value.trim();
+        return trimmed.isNotEmpty ? trimmed : null;
+      }
+      return null;
     }
 
     return ShopOffer(
@@ -72,23 +99,28 @@ class ShopOffer {
       name: json['name'] as String,
       startDate: json['start_date'] as String?,
       endDate: json['end_date'] as String?,
-      type: parseTypes(json['type']),
+      type: parseList(json['type']),
       code: json['code'] as String?,
       image: (json['image'] as String? ?? '').trim(),
       imageAlt: (json['image_alt'] as String? ?? '').trim(),
       brandImage: (json['brand_image'] as String?)?.trim(),
       brandImageAlt: (json['brand_image_alt'] as String?)?.trim(),
-      shop: json['shop'] as String?,
+      shops: parseList(json['shop']),
       shopWebsite: json['shop_website'] as String?,
       shopLink: json['shop_link'] as String?,
       shipping: json['shipping'] as String?,
       modal: json['modal'] as String?,
       condition: json['condition'] as String?,
-      gender: json['gender'] as String?,
+      genders: parseList(json['gender']),
       imageMobile: (json['image_mobile'] as String?)?.trim(),
       boost: json['boost'] is bool ? json['boost'] as bool : (json['boost'].toString().toLowerCase() == 'true'),
       clickCount: json['click_count'] as int? ?? 0,
       createdAt: json['created_at'] as String?,
+      sport: normalizeSport(json['sport']),
     );
   }
+
+  // Compatibility getter for older UI parts if they expect a single string
+  String? get shop => shops.isNotEmpty ? shops[0] : null;
+  String? get gender => genders.isNotEmpty ? genders[0] : null;
 }

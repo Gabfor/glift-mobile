@@ -959,12 +959,12 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                     _buildTag(program.level),
                     _buildTag('${program.sessions} séances'),
                     _buildTag('${program.duration} min'),
-                    if (program.gender == 'Homme' || program.gender == 'Tous')
-                      _buildIconTag(
-                        'assets/icons/homme.svg',
-                      ), // You might need to check if asset exists or use Icon
-                    if (program.gender == 'Femme' || program.gender == 'Tous')
+                    if (program.gender == 'Homme')
+                      _buildIconTag('assets/icons/homme.svg'),
+                    if (program.gender == 'Femme')
                       _buildIconTag('assets/icons/femme.svg'),
+                    if (program.gender == 'Tous' || program.gender == 'Mixte')
+                      _buildIconTag('assets/icons/mixte.svg'),
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -1066,17 +1066,21 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
 
   Widget _buildTag(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      height: 25,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F5FE),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: Text(
-        text,
-        style: GoogleFonts.redHatText(
-          color: const Color(0xFFA1A5FD),
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
+      child: Center(
+        widthFactor: 1.0,
+        child: Text(
+          text,
+          style: GoogleFonts.redHatText(
+            color: const Color(0xFFA1A5FD),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -1084,12 +1088,20 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
 
   Widget _buildIconTag(String assetPath) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      height: 25,
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F5FE),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: SvgPicture.asset(assetPath, width: 14, height: 14),
+      child: Center(
+        widthFactor: 1.0,
+        child: SvgPicture.asset(
+          assetPath,
+          width: 14,
+          height: 14,
+        ),
+      ),
     );
   }
 }
