@@ -263,6 +263,7 @@ class _ShopPageState extends State<ShopPage> {
         break;
       case 'relevance':
         // Pre-calculate scores for sorting and logging
+        final now = DateTime.now();
         final scoredOffers = filtered.map((offer) {
           int score = 0;
           int genderScore = 0;
@@ -313,7 +314,7 @@ class _ShopPageState extends State<ShopPage> {
           if (offer.endDate != null) {
             final end = DateTime.tryParse(offer.endDate!);
             if (end != null) {
-              final diff = end.difference(DateTime.now());
+              final diff = end.difference(now);
               diffHours = diff.inSeconds / 3600.0; // Use precise hours
               if (diffHours <= 24 && diffHours > 0) {
                 expScore = 2;

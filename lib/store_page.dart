@@ -427,34 +427,27 @@ class _StorePageState extends State<StorePage> {
     final isPremium = userPlan == 'premium'; // Assuming 'premium' is the value
 
     // 1. Sexe
-    final sexPrograms = _getProgramsFilteredExcludingSection('Sexe');
-    final sexOptions = _getAvailableOptions('Sexe', currentPrograms: sexPrograms);
+    final sexOptions = _getAvailableOptions('Sexe', currentPrograms: _programs);
 
     // 2. Niveau
-    final levelPrograms = _getProgramsFilteredExcludingSection('Niveau');
-    final levelOptions = _getAvailableOptions('Niveau', currentPrograms: levelPrograms);
+    final levelOptions = _getAvailableOptions('Niveau', currentPrograms: _programs);
 
     // 3. Lieu
-    final locPrograms = _getProgramsFilteredExcludingSection('Lieu');
-    final locOptions = _getAvailableOptions('Lieu', currentPrograms: locPrograms);
+    final locOptions = _getAvailableOptions('Lieu', currentPrograms: _programs);
 
     // 4. Objectif
-    final goalPrograms = _getProgramsFilteredExcludingSection('Objectif');
-    final goalOptions = _getAvailableOptions('Objectif', currentPrograms: goalPrograms);
+    final goalOptions = _getAvailableOptions('Objectif', currentPrograms: _programs);
 
     // 5. Durée
-    final durPrograms = _getProgramsFilteredExcludingSection('Durée max.');
-    final durOptions = _getAvailableOptions('Durée max.', currentPrograms: durPrograms);
+    final durOptions = _getAvailableOptions('Durée max.', currentPrograms: _programs);
     
     // 6. Partenaire
-    final partnerPrograms = _getProgramsFilteredExcludingSection('Partenaire');
-    final partnerOptions = _getAvailableOptions('Partenaire', currentPrograms: partnerPrograms);
+    final partnerOptions = _getAvailableOptions('Partenaire', currentPrograms: _programs);
 
     // 7. Disponible (Only if not premium)
     Set<String> availOptions = {};
     if (!isPremium) {
-       final availPrograms = _getProgramsFilteredExcludingSection('Disponible');
-       availOptions = _getAvailableOptions('Disponible', currentPrograms: availPrograms);
+       availOptions = _getAvailableOptions('Disponible', currentPrograms: _programs);
     }
 
 
