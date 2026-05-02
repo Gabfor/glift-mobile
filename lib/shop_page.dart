@@ -403,21 +403,17 @@ class _ShopPageState extends State<ShopPage> {
     // We need to calculate available options for EACH section based on the current selection of OTHER sections.
     
     // 1. Sexe
-    final sexOffers = _getOffersFilteredExcludingSection('Sexe');
-    final sexOptions = _getAvailableOptions('Sexe', currentOffers: sexOffers);
+    final sexOptions = _getAvailableOptions('Sexe', currentOffers: _offers);
     
     // 2. Catégorie
-    final catOffers = _getOffersFilteredExcludingSection('Catégorie');
-    final catOptions = _getAvailableOptions('Catégorie', currentOffers: catOffers);
+    final catOptions = _getAvailableOptions('Catégorie', currentOffers: _offers);
     
     // 3. Sport
-    final sportOffers = _getOffersFilteredExcludingSection('Sport');
-    final sportOptions = _getAvailableOptions('Sport', currentOffers: sportOffers);
+    final sportOptions = _getAvailableOptions('Sport', currentOffers: _offers);
 
 
     // 4. Boutique
-    final shopOffers = _getOffersFilteredExcludingSection('Boutique');
-    final shopOptions = _getAvailableOptions('Boutique', currentOffers: shopOffers);
+    final shopOptions = _getAvailableOptions('Boutique', currentOffers: _offers);
 
 
     final sections = [
