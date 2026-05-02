@@ -45,10 +45,7 @@ class _ShopPageState extends State<ShopPage> {
   bool _isLoading = true;
   final Set<String> _selectedTypes = {};
   late String _selectedSort;
-  Map<String, Set<String>> _filterOptionsBySection = {
-    'Sexe': {'Femme', 'Homme'},
-    'Sport': {'Boxe', 'Musculation'},
-  };
+  Map<String, Set<String>> _filterOptionsBySection = {};
 
   String? _userGender;
   String? _userGoal;
@@ -84,12 +81,14 @@ class _ShopPageState extends State<ShopPage> {
       final offers = await _repository.getShopOffers();
       final categories = <String>{};
       final shops = <String>{};
+      final genders = <String>{};
+      final sports = <String>{};
 
       for (final offer in offers) {
         categories.addAll(offer.type.where((t) => t.isNotEmpty));
-        if (offer.shop != null && offer.shop!.isNotEmpty) {
-          shops.add(offer.shop!);
-        }
+        shops.addAll(offer.shops.where((s) => s.isNotEmpty && s.toLowerCase() != 'tous'));
+        genders.addAll(offer.genders.where((g) => g.isNotEmpty && g.toLowerCase() != 'tous'));
+        sports.addAll(offer.sports.where((s) => s.isNotEmpty));
       }
 
       if (mounted) {
@@ -97,8 +96,9 @@ class _ShopPageState extends State<ShopPage> {
           _offers = offers;
           _isLoading = false;
           _filterOptionsBySection = {
-            ..._filterOptionsBySection,
+            'Sexe': genders,
             'Catégorie': categories,
+            'Sport': sports,
             'Boutique': shops,
           };
         });
@@ -158,38 +158,50 @@ class _ShopPageState extends State<ShopPage> {
         // Sexe
         if (selectedFilters.containsKey('Sexe')) {
           final selected = selectedFilters['Sexe']!;
-          if (selected.isNotEmpty) {
-             final hasUniversal = offer.genders.any((g) => g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte' || g.toLowerCase() == 'unisexe');
+          final allOptions = _filterOptionsBySection['Sexe'] ?? {};
+          if (selected.isNotEmpty && selected.length < allOptions.length) {
+             final hasUniversal = offer.genders.any((g) => g.toLowerCase() == 'tous');
              final hasSelected = offer.genders.any((g) => selected.any((s) => s.toLowerCase() == g.toLowerCase()));
              
              if (!hasUniversal && !hasSelected) return false;
+          } else if (selected.isEmpty && allOptions.isNotEmpty) {
+            return false;
           }
         }
 
         // Catégorie
         if (selectedFilters.containsKey('Catégorie')) {
           final selected = selectedFilters['Catégorie']!;
-          if (selected.isNotEmpty) {
-             if (!offer.type.any((type) => selected.contains(type))) return false;
+          final allOptions = _filterOptionsBySection['Catégorie'] ?? {};
+          if (selected.isNotEmpty && selected.length < allOptions.length) {
+             if (!offer.type.any((type) => selected.any((sel) => type.toLowerCase().contains(sel.toLowerCase())))) return false;
+          } else if (selected.isEmpty && allOptions.isNotEmpty) {
+            return false;
           }
         }
 
         // Sport
         if (selectedFilters.containsKey('Sport')) {
           final selected = selectedFilters['Sport']!;
-          if (selected.isNotEmpty) {
-             if (offer.sport == null || !selected.any((s) => s.toLowerCase() == offer.sport!.toLowerCase())) return false;
+          final allOptions = _filterOptionsBySection['Sport'] ?? {};
+          if (selected.isNotEmpty && selected.length < allOptions.length) {
+             if (!offer.sports.any((sport) => selected.any((s) => s.toLowerCase() == sport.toLowerCase()))) return false;
+          } else if (selected.isEmpty && allOptions.isNotEmpty) {
+            return false;
           }
         }
 
         // Boutique
         if (selectedFilters.containsKey('Boutique')) {
           final selected = selectedFilters['Boutique']!;
-          if (selected.isNotEmpty) {
+          final allOptions = _filterOptionsBySection['Boutique'] ?? {};
+          if (selected.isNotEmpty && selected.length < allOptions.length) {
              final hasUniversal = offer.shops.any((s) => s.toLowerCase() == 'tous');
              final hasSelected = offer.shops.any((s) => selected.contains(s));
              
              if (!hasUniversal && !hasSelected) return false;
+          } else if (selected.isEmpty && allOptions.isNotEmpty) {
+            return false;
           }
         }
 
@@ -219,14 +231,34 @@ class _ShopPageState extends State<ShopPage> {
         filtered.sort((a, b) {
           final dateA = DateTime.tryParse(a.startDate ?? '') ?? DateTime(0);
           final dateB = DateTime.tryParse(b.startDate ?? '') ?? DateTime(0);
-          return dateB.compareTo(dateA); // Descending
+          final dateCompare = dateB.compareTo(dateA); // Descending
+          if (dateCompare != 0) return dateCompare;
+
+          // Tie-breaker 1: Created At
+          final createA = DateTime.tryParse(a.createdAt ?? '') ?? DateTime(0);
+          final createB = DateTime.tryParse(b.createdAt ?? '') ?? DateTime(0);
+          final createCompare = createB.compareTo(createA); // Descending
+          if (createCompare != 0) return createCompare;
+
+          // Tie-breaker 2: Name
+          return a.name.compareTo(b.name);
         });
         break;
       case 'expiration':
         filtered.sort((a, b) {
-          final dateA = DateTime.tryParse(a.endDate ?? '') ?? DateTime(2100);
-          final dateB = DateTime.tryParse(b.endDate ?? '') ?? DateTime(2100);
-          return dateA.compareTo(dateB); // Ascending (soonest first)
+          if (a.endDate == null && b.endDate == null) return a.name.compareTo(b.name);
+          if (a.endDate == null) return 1;
+          if (b.endDate == null) return -1;
+          
+          final dateA = DateTime.tryParse(a.endDate!);
+          final dateB = DateTime.tryParse(b.endDate!);
+          if (dateA == null || dateB == null) return a.name.compareTo(b.name);
+          
+          final dateCompare = dateA.compareTo(dateB); // Ascending
+          if (dateCompare != 0) return dateCompare;
+
+          // Tie-breaker: Name
+          return a.name.compareTo(b.name);
         });
         break;
       case 'relevance':
@@ -336,21 +368,16 @@ class _ShopPageState extends State<ShopPage> {
       switch (section) {
         case 'Sexe':
           for (var g in offer.genders) {
-             if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
-               options.add('Femme');
-               options.add('Homme');
-             } else {
-               if (g.isNotEmpty) options.add(g);
-             }
+            if (g.isNotEmpty && g.toLowerCase() != 'tous') {
+              options.add(g);
+            }
           }
           break;
         case 'Catégorie':
           options.addAll(offer.type.where((t) => t.isNotEmpty));
           break;
         case 'Sport':
-          if (offer.sport != null && offer.sport!.isNotEmpty) {
-            options.add(offer.sport!);
-          }
+          options.addAll(offer.sports.where((s) => s.isNotEmpty));
           break;
         case 'Boutique':
           for (var s in offer.shops) {

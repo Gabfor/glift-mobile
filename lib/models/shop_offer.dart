@@ -19,8 +19,8 @@ class ShopOffer {
   final String? imageMobile;
   final bool boost;
   final int clickCount;
+  final List<String> sports;
   final String? createdAt;
-  final String? sport;
 
   ShopOffer({
     required this.id,
@@ -44,59 +44,56 @@ class ShopOffer {
     this.boost = false,
     this.clickCount = 0,
     this.createdAt,
-    this.sport,
+    required this.sports,
   });
 
   factory ShopOffer.fromJson(Map<String, dynamic> json) {
     List<String> parseList(dynamic value) {
-      if (value == null) return [];
+      if (value == null) return <String>[];
       
       if (value is List) {
-        return value.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
+        return value
+            .map((e) => e?.toString().trim() ?? "")
+            .where((e) => e.isNotEmpty)
+            .cast<String>()
+            .toList();
       }
       
       if (value is String) {
         final trimmed = value.trim();
-        if (trimmed.isEmpty) return [];
+        if (trimmed.isEmpty) return <String>[];
         
         // Handle JSON array string
         if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
           try {
-            // Simplified parsing for common cases
             return trimmed
                 .replaceAll('[', '')
                 .replaceAll(']', '')
                 .split(',')
                 .map((e) => e.trim().replaceAll('"', '').replaceAll("'", ""))
                 .where((e) => e.isNotEmpty)
+                .cast<String>()
                 .toList();
           } catch (_) {
-            return [];
+            return <String>[];
           }
         }
         
         // Handle comma-separated string
-        return trimmed.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        return trimmed
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .cast<String>()
+            .toList();
       }
       
-      return [];
-    }
-
-    String? normalizeSport(dynamic value) {
-      if (value == null) return null;
-      if (value is List) {
-        return value.isNotEmpty ? value[0].toString() : null;
-      }
-      if (value is String) {
-        final trimmed = value.trim();
-        return trimmed.isNotEmpty ? trimmed : null;
-      }
-      return null;
+      return <String>[];
     }
 
     return ShopOffer(
-      id: json['id'].toString(),
-      name: json['name'] as String,
+      id: json['id']?.toString() ?? "",
+      name: json['name'] as String? ?? "Sans nom",
       startDate: json['start_date'] as String?,
       endDate: json['end_date'] as String?,
       type: parseList(json['type']),
@@ -113,14 +110,15 @@ class ShopOffer {
       condition: json['condition'] as String?,
       genders: parseList(json['gender']),
       imageMobile: (json['image_mobile'] as String?)?.trim(),
-      boost: json['boost'] is bool ? json['boost'] as bool : (json['boost'].toString().toLowerCase() == 'true'),
+      boost: json['boost'] is bool ? json['boost'] as bool : (json['boost']?.toString().toLowerCase() == 'true'),
       clickCount: json['click_count'] as int? ?? 0,
       createdAt: json['created_at'] as String?,
-      sport: normalizeSport(json['sport']),
+      sports: parseList(json['sport']),
     );
   }
 
-  // Compatibility getter for older UI parts if they expect a single string
+  // Compatibility getters
   String? get shop => shops.isNotEmpty ? shops[0] : null;
   String? get gender => genders.isNotEmpty ? genders[0] : null;
+  String? get sport => sports.isNotEmpty ? sports[0] : null;
 }
