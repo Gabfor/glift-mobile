@@ -377,12 +377,8 @@ class _StorePageState extends State<StorePage> {
         case 'Niveau':
           if (program.level.isNotEmpty) {
             final l = program.level;
-            if (l == 'Tous niveaux') { // Wildcard enables all standard levels if we want, or just "Tous niveaux" option?
-              // The UI shows "Tous niveaux" usually. Or specific ones.
-              // Let's assume we just add what's there. 
+            if (l != 'Tous niveaux') {
               options.add(l);
-            } else {
-               options.add(l);
             }
           }
           break;
@@ -465,16 +461,16 @@ class _StorePageState extends State<StorePage> {
     final sections = [
       FilterSection(title: 'Sexe', options: sexOptions.toList()..sort()),
       FilterSection(
+        title: 'Objectif',
+        options: goalOptions.toList()..sort(),
+      ),
+      FilterSection(
         title: 'Niveau',
         options: levelOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Lieu',
         options: locOptions.toList()..sort(),
-      ),
-      FilterSection(
-        title: 'Objectif',
-        options: goalOptions.toList()..sort(),
       ),
       FilterSection(
         title: 'Durée max.',
