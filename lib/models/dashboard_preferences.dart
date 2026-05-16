@@ -18,21 +18,18 @@ class DashboardPreferences {
     final Map<String, ExerciseDisplaySetting> parsedSettings = {};
 
     if (rawSettings != null && rawSettings is Map) {
-      // In Supabase, the structure is { "selectedExerciseId": "...", "exercises": { "id": { ... } } }
-      // OR direct map depending on migration history, but web app handles both.
-      // Based on web reading: 
-      // if (rawValue.selectedExerciseId) { ... return parseSettingsRecord(rawValue.exercises) }
-      // else { ... parseSettingsRecord(rawValue) }
-      
       Map<String, dynamic> exercisesMap = {};
+      
+      // Structure: { "selectedExerciseId": "...", "exercises": { "id": { ... } } }
       if (rawSettings.containsKey('exercises') && rawSettings['exercises'] is Map) {
         exercisesMap = Map<String, dynamic>.from(rawSettings['exercises']);
+      } else if (rawSettings.containsKey('selectedExerciseId') && rawSettings['exercises'] == null) {
+          // If it has selectedExerciseId but NO exercises key, it might be a malformed structured format
+          // but usually it's either structured or flat.
+          exercisesMap = {};
       } else {
          // Fallback/Legacy structure or direct map
-         // Verify if it has 'selectedExerciseId' key to discriminate
-         if (!rawSettings.containsKey('selectedExerciseId')) {
-            exercisesMap = Map<String, dynamic>.from(rawSettings);
-         }
+         exercisesMap = Map<String, dynamic>.from(rawSettings);
       }
 
       exercisesMap.forEach((key, value) {
@@ -77,8 +74,12 @@ class DashboardPreferences {
       settingsMap[key] = value.toJson();
     });
 
+    // Align with web app structured format
     return {
-      'exercise_settings': settingsMap,
+      'exercise_settings': {
+        'selectedExerciseId': selectedExerciseId,
+        'exercises': settingsMap,
+      },
       'selected_program_id': selectedProgramId,
       'selected_training_id': selectedTrainingId,
       'selected_exercise_id': selectedExerciseId,
@@ -89,32 +90,55 @@ class DashboardPreferences {
 
 class ExerciseDisplaySetting {
   final String curveType;
+  final String sessionCount;
+  final String recordCurveType;
+  final Map<String, dynamic>? goal;
 
   ExerciseDisplaySetting({
     required this.curveType,
+    required this.sessionCount,
+    required this.recordCurveType,
+    this.goal,
   });
 
   factory ExerciseDisplaySetting.defaultValue() {
-    return ExerciseDisplaySetting(curveType: 'poids-maximum');
+    return ExerciseDisplaySetting(
+      curveType: 'poids-maximum',
+      sessionCount: '15',
+      recordCurveType: 'poids-maximum',
+    );
   }
 
   factory ExerciseDisplaySetting.fromJson(Map<String, dynamic> json) {
+    final curve = json['curveType'] ?? 'poids-maximum';
     return ExerciseDisplaySetting(
-      curveType: json['curveType'] ?? 'poids-maximum',
+      curveType: curve,
+      sessionCount: json['sessionCount'] ?? '15',
+      recordCurveType: json['recordCurveType'] ?? curve,
+      goal: json['goal'],
     );
   }
 
   ExerciseDisplaySetting copyWith({
     String? curveType,
+    String? sessionCount,
+    String? recordCurveType,
+    Map<String, dynamic>? goal,
   }) {
     return ExerciseDisplaySetting(
       curveType: curveType ?? this.curveType,
+      sessionCount: sessionCount ?? this.sessionCount,
+      recordCurveType: recordCurveType ?? this.recordCurveType,
+      goal: goal ?? this.goal,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'curveType': curveType,
+      'sessionCount': sessionCount,
+      'recordCurveType': recordCurveType,
+      'goal': goal,
     };
   }
 }
