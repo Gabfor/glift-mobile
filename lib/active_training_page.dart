@@ -1194,6 +1194,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 showDecoration: false,
                 showActions: false,
                 showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+                showSuivi: group.indexOf(r) == group.length - 1,
                 activeFocusId: _activeFocusId,
               );
             }).toList(),
@@ -1345,6 +1346,7 @@ class _ActiveExerciseCard extends StatefulWidget {
     this.showDecoration = true,
     this.showActions = true,
     this.showTimer = true,
+    this.showSuivi = true,
   });
 
   final int index;
@@ -1375,6 +1377,7 @@ class _ActiveExerciseCard extends StatefulWidget {
   final bool showDecoration;
   final bool showActions;
   final bool showTimer;
+  final bool showSuivi;
 
   @override
   State<_ActiveExerciseCard> createState() => _ActiveExerciseCardState();
@@ -2091,9 +2094,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               const SizedBox(width: 10),
               _GridHeader('Effort', flex: 68),
             ],
-            const SizedBox(width: 10),
-            if (SettingsService.instance.getShowSuivi())
-              const _GridHeader('Suivi', flex: 40),
+            if (SettingsService.instance.getShowSuivi()) ...[
+              const SizedBox(width: 10),
+              widget.showSuivi
+                  ? const _GridHeader('Suivi', flex: 40)
+                  : const Expanded(flex: 40, child: SizedBox.shrink()),
+            ],
           ],
         ),
         const SizedBox(height: 10),
@@ -2247,19 +2253,21 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   // Suivi (Completion)
                   Expanded(
                     flex: 40,
-                    child: GestureDetector(
-                      onTap: () => isLocked ? null : _toggleSetCompletion(index),
-                      child: SvgPicture.asset(
-                        isLocked
-                          ? 'assets/icons/Suivi_gris.svg' // Or a locked version if exists? Using gray as fallback
-                          : (isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg'),
-                        width: 24,
-                        height: 24,
-                        colorFilter: isLocked 
-                            ? const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn) 
-                            : null,
-                      ),
-                    ),
+                    child: widget.showSuivi
+                      ? GestureDetector(
+                          onTap: () => isLocked ? null : _toggleSetCompletion(index),
+                          child: SvgPicture.asset(
+                            isLocked
+                              ? 'assets/icons/Suivi_gris.svg' // Or a locked version if exists? Using gray as fallback
+                              : (isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg'),
+                            width: 24,
+                            height: 24,
+                            colorFilter: isLocked 
+                                ? const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn) 
+                                : null,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                   ),
                 ],
               ],
