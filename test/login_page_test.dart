@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase/supabase.dart';
 
 import 'package:glift_mobile/auth/auth_repository.dart';
+import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/login_page.dart';
 
 class FakeAuthRepository implements AuthRepository {
@@ -15,7 +16,7 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> Function()? onSignIn;
 
   @override
-  Future<void> signInWithPassword({
+  Future<Session> signInWithPassword({
     required String email,
     required String password,
   }) async {
@@ -30,6 +31,19 @@ class FakeAuthRepository implements AuthRepository {
     if (shouldThrow) {
       throw Exception('Unexpected error');
     }
+
+    return Session(
+      accessToken: 'dummy-access-token',
+      tokenType: 'bearer',
+      user: User(
+        id: 'dummy-user-id',
+        createdAt: DateTime.now().toIso8601String(),
+        email: email,
+        aud: 'authenticated',
+        appMetadata: {},
+        userMetadata: {},
+      ),
+    );
   }
 
   @override
@@ -41,11 +55,16 @@ final _supabase = SupabaseClient(
   'public-anon-key',
 );
 
+final _biometricAuthService = BiometricAuthService(
+  supabase: _supabase,
+);
+
 Widget _buildLogin(FakeAuthRepository repository) {
   return MaterialApp(
     home: LoginPage(
       authRepository: repository,
       supabase: _supabase,
+      biometricAuthService: _biometricAuthService,
     ),
   );
 }

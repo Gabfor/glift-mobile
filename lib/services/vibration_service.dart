@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:vibration/vibration.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class VibrationService {
   const VibrationService();
@@ -16,16 +16,27 @@ class DeviceVibrationService extends VibrationService {
 
   @override
   Future<bool> hasVibrator() async {
-    return await Vibration.hasVibrator() ?? false;
+    // Most physical devices support haptic feedback/vibration.
+    // Returning true ensures vibrate() is called. If not supported by hardware,
+    // Flutter's HapticFeedback API handles it gracefully without throwing or crashing.
+    return true;
   }
 
   @override
-  Future<void> vibrate() {
-    return Vibration.vibrate();
+  Future<void> vibrate() async {
+    try {
+      await HapticFeedback.vibrate();
+    } catch (e) {
+      debugPrint('Error triggering vibration: $e');
+    }
   }
 
   @override
-  Future<void> fallback() {
-    return HapticFeedback.mediumImpact();
+  Future<void> fallback() async {
+    try {
+      await HapticFeedback.mediumImpact();
+    } catch (e) {
+      debugPrint('Error triggering haptic fallback: $e');
+    }
   }
 }

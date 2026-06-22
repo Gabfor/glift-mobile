@@ -61,12 +61,18 @@ class _FakeAlertService implements TimerAlertService {
   Future<void> playSound() async {
     playSoundCount++;
   }
+
+  @override
+  Future<void> scheduleTimerNotification({required DateTime scheduledTime}) async {}
+
+  @override
+  Future<void> cancelTimerNotification() async {}
 }
 
 class _FakeVibrationService implements VibrationService {
-  _FakeVibrationService({required this.hasVibrator});
+  _FakeVibrationService({required bool hasVibrator}) : _hasVibrator = hasVibrator;
 
-  final bool hasVibrator;
+  final bool _hasVibrator;
   int vibrateCount = 0;
   int fallbackCount = 0;
 
@@ -77,7 +83,7 @@ class _FakeVibrationService implements VibrationService {
 
   @override
   Future<bool> hasVibrator() async {
-    return hasVibrator;
+    return _hasVibrator;
   }
 
   @override
