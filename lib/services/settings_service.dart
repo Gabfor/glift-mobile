@@ -35,78 +35,34 @@ class SettingsService {
 
     try {
       // 1. Sync Preferences
-      final response = await _supabase!
-          .from('preferences')
-          .select('weight_unit, show_effort, show_materiel, show_repos, show_link, show_notes, show_suivi, show_superset, show_summary, show_goals')
-          .eq('id', user.id)
-          .maybeSingle();
-
-      if (response != null) {
-        if (response['weight_unit'] != null) {
-          final unit = response['weight_unit'] as String;
-          final localUnit = unit == 'lb' ? 'imperial' : 'metric';
-          if (localUnit != getWeightUnit()) {
-            await _prefs.setString(_kWeightUnit, localUnit);
-            weightUnitNotifier.value = localUnit;
-          }
-        }
-        if (response['show_effort'] != null) {
-            final showEffort = response['show_effort'] as bool;
-            if (showEffort != getShowEffort()) {
-                await _prefs.setBool(_kShowEffort, showEffort);
-            }
-        }
-        if (response['show_materiel'] != null) {
-            final showMateriel = response['show_materiel'] as bool;
-            if (showMateriel != getMaterialEnabled()) {
-                await _prefs.setBool(_kMaterial, showMateriel);
-            }
-        }
-        if (response['show_repos'] != null) {
-            final showRepos = response['show_repos'] as bool;
-            if (showRepos != getShowRepos()) {
-                await _prefs.setBool(_kShowRepos, showRepos);
-            }
-        }
-        if (response['show_link'] != null) {
-            final showLink = response['show_link'] as bool;
-            if (showLink != getShowLinks()) {
-                await _prefs.setBool(_kShowLinks, showLink);
-            }
-        }
-        if (response['show_notes'] != null) {
-            final showNotes = response['show_notes'] as bool;
-            if (showNotes != getShowNotes()) {
-                await _prefs.setBool(_kShowNotes, showNotes);
-                // Enforce side effect on sync
-                if (!showNotes) {
-                   await _prefs.setBool(_kMaterial, false);
-                }
-            }
-        }
-        if (response['show_suivi'] != null) {
-            final showSuivi = response['show_suivi'] as bool;
-            if (showSuivi != getShowSuivi()) {
-                await _prefs.setBool(_kShowSuivi, showSuivi);
-            }
-        }
-        if (response['show_superset'] != null) {
-            final showSuperset = response['show_superset'] as bool;
-            if (showSuperset != getShowSuperset()) {
-                await _prefs.setBool(_kShowSuperset, showSuperset);
-            }
-        }
-        if (response['show_summary'] != null) {
-            final showSummary = response['show_summary'] as bool;
-            if (showSummary != getShowSummary()) {
-                await _prefs.setBool(_kShowSummary, showSummary);
-            }
-        }
-        if (response['show_goals'] != null) {
-            final showGoals = response['show_goals'] as bool;
-            if (showGoals != getShowGoals()) {
-                await _prefs.setBool(_kShowGoals, showGoals);
-            }
+      // Try fetching all columns including the newer ones.
+      try {
+        await _fetchAndSyncPreferences(user.id, [
+          'weight_unit',
+          'show_effort',
+          'show_materiel',
+          'show_repos',
+          'show_link',
+          'show_notes',
+          'show_suivi',
+          'show_superset',
+          'show_summary',
+          'show_goals',
+        ]);
+      } on PostgrestException catch (e) {
+        // If PostgreSQL error 42703 (undefined column) occurs, fallback to basic columns
+        if (e.code == '42703') {
+          print('New preference columns missing in Supabase, falling back to basic columns: $e');
+          await _fetchAndSyncPreferences(user.id, [
+            'weight_unit',
+            'show_effort',
+            'show_materiel',
+            'show_repos',
+            'show_link',
+            'show_notes',
+          ]);
+        } else {
+          rethrow;
         }
       }
 
@@ -128,6 +84,83 @@ class SettingsService {
       // Create preference row if it doesn't exist? Or just ignore.
       // Usually preferences are created on signup.
       print('Error syncing settings: $e');
+    }
+  }
+
+  Future<void> _fetchAndSyncPreferences(String userId, List<String> columns) async {
+    final response = await _supabase!
+        .from('preferences')
+        .select(columns.join(', '))
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (response != null) {
+      if (response['weight_unit'] != null) {
+        final unit = response['weight_unit'] as String;
+        final localUnit = unit == 'lb' ? 'imperial' : 'metric';
+        if (localUnit != getWeightUnit()) {
+          await _prefs.setString(_kWeightUnit, localUnit);
+          weightUnitNotifier.value = localUnit;
+        }
+      }
+      if (response['show_effort'] != null) {
+        final showEffort = response['show_effort'] as bool;
+        if (showEffort != getShowEffort()) {
+          await _prefs.setBool(_kShowEffort, showEffort);
+        }
+      }
+      if (response['show_materiel'] != null) {
+        final showMateriel = response['show_materiel'] as bool;
+        if (showMateriel != getMaterialEnabled()) {
+          await _prefs.setBool(_kMaterial, showMateriel);
+        }
+      }
+      if (response['show_repos'] != null) {
+        final showRepos = response['show_repos'] as bool;
+        if (showRepos != getShowRepos()) {
+          await _prefs.setBool(_kShowRepos, showRepos);
+        }
+      }
+      if (response['show_link'] != null) {
+        final showLink = response['show_link'] as bool;
+        if (showLink != getShowLinks()) {
+          await _prefs.setBool(_kShowLinks, showLink);
+        }
+      }
+      if (response['show_notes'] != null) {
+        final showNotes = response['show_notes'] as bool;
+        if (showNotes != getShowNotes()) {
+          await _prefs.setBool(_kShowNotes, showNotes);
+          // Enforce side effect on sync
+          if (!showNotes) {
+            await _prefs.setBool(_kMaterial, false);
+          }
+        }
+      }
+      if (response.containsKey('show_suivi') && response['show_suivi'] != null) {
+        final showSuivi = response['show_suivi'] as bool;
+        if (showSuivi != getShowSuivi()) {
+          await _prefs.setBool(_kShowSuivi, showSuivi);
+        }
+      }
+      if (response.containsKey('show_superset') && response['show_superset'] != null) {
+        final showSuperset = response['show_superset'] as bool;
+        if (showSuperset != getShowSuperset()) {
+          await _prefs.setBool(_kShowSuperset, showSuperset);
+        }
+      }
+      if (response.containsKey('show_summary') && response['show_summary'] != null) {
+        final showSummary = response['show_summary'] as bool;
+        if (showSummary != getShowSummary()) {
+          await _prefs.setBool(_kShowSummary, showSummary);
+        }
+      }
+      if (response.containsKey('show_goals') && response['show_goals'] != null) {
+        final showGoals = response['show_goals'] as bool;
+        if (showGoals != getShowGoals()) {
+          await _prefs.setBool(_kShowGoals, showGoals);
+        }
+      }
     }
   }
 
