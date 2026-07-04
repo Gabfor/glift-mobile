@@ -874,7 +874,9 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                   top: Radius.circular(15),
                 ),
                 child: _buildNetworkImage(
-                  (program.imageMobile != null && program.imageMobile!.isNotEmpty)
+                  (program.imageMobile != null &&
+                          program.imageMobile!.isNotEmpty &&
+                          program.imageMobile != 'null')
                       ? program.imageMobile!
                       : program.image,
                   height: 180,
