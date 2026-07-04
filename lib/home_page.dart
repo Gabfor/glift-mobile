@@ -302,8 +302,9 @@ class HomePageState extends State<HomePage> {
 
   bool _shouldUseFullPageScroll(String? programId) {
     if (programId == null || _programs == null) return false;
-    final program = _programs!.firstWhere((p) => p.id == programId);
-    return program.dashboard;
+    final index = _programs!.indexWhere((p) => p.id == programId);
+    if (index == -1) return false;
+    return _programs![index].dashboard;
   }
 
   Future<void> _handleEditProgramName(Program program) async {
