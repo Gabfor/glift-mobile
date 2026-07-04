@@ -133,8 +133,6 @@ class HomePageState extends State<HomePage> {
     setState(() {
       _syncStatus = SyncStatus.loading;
     });
-    // Sync settings first or concurrently
-    await SettingsService.instance.syncFromSupabase();
     await _fetchPrograms();
   }
 
@@ -166,8 +164,12 @@ class HomePageState extends State<HomePage> {
     }
 
     try {
-      await SettingsService.instance.syncFromSupabase();
-      final programs = await _programRepository.getPrograms();
+      await SettingsService.instance
+          .syncFromSupabase()
+          .timeout(const Duration(seconds: 4));
+      final programs = await _programRepository
+          .getPrograms()
+          .timeout(const Duration(seconds: 4));
       if (mounted) {
         setState(() {
           _programs = programs;
@@ -1014,7 +1016,7 @@ class _TrainingCard extends StatelessWidget {
           height: 20,
         );
       case SyncStatus.notSynced:
-        return SvgPicture.asset('assets/icons/notgood.svg', width: 24, height: 24);
+        return SvgPicture.asset('assets/icons/notgood.svg', width: 20, height: 20);
     }
   }
 
