@@ -28,6 +28,7 @@ import '../session_completed_page.dart';
 import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
 import '../main_page.dart';
+import 'services/offline_sync_service.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -547,7 +548,6 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       await vibrationService.fallback();
     }
   }
-
   Future<void> _finishTraining() async {
     if (_rows == null) return;
 
@@ -562,13 +562,23 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         final userId = widget.supabase.auth.currentUser?.id;
         if (userId != null) {
           // Fetch previous stats for comparison BEFORE saving the new one
-          // This ensures we compare against history, not including the current one
-          final previousStats = await _programRepository.getPreviousSessionStats(
-            userId: userId,
-            trainingId: widget.training.id,
-          );
-          
-          debugPrint('DEBUG: Previous Stats: $previousStats');
+          // Wrap in try-catch so network errors here don't prevent finishing the workout
+          Map<String, dynamic> previousStats;
+          try {
+            previousStats = await _programRepository
+                .getPreviousSessionStats(
+                  userId: userId,
+                  trainingId: widget.training.id,
+                )
+                .timeout(const Duration(seconds: 3));
+          } catch (e) {
+            debugPrint('Failed to fetch previous stats: $e');
+            previousStats = {
+              'averageDuration': null,
+              'lastVolume': null,
+              'lastReps': null,
+            };
+          }
 
           final duration = DateTime.now().difference(_startTime ?? DateTime.now()).inMinutes;
           final displayDuration = duration > 0 ? duration : 1;
@@ -600,8 +610,10 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
           if (!mounted) return;
 
           final achievedGoalsList = <AchievedGoal>[];
+          final List<String> achievedGoalExerciseIds = [];
           for (final r in completedRowsData) {
             if (_achievedGoals.contains(r.id)) {
+               achievedGoalExerciseIds.add(r.id);
                final exercises = _exerciseSettings?['exercises'];
                if (exercises != null && exercises is Map) {
                  final setting = exercises[r.id];
@@ -613,103 +625,127 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                        target: target,
                        type: goal['type'] as String,
                     ));
-                  }
+                 }
                }
             }
           }
 
-          // Launch slow backend updates in the background without awaiting them here
-          Future.microtask(() async {
-            try {
-              // Save history
-              await _programRepository.saveTrainingSession(
-                userId: userId,
-                trainingId: widget.training.id,
-                completedRows: completedRowsData,
-                duration: displayDuration,
-              );
-              
-              // Update templates (last used weights)
-              await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
-                row.id,
-                repetitions: row.repetitions,
-                weights: row.weights,
-                efforts: row.efforts,
-              )));
+          final now = DateTime.now().toUtc();
+          bool savedSuccessfully = false;
 
-              // Mark achieved goals in the backend so they don't trigger again
-              if (achievedGoalsList.isNotEmpty && _exerciseSettings != null) {
-                bool settingsUpdated = false;
-                final exercises = _exerciseSettings!['exercises'];
-                if (exercises != null && exercises is Map) {
-                  for (final r in completedRowsData) {
-                    if (_achievedGoals.contains(r.id)) {
-                      final setting = exercises[r.id];
-                      if (setting != null && setting['goal'] != null) {
-                        setting['goal']['achieved'] = true;
-                        settingsUpdated = true;
-                      }
+          try {
+            // Attempt to save to Supabase with a timeout
+            await _programRepository.saveTrainingSession(
+              userId: userId,
+              trainingId: widget.training.id,
+              completedRows: completedRowsData,
+              duration: displayDuration,
+              performedAt: now,
+            ).timeout(const Duration(seconds: 4));
+
+            // If we successfully saved the session, update templates and goals too
+            await Future.wait(completedRowsData.map((row) => _programRepository.updateTrainingRow(
+              row.id,
+              repetitions: row.repetitions,
+              weights: row.weights,
+              efforts: row.efforts,
+            ))).timeout(const Duration(seconds: 3));
+
+            if (achievedGoalsList.isNotEmpty && _exerciseSettings != null) {
+              bool settingsUpdated = false;
+              final exercises = _exerciseSettings!['exercises'];
+              if (exercises != null && exercises is Map) {
+                for (final r in completedRowsData) {
+                  if (_achievedGoals.contains(r.id)) {
+                    final setting = exercises[r.id];
+                    if (setting != null && setting['goal'] != null) {
+                      setting['goal']['achieved'] = true;
+                      settingsUpdated = true;
                     }
                   }
                 }
-                if (settingsUpdated) {
-                   await _programRepository.updateDashboardPreferences(userId, _exerciseSettings!);
-                }
               }
-            } catch (e) {
-              debugPrint('Error updating backend in background: $e');
+              if (settingsUpdated) {
+                await _programRepository.updateDashboardPreferences(userId, _exerciseSettings!)
+                    .timeout(const Duration(seconds: 3));
+              }
             }
-          });
+            savedSuccessfully = true;
+          } catch (e) {
+            debugPrint('Failed online save, queueing offline: $e');
+            // If anything fails (network error, timeout), cache offline
+            await OfflineSyncService.instance.queueSession(
+              userId: userId,
+              trainingId: widget.training.id,
+              completedRows: completedRowsData,
+              duration: displayDuration,
+              performedAt: now,
+              achievedGoalExerciseIds: achievedGoalExerciseIds,
+            );
+          }
 
-          // Navigate to completion screen as an overlay (transparent route)
-          if (mounted) {
-            if (SettingsService.instance.getShowSummary()) {
-              await Navigator.of(context).push(
+          if (!mounted) return;
+
+          setState(() => _isFinishing = false);
+
+          if (!savedSuccessfully) {
+            // Show toast/snackbar to notify user that it was saved offline
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Séance enregistrée localement. Elle sera synchronisée dès le retour d\'une connexion internet.',
+                  style: TextStyle(fontFamily: 'Quicksand'),
+                ),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
+
+          // Navigate to completion screen
+          if (SettingsService.instance.getShowSummary()) {
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                opaque: false, // Transparent background
+                pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
+                  sessionCount: sessionCount,
+                  durationMinutes: displayDuration,
+                  totalVolume: totalVolume,
+                  totalReps: totalReps,
+                  averageDuration: avgDuration,
+                  previousTotalVolume: prevVolume,
+                  previousTotalReps: prevReps,
+                  programId: widget.training.programId,
+                  trainingId: widget.training.id,
+                  supabase: widget.supabase,
+                  authRepository: widget.authRepository,
+                  biometricAuthService: widget.biometricAuthService,
+                  achievedGoals: achievedGoalsList,
+                ),
+                transitionDuration: const Duration(milliseconds: 200),
+                reverseTransitionDuration: const Duration(milliseconds: 200),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+              ),
+            );
+          } else {
+            _triggerVibration();
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
                 PageRouteBuilder(
-                  opaque: false, // Transparent background
-                  pageBuilder: (context, animation, secondaryAnimation) => SessionCompletedPage(
-                    sessionCount: sessionCount,
-                    durationMinutes: displayDuration,
-                    totalVolume: totalVolume,
-                    totalReps: totalReps,
-                    averageDuration: avgDuration,
-                    previousTotalVolume: prevVolume,
-                    previousTotalReps: prevReps,
-                    programId: widget.training.programId,
-                    trainingId: widget.training.id,
+                  pageBuilder: (context, animation, secondaryAnimation) => MainPage(
                     supabase: widget.supabase,
                     authRepository: widget.authRepository,
                     biometricAuthService: widget.biometricAuthService,
-                    achievedGoals: achievedGoalsList,
+                    initialProgramId: widget.training.programId,
+                    initialTrainingId: widget.training.id,
                   ),
-                  transitionDuration: const Duration(milliseconds: 200),
-                  reverseTransitionDuration: const Duration(milliseconds: 200),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                  },
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
                 ),
+                (route) => false,
               );
-            } else {
-               // Trigger vibration manually since we skip the page that does it
-               _triggerVibration();
-
-               // Directly navigate to sessions list (index 1)
-               if (mounted) {
-                 Navigator.of(context).pushAndRemoveUntil(
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => MainPage(
-                        supabase: widget.supabase,
-                        authRepository: widget.authRepository,
-                        biometricAuthService: widget.biometricAuthService,
-                        initialProgramId: widget.training.programId,
-                        initialTrainingId: widget.training.id,
-                      ),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                    (route) => false,
-                  );
-               }
             }
           }
         }
@@ -1085,6 +1121,15 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onClose: _closeKeypad,
               ),
             ),
+          if (_isFinishing)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.35),
+                child: const Center(
+                  child: GliftLoader(),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1432,16 +1477,23 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isRunning && _endTime != null) {
-      final now = DateTime.now();
-      final diff = _endTime!.difference(now).inSeconds;
-      setState(() {
-        _remainingSeconds = diff > 0 ? diff : 0;
-      });
-      if (_remainingSeconds <= 0 && _timer != null) {
-         _timer?.cancel();
-         _timer = null;
-         _onTimerCompleted();
+    if (state == AppLifecycleState.resumed) {
+      _alertService.cancelTimerNotification();
+      if (_isRunning && _endTime != null) {
+        final now = DateTime.now();
+        final diff = _endTime!.difference(now).inSeconds;
+        setState(() {
+          _remainingSeconds = diff > 0 ? diff : 0;
+        });
+        if (_remainingSeconds <= 0 && _timer != null) {
+           _timer?.cancel();
+           _timer = null;
+           _onTimerCompleted();
+        }
+      }
+    } else if ((state == AppLifecycleState.paused || state == AppLifecycleState.inactive) && _isRunning && _endTime != null) {
+      if (widget.data.enableSound || widget.data.enableVibration) {
+        _alertService.scheduleTimerNotification(scheduledTime: _endTime!);
       }
     }
   }
@@ -1484,10 +1536,6 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
       _isRunning = true;
       _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
-
-    if (widget.data.enableSound || widget.data.enableVibration) {
-      _alertService.scheduleTimerNotification(scheduledTime: _endTime!);
-    }
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_endTime != null) {

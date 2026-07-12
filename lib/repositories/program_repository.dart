@@ -720,9 +720,10 @@ class ProgramRepository {
     required String trainingId,
     required List<TrainingRow> completedRows,
     required int duration,
+    DateTime? performedAt,
   }) async {
     try {
-      final performedAt = DateTime.now().toUtc();
+      final actualPerformedAt = performedAt ?? DateTime.now().toUtc();
       
       // 1. Create session
       final sessionResponse = await _supabase
@@ -730,7 +731,7 @@ class ProgramRepository {
           .insert({
             'user_id': userId,
             'training_id': trainingId,
-            'performed_at': performedAt.toIso8601String(),
+            'performed_at': actualPerformedAt.toIso8601String(),
             'duration': duration,
           })
           .select()
@@ -790,7 +791,7 @@ class ProgramRepository {
       }
 
       // 4. Update local cache immediately to prevent UI jump
-      await _updateLocalTrainingStats(trainingId, duration, performedAt);
+      await _updateLocalTrainingStats(trainingId, duration, actualPerformedAt);
 
     } on PostgrestException catch (e) {
       final errorDetails = StringBuffer(

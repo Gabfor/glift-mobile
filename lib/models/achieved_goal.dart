@@ -27,4 +27,19 @@ class AchievedGoal {
       return '$formattedTarget $metricName';
     }
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'exerciseName': exerciseName,
+      'target': target,
+      'type': type,
+    };
+  }
+
+  factory AchievedGoal.fromJson(Map<String, dynamic> json) {
+    return AchievedGoal(
+      exerciseName: json['exerciseName'] as String,
+      target: (json['target'] as num).toDouble(),
+      type: json['type'] as String,
+    );
+  }
 }

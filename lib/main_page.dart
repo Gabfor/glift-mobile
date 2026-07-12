@@ -9,6 +9,7 @@ import 'shop_page.dart';
 import 'settings_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
+import 'services/offline_sync_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -32,7 +33,7 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   int _currentIndex = 1; // Default to 'Séances'
   bool _isBottomNavVisible = true;
   final GlobalKey<DashboardPageState> _dashboardKey = GlobalKey();
@@ -43,6 +44,9 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _triggerSync();
+    
     // Use Dashboard as default if an initial program ID is provided
     if (widget.initialIndex != null) {
       _currentIndex = widget.initialIndex!;
@@ -87,6 +91,23 @@ class _MainPageState extends State<MainPage> {
         biometricAuthService: widget.biometricAuthService,
       ),
     ];
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _triggerSync();
+    }
+  }
+
+  void _triggerSync() {
+    OfflineSyncService.instance.syncPendingSessions(widget.supabase);
   }
 
   void _navigateToDashboard({String? programId, String? trainingId}) {

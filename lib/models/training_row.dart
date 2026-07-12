@@ -62,4 +62,23 @@ class TrainingRow {
       locked: json['locked'] as bool? ?? false,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'training_id': trainingId,
+      'exercice': exercise,
+      'series': series,
+      'repetitions': repetitions,
+      'poids': weights,
+      'effort': efforts,
+      'repos': rest,
+      'video_url': videoUrl,
+      'order': order,
+      'superset_id': supersetId,
+      'locked': locked,
+      'note': note,
+      'materiel': material,
+    };
+  }
 }

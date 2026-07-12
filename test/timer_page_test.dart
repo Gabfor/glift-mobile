@@ -52,10 +52,47 @@ void main() {
     expect(vibrationService.fallbackCount, 1);
     expect(alertService.playSoundCount, 1);
   });
+
+  testWidgets('schedules notification only when app goes to background',
+      (tester) async {
+    final alertService = _FakeAlertService();
+    final vibrationService = _FakeVibrationService(hasVibrator: true);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TimerPage(
+          durationInSeconds: 10,
+          alertService: alertService,
+          vibrationService: vibrationService,
+        ),
+      ),
+    );
+
+    // Initial state: timer is running, but no notification is scheduled
+    expect(alertService.scheduleCount, 0);
+
+    // Transition to background
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+
+    // Notification should be scheduled
+    expect(alertService.scheduleCount, 1);
+    expect(alertService.lastScheduledTime, isNotNull);
+
+    // Transition back to foreground
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+
+    // Scheduled notification should be cancelled
+    expect(alertService.cancelCount, 1);
+  });
 }
 
 class _FakeAlertService implements TimerAlertService {
   int playSoundCount = 0;
+  int scheduleCount = 0;
+  int cancelCount = 0;
+  DateTime? lastScheduledTime;
 
   @override
   Future<void> playSound() async {
@@ -63,10 +100,15 @@ class _FakeAlertService implements TimerAlertService {
   }
 
   @override
-  Future<void> scheduleTimerNotification({required DateTime scheduledTime}) async {}
+  Future<void> scheduleTimerNotification({required DateTime scheduledTime}) async {
+    scheduleCount++;
+    lastScheduledTime = scheduledTime;
+  }
 
   @override
-  Future<void> cancelTimerNotification() async {}
+  Future<void> cancelTimerNotification() async {
+    cancelCount++;
+  }
 }
 
 class _FakeVibrationService implements VibrationService {

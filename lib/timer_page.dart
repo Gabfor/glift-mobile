@@ -102,16 +102,23 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isRunning && _endTime != null) {
-      final now = DateTime.now();
-      final diff = _endTime!.difference(now).inSeconds;
-      setState(() {
-        _remainingSeconds = diff > 0 ? diff : 0;
-      });
-      if (_remainingSeconds <= 0 && _timer != null) {
-         _timer?.cancel();
-         _timer = null;
-         _onTimerCompleted();
+    if (state == AppLifecycleState.resumed) {
+      widget.alertService.cancelTimerNotification();
+      if (_isRunning && _endTime != null) {
+        final now = DateTime.now();
+        final diff = _endTime!.difference(now).inSeconds;
+        setState(() {
+          _remainingSeconds = diff > 0 ? diff : 0;
+        });
+        if (_remainingSeconds <= 0 && _timer != null) {
+           _timer?.cancel();
+           _timer = null;
+           _onTimerCompleted();
+        }
+      }
+    } else if ((state == AppLifecycleState.paused || state == AppLifecycleState.inactive) && _isRunning && _endTime != null) {
+      if (widget.enableSound || widget.enableVibration) {
+        widget.alertService.scheduleTimerNotification(scheduledTime: _endTime!);
       }
     }
   }
@@ -122,7 +129,6 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     _minutesController.removeListener(_handleMinutesTextChange);
     _secondsController.removeListener(_handleSecondsTextChange);
     _minutesController.dispose();
-    _secondsController.dispose();
     _secondsController.dispose();
     _minutesFocusNode.dispose();
     _secondsFocusNode.dispose();
@@ -143,10 +149,6 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       _isRunning = true;
       _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
-
-    if (widget.enableSound || widget.enableVibration) {
-       widget.alertService.scheduleTimerNotification(scheduledTime: _endTime!);
-    }
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_endTime != null) {
