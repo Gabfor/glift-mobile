@@ -199,35 +199,36 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   static final List<OnboardingPageData> _pages = [
     const OnboardingPageData(
-      tagline: 'OUTIL DE CRÉATION',
-      title: 'Créez et personnalisez facilement vos programmes de musculation',
+      tagline: 'CRÉATION DE PROGRAMMES',
+      title:
+          'Construis et optimise tes programmes de musculation pour atteindre tes objectifs',
       description:
-          'Créez vos programmes de musculation rapidement ou optez pour un de nos programmes prêt à l\'emploi.',
+          'Ajoute ton propre programme de musculation ou télécharge un programme clé en main adapté à ton profil et à tes objectifs.',
       imageAsset: 'assets/images/onboarding_creer.svg',
       imageScale: 1.35,
     ),
     const OnboardingPageData(
-      tagline: 'OUTIL DE SUIVI',
+      tagline: 'SUIVI DE SÉANCES',
       title:
-          'Entraînez-vous efficacement et tirer profits de chaque minute d’entraînement',
+          'Entraîne-toi intelligemment et efficacement en tirant profit de chaque minute',
       description:
-          'Nous avons créé une expérience simple et intuitive pour vous permettre d’optimiser votre temps d’entraînement.',
+          'Profite d\'une expérience simple et intuitive pour concentrer 100 % de ton énergie sur ton entraînement, sans perte de temps.',
       imageAsset: 'assets/images/onboarding_suivre.svg',
     ),
     const OnboardingPageData(
-      tagline: 'OUTIL DE NOTATION',
+      tagline: 'NOTATION DU RESSENTI',
       title:
-          'Notez facilement vos performances et assurez-vous de toujours progresser',
+          'Note facilement ton ressenti sur chaque série et fait évoluer ta séance en conséquence',
       description:
-          'Notez vos performances et vos sensations. Ajustez vos entraînements afin de toujours progresser.',
+          'Enregistre tes sensations et ajuste tes séances. Cible ta zone de progression et évite le piège de la stagnation ou des blessures.',
       imageAsset: 'assets/images/onboarding_noter.svg',
     ),
     const OnboardingPageData(
-      tagline: 'OUTIL DE VISUALISATION',
+      tagline: 'VISUALISATION DE PROGRESSION',
       title:
-          'Visualisez votre progression séance après séance et restez motivé pour longtemps',
+          'Visualise tes résultats au fil des semaines et reste motivé sur la durée',
       description:
-          'Visualisez vos progrès dans votre tableau de bord, soyez toujours plus ambitieux et sortez de votre zone de confort.',
+          'Suis tes progrès exercice par exercice, fixe-toi des objectifs toujours plus ambitieux et repousse tes limites à chaque séance.',
       imageAsset: 'assets/images/onboarding_visualiser.svg',
     ),
   ];
