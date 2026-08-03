@@ -21,10 +21,6 @@ class EmbeddedRasterImage extends StatelessWidget {
   final BoxFit fit;
 
   static final _cache = <String, Future<Uint8List>>{};
-  static final _imageElementPattern = RegExp(
-    r'''<image[^>]+id=["']([^"']+)["'][^>]+xlink:href=["']data:image/(?:png|jpeg);base64,([^"']+)["'][^>]*>''',
-    dotAll: true,
-  );
   static final _patternUsePattern = RegExp(
     r'''<pattern[^>]+id=["']([^"']+)["'][^>]*>.*?<use[^>]+xlink:href=["']#([^"']+)["']''',
     dotAll: true,
@@ -54,8 +50,52 @@ class EmbeddedRasterImage extends StatelessWidget {
   @visibleForTesting
   static Uint8List? extractPrimaryImage(String svgContents) {
     final embeddedImages = <String, String>{};
-    for (final match in _imageElementPattern.allMatches(svgContents)) {
-      embeddedImages[match.group(1)!] = match.group(2)!;
+    int startScan = 0;
+    while (true) {
+      final imgStart = svgContents.indexOf('<image', startScan);
+      if (imgStart == -1) break;
+      final imgEnd = svgContents.indexOf('>', imgStart);
+      if (imgEnd == -1) break;
+      final imgTag = svgContents.substring(imgStart, imgEnd + 1);
+      startScan = imgEnd + 1;
+
+      String? id;
+      for (final quote in ['"', "'"]) {
+        final prefix = 'id=$quote';
+        final idx = imgTag.indexOf(prefix);
+        if (idx != -1) {
+          final start = idx + prefix.length;
+          final end = imgTag.indexOf(quote, start);
+          if (end != -1) {
+            id = imgTag.substring(start, end);
+            break;
+          }
+        }
+      }
+      if (id == null) continue;
+
+      String? base64Payload;
+      for (final prefix in [
+        'href="data:image/png;base64,',
+        'href="data:image/jpeg;base64,',
+        "href='data:image/png;base64,",
+        "href='data:image/jpeg;base64,",
+      ]) {
+        final idx = imgTag.indexOf(prefix);
+        if (idx != -1) {
+          final start = idx + prefix.length;
+          final quote = prefix.contains('"') ? '"' : "'";
+          final end = imgTag.indexOf(quote, start);
+          if (end != -1) {
+            base64Payload = imgTag.substring(start, end);
+            break;
+          }
+        }
+      }
+
+      if (base64Payload != null) {
+        embeddedImages[id] = base64Payload;
+      }
     }
 
     if (embeddedImages.isEmpty) {

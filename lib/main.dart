@@ -203,32 +203,32 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       title:
           'Construis et optimise tes programmes de musculation pour atteindre tes objectifs',
       description:
-          'Ajoute ton propre programme de musculation ou télécharge un programme clé en main adapté à ton profil et à tes objectifs.',
+          'Ajoute ton programme de musculation ou télécharge un programme clé en main adapté à ton profil et à tes objectifs.',
       imageAsset: 'assets/images/onboarding_creer.svg',
       imageScale: 1.35,
     ),
     const OnboardingPageData(
       tagline: 'SUIVI DE SÉANCES',
       title:
-          'Entraîne-toi intelligemment et efficacement en tirant profit de chaque minute',
+          'Entraîne-toi intelligemment\net efficacement en tirant profit\nde chaque minute',
       description:
-          'Profite d\'une expérience simple et intuitive pour concentrer 100 % de ton énergie sur ton entraînement, sans perte de temps.',
+          "Profite d'une expérience simple et intuitive pour concentrer 100 % de ton énergie sur ton entraînement, sans perte de temps.",
       imageAsset: 'assets/images/onboarding_suivre.svg',
     ),
     const OnboardingPageData(
       tagline: 'NOTATION DU RESSENTI',
       title:
-          'Note facilement ton ressenti sur chaque série et fait évoluer ta séance en conséquence',
+          'Note facilement ton ressenti\nsur chaque série et fait évoluer\nta séance en conséquence',
       description:
-          'Enregistre tes sensations et ajuste tes séances. Cible ta zone de progression et évite le piège de la stagnation ou des blessures.',
+          'Enregistre tes sensations et ajuste tes séances. Cible ta zone de progression et évite le piège de la stagnation.',
       imageAsset: 'assets/images/onboarding_noter.svg',
     ),
     const OnboardingPageData(
       tagline: 'VISUALISATION DE PROGRESSION',
       title:
-          'Visualise tes résultats au fil des semaines et reste motivé sur la durée',
+          'Visualise tes résultats\nau fil des semaines et reste\nmotivé sur la durée',
       description:
-          'Suis tes progrès exercice par exercice, fixe-toi des objectifs toujours plus ambitieux et repousse tes limites à chaque séance.',
+          'Suis tes progrès exercice par exercice, fixe-toi des objectifs ambitieux et repousse tes limites à chaque séance.',
       imageAsset: 'assets/images/onboarding_visualiser.svg',
     ),
   ];
