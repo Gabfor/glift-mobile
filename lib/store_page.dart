@@ -510,10 +510,6 @@ class _StorePageState extends State<StorePage> {
 
   Map<String, Set<String>> _selectedFiltersMap = {};
 
-  bool get _hasActiveFilters {
-    return _selectedFiltersMap.values.any((set) => set.isNotEmpty);
-  }
-
   @override
   Widget build(BuildContext context) {
     final isScrollable = !_isLoading && _programs.isNotEmpty && _filteredPrograms.isNotEmpty;
@@ -608,8 +604,6 @@ class _StorePageState extends State<StorePage> {
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
                                 ],
                               ),
                             ),

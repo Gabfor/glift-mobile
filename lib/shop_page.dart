@@ -571,8 +571,6 @@ class _ShopPageState extends State<ShopPage> {
                                   ),
                                 ],
                               ),
-                                ],
-                              ),
                             ),
                             const SizedBox(height: 20),
                           ],

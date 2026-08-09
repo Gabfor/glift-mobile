@@ -69,15 +69,6 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                         : const Color(0xFFD7D4DC),
                     width: 1.0,
                   ),
-                  boxShadow: _isMenuOpen
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFFA1A5FD).withValues(alpha: 0.3),
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : const [],
                 ),
                 child: Row(
                   children: [
@@ -143,7 +134,6 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
     if (_overlayEntry != null) return;
 
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     _overlayEntry = OverlayEntry(
       builder: (context) {
@@ -170,14 +160,10 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1F000000),
-                        offset: Offset(0, 2),
-                        blurRadius: 9,
-                        spreadRadius: 1,
-                      ),
-                    ],
+                    border: Border.all(
+                      color: const Color(0xFFD7D4DC),
+                      width: 1.0,
+                    ),
                   ),
                   child: ListView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
