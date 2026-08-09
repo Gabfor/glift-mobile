@@ -513,27 +513,13 @@ class _ShopPageState extends State<ShopPage> {
                           if (_availableFilters.length > 1) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Text(
-                                      'Trier par',
-                                      style: GoogleFonts.quicksand(
-                                        color: const Color(0xFF3A416F),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: GliftSortDropdown(
-                                          options: _sortOptions,
-                                          selectedValue: _selectedSort,
-                                          onChanged: (value) {
+                                  Expanded(
+                                    child: GliftSortDropdown(
+                                      options: _sortOptions,
+                                      selectedValue: _selectedSort,
+                                      onChanged: (value) {
                                             setState(() {
                                               _selectedSort = value;
                                               FilterService().shopSort = value;
@@ -717,6 +703,13 @@ class _ShopOfferCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFD7D4DC)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF5D6494).withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
