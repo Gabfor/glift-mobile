@@ -59,7 +59,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
               child: AnimatedContainer(
                 height: 40,
                 duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
@@ -67,45 +67,57 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                     color: _isMenuOpen
                         ? const Color(0xFFA1A5FD)
                         : const Color(0xFFD7D4DC),
-                    width: 1.1,
+                    width: 1.0,
                   ),
-                  boxShadow: const [],
+                  boxShadow: _isMenuOpen
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFFA1A5FD).withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : const [],
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Row(
                         children: [
-                          SizedBox(
-                            height: 30,
-                            width: 30,
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/icons/tri.svg',
-                                width: 15,
-                                height: 15,
-                              ),
-                            ),
+                          SvgPicture.asset(
+                            'assets/icons/tri.svg',
+                            width: 16,
+                            height: 14,
                           ),
-                          const SizedBox(width: 10),
-                          Text(
-                            selectedOption['label'] ?? '',
-                            style: GoogleFonts.quicksand(
-                              color: const Color(0xFF3A416F),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              selectedOption['label'] ?? '',
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SvgPicture.asset(
-                      'assets/icons/chevron.svg',
-                      width: 9,
-                      height: 7,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF3A416F),
-                        BlendMode.srcIn,
+                    const SizedBox(width: 6),
+                    AnimatedRotation(
+                      turns: _isMenuOpen ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      child: SvgPicture.asset(
+                        'assets/icons/chevron.svg',
+                        width: 9,
+                        height: 6,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFF3A416F),
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                   ],
@@ -157,18 +169,18 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                   constraints: const BoxConstraints(maxHeight: 260),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x33000000),
-                        offset: Offset(0, 12),
-                        blurRadius: 32,
-                        spreadRadius: 0,
+                        color: Color(0x1F000000),
+                        offset: Offset(0, 2),
+                        blurRadius: 9,
+                        spreadRadius: 1,
                       ),
                     ],
                   ),
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     shrinkWrap: true,
                     children: widget.options.map((option) {
                       final isSelected = widget.selectedValue == option['value'];
@@ -180,30 +192,28 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: 8,
+                            vertical: 2,
                           ),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
+                            horizontal: 12,
+                            vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
+                            color: isSelected
+                                ? const Color(0xFFFAFAFF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 4),
-                              Text(
-                                option['label']!,
-                                style: GoogleFonts.quicksand(
-                                  color: isSelected
-                                      ? const Color(0xFF7069FA)
-                                      : const Color(0xFF3A416F),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            option['label']!,
+                            style: GoogleFonts.quicksand(
+                              color: isSelected
+                                  ? const Color(0xFF7069FA)
+                                  : const Color(0xFF3A416F),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       );

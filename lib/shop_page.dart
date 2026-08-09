@@ -516,44 +516,61 @@ class _ShopPageState extends State<ShopPage> {
                               child: Row(
                                 children: [
                                   Expanded(
+                                    flex: 2,
                                     child: GliftSortDropdown(
                                       options: _sortOptions,
                                       selectedValue: _selectedSort,
                                       onChanged: (value) {
-                                            setState(() {
-                                              _selectedSort = value;
-                                              FilterService().shopSort = value;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      GestureDetector(
-                                        onTap: () {
-                                          _showFilterModal();
-                                        },
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: const Color(0xFFD7D4DC),
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.all(10),
-                                          child: SvgPicture.asset(
-                                            _hasActiveFilters
-                                                ? 'assets/icons/filtre_green.svg'
-                                                : 'assets/icons/filtre_red.svg',
-                                            height: 16,
-                                            width: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                        setState(() {
+                                          _selectedSort = value;
+                                          FilterService().shopSort = value;
+                                        });
+                                      },
+                                    ),
                                   ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    flex: 1,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        _showFilterModal();
+                                      },
+                                      child: Container(
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(
+                                            color: const Color(0xFFD7D4DC),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              _hasActiveFilters
+                                                  ? 'assets/icons/filtre_green.svg'
+                                                  : 'assets/icons/filtre_red.svg',
+                                              height: 16,
+                                              width: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Filtres',
+                                              style: GoogleFonts.quicksand(
+                                                color: const Color(0xFF3A416F),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                                 ],
                               ),
                             ),
@@ -780,7 +797,7 @@ class _ShopOfferCard extends StatelessWidget {
 
           // Content Section
           Padding(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.fromLTRB(15, 15, 15, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
