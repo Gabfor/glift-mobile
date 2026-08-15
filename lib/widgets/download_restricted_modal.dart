@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../utils/dialog_utils.dart';
+import 'premium_subscription_modal.dart';
 
 class DownloadRestrictedModal extends StatelessWidget {
   const DownloadRestrictedModal({super.key});
-
-  Future<void> _launchURL() async {
-    final Uri url = Uri.parse('https://glift.io/compte#mon-abonnement');
-    if (!await launchUrl(url)) {
-      throw Exception('Could not launch $url');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +123,10 @@ class DownloadRestrictedModal extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pop();
-                            _launchURL();
+                            showFadeDialog(
+                              context: context,
+                              builder: (context) => const PremiumSubscriptionModal(),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF7069FA),

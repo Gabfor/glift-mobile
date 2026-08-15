@@ -28,6 +28,7 @@ class SettingsService {
   static const String _kShowEffort = 'show_effort';
   static const String _kShowRepos = 'show_repos';
   static const String _kSubscriptionPlan = 'subscription_plan';
+  static const String _kHasUsedTrial = 'has_used_trial';
 
   Future<void> syncFromSupabase() async {
     final user = _supabase?.auth.currentUser;
@@ -58,26 +59,30 @@ class SettingsService {
             'show_effort',
             'show_materiel',
             'show_repos',
-            'show_link',
-            'show_notes',
           ]);
         } else {
           rethrow;
         }
       }
 
-      // 2. Sync Profile (Subscription Plan)
+      // 2. Sync Profile (Subscription Plan & Trial status)
       final profileResponse = await _supabase!
           .from('profiles')
-          .select('subscription_plan')
+          .select('subscription_plan, premium_trial_started_at, trial')
           .eq('id', user.id)
           .maybeSingle();
 
-      if (profileResponse != null && profileResponse['subscription_plan'] != null) {
-        final plan = profileResponse['subscription_plan'] as String;
-        if (plan != getSubscriptionPlan()) {
-          await _prefs.setString(_kSubscriptionPlan, plan);
+      if (profileResponse != null) {
+        if (profileResponse['subscription_plan'] != null) {
+          final plan = profileResponse['subscription_plan'] as String;
+          if (plan != getSubscriptionPlan()) {
+            await _prefs.setString(_kSubscriptionPlan, plan);
+          }
         }
+        final trialStarted = profileResponse['premium_trial_started_at'] != null;
+        final isTrial = profileResponse['trial'] == true;
+        final hasUsedTrial = trialStarted || isTrial;
+        await _prefs.setBool(_kHasUsedTrial, hasUsedTrial);
       }
 
     } catch (e) {
@@ -543,6 +548,11 @@ class SettingsService {
   String getSubscriptionPlan() {
     if (!_initialized) return 'basic';
     return _prefs.getString(_kSubscriptionPlan) ?? 'basic';
+  }
+
+  bool getHasUsedTrial() {
+    if (!_initialized) return false;
+    return _prefs.getBool(_kHasUsedTrial) ?? false;
   }
 
   Future<void> _initIfNeeded() async {
