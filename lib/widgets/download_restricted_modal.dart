@@ -42,7 +42,7 @@ class DownloadRestrictedModal extends StatelessWidget {
                 // Title
                 Center(
                   child: Text(
-                    'Téléchargement impossible',
+                    'Téléchargement bloqué',
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -55,7 +55,7 @@ class DownloadRestrictedModal extends StatelessWidget {
 
                 // Warning Text 1
                 Text(
-                  'Votre abonnement ne vous permet pas de télécharger ce programme “Premium”.',
+                  'Ton abonnement actuel ne te permet pas de télécharger ce programme.',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -87,7 +87,7 @@ class DownloadRestrictedModal extends StatelessWidget {
                       ),
                       const TextSpan(
                         text:
-                            ' vous serez redirigé vers votre compte où vous pourrez modifier votre formule d’abonnement et débloquer l’accès à tous les programmes.',
+                            ' tu pourras basculer vers la formule d’abonnement Premium qui te donnera accès à l’ensemble des programmes du Glift Store.',
                       ),
                     ],
                   ),

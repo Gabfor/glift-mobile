@@ -332,7 +332,7 @@ class _StorePageState extends State<StorePage> {
             final isAuthenticated = widget.supabase.auth.currentUser != null;
             final hasLinkedProgram = program.linkedProgramId != null;
 
-            final isRestricted = (userPlan == 'basic' && programPlan == 'premium');
+            final isRestricted = (userPlan != 'premium' && programPlan == 'premium');
             final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
 
             bool matchOui = selected.contains('Oui') && canDownload;
@@ -405,7 +405,7 @@ class _StorePageState extends State<StorePage> {
             final programPlan = program.plan;
             final hasLinkedProgram = program.linkedProgramId != null;
 
-            final isRestricted = (userPlan == 'basic' && programPlan == 'premium');
+            final isRestricted = (userPlan != 'premium' && programPlan == 'premium');
             final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
             
             options.add(canDownload ? 'Oui' : 'Non');
@@ -519,7 +519,7 @@ class _StorePageState extends State<StorePage> {
       child: GliftPageLayout(
         scrollable: false,
         title: 'Glift Store',
-        subtitle: 'Trouver votre prochain programme',
+        subtitle: 'Trouve ton prochain programme',
         padding: EdgeInsets.zero,
         child: GliftPullToRefresh(
           onRefresh: () async {
@@ -744,8 +744,8 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
     final userPlan = SettingsService.instance.getSubscriptionPlan();
     final programPlan = widget.program.plan;
 
-    // Logic: Restricted if user is basic AND program is premium.
-    if (userPlan == 'basic' && programPlan == 'premium') {
+    // Logic: Restricted if user is not premium AND program is premium.
+    if (userPlan != 'premium' && programPlan == 'premium') {
       if (mounted) setState(() => _isRestricted = true);
     } else {
       if (mounted) setState(() => _isRestricted = false);
