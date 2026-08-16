@@ -6,6 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase/supabase.dart';
 
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'repositories/shop_repository.dart';
 import 'models/shop_offer.dart';
 import 'widgets/glift_loader.dart';
@@ -46,6 +49,8 @@ class _ShopPageState extends State<ShopPage> {
   final Set<String> _selectedTypes = {};
   late String _selectedSort;
   Map<String, Set<String>> _filterOptionsBySection = {};
+  final Set<String> _favoriteOfferIds = {};
+  final Set<String> _favoriteOfferIdsForSorting = {};
 
   String? _userGender;
   String? _userGoal;
@@ -68,6 +73,92 @@ class _ShopPageState extends State<ShopPage> {
 
     _loadOffers();
     _loadUserProfile();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    List<String> loadedFavs = [];
+
+    // 1. Read local cache first
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      loadedFavs = prefs.getStringList('favorite_shop_offers') ?? [];
+    } catch (e) {
+      debugPrint('Error reading local favorites: $e');
+    }
+
+    // 2. Fetch from Supabase DB if user is logged in
+    try {
+      final userId = widget.supabase.auth.currentUser?.id;
+      if (userId != null) {
+        final List<dynamic> response = await widget.supabase
+            .from('user_shop_favorites')
+            .select('offer_id')
+            .eq('user_id', userId);
+
+        loadedFavs = response
+            .map((row) => row['offer_id'].toString())
+            .toList();
+
+        // Save back to local storage
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList('favorite_shop_offers', loadedFavs);
+      }
+    } catch (e) {
+      debugPrint('Error fetching DB favorites: $e');
+    }
+
+    if (mounted) {
+      setState(() {
+        _favoriteOfferIds.clear();
+        _favoriteOfferIds.addAll(loadedFavs);
+        _favoriteOfferIdsForSorting.clear();
+        _favoriteOfferIdsForSorting.addAll(loadedFavs);
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite(String offerId) async {
+    final isCurrentlyFav = _favoriteOfferIds.contains(offerId);
+    if (!isCurrentlyFav) {
+      HapticFeedback.lightImpact();
+    }
+
+    setState(() {
+      if (isCurrentlyFav) {
+        _favoriteOfferIds.remove(offerId);
+      } else {
+        _favoriteOfferIds.add(offerId);
+      }
+    });
+
+    // 1. Save to local storage
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('favorite_shop_offers', _favoriteOfferIds.toList());
+    } catch (e) {
+      debugPrint('Error saving local favorites: $e');
+    }
+
+    // 2. Sync to Supabase DB if user is logged in
+    try {
+      final userId = widget.supabase.auth.currentUser?.id;
+      if (userId != null) {
+        if (isCurrentlyFav) {
+          await widget.supabase
+              .from('user_shop_favorites')
+              .delete()
+              .eq('user_id', userId)
+              .eq('offer_id', offerId);
+        } else {
+          await widget.supabase
+              .from('user_shop_favorites')
+              .upsert({'user_id': userId, 'offer_id': offerId});
+        }
+      }
+    } catch (e) {
+      debugPrint('Error syncing favorite to Supabase DB: $e');
+    }
   }
 
   @override
@@ -78,6 +169,7 @@ class _ShopPageState extends State<ShopPage> {
 
   Future<void> _loadOffers() async {
     try {
+      await _loadFavorites();
       final offers = await _repository.getShopOffers();
       final categories = <String>{};
       final shops = <String>{};
@@ -269,6 +361,11 @@ class _ShopPageState extends State<ShopPage> {
           int genderScore = 0;
           int expScore = 0;
           double diffHours = 0;
+
+          // 0. Favorite Rule (+15 points)
+          if (_favoriteOfferIdsForSorting.contains(offer.id)) {
+            score += 15;
+          }
 
           // 1. Gender Rules
           if (_userGender != null) {
@@ -600,9 +697,12 @@ class _ShopPageState extends State<ShopPage> {
                                 separatorBuilder: (context, index) =>
                                     const SizedBox(height: 20),
                                 itemBuilder: (context, index) {
+                                  final offer = _filteredOffers[index];
                                   return _ShopOfferCard(
-                                    offer: _filteredOffers[index],
+                                    offer: offer,
                                     supabase: widget.supabase,
+                                    isFavorite: _favoriteOfferIds.contains(offer.id),
+                                    onToggleFavorite: () => _toggleFavorite(offer.id),
                                   );
                                 },
                               ),
@@ -663,8 +763,15 @@ class _ShopPageState extends State<ShopPage> {
 class _ShopOfferCard extends StatelessWidget {
   final ShopOffer offer;
   final SupabaseClient supabase;
+  final bool isFavorite;
+  final VoidCallback? onToggleFavorite;
 
-  const _ShopOfferCard({required this.offer, required this.supabase});
+  const _ShopOfferCard({
+    required this.offer,
+    required this.supabase,
+    this.isFavorite = false,
+    this.onToggleFavorite,
+  });
 
   Widget _buildNetworkImage(
     String url, {
@@ -755,6 +862,16 @@ class _ShopOfferCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // Bouton Favori (15px du haut et 15px de la droite) - Seulement si utilisateur connecté
+              if (supabase.auth.currentUser != null)
+                Positioned(
+                  top: 15,
+                  right: 15,
+                  child: _HeartbeatIcon(
+                    isFavorite: isFavorite,
+                    onTap: onToggleFavorite,
+                  ),
+                ),
               if (offer.brandImage != null)
                 Positioned(
                   bottom: -35,
@@ -1218,4 +1335,73 @@ class _ScoredOffer {
     required this.offer,
     required this.score,
   });
+}
+
+class _HeartbeatIcon extends StatefulWidget {
+  final bool isFavorite;
+  final VoidCallback? onTap;
+
+  const _HeartbeatIcon({
+    required this.isFavorite,
+    this.onTap,
+  });
+
+  @override
+  State<_HeartbeatIcon> createState() => _HeartbeatIconState();
+}
+
+class _HeartbeatIconState extends State<_HeartbeatIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.35).chain(CurveTween(curve: Curves.easeOut)), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 1.35, end: 1.05).chain(CurveTween(curve: Curves.easeInOut)), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.05, end: 1.22).chain(CurveTween(curve: Curves.easeOut)), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 1.22, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 30),
+    ]).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeartbeatIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isFavorite && !oldWidget.isFavorite) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        if (!widget.isFavorite) {
+          _controller.forward(from: 0.0);
+        }
+        widget.onTap?.call();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: SvgPicture.asset(
+          widget.isFavorite ? 'assets/icons/coeur_rouge.svg' : 'assets/icons/coeur_gris.svg',
+          width: 24,
+          height: 24,
+        ),
+      ),
+    );
+  }
 }
