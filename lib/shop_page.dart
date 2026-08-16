@@ -51,6 +51,7 @@ class _ShopPageState extends State<ShopPage> {
   Map<String, Set<String>> _filterOptionsBySection = {};
   final Set<String> _favoriteOfferIds = {};
   final Set<String> _favoriteOfferIdsForSorting = {};
+  bool _favoritesOnly = false;
 
   String? _userGender;
   String? _userGoal;
@@ -244,6 +245,10 @@ class _ShopPageState extends State<ShopPage> {
   List<ShopOffer> _applyFilters(Map<String, Set<String>> selectedFilters) {
     var filtered = List<ShopOffer>.from(_offers);
 
+    if (_favoritesOnly) {
+      filtered = filtered.where((offer) => _favoriteOfferIds.contains(offer.id)).toList();
+    }
+
     // Filter
     if (selectedFilters.isNotEmpty) {
       filtered = filtered.where((offer) {
@@ -362,9 +367,9 @@ class _ShopPageState extends State<ShopPage> {
           int expScore = 0;
           double diffHours = 0;
 
-          // 0. Favorite Rule (+15 points)
+          // 0. Favorite Rule (+10 points)
           if (_favoriteOfferIdsForSorting.contains(offer.id)) {
-            score += 15;
+            score += 10;
           }
 
           // 1. Gender Rules
@@ -666,6 +671,37 @@ class _ShopPageState extends State<ShopPage> {
                                       ),
                                     ),
                                   ),
+                                  if (widget.supabase.auth.currentUser != null) ...[
+                                    const SizedBox(width: 10),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _favoritesOnly = !_favoritesOnly;
+                                        });
+                                      },
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(
+                                            color: const Color(0xFFD7D4DC),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: SvgPicture.asset(
+                                            _favoritesOnly
+                                                ? 'assets/icons/coeur_rouge.svg'
+                                                : 'assets/icons/coeur_gris.svg',
+                                            height: 24,
+                                            width: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
@@ -676,7 +712,9 @@ class _ShopPageState extends State<ShopPage> {
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 40),
                                 child: Text(
-                                  'Aucune offre disponible\navec ces filtres...',
+                                  _favoritesOnly
+                                      ? 'Aucune offre enregistrée\nen favori pour le moment.'
+                                      : 'Aucune offre disponible\navec ces filtres...',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.quicksand(
                                     color: const Color(0xFF3A416F),
