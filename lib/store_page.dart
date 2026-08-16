@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/dialog_utils.dart';
-import 'package:flutter/services.dart';
 import 'widgets/download_restricted_modal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -51,6 +51,9 @@ class _StorePageState extends State<StorePage> {
   List<StoreProgram> _programs = [];
   bool _isLoading = true;
   late String _selectedSort;
+  final Set<String> _favoriteProgramIds = {};
+  final Set<String> _favoriteProgramIdsForSorting = {};
+  bool _favoritesOnly = false;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -64,6 +67,95 @@ class _StorePageState extends State<StorePage> {
     _initializeFilters();
 
     _loadPrograms();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    List<String> loadedFavs = [];
+
+    // 1. Read local cache first
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      loadedFavs = prefs.getStringList('favorite_store_programs') ?? [];
+    } catch (e) {
+      debugPrint('Error reading local store favorites: $e');
+    }
+
+    // 2. Fetch from Supabase DB if user is logged in
+    try {
+      final userId = widget.supabase.auth.currentUser?.id;
+      if (userId != null) {
+        final List<dynamic> response = await widget.supabase
+            .from('user_store_favorites')
+            .select('program_id')
+            .eq('user_id', userId);
+
+        loadedFavs = response
+            .map((row) => row['program_id'].toString())
+            .toList();
+
+        // Save back to local storage
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList('favorite_store_programs', loadedFavs);
+      }
+    } catch (e) {
+      debugPrint('Error fetching DB store favorites: $e');
+    }
+
+    if (mounted) {
+      setState(() {
+        _favoriteProgramIds.clear();
+        _favoriteProgramIds.addAll(loadedFavs);
+        _favoriteProgramIdsForSorting.clear();
+        _favoriteProgramIdsForSorting.addAll(loadedFavs);
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite(String programId) async {
+    final isCurrentlyFav = _favoriteProgramIds.contains(programId);
+    if (!isCurrentlyFav) {
+      HapticFeedback.lightImpact();
+    }
+
+    setState(() {
+      if (isCurrentlyFav) {
+        _favoriteProgramIds.remove(programId);
+      } else {
+        _favoriteProgramIds.add(programId);
+      }
+    });
+
+    // 1. Save to local storage
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('favorite_store_programs', _favoriteProgramIds.toList());
+    } catch (e) {
+      debugPrint('Error saving local store favorites: $e');
+    }
+
+    // 2. Sync to Supabase DB if user is logged in
+    try {
+      final userId = widget.supabase.auth.currentUser?.id;
+      if (userId != null) {
+        if (isCurrentlyFav) {
+          await widget.supabase
+              .from('user_store_favorites')
+              .delete()
+              .eq('user_id', userId)
+              .eq('program_id', programId);
+        } else {
+          await widget.supabase
+              .from('user_store_favorites')
+              .upsert(
+                {'user_id': userId, 'program_id': programId},
+                onConflict: 'user_id, program_id',
+              );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error syncing store favorite to Supabase DB: $e');
+    }
   }
 
   void _initializeFilters() {
@@ -77,8 +169,7 @@ class _StorePageState extends State<StorePage> {
 
   Future<void> _loadPrograms() async {
     try {
-      // 1. Fetch data based on sort (server-side for others, 'created_at' for relevance initially)
-      // IF relevance => sorting is client-side, so we just fetch all (or sorted by something else) then sort manually
+      await _loadFavorites();
       final programs = await _repository.getStorePrograms(
         sortBy: _selectedSort == 'relevance' ? 'newest' : _selectedSort,
       );
@@ -100,12 +191,17 @@ class _StorePageState extends State<StorePage> {
             final String? userLocation = p['training_place']?.toString().trim();
             final String? userSessions = p['weekly_sessions']?.toString().trim();
 
-            debugPrint('--- DEBUG SORTING ---');
-            debugPrint('User Profile: Gender=$userGender, YOP=$userYOP, Goal=$userGoal, Loc=$userLocation, Sess=$userSessions');
-
             programs.sort((a, b) {
               int scoreA = 0;
               int scoreB = 0;
+
+              // 0. Favorite Rule (+10 points)
+              if (_favoriteProgramIdsForSorting.contains(a.id)) {
+                scoreA += 10;
+              }
+              if (_favoriteProgramIdsForSorting.contains(b.id)) {
+                scoreB += 10;
+              }
 
               // 1. Gender Rule
               int getGenderScore(String programGender) {
@@ -241,6 +337,10 @@ class _StorePageState extends State<StorePage> {
 
   List<StoreProgram> _applyFilters(Map<String, Set<String>> selectedFilters) {
     var filtered = List<StoreProgram>.from(_programs);
+
+    if (_favoritesOnly) {
+      filtered = filtered.where((program) => _favoriteProgramIds.contains(program.id)).toList();
+    }
 
     // Filter
     if (selectedFilters.isNotEmpty) {
@@ -604,6 +704,37 @@ class _StorePageState extends State<StorePage> {
                                       ),
                                     ),
                                   ),
+                                  if (widget.supabase.auth.currentUser != null) ...[
+                                    const SizedBox(width: 10),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _favoritesOnly = !_favoritesOnly;
+                                        });
+                                      },
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(
+                                            color: const Color(0xFFD7D4DC),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: SvgPicture.asset(
+                                            _favoritesOnly
+                                                ? 'assets/icons/coeur_red.svg'
+                                                : 'assets/icons/coeur_grey.svg',
+                                            height: 24,
+                                            width: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
@@ -614,7 +745,9 @@ class _StorePageState extends State<StorePage> {
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 40),
                                 child: Text(
-                                  'Aucun programme disponible\navec ces filtres...',
+                                  _favoritesOnly
+                                      ? 'Aucun programme enregistré\nen favori pour le moment.'
+                                      : 'Aucun programme disponible\navec ces filtres...',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.quicksand(
                                     color: const Color(0xFF3A416F),
@@ -642,6 +775,8 @@ class _StorePageState extends State<StorePage> {
                                     isAuthenticated: isAuthenticated,
                                     repository: _repository,
                                     onNavigateToHome: widget.onNavigateToHome,
+                                    isFavorite: _favoriteProgramIds.contains(_filteredPrograms[index].id),
+                                    onToggleFavorite: () => _toggleFavorite(_filteredPrograms[index].id),
                                   );
                                 },
                               ),
@@ -697,19 +832,21 @@ class _StorePageState extends State<StorePage> {
   }
 }
 
-
-
 class _StoreProgramCard extends StatefulWidget {
   final StoreProgram program;
   final bool isAuthenticated;
   final StoreRepository repository;
   final void Function(String? programId)? onNavigateToHome;
+  final bool isFavorite;
+  final VoidCallback? onToggleFavorite;
 
   const _StoreProgramCard({
     required this.program,
     required this.isAuthenticated,
     required this.repository,
     this.onNavigateToHome,
+    this.isFavorite = false,
+    this.onToggleFavorite,
   });
 
   @override
@@ -901,6 +1038,23 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                   ),
                 ),
               ),
+              // Bouton Favori (15px du haut et 15px de la droite) - Seulement si utilisateur connecté
+              if (widget.isAuthenticated && widget.onToggleFavorite != null)
+                Positioned(
+                  top: 15,
+                  right: 15,
+                  child: GestureDetector(
+                    onTap: widget.onToggleFavorite,
+                    behavior: HitTestBehavior.opaque,
+                    child: SvgPicture.asset(
+                      widget.isFavorite
+                          ? 'assets/icons/coeur_red.svg'
+                          : 'assets/icons/coeur_grey.svg',
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+                ),
               if (program.partnerImage != null)
                 Positioned(
                   bottom: -35,
@@ -1107,3 +1261,4 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
     );
   }
 }
+
