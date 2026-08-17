@@ -962,6 +962,20 @@ class _ShopOfferCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                if (offer.cleanDescription != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    offer.cleanDescription!,
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF5D6494),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.57,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 5,

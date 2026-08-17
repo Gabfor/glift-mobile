@@ -15,6 +15,7 @@ class ShopOffer {
   final String? shipping;
   final String? modal;
   final String? condition;
+  final String? description;
   final List<String> genders;
   final String? imageMobile;
   final bool boost;
@@ -39,6 +40,7 @@ class ShopOffer {
     this.shipping,
     this.modal,
     this.condition,
+    this.description,
     required this.genders,
     this.imageMobile,
     this.boost = false,
@@ -108,6 +110,7 @@ class ShopOffer {
       shipping: json['shipping'] as String?,
       modal: json['modal'] as String?,
       condition: json['condition'] as String?,
+      description: json['description'] as String?,
       genders: parseList(json['gender']),
       imageMobile: (json['image_mobile'] as String?)?.trim(),
       boost: json['boost'] is bool ? json['boost'] as bool : (json['boost']?.toString().toLowerCase() == 'true'),
@@ -115,6 +118,18 @@ class ShopOffer {
       createdAt: json['created_at'] as String?,
       sports: parseList(json['sport']),
     );
+  }
+
+  String? get cleanDescription {
+    if (description == null || description!.trim().isEmpty) return null;
+    final clean = description!
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .trim();
+    return clean.isNotEmpty ? clean : null;
   }
 
   // Compatibility getters
