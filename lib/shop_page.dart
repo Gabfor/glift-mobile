@@ -697,6 +697,8 @@ class _ShopPageState extends State<ShopPage> {
                                                 : 'assets/icons/coeur_gris.svg',
                                             height: 24,
                                             width: 24,
+                                            alignment: Alignment.center,
+                                            fit: BoxFit.contain,
                                           ),
                                         ),
                                       ),
