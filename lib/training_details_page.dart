@@ -1756,25 +1756,14 @@ class _StartButton extends StatelessWidget {
                       ? Center(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: Row(
+                            child: Text(
+                              'Commencer',
                               key: const ValueKey('expanded_button'),
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Commencer',
-                                  style: GoogleFonts.quicksand(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                SvgPicture.asset(
-                                  'assets/icons/arrow.svg',
-                                  width: 26,
-                                  height: 26,
-                                ),
-                              ],
+                              style: GoogleFonts.quicksand(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         )

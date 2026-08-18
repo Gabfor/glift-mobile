@@ -1033,29 +1033,13 @@ class _ShopOfferCard extends StatelessWidget {
                       ),
                       elevation: 0,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'En profiter',
-                          style: GoogleFonts.quicksand(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        SvgPicture.asset(
-                          'assets/icons/arrow.svg',
-                          width: 25,
-                          height: 25,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'En profiter',
+                      style: GoogleFonts.quicksand(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),

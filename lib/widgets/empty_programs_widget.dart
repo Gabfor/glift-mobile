@@ -90,29 +90,13 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                   borderRadius: BorderRadius.circular(30),
                   // No boxShadow
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Aller sur le Store',
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SvgPicture.asset(
-                      'assets/icons/arrow.svg',
-                      width: 26,
-                      height: 26,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Aller sur le Store',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
