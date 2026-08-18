@@ -163,6 +163,19 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (widget.offer.cleanDescription != null &&
+                    widget.offer.cleanDescription!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.offer.cleanDescription!,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFF5D6494),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
 
                 // Instructions
@@ -172,7 +185,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Comment profiter de cette offre ?",
+                        "Comment en profiter ?",
                         style: GoogleFonts.quicksand(
                           color: const Color(0xFF3A416F),
                           fontSize: 14,
@@ -182,8 +195,8 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       const SizedBox(height: 4),
                       Text(
                         isWithCode
-                            ? "Pour profiter immédiatement de cette offre, copiez le code de réduction ci-dessous et collez-le dans votre panier."
-                            : "Aucun code n'est nécessaire pour profiter de cette offre. Cliquez sur le bouton ci-dessous pour être automatiquement redirigé vers le site partenaire.",
+                            ? "Pour en profiter immédiatement, copie le code de réduction ci-dessous et colle le dans ton panier."
+                            : "Aucun code n'est nécessaire pour profiter de cette offre. Clique sur le bouton ci-dessous pour être automatiquement redirigé vers le site partenaire.",
                         style: GoogleFonts.quicksand(
                           color: const Color(0xFF5D6494),
                           fontSize: 14,
@@ -193,7 +206,10 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                if (isWithCode && widget.offer.code != null)
+                  const SizedBox(height: 10)
+                else
+                  const SizedBox(height: 24),
 
                 // Code Field
                 if (isWithCode && widget.offer.code != null) ...[
@@ -248,7 +264,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                 ],
 
                 // Conditions

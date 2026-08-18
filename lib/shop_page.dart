@@ -1330,7 +1330,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
           SvgPicture.asset(iconAsset, width: 20, height: 20),
           const SizedBox(width: 8),
           Text(
-            'L’offre expire dans :',
+            'Expire dans :',
             style: GoogleFonts.quicksand(
               color: const Color(0xFF5D6494),
               fontSize: 14,
@@ -1360,7 +1360,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
         SvgPicture.asset('assets/icons/check_red.svg', width: 20, height: 20),
         const SizedBox(width: 8),
         Text(
-          'L’offre expire dans :',
+          'Expire dans :',
           style: GoogleFonts.quicksand(
             color: const Color(0xFF5D6494),
             fontSize: 14,
