@@ -716,7 +716,7 @@ class _ShopPageState extends State<ShopPage> {
                                 child: Text(
                                   _favoritesOnly
                                       ? 'Aucune offre enregistrée\nen favori pour le moment.'
-                                      : 'Aucune offre disponible\navec ces filtres...',
+                                      : 'Aucune offre disponible\navec ces filtres.',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.quicksand(
                                     color: const Color(0xFF3A416F),

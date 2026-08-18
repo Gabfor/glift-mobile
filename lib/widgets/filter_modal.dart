@@ -35,7 +35,7 @@ class _FilterModalState extends State<FilterModal> {
     for (final section in widget.sections) {
       final options = section.options.toSet();
       final selected = _tempSelectedFilters[section.title] ?? {};
-      final isFiltering = selected.isNotEmpty && selected.length != options.length;
+      final isFiltering = selected.length != options.length;
       if (isFiltering) return true;
     }
     return false;
@@ -241,7 +241,11 @@ class _FilterModalState extends State<FilterModal> {
                   elevation: 0,
                 ),
                 child: Text(
-                  'Voir $_currentResults résultats',
+                  _currentResults == 0
+                      ? 'Aucun résultat'
+                      : _currentResults == 1
+                          ? 'Voir 1 résultat'
+                          : 'Voir $_currentResults résultats',
                   style: GoogleFonts.quicksand(
                     color: Colors.white,
                     fontSize: 16,

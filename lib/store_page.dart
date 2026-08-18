@@ -331,8 +331,34 @@ class _StorePageState extends State<StorePage> {
     return _applyFilters(_selectedFiltersMap);
   }
 
+  Map<String, Set<String>> get _filterOptionsBySection {
+    final userPlan = SettingsService.instance.getSubscriptionPlan();
+    final isPremium = userPlan == 'premium';
+    final map = {
+      'Sexe': _getAvailableOptions('Sexe', currentPrograms: _programs),
+      'Objectif': _getAvailableOptions('Objectif', currentPrograms: _programs),
+      'Niveau': _getAvailableOptions('Niveau', currentPrograms: _programs),
+      'Lieu': _getAvailableOptions('Lieu', currentPrograms: _programs),
+      'Durée max.': _getAvailableOptions('Durée max.', currentPrograms: _programs),
+      'Partenaire': _getAvailableOptions('Partenaire', currentPrograms: _programs),
+    };
+    if (!isPremium) {
+      map['Disponible'] = _getAvailableOptions('Disponible', currentPrograms: _programs);
+    }
+    return map;
+  }
+
   bool get _hasActiveFilters {
-    return _selectedFiltersMap.values.any((values) => values.isNotEmpty);
+    for (final entry in _selectedFiltersMap.entries) {
+      final options = _filterOptionsBySection[entry.key];
+      final isFiltering = options == null
+          ? entry.value.isNotEmpty
+          : entry.value.length != options.length;
+      if (isFiltering) {
+        return true;
+      }
+    }
+    return false;
   }
 
   List<StoreProgram> _applyFilters(Map<String, Set<String>> selectedFilters) {
@@ -426,7 +452,9 @@ class _StorePageState extends State<StorePage> {
         // Disponible
         if (matches && selectedFilters.containsKey('Disponible')) {
           final selected = selectedFilters['Disponible']!;
-          if (selected.isNotEmpty) {
+          if (selected.isEmpty) {
+            matches = false;
+          } else {
             final userPlan = SettingsService.instance.getSubscriptionPlan();
             final programPlan = program.plan;
             final isAuthenticated = widget.supabase.auth.currentUser != null;
@@ -747,7 +775,7 @@ class _StorePageState extends State<StorePage> {
                                 child: Text(
                                   _favoritesOnly
                                       ? 'Aucun programme enregistré\nen favori pour le moment.'
-                                      : 'Aucun programme disponible\navec ces filtres...',
+                                      : 'Aucun programme disponible\navec ces filtres.',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.quicksand(
                                     color: const Color(0xFF3A416F),
