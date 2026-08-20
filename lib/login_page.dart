@@ -191,11 +191,11 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final redirectUrl = '$supabaseUrl/auth-callback';
-      final authUrl = widget.supabase.auth.getOAuthSignInUrl(
+      final response = await widget.supabase.auth.getOAuthSignInUrl(
         provider: provider,
         redirectTo: redirectUrl,
       );
-      final uri = Uri.parse(authUrl);
+      final uri = Uri.parse(response.url);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
@@ -223,7 +223,15 @@ class _LoginPageState extends State<LoginPage> {
 
   void _openSignup() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const SignupPage()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => SignupPage(
+          authRepository: widget.authRepository,
+          supabase: widget.supabase,
+          biometricAuthService: widget.biometricAuthService,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
     );
   }
 
@@ -239,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
       subtitle: 'Prêt pour ta séance ?',
       resizeToAvoidBottomInset: false,
       fullPageScroll: false,
-      scrollable: true,
+      scrollable: false,
       footerIgnoresViewInsets: true,
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
       footerPadding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
@@ -251,7 +259,7 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             Center(
               child: Text(
-                'Connecte-toi',
+                'Connexion',
                 style: GoogleFonts.quicksand(
                   color: const Color(0xFF3A416F),
                   fontSize: 16,
@@ -288,7 +296,7 @@ class _LoginPageState extends State<LoginPage> {
                 });
               },
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 5),
             _PasswordField(
               controller: _passwordController,
               focusNode: _passwordFocusNode,
@@ -334,7 +342,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Row(
               children: [
                 const Expanded(
@@ -348,7 +356,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text(
                     'ou continue avec',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFA0A5BD),
+                      color: const Color(0xFFD7D4DC),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -743,13 +751,6 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
                       : const Color(0xFFD7D4DC),
                   width: 1.0,
                 ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x0A2E3271),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
               ),
               alignment: Alignment.center,
               child: SvgPicture.asset(
@@ -762,7 +763,7 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
             Text(
               widget.label,
               style: GoogleFonts.quicksand(
-                color: const Color(0xFFA0A5BD),
+                color: const Color(0xFFD7D4DC),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),

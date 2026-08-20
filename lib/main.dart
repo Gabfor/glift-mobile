@@ -10,6 +10,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:glift_mobile/login_page.dart';
+import 'package:glift_mobile/signup_page.dart';
 import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/widgets/connect_button.dart';
@@ -272,17 +273,18 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     }
   }
 
-  Future<void> _openSignup() async {
-    final uri = Uri.parse('https://glift.io/tarifs/');
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossible d’ouvrir la page d’inscription.'),
-          ),
-        );
-      }
-    }
+  void _openSignup() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => SignupPage(
+          authRepository: widget.authRepository,
+          supabase: widget.supabase,
+          biometricAuthService: widget.biometricAuthService,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
 
   @override
