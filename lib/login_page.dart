@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/biometric_auth_service.dart';
 import 'auth/auth_repository.dart';
 import 'forgot_password_page.dart';
 import 'main_page.dart';
 import 'signup_page.dart';
+import 'supabase_credentials.dart';
 import 'widgets/connect_button.dart';
 import 'widgets/glift_page_layout.dart';
 class LoginPage extends StatefulWidget {
@@ -180,6 +182,37 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _signInWithOAuth(OAuthProvider provider) async {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final redirectUrl = '$supabaseUrl/auth-callback';
+      final authUrl = widget.supabase.auth.getOAuthSignInUrl(
+        provider: provider,
+        redirectTo: redirectUrl,
+      );
+      final uri = Uri.parse(authUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Impossible de se connecter avec ce service.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   void _openForgotPassword() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -203,10 +236,10 @@ class _LoginPageState extends State<LoginPage> {
 
     return GliftPageLayout(
       title: greeting,
-      subtitle: 'Bienvenue sur Glift',
+      subtitle: 'Prêt pour ta séance ?',
       resizeToAvoidBottomInset: false,
       fullPageScroll: false,
-      scrollable: false,
+      scrollable: true,
       footerIgnoresViewInsets: true,
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
       footerPadding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
@@ -216,12 +249,14 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Connexion',
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+            Center(
+              child: Text(
+                'Connecte-toi',
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF3A416F),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -238,7 +273,7 @@ class _LoginPageState extends State<LoginPage> {
             ],
             const SizedBox(height: 8),
             _InputField(
-              label: 'Email',
+              label: 'Adresse e-mail',
               hintText: 'john.doe@email.com',
               controller: _emailController,
               focusNode: _emailFocusNode,
@@ -272,14 +307,14 @@ class _LoginPageState extends State<LoginPage> {
               textFieldKey: const Key('passwordInput'),
               toggleKey: const Key('passwordToggle'),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             ConnectButton(
               key: const Key('loginButton'),
               isEnabled: _isFormValid,
               isLoading: _isLoading,
               onPressed: _submit,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Center(
               child: TextButton(
                 onPressed: _openForgotPassword,
@@ -289,7 +324,7 @@ class _LoginPageState extends State<LoginPage> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'Mot de passe oublié',
+                  'Mot de passe oublié ?',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.quicksand(
                     color: const Color(0xFF7069FA),
@@ -298,6 +333,53 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Expanded(
+                  child: Divider(
+                    color: Color(0xFFECE9F1),
+                    thickness: 1,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    'ou continue avec',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFFA0A5BD),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Expanded(
+                  child: Divider(
+                    color: Color(0xFFECE9F1),
+                    thickness: 1,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _SocialLoginButton(
+                  iconPath: 'assets/icons/apple.svg',
+                  label: 'Apple',
+                  iconSize: 22,
+                  onTap: () => _signInWithOAuth(OAuthProvider.apple),
+                ),
+                const SizedBox(width: 24),
+                _SocialLoginButton(
+                  iconPath: 'assets/icons/google.svg',
+                  label: 'Google',
+                  iconSize: 20,
+                  onTap: () => _signInWithOAuth(OAuthProvider.google),
+                ),
+              ],
             ),
           ],
         ),
@@ -615,3 +697,80 @@ class _PasswordField extends StatelessWidget {
     );
   }
 }
+
+class _SocialLoginButton extends StatefulWidget {
+  final String iconPath;
+  final String label;
+  final double iconSize;
+  final VoidCallback onTap;
+
+  const _SocialLoginButton({
+    required this.iconPath,
+    required this.label,
+    required this.iconSize,
+    required this.onTap,
+  });
+
+  @override
+  State<_SocialLoginButton> createState() => _SocialLoginButtonState();
+}
+
+class _SocialLoginButtonState extends State<_SocialLoginButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: _isHovered
+                      ? const Color(0xFFC2BFC6)
+                      : const Color(0xFFD7D4DC),
+                  width: 1.0,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0A2E3271),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: SvgPicture.asset(
+                widget.iconPath,
+                width: widget.iconSize,
+                height: widget.iconSize,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              widget.label,
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFFA0A5BD),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
