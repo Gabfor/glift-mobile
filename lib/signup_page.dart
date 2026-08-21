@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
+import 'login_page.dart';
 import 'main_page.dart';
 import 'supabase_credentials.dart';
 import 'widgets/glift_page_layout.dart';
@@ -364,6 +365,20 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
+  void _openLogin() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
+          authRepository: widget.authRepository,
+          supabase: widget.supabase,
+          biometricAuthService: widget.biometricAuthService,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -381,7 +396,7 @@ class _SignupPageState extends State<SignupPage> {
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
       footerPadding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
       footer: _LoginPrompt(
-        onTap: () => Navigator.of(context).pop(),
+        onTap: _openLogin,
       ),
       child: Form(
         key: _formKey,

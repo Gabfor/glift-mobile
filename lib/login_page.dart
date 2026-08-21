@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _openSignup() {
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => SignupPage(
           authRepository: widget.authRepository,
