@@ -16,14 +16,14 @@ import 'widgets/glift_page_layout.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({
     super.key,
-    required this.authRepository,
-    required this.supabase,
-    required this.biometricAuthService,
+    this.authRepository,
+    this.supabase,
+    this.biometricAuthService,
   });
 
-  final AuthRepository authRepository;
-  final SupabaseClient supabase;
-  final BiometricAuthService biometricAuthService;
+  final AuthRepository? authRepository;
+  final SupabaseClient? supabase;
+  final BiometricAuthService? biometricAuthService;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -145,21 +145,27 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
-      final session = await widget.authRepository.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-      await widget.biometricAuthService.persistSession(session);
-      if (!mounted) return;
-      await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => MainPage(
-            supabase: widget.supabase,
-            authRepository: widget.authRepository,
-            biometricAuthService: widget.biometricAuthService,
-          ),
-        ),
-      );
+      if (widget.authRepository != null && widget.supabase != null) {
+        final session = await widget.authRepository!.signInWithPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        if (widget.biometricAuthService != null) {
+          await widget.biometricAuthService!.persistSession(session);
+        }
+        if (!mounted) return;
+        if (widget.biometricAuthService != null) {
+          await Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => MainPage(
+                supabase: widget.supabase!,
+                authRepository: widget.authRepository!,
+                biometricAuthService: widget.biometricAuthService!,
+              ),
+            ),
+          );
+        }
+      }
     } on AuthException catch (error) {
       if (!mounted) return;
       setState(() {
@@ -190,14 +196,16 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final redirectUrl = '$supabaseUrl/auth-callback';
-      final response = await widget.supabase.auth.getOAuthSignInUrl(
-        provider: provider,
-        redirectTo: redirectUrl,
-      );
-      final uri = Uri.parse(response.url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (widget.supabase != null) {
+        final redirectUrl = '$supabaseUrl/auth-callback';
+        final response = await widget.supabase!.auth.getOAuthSignInUrl(
+          provider: provider,
+          redirectTo: redirectUrl,
+        );
+        final uri = Uri.parse(response.url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
       }
     } catch (e) {
       if (!mounted) return;

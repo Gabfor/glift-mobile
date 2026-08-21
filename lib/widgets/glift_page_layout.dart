@@ -186,34 +186,33 @@ class GliftPageLayout extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       backgroundColor: backgroundColor ?? GliftTheme.background,
-      body: SafeArea(
-        bottom: false,
-        child: withOverlay(
-          Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 200,
-                child: Container(color: GliftTheme.accent),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: GliftTheme.accent,
-                    child: Padding(
-                      padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                      child: headerContent,
-                    ),
+      body: withOverlay(
+        Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 200,
+              child: Container(color: GliftTheme.accent),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  color: GliftTheme.accent,
+                  padding: EdgeInsets.only(top: mediaQuery.padding.top),
+                  child: Padding(
+                    padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                    child: headerContent,
                   ),
-                  Expanded(
-                    child: buildBody(child: child),
-                  ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: buildBody(child: child),
+                ),
+              ],
+            ),
               if (footer != null)
                 Positioned(
                   left: 0,
@@ -227,7 +226,6 @@ class GliftPageLayout extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}

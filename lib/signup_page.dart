@@ -366,25 +366,17 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   void _openLogin() {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-      return;
-    }
-    if (widget.authRepository != null &&
-        widget.supabase != null &&
-        widget.biometricAuthService != null) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
-            authRepository: widget.authRepository!,
-            supabase: widget.supabase!,
-            biometricAuthService: widget.biometricAuthService!,
-          ),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
+          authRepository: widget.authRepository,
+          supabase: widget.supabase,
+          biometricAuthService: widget.biometricAuthService,
         ),
-      );
-    }
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
 
   @override

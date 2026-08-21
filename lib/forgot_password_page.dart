@@ -7,9 +7,9 @@ import 'theme/glift_theme.dart';
 import 'widgets/glift_page_layout.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key, required this.authRepository});
+  const ForgotPasswordPage({super.key, this.authRepository});
 
-  final AuthRepository authRepository;
+  final AuthRepository? authRepository;
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
@@ -50,8 +50,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     try {
-      await widget.authRepository
-          .sendPasswordReset(email: _emailController.text.trim());
+      if (widget.authRepository != null) {
+        await widget.authRepository!.sendPasswordReset(email: _emailController.text.trim());
+      }
       setState(() {
         _feedback =
             'Email envoyé ! Vérifiez votre boîte de réception pour réinitialiser votre mot de passe.';
