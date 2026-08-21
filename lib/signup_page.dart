@@ -525,7 +525,7 @@ class _SignupPageState extends State<SignupPage> {
                   TextSpan(
                     style: GoogleFonts.quicksand(
                       color: const Color(0xFF5D6494),
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       height: 1.4,
                     ),
@@ -535,7 +535,7 @@ class _SignupPageState extends State<SignupPage> {
                         text: 'Politique de confidentialité',
                         style: GoogleFonts.quicksand(
                           color: const Color(0xFF7069FA),
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                         recognizer: TapGestureRecognizer()..onTap = _openPrivacyPolicy,
@@ -545,7 +545,7 @@ class _SignupPageState extends State<SignupPage> {
                         text: 'CGU',
                         style: GoogleFonts.quicksand(
                           color: const Color(0xFF7069FA),
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                         recognizer: TapGestureRecognizer()..onTap = _openCGU,
