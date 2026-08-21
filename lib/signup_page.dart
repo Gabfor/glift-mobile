@@ -963,7 +963,6 @@ class _PasswordField extends StatelessWidget {
                 bottom: 0,
                 child: Center(
                   child: GestureDetector(
-                    onTapDown: (_) => focusNode.requestFocus(),
                     onTap: onToggleVisibility,
                     child: SvgPicture.asset(
                       obscureText

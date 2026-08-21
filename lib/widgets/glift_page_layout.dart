@@ -3,6 +3,23 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/glift_theme.dart';
 
+class NoTopOverscrollPhysics extends ClampingScrollPhysics {
+  const NoTopOverscrollPhysics({super.parent});
+
+  @override
+  NoTopOverscrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return NoTopOverscrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    if (value < position.minScrollExtent) {
+      return value - position.minScrollExtent;
+    }
+    return super.applyBoundaryConditions(position, value);
+  }
+}
+
 class GliftPageLayout extends StatelessWidget {
   const GliftPageLayout({
     super.key,
@@ -22,6 +39,7 @@ class GliftPageLayout extends StatelessWidget {
     this.overlay,
     this.controller,
     this.backgroundColor,
+    this.physics,
   });
 
   final String? title;
@@ -41,6 +59,7 @@ class GliftPageLayout extends StatelessWidget {
   final Widget? overlay;
   final ScrollController? controller;
   final Color? backgroundColor;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +67,8 @@ class GliftPageLayout extends StatelessWidget {
     final effectiveFooterBottom = footerIgnoresViewInsets && resizeToAvoidBottomInset
         ? -mediaQuery.viewInsets.bottom
         : (footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom);
-    final additionalBottomSpacing = footer != null
-        ? (footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom) + (footerPadding?.vertical ?? 0.0) + 40.0
-        : 0.0;
+    final additionalBottomSpacing = (scrollable && footer != null ? 60.0 : 0.0) +
+        (mediaQuery.viewInsets.bottom > 0 ? mediaQuery.viewInsets.bottom + 20.0 : 0.0);
     final headerContent = header ??
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,6 +133,7 @@ class GliftPageLayout extends StatelessWidget {
 
               return SingleChildScrollView(
                 controller: controller,
+                physics: physics ?? const NoTopOverscrollPhysics(),
                 padding: EdgeInsets.zero,
                 child: paddedChild,
               );
@@ -151,6 +170,7 @@ class GliftPageLayout extends StatelessWidget {
               ),
               SingleChildScrollView(
                 controller: controller,
+                physics: physics ?? const NoTopOverscrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
