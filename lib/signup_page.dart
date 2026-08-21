@@ -575,7 +575,7 @@ class _SignupPageState extends State<SignupPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
-                    'ou',
+                    'ou continue avec',
                     style: GoogleFonts.quicksand(
                       color: const Color(0xFFD7D4DC),
                       fontSize: 13,
