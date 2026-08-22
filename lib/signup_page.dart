@@ -9,9 +9,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'login_page.dart';
-import 'main_page.dart';
+import 'services/auth_code_service.dart';
 import 'supabase_credentials.dart';
 import 'widgets/glift_page_layout.dart';
+import 'widgets/otp_verification_modal.dart';
 
 class SignupPage extends StatefulWidget {
   final AuthRepository? authRepository;
@@ -277,53 +278,37 @@ class _SignupPageState extends State<SignupPage> {
     }
 
     try {
-      final res = await client.auth.signUp(
+      final res = await AuthCodeService.sendCode(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        data: {'first_name': _firstNameController.text.trim()},
+        name: _firstNameController.text.trim(),
+        plan: 'starter',
       );
 
-      if (res.session != null) {
-        if (widget.biometricAuthService != null) {
-          await widget.biometricAuthService!.persistSession(res.session!);
-        }
-        if (!mounted) return;
-        if (widget.authRepository != null && widget.biometricAuthService != null) {
-          await Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => MainPage(
-                supabase: client,
-                authRepository: widget.authRepository!,
-                biometricAuthService: widget.biometricAuthService!,
-              ),
-            ),
-          );
-        } else {
-          Navigator.of(context).pop();
-        }
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.',
-            ),
-          ),
-        );
-      }
-    } on AuthException catch (error) {
       if (!mounted) return;
       setState(() {
-        _handleError(error.message);
         _isLoading = false;
       });
+
+      final initialToken = res['token'] as String;
+
+      await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => OtpVerificationModal(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          name: _firstNameController.text.trim(),
+          initialToken: initialToken,
+          supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _handleError(null);
+        _handleError(error.toString().replaceAll('Exception: ', ''));
         _isLoading = false;
       });
     }
