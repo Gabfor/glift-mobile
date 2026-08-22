@@ -76,7 +76,7 @@ class _SignupPageState extends State<SignupPage> {
       _hasMinLength && _hasLetter && _hasNumber && _hasSymbol;
 
   bool get _isFormValid =>
-      _isFirstNameValid && _isEmailValid && _isPasswordValid && !_isLoading;
+      _isFirstNameValid && _isEmailValid && _isPasswordValid;
 
   bool get _showFirstNameSuccess =>
       _firstNameTouched && !_firstNameFocused && _isFirstNameValid;
@@ -251,6 +251,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _submit() async {
     HapticFeedback.lightImpact();
+    debugPrint('🚀 [SignupPage] _submit() clicked. prenom: "${_firstNameController.text}", email: "${_emailController.text}", passwordLength: ${_passwordController.text.length}, _isFormValid: $_isFormValid');
     setState(() {
       _firstNameTouched = true;
       _emailTouched = true;
@@ -262,22 +263,15 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     if (!_isFormValid) {
+      debugPrint('⚠️ [SignupPage] Form is invalid: isFirstNameValid=$_isFirstNameValid, isEmailValid=$_isEmailValid, isPasswordValid=$_isPasswordValid');
       setState(() {
         _isLoading = false;
-      });
-      return;
-    }
-
-    final client = widget.supabase;
-    if (client == null) {
-      setState(() {
-        _isLoading = false;
-        _handleError('Supabase client non initialisé.');
       });
       return;
     }
 
     try {
+      debugPrint('⏳ [SignupPage] Calling AuthCodeService.sendCode...');
       final res = await AuthCodeService.sendCode(
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -291,6 +285,8 @@ class _SignupPageState extends State<SignupPage> {
       });
 
       final initialToken = res['token'] as String;
+      final supabaseClient = widget.supabase ?? SupabaseClient(supabaseUrl, supabaseAnonKey);
+      debugPrint('🎉 [SignupPage] Token received: $initialToken. Opening OtpVerificationModal...');
 
       await showDialog<bool>(
         context: context,
@@ -300,12 +296,13 @@ class _SignupPageState extends State<SignupPage> {
           password: _passwordController.text,
           name: _firstNameController.text.trim(),
           initialToken: initialToken,
-          supabase: widget.supabase,
+          supabase: supabaseClient,
           authRepository: widget.authRepository,
           biometricAuthService: widget.biometricAuthService,
         ),
       );
     } catch (error) {
+      debugPrint('❌ [SignupPage] Error in _submit(): $error');
       if (!mounted) return;
       setState(() {
         _handleError(error.toString().replaceAll('Exception: ', ''));
@@ -466,6 +463,7 @@ class _SignupPageState extends State<SignupPage> {
               isSuccess: _showFirstNameSuccess,
               isError: _showFirstNameFormatError,
               message: _firstNameMessage,
+              textCapitalization: TextCapitalization.words,
               onChanged: (_) {
                 setState(() {
                   _firstNameTouched = true;
@@ -515,7 +513,7 @@ class _SignupPageState extends State<SignupPage> {
                 });
               },
               onToggleVisibility: _togglePasswordVisibility,
-              onSubmitted: (_) => _submit(),
+              onSubmitted: (_) => FocusScope.of(context).unfocus(),
             ),
             const SizedBox(height: 5),
             Center(
@@ -643,7 +641,7 @@ class _CreateAccountButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
       ),
       child: ElevatedButton(
-        onPressed: isInteractive ? onPressed : null,
+        onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: color,
@@ -749,6 +747,7 @@ class _InputField extends StatelessWidget {
   final bool isError;
   final String message;
   final ValueChanged<String>? onChanged;
+  final TextCapitalization textCapitalization;
 
   const _InputField({
     required this.label,
@@ -760,6 +759,7 @@ class _InputField extends StatelessWidget {
     required this.message,
     this.hintText,
     this.onChanged,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   Color _borderColor() {
@@ -804,6 +804,7 @@ class _InputField extends StatelessWidget {
             child: TextField(
               controller: controller,
               focusNode: focusNode,
+              textCapitalization: textCapitalization,
               style: GoogleFonts.quicksand(
                 color: const Color(0xFF5D6494),
                 fontSize: 16,

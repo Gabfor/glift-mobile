@@ -121,12 +121,20 @@ class GliftPageLayout extends StatelessWidget {
             builder: (context, constraints) {
               final paddedChild = Padding(
                 padding: contentPadding,
-                child: ConstrainedBox(
-                  constraints: constraints.hasBoundedHeight
-                      ? BoxConstraints(minHeight: constraints.maxHeight)
-                      : const BoxConstraints(),
-                  child: child,
-                ),
+                child: constraints.hasBoundedHeight && !scrollable
+                    ? SizedBox(
+                        width: double.infinity,
+                        height: constraints.maxHeight > contentPadding.vertical
+                            ? constraints.maxHeight - contentPadding.vertical
+                            : null,
+                        child: child,
+                      )
+                    : ConstrainedBox(
+                        constraints: constraints.hasBoundedHeight
+                            ? BoxConstraints(minHeight: constraints.maxHeight)
+                            : const BoxConstraints(),
+                        child: child,
+                      ),
               );
 
               if (fullPageScroll || !scrollable) return paddedChild;

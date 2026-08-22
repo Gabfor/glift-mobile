@@ -28,6 +28,13 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID est utilisé pour vous connecter rapidement et en toute sécurité à Glift.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

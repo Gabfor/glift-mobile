@@ -97,7 +97,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
       });
     }
 
-    // Gérer le copier-coller éventuel d'un code complet
+    // Gérer le copier-coller éventuel d'un code complet ou l'autofill iOS
     final cleanDigits = value.replaceAll(RegExp(r'[^0-9]'), '');
     if (cleanDigits.length > 1) {
       for (int i = 0; i < 6; i++) {
@@ -295,66 +295,69 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                 const SizedBox(height: 20),
 
                 // Les 6 cases pour le code OTP
-                Row(
-                  children: List.generate(6, (index) {
-                    final isFocused = _focusedIndex == index;
-                    return Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                            color: _hasError
-                                ? const Color(0xFFEF4444)
-                                : isFocused
-                                    ? const Color(0xFF7069FA)
-                                    : const Color(0xFFD7D4DC),
-                            width: 1.0,
+                AutofillGroup(
+                  child: Row(
+                    children: List.generate(6, (index) {
+                      final isFocused = _focusedIndex == index;
+                      return Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(
+                              color: _hasError
+                                  ? const Color(0xFFEF4444)
+                                  : isFocused
+                                      ? const Color(0xFF7069FA)
+                                      : const Color(0xFFD7D4DC),
+                              width: 1.0,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: KeyboardListener(
-                            focusNode: FocusNode(),
-                            onKeyEvent: (event) {
-                              if (event is KeyDownEvent &&
-                                  event.logicalKey ==
-                                      LogicalKeyboardKey.backspace) {
-                                _handleBackspace(index);
-                              }
-                            },
-                            child: TextField(
-                              controller: _controllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(1),
-                              ],
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFF5D6494),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: '0',
-                                hintStyle: GoogleFonts.quicksand(
-                                  color: const Color(0xFFD7D4DC),
+                          child: Center(
+                            child: KeyboardListener(
+                              focusNode: FocusNode(),
+                              onKeyEvent: (event) {
+                                if (event is KeyDownEvent &&
+                                    event.logicalKey ==
+                                        LogicalKeyboardKey.backspace) {
+                                  _handleBackspace(index);
+                                }
+                              },
+                              child: TextField(
+                                controller: _controllers[index],
+                                focusNode: _focusNodes[index],
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                autofillHints: const [AutofillHints.oneTimeCode],
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(6),
+                                ],
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF5D6494),
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                 ),
-                                contentPadding: EdgeInsets.zero,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: '0',
+                                  hintStyle: GoogleFonts.quicksand(
+                                    color: const Color(0xFFD7D4DC),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                onChanged: (val) => _onDigitChanged(index, val),
                               ),
-                              onChanged: (val) => _onDigitChanged(index, val),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
                 const SizedBox(height: 14),
 
@@ -431,13 +434,29 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                             ),
                           ),
                           child: _isValidating
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Color(0xFFD7D4DC),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'En cours...',
+                                      style: GoogleFonts.quicksand(
+                                        color: const Color(0xFFD7D4DC),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
                                 )
                               : Text(
                                   'Valider',
