@@ -67,8 +67,9 @@ class GliftPageLayout extends StatelessWidget {
     final effectiveFooterBottom = footerIgnoresViewInsets && resizeToAvoidBottomInset
         ? -mediaQuery.viewInsets.bottom
         : (footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom);
-    final additionalBottomSpacing = (scrollable && footer != null ? 60.0 : 0.0) +
-        (mediaQuery.viewInsets.bottom > 0 ? mediaQuery.viewInsets.bottom + 20.0 : 0.0);
+    final additionalBottomSpacing = footer != null
+        ? (footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom) + (footerPadding?.vertical ?? 0.0) + 40.0
+        : 0.0;
     final headerContent = header ??
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,36 +118,25 @@ class GliftPageLayout extends StatelessWidget {
         child: SafeArea(
           top: false,
           bottom: false,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final paddedChild = Padding(
-                padding: contentPadding,
-                child: constraints.hasBoundedHeight && !scrollable
-                    ? SizedBox(
-                        width: double.infinity,
-                        height: constraints.maxHeight > contentPadding.vertical
-                            ? constraints.maxHeight - contentPadding.vertical
-                            : null,
-                        child: child,
-                      )
-                    : ConstrainedBox(
-                        constraints: constraints.hasBoundedHeight
-                            ? BoxConstraints(minHeight: constraints.maxHeight)
-                            : const BoxConstraints(),
+          child: fullPageScroll
+              ? Padding(
+                  padding: contentPadding,
+                  child: child,
+                )
+              : (scrollable
+                  ? SingleChildScrollView(
+                      controller: controller,
+                      physics: physics ?? const NoTopOverscrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      child: Padding(
+                        padding: contentPadding,
                         child: child,
                       ),
-              );
-
-              if (fullPageScroll || !scrollable) return paddedChild;
-
-              return SingleChildScrollView(
-                controller: controller,
-                physics: physics ?? const NoTopOverscrollPhysics(),
-                padding: EdgeInsets.zero,
-                child: paddedChild,
-              );
-            },
-          ),
+                    )
+                  : Padding(
+                      padding: contentPadding,
+                      child: child,
+                    )),
         ),
       );
     }
@@ -162,7 +152,8 @@ class GliftPageLayout extends StatelessWidget {
       );
     }
 
-    if (fullPageScroll) {
+    // Si la page active le scroll pleine page (ex: Inscription)
+    if (fullPageScroll && scrollable) {
       return Scaffold(
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         backgroundColor: backgroundColor ?? GliftTheme.background,
@@ -211,6 +202,7 @@ class GliftPageLayout extends StatelessWidget {
       );
     }
 
+    // Pages avec header fixe et body contrôlé (Connexion, Dashboard, Réglages, Store...)
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       backgroundColor: backgroundColor ?? GliftTheme.background,
@@ -241,19 +233,19 @@ class GliftPageLayout extends StatelessWidget {
                 ),
               ],
             ),
-              if (footer != null)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: effectiveFooterBottom,
-                  child: Padding(
-                    padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
-                    child: footer!,
-                  ),
+            if (footer != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: effectiveFooterBottom,
+                child: Padding(
+                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
+                  child: footer!,
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
-      );
-    }
+      ),
+    );
   }
+}
