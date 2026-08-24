@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/biometric_auth_service.dart';
 import 'auth/auth_repository.dart';
-import 'forgot_password_page.dart';
+import 'widgets/forgot_password_modal.dart';
 import 'main_page.dart';
 import 'signup_page.dart';
 import 'supabase_credentials.dart';
@@ -222,9 +222,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _openForgotPassword() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ForgotPasswordPage(authRepository: widget.authRepository),
+    showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => ForgotPasswordModal(
+        authRepository: widget.authRepository,
+        supabase: widget.supabase,
+        initialEmail: _emailController.text.trim(),
       ),
     );
   }

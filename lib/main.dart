@@ -44,7 +44,11 @@ Future<void> main() async {
   ]);
   debugPrint('DEBUG: Orientation set');
 
-  final supabase = SupabaseClient(supabaseUrl, supabaseAnonKey);
+  final supabase = SupabaseClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    authOptions: const AuthClientOptions(authFlowType: AuthFlowType.implicit),
+  );
   debugPrint('DEBUG: Supabase client created');
 
   SettingsService.instance.initSupabase(supabase);

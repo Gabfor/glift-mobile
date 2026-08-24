@@ -1,7 +1,5 @@
 import 'package:supabase/supabase.dart';
 
-import '../supabase_credentials.dart';
-
 abstract class AuthRepository {
   Future<Session> signInWithPassword({
     required String email,
@@ -56,10 +54,7 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> sendPasswordReset({required String email}) async {
     try {
-      await supabase.auth.resetPasswordForEmail(
-        email,
-        redirectTo: '$supabaseUrl/auth-callback',
-      );
+      await supabase.auth.resetPasswordForEmail(email);
     } on AuthException catch (error) {
       throw AuthException(
         error.message.isNotEmpty
