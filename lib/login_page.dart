@@ -11,6 +11,7 @@ import 'widgets/forgot_password_modal.dart';
 import 'main_page.dart';
 import 'signup_page.dart';
 import 'supabase_credentials.dart';
+import 'widgets/auth_error_modal.dart';
 import 'widgets/connect_button.dart';
 import 'widgets/glift_page_layout.dart';
 class LoginPage extends StatefulWidget {
@@ -38,7 +39,6 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
-  String? _errorMessage;
   bool _emailTouched = false;
   bool _passwordTouched = false;
   bool _emailFocused = false;
@@ -129,7 +129,6 @@ class _LoginPageState extends State<LoginPage> {
       _hasSubmitted = true;
       _emailTouched = true;
       _passwordTouched = true;
-      _errorMessage = null;
       _isLoading = true;
     });
 
@@ -166,25 +165,32 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       }
-    } on AuthException catch (error) {
+    } on AuthException catch (_) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = error.message.isNotEmpty
-            ? error.message
-            : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
         _isLoading = false;
       });
       _focusFirstError(
         emailError: _isEmailValid ? null : 'Format d’adresse invalide',
         passwordError: _isPasswordValid ? null : 'Mot de passe invalide',
       );
-    } catch (error) {
+      AuthErrorModal.show(
+        context,
+        title: 'Email ou mot de passe incorrect',
+        description:
+            'Nous n’arrivons pas à te connecter. Vérifie qu’il s’agit bien de l’email utilisé lors de ton inscription ou qu’il n’y a pas d’erreur dans le mot de passe.',
+      );
+    } catch (_) {
       if (!mounted) return;
       setState(() {
-        _errorMessage =
-            'Une erreur est survenue. Veuillez réessayer plus tard.';
         _isLoading = false;
       });
+      AuthErrorModal.show(
+        context,
+        title: 'Erreur de connexion',
+        description:
+            'Une erreur inattendue est survenue. Veuillez vérifier votre connexion et réessayer.',
+      );
     }
   }
 
@@ -192,7 +198,6 @@ class _LoginPageState extends State<LoginPage> {
     HapticFeedback.lightImpact();
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     try {
@@ -209,9 +214,11 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _errorMessage = 'Impossible de se connecter avec ce service.';
-      });
+      AuthErrorModal.show(
+        context,
+        title: 'Erreur de connexion',
+        description: 'Impossible de se connecter avec ce service.',
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -228,6 +235,7 @@ class _LoginPageState extends State<LoginPage> {
       builder: (_) => ForgotPasswordModal(
         authRepository: widget.authRepository,
         supabase: widget.supabase,
+        biometricAuthService: widget.biometricAuthService,
         initialEmail: _emailController.text.trim(),
       ),
     );
@@ -279,18 +287,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            if (_errorMessage != null) ...[
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFFE74C3C),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
             const SizedBox(height: 8),
             _InputField(
               label: 'Adresse e-mail',
@@ -304,7 +300,6 @@ class _LoginPageState extends State<LoginPage> {
               onChanged: (_) {
                 setState(() {
                   _emailTouched = true;
-                  _errorMessage = null;
                 });
               },
             ),
@@ -317,7 +312,6 @@ class _LoginPageState extends State<LoginPage> {
               onChanged: (_) {
                 setState(() {
                   _passwordTouched = true;
-                  _errorMessage = null;
                 });
               },
               onToggleVisibility: _togglePasswordVisibility,

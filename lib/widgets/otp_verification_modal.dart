@@ -254,8 +254,8 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                     _hasError
                         ? 'assets/icons/cadena_rouge.svg'
                         : 'assets/icons/cadena_violet.svg',
-                    height: 44,
-                    width: 44,
+                    height: 35,
+                    width: 35,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -265,7 +265,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                 Text(
                   'Code de validation',
                   style: GoogleFonts.quicksand(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF3A416F),
                   ),
@@ -282,7 +282,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                           : 'Pour finaliser la création de ton compte, saisis le code de validation à 6 chiffres que nous venons de t’envoyer par email.',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: _hasError
                         ? const Color(0xFFE34A4A)
                         : _hasResent
