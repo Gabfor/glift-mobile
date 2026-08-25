@@ -212,8 +212,6 @@ class _StorePageState extends State<StorePage> {
                 } else if (userGender == 'femme') {
                   if (pg == 'femme' || pg == 'tous') return 5;
                   if (pg == 'homme') return -5;
-                } else if (userGender == 'non binaire' || userGender == 'non-binaire') {
-                  if (pg == 'tous') return 3;
                 }
                 return 0;
               }
@@ -335,7 +333,7 @@ class _StorePageState extends State<StorePage> {
     final userPlan = SettingsService.instance.getSubscriptionPlan();
     final isPremium = userPlan == 'premium';
     final map = {
-      'Sexe': _getAvailableOptions('Sexe', currentPrograms: _programs),
+      'Genre': _getAvailableOptions('Genre', currentPrograms: _programs),
       'Objectif': _getAvailableOptions('Objectif', currentPrograms: _programs),
       'Niveau': _getAvailableOptions('Niveau', currentPrograms: _programs),
       'Lieu': _getAvailableOptions('Lieu', currentPrograms: _programs),
@@ -429,9 +427,9 @@ class _StorePageState extends State<StorePage> {
           // If location is null/empty, we assume it applies everywhere/matches (Wildcard)
         }
 
-        // Sexe
-        if (matches && selectedFilters.containsKey('Sexe')) {
-          final selected = selectedFilters['Sexe']!;
+        // Genre
+        if (matches && selectedFilters.containsKey('Genre')) {
+          final selected = selectedFilters['Genre']!;
           if (selected.isEmpty) {
             matches = false;
           } else {
@@ -491,7 +489,7 @@ class _StorePageState extends State<StorePage> {
 
     for (final program in currentPrograms) {
       switch (section) {
-        case 'Sexe':
+        case 'Genre':
           if (program.gender.isNotEmpty) {
              final g = program.gender;
              if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
@@ -554,8 +552,8 @@ class _StorePageState extends State<StorePage> {
     final userPlan = SettingsService.instance.getSubscriptionPlan();
     final isPremium = userPlan == 'premium'; // Assuming 'premium' is the value
 
-    // 1. Sexe
-    final sexOptions = _getAvailableOptions('Sexe', currentPrograms: _programs);
+    // 1. Genre
+    final sexOptions = _getAvailableOptions('Genre', currentPrograms: _programs);
 
     // 2. Niveau
     final levelOptions = _getAvailableOptions('Niveau', currentPrograms: _programs);
@@ -580,7 +578,7 @@ class _StorePageState extends State<StorePage> {
 
 
     final sections = [
-      FilterSection(title: 'Sexe', options: sexOptions.toList()..sort()),
+      FilterSection(title: 'Genre', options: sexOptions.toList()..sort()),
       FilterSection(
         title: 'Objectif',
         options: goalOptions.toList()..sort(),

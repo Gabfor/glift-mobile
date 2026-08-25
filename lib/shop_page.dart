@@ -189,7 +189,7 @@ class _ShopPageState extends State<ShopPage> {
           _offers = offers;
           _isLoading = false;
           _filterOptionsBySection = {
-            'Sexe': genders,
+            'Genre': genders,
             'Catégorie': categories,
             'Sport': sports,
             'Boutique': shops,
@@ -252,10 +252,10 @@ class _ShopPageState extends State<ShopPage> {
     // Filter
     if (selectedFilters.isNotEmpty) {
       filtered = filtered.where((offer) {
-        // Sexe
-        if (selectedFilters.containsKey('Sexe')) {
-          final selected = selectedFilters['Sexe']!;
-          final allOptions = _filterOptionsBySection['Sexe'] ?? {};
+        // Genre
+        if (selectedFilters.containsKey('Genre')) {
+          final selected = selectedFilters['Genre']!;
+          final allOptions = _filterOptionsBySection['Genre'] ?? {};
           if (selected.isNotEmpty && selected.length < allOptions.length) {
              final hasUniversal = offer.genders.any((g) => g.toLowerCase() == 'tous');
              final hasSelected = offer.genders.any((g) => selected.any((s) => s.toLowerCase() == g.toLowerCase()));
@@ -387,8 +387,6 @@ class _ShopPageState extends State<ShopPage> {
               } else if (userG == 'femme') {
                  if (g == 'femme' || isWildcard) return 5;
                  if (g == 'homme') return -5;
-              } else if (userG == 'non binaire' || userG == 'non-binaire') {
-                 if (isWildcard) return 3;
               }
               return 0;
             }
@@ -469,7 +467,7 @@ class _ShopPageState extends State<ShopPage> {
 
     for (final offer in currentOffers) {
       switch (section) {
-        case 'Sexe':
+        case 'Genre':
           for (var g in offer.genders) {
             if (g.isNotEmpty && g.toLowerCase() != 'tous') {
               options.add(g);
@@ -505,8 +503,8 @@ class _ShopPageState extends State<ShopPage> {
   void _showFilterModal() {
     // We need to calculate available options for EACH section based on the current selection of OTHER sections.
     
-    // 1. Sexe
-    final sexOptions = _getAvailableOptions('Sexe', currentOffers: _offers);
+    // 1. Genre
+    final sexOptions = _getAvailableOptions('Genre', currentOffers: _offers);
     
     // 2. Catégorie
     final catOptions = _getAvailableOptions('Catégorie', currentOffers: _offers);
@@ -521,7 +519,7 @@ class _ShopPageState extends State<ShopPage> {
 
     final sections = [
       FilterSection(
-        title: 'Sexe',
+        title: 'Genre',
         options: sexOptions.toList()..sort(),
       ),
       FilterSection(
