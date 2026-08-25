@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EmptyProgramsWidget extends StatefulWidget {
@@ -88,15 +87,20 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF7069FA),
                   borderRadius: BorderRadius.circular(30),
-                  // No boxShadow
                 ),
-                child: Text(
-                  'Aller sur le Store',
-                  style: GoogleFonts.quicksand(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Aller sur le Store',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
