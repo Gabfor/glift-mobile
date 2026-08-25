@@ -9,6 +9,7 @@ import 'package:supabase/supabase.dart';
 import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
 import '../supabase_credentials.dart';
+import 'glift_modal.dart';
 
 enum _ForgotPasswordStep { email, otp, newPassword, success }
 
@@ -53,13 +54,14 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final FocusNode _newPasswordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+
   bool _isNewPasswordFocused = false;
   bool _isConfirmPasswordFocused = false;
   bool _isNewPasswordTouched = false;
   bool _isConfirmPasswordTouched = false;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
-  String? _passwordErrorMessage;
 
   @override
   void initState() {
@@ -87,6 +89,18 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
         _isNewPasswordFocused = _newPasswordFocusNode.hasFocus;
         if (_isNewPasswordFocused) _isNewPasswordTouched = true;
       });
+      if (_newPasswordFocusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (!mounted) return;
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              120.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
     });
 
     _confirmPasswordFocusNode.addListener(() {
@@ -94,11 +108,24 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
         _isConfirmPasswordFocused = _confirmPasswordFocusNode.hasFocus;
         if (_isConfirmPasswordFocused) _isConfirmPasswordTouched = true;
       });
+      if (_confirmPasswordFocusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (!mounted) return;
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
     });
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _emailController.dispose();
     _emailFocusNode.dispose();
     for (final c in _otpControllers) {
@@ -433,7 +460,6 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
 
     setState(() {
       _isLoading = true;
-      _passwordErrorMessage = null;
     });
 
     final newPassword = _newPasswordController.text;
@@ -456,15 +482,31 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _passwordErrorMessage = e.message;
       });
+      final isSamePassword = e.message.toLowerCase().contains('different') ||
+          e.message.toLowerCase().contains('same') ||
+          e.message.toLowerCase().contains('ancien');
+      await GliftModal.showError(
+        context: context,
+        title: 'Oups, on a un problème...',
+        description: isSamePassword
+            ? 'Le nouveau mot de passe doit être différent de l’ancien mot de passe.'
+            : e.message,
+        buttonText: 'Fermer',
+      );
     } catch (e) {
       debugPrint('❌ [ForgotPasswordModal] Error update password: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _passwordErrorMessage = 'Impossible de mettre à jour le mot de passe.';
       });
+      await GliftModal.showError(
+        context: context,
+        title: 'Oups, on a un problème...',
+        description:
+            'Le nouveau mot de passe doit être différent de l’ancien mot de passe.',
+        buttonText: 'Fermer',
+      );
     }
   }
 
@@ -523,6 +565,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
       child: Stack(
         children: [
           SingleChildScrollView(
+            controller: _scrollController,
             physics: const ClampingScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
@@ -742,6 +785,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                   controller: _newPasswordController,
                                   focusNode: _newPasswordFocusNode,
                                   obscureText: _obscureNewPassword,
+                                  scrollPadding: const EdgeInsets.only(bottom: 220),
                                   style: GoogleFonts.quicksand(
                                     color: const Color(0xFF5D6494),
                                     fontSize: 16,
@@ -784,88 +828,83 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                         const SizedBox(height: 14),
 
                         // Champ Répéter le nouveau mot de passe
-                        Text(
-                          'Répéter le nouveau mot de passe',
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Container(
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(
-                              color: _isConfirmPasswordFocused
-                                  ? const Color(0xFF7069FA)
-                                  : (_isConfirmPasswordTouched &&
-                                          !_doPasswordsMatch &&
-                                          _confirmPasswordController.text.isNotEmpty)
-                                      ? const Color(0xFFEF4444)
-                                      : const Color(0xFFD7D4DC),
-                              width: 1.0,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Répéter le nouveau mot de passe',
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _confirmPasswordController,
-                                  focusNode: _confirmPasswordFocusNode,
-                                  obscureText: _obscureConfirmPassword,
-                                  style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF5D6494),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: '••••••••',
-                                    hintStyle: GoogleFonts.quicksand(
-                                      color: const Color(0xFFD7D4DC),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                            const SizedBox(height: 5),
+                            Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: _isConfirmPasswordFocused
+                                      ? const Color(0xFF7069FA)
+                                      : (_isConfirmPasswordTouched &&
+                                              !_doPasswordsMatch &&
+                                              _confirmPasswordController.text.isNotEmpty)
+                                          ? const Color(0xFFEF4444)
+                                          : const Color(0xFFD7D4DC),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _confirmPasswordController,
+                                      focusNode: _confirmPasswordFocusNode,
+                                      obscureText: _obscureConfirmPassword,
+                                      scrollPadding: const EdgeInsets.only(bottom: 220),
+                                      style: GoogleFonts.quicksand(
+                                        color: const Color(0xFF5D6494),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: '••••••••',
+                                        hintStyle: GoogleFonts.quicksand(
+                                          color: const Color(0xFFD7D4DC),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                                      ),
+                                      onChanged: (_) => setState(() {}),
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14),
                                   ),
-                                  onChanged: (_) => setState(() {}),
-                                ),
+                                  IconButton(
+                                    icon: SvgPicture.asset(
+                                      _obscureConfirmPassword
+                                          ? 'assets/icons/masque_defaut.svg'
+                                          : 'assets/icons/visible_defaut.svg',
+                                      width: 20,
+                                      height: 20,
+                                    ),
+                                    onPressed: () => setState(() =>
+                                        _obscureConfirmPassword = !_obscureConfirmPassword),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: SvgPicture.asset(
-                                  _obscureConfirmPassword
-                                      ? 'assets/icons/masque_defaut.svg'
-                                      : 'assets/icons/visible_defaut.svg',
-                                  width: 20,
-                                  height: 20,
-                                ),
-                                onPressed: () => setState(() =>
-                                    _obscureConfirmPassword = !_obscureConfirmPassword),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (_isConfirmPasswordFocused)
-                          _buildCriteriaBox(
-                            hasMinLength: _hasConfirmMinLength,
-                            hasLetter: _hasConfirmLetter,
-                            hasNumber: _hasConfirmNumber,
-                            hasSymbol: _hasConfirmSymbol,
-                          ),
-                        if (_passwordErrorMessage != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _passwordErrorMessage!,
-                            style: GoogleFonts.quicksand(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFFEF4444),
                             ),
-                          ),
-                        ],
+                            if (_isConfirmPasswordFocused)
+                              _buildCriteriaBox(
+                                hasMinLength: _hasConfirmMinLength,
+                                hasLetter: _hasConfirmLetter,
+                                hasNumber: _hasConfirmNumber,
+                                hasSymbol: _hasConfirmSymbol,
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
