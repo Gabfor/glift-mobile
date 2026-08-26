@@ -115,28 +115,38 @@ class GliftPageLayout extends StatelessWidget {
             topRight: Radius.circular(30),
           ),
         ),
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: fullPageScroll
-              ? Padding(
-                  padding: contentPadding,
-                  child: child,
-                )
-              : (scrollable
-                  ? SingleChildScrollView(
-                      controller: controller,
-                      physics: physics ?? const NoTopOverscrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      child: Padding(
-                        padding: contentPadding,
-                        child: child,
-                      ),
-                    )
-                  : Padding(
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 1.0),
+            child: SafeArea(
+              top: false,
+              bottom: false,
+              child: fullPageScroll
+                  ? Padding(
                       padding: contentPadding,
                       child: child,
-                    )),
+                    )
+                  : (scrollable
+                      ? SingleChildScrollView(
+                          controller: controller,
+                          physics: physics ?? const NoTopOverscrollPhysics(),
+                          padding: EdgeInsets.zero,
+                          child: Padding(
+                            padding: contentPadding,
+                            child: child,
+                          ),
+                        )
+                      : Padding(
+                          padding: contentPadding,
+                          child: child,
+                        )),
+            ),
+          ),
         ),
       );
     }

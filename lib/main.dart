@@ -103,6 +103,26 @@ class GliftApp extends StatelessWidget {
         authRepository: authRepository,
         biometricAuthService: biometricAuthService,
       ),
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (_) => SplashToOnboarding(
+            supabase: supabase,
+            authRepository: authRepository,
+            biometricAuthService: biometricAuthService,
+          ),
+          settings: settings,
+        );
+      },
+      onUnknownRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (_) => SplashToOnboarding(
+            supabase: supabase,
+            authRepository: authRepository,
+            biometricAuthService: biometricAuthService,
+          ),
+          settings: settings,
+        );
+      },
     );
   }
 }

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
-import '../main_page.dart';
+import '../pricing_page.dart';
 import '../services/auth_code_service.dart';
 
 class OtpVerificationModal extends StatefulWidget {
@@ -210,13 +210,14 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
       // Fermer la modale
       Navigator.of(context).pop(true);
 
-      // Rediriger vers l'application principale
+      // Rediriger vers l'écran de sélection d'abonnement (Tarifs)
       if (client != null &&
           widget.authRepository != null &&
           widget.biometricAuthService != null) {
         await Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => MainPage(
+            builder: (_) => PricingPage(
+              userName: widget.name,
               supabase: client,
               authRepository: widget.authRepository!,
               biometricAuthService: widget.biometricAuthService!,

@@ -11,6 +11,7 @@ import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'login_page.dart';
 import 'main_page.dart';
+import 'pricing_page.dart';
 import 'services/auth_code_service.dart';
 import 'supabase_credentials.dart';
 import 'widgets/glift_page_layout.dart';
@@ -212,7 +213,11 @@ class _SignupPageState extends State<SignupPage> {
               .eq('id', user.id)
               .maybeSingle();
 
+          bool isNewUser = false;
+          String userFirstName = 'Gabriel';
+
           if (existing == null) {
+            isNewUser = true;
             String? rawFullName = user.userMetadata?['full_name']?.toString() ??
                 user.userMetadata?['name']?.toString();
             String? firstFromFull = (rawFullName != null && rawFullName.trim().isNotEmpty)
@@ -224,6 +229,8 @@ class _SignupPageState extends State<SignupPage> {
                 firstFromFull ??
                 (user.email != null ? user.email!.split('@').first : 'Utilisateur');
 
+            userFirstName = name;
+
             await client.from('profiles').insert({
               'id': user.id,
               'name': name,
@@ -231,26 +238,53 @@ class _SignupPageState extends State<SignupPage> {
               'subscription_plan': 'starter',
             });
 
-            await client.from('user_subscriptions').insert({
-              'user_id': user.id,
-              'plan': 'starter',
-            });
+            try {
+              await client.from('user_subscriptions').insert({
+                'user_id': user.id,
+                'plan': 'starter',
+              });
+            } catch (_) {}
+          }
+
+          if (!mounted) return;
+          if (isNewUser) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => PricingPage(
+                  userName: userFirstName,
+                  supabase: client,
+                  authRepository: widget.authRepository!,
+                  biometricAuthService: widget.biometricAuthService!,
+                ),
+              ),
+              (route) => false,
+            );
+          } else {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => MainPage(
+                  supabase: client,
+                  authRepository: widget.authRepository!,
+                  biometricAuthService: widget.biometricAuthService!,
+                ),
+              ),
+              (route) => false,
+            );
           }
         } catch (e) {
           debugPrint('Error syncing profile on OAuth signup: $e');
-        }
-
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => MainPage(
-              supabase: client,
-              authRepository: widget.authRepository!,
-              biometricAuthService: widget.biometricAuthService!,
+          if (!mounted) return;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => MainPage(
+                supabase: client,
+                authRepository: widget.authRepository!,
+                biometricAuthService: widget.biometricAuthService!,
+              ),
             ),
-          ),
-          (route) => false,
-        );
+            (route) => false,
+          );
+        }
       }
     });
   }
