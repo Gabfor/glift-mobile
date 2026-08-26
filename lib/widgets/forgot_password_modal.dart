@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
@@ -522,8 +522,8 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
       if (isSuccessStep) return 'assets/icons/message_succes.svg';
       if (isOtpStep) {
         return _hasOtpError
-            ? 'assets/icons/message_erreur.svg'
-            : 'assets/icons/message_succes.svg';
+            ? 'assets/icons/cadena_rouge.svg'
+            : 'assets/icons/cadena_vert.svg';
       }
       return 'assets/icons/cadena_violet.svg';
     }();

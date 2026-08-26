@@ -18,7 +18,7 @@ import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
 
 import 'supabase_credentials.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 import 'services/notification_service.dart';
@@ -44,11 +44,14 @@ Future<void> main() async {
   ]);
   debugPrint('DEBUG: Orientation set');
 
-  final supabase = SupabaseClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    authOptions: const AuthClientOptions(authFlowType: AuthFlowType.implicit),
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
   );
+  final supabase = Supabase.instance.client;
   debugPrint('DEBUG: Supabase client created');
 
   SettingsService.instance.initSupabase(supabase);

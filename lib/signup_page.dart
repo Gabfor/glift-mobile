@@ -1,14 +1,16 @@
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'login_page.dart';
+import 'main_page.dart';
 import 'services/auth_code_service.dart';
 import 'supabase_credentials.dart';
 import 'widgets/glift_page_layout.dart';
@@ -48,6 +50,7 @@ class _SignupPageState extends State<SignupPage> {
   String? _errorTitle;
   String? _errorDescription;
   String? _externalEmailError;
+  StreamSubscription<AuthState>? _authSubscription;
 
   bool _firstNameTouched = false;
   bool _emailTouched = false;
@@ -147,6 +150,7 @@ class _SignupPageState extends State<SignupPage> {
   @override
   void initState() {
     super.initState();
+    _setupAuthListener();
     _firstNameFocusNode.addListener(() {
       setState(() {
         _firstNameFocused = _firstNameFocusNode.hasFocus;
@@ -187,8 +191,73 @@ class _SignupPageState extends State<SignupPage> {
     });
   }
 
+  void _setupAuthListener() {
+    final client = widget.supabase;
+    if (client == null) return;
+
+    _authSubscription = client.auth.onAuthStateChange.listen((data) async {
+      final AuthChangeEvent event = data.event;
+      final Session? session = data.session;
+
+      if (event == AuthChangeEvent.signedIn && session != null) {
+        if (widget.biometricAuthService != null) {
+          await widget.biometricAuthService!.persistSession(session);
+        }
+
+        try {
+          final user = session.user;
+          final existing = await client
+              .from('profiles')
+              .select('id')
+              .eq('id', user.id)
+              .maybeSingle();
+
+          if (existing == null) {
+            String? rawFullName = user.userMetadata?['full_name']?.toString() ??
+                user.userMetadata?['name']?.toString();
+            String? firstFromFull = (rawFullName != null && rawFullName.trim().isNotEmpty)
+                ? rawFullName.trim().split(RegExp(r'\s+')).first
+                : null;
+
+            final name = user.userMetadata?['given_name']?.toString() ??
+                user.userMetadata?['first_name']?.toString() ??
+                firstFromFull ??
+                (user.email != null ? user.email!.split('@').first : 'Utilisateur');
+
+            await client.from('profiles').insert({
+              'id': user.id,
+              'name': name,
+              'email_verified': true,
+              'subscription_plan': 'starter',
+            });
+
+            await client.from('user_subscriptions').insert({
+              'user_id': user.id,
+              'plan': 'starter',
+            });
+          }
+        } catch (e) {
+          debugPrint('Error syncing profile on OAuth signup: $e');
+        }
+
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => MainPage(
+              supabase: client,
+              authRepository: widget.authRepository!,
+              biometricAuthService: widget.biometricAuthService!,
+            ),
+          ),
+          (route) => false,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _scrollController.dispose();
     _firstNameController.dispose();
     _emailController.dispose();
@@ -324,15 +393,11 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      final redirectUrl = '$supabaseUrl/auth-callback';
-      final response = await client.auth.getOAuthSignInUrl(
-        provider: provider,
-        redirectTo: redirectUrl,
+      await client.auth.signInWithOAuth(
+        provider,
+        redirectTo: 'glift://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
-      final uri = Uri.parse(response.url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
     } catch (e) {
       if (!mounted) return;
       setState(() {

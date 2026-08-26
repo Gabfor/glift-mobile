@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/biometric_auth_service.dart';
@@ -44,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _emailFocused = false;
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
+  StreamSubscription<AuthState>? _authSubscription;
 
   bool get _isFormValid =>
       _isEmailValid && _passwordController.text.trim().isNotEmpty;
@@ -84,6 +86,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _setupAuthListener();
     _emailFocusNode.addListener(() {
       setState(() {
         _emailFocused = _emailFocusNode.hasFocus;
@@ -98,8 +101,73 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  void _setupAuthListener() {
+    final client = widget.supabase;
+    if (client == null) return;
+
+    _authSubscription = client.auth.onAuthStateChange.listen((data) async {
+      final AuthChangeEvent event = data.event;
+      final Session? session = data.session;
+
+      if (event == AuthChangeEvent.signedIn && session != null) {
+        if (widget.biometricAuthService != null) {
+          await widget.biometricAuthService!.persistSession(session);
+        }
+
+        try {
+          final user = session.user;
+          final existing = await client
+              .from('profiles')
+              .select('id')
+              .eq('id', user.id)
+              .maybeSingle();
+
+          if (existing == null) {
+            String? rawFullName = user.userMetadata?['full_name']?.toString() ??
+                user.userMetadata?['name']?.toString();
+            String? firstFromFull = (rawFullName != null && rawFullName.trim().isNotEmpty)
+                ? rawFullName.trim().split(RegExp(r'\s+')).first
+                : null;
+
+            final name = user.userMetadata?['given_name']?.toString() ??
+                user.userMetadata?['first_name']?.toString() ??
+                firstFromFull ??
+                (user.email != null ? user.email!.split('@').first : 'Utilisateur');
+
+            await client.from('profiles').insert({
+              'id': user.id,
+              'name': name,
+              'email_verified': true,
+              'subscription_plan': 'starter',
+            });
+
+            await client.from('user_subscriptions').insert({
+              'user_id': user.id,
+              'plan': 'starter',
+            });
+          }
+        } catch (e) {
+          debugPrint('Error syncing profile on OAuth signin: $e');
+        }
+
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => MainPage(
+              supabase: client,
+              authRepository: widget.authRepository!,
+              biometricAuthService: widget.biometricAuthService!,
+            ),
+          ),
+          (route) => false,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     _emailFocusNode.dispose();
@@ -202,15 +270,11 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       if (widget.supabase != null) {
-        final redirectUrl = '$supabaseUrl/auth-callback';
-        final response = await widget.supabase!.auth.getOAuthSignInUrl(
-          provider: provider,
-          redirectTo: redirectUrl,
+        await widget.supabase!.auth.signInWithOAuth(
+          provider,
+          redirectTo: 'glift://login-callback',
+          authScreenLaunchMode: LaunchMode.externalApplication,
         );
-        final uri = Uri.parse(response.url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
       }
     } catch (e) {
       if (!mounted) return;
