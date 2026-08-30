@@ -104,13 +104,13 @@ class PremiumSubscriptionModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(
-                  boldText: 'Accès aux bons plans',
-                  normalText: ' de la Glift Shop',
+                  boldText: 'Accès aux bons plans de la Glift Shop',
+                  normalText: '',
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(
-                  boldText: 'Accès aux programmes',
-                  normalText: ' du Glift Store',
+                  boldText: 'Accès aux programmes du Glift Store',
+                  normalText: '',
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(
