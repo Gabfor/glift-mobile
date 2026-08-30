@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/settings_option_page.dart';
+import 'widgets/glift_loader.dart';
 
 class UserInformationsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -214,13 +215,14 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
@@ -249,30 +251,33 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+            ),
 
-              // Content List
-              Expanded(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7069FA)),
+            // Content List
+            Expanded(
+              child: _isLoading
+                  ? const GliftLoader(size: 32)
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        20,
+                        0,
+                        20,
+                        MediaQuery.of(context).padding.bottom + 40,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFECE9F1)),
                         ),
-                      )
-                    : SingleChildScrollView(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFECE9F1)),
-                          ),
-                          child: Column(
-                            children: [
-                              // 1. Genre
-                              _InfoTile(
-                                title: 'Genre',
-                                value: (_gender == null || _gender!.isEmpty)
-                                    ? 'Non spécifié'
+                        child: Column(
+                          children: [
+                            // 1. Genre
+                            _InfoTile(
+                              title: 'Genre',
+                              value: (_gender == null || _gender!.isEmpty)
+                                  ? 'Non spécifié'
                                     : _gender!,
                                 flagIconPath: _getGenderIcon(_gender),
                                 showArrow: true,
@@ -426,7 +431,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                               // 7. Objectif principal
                               _InfoTile(
                                 title: 'Objectif principal',
-                                value: _mainGoal ?? 'Non spécifié',
+                                value: (_mainGoal == null || _mainGoal!.isEmpty)
+                                    ? 'Non spécifié'
+                                    : _mainGoal!,
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -435,6 +442,7 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerTitle: 'Mes informations',
                                         headerSubtitle: 'Objectif principal',
                                         options: const [
+                                          SettingsOptionItem(value: '', label: 'Non spécifié'),
                                           SettingsOptionItem(value: 'Prise de muscle', label: 'Prise de muscle'),
                                           SettingsOptionItem(value: 'Perte de graisse', label: 'Perte de graisse'),
                                           SettingsOptionItem(value: 'Perte de poids', label: 'Perte de poids'),
@@ -449,8 +457,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         ],
                                         initialValue: _mainGoal ?? '',
                                         onChanged: (val) {
-                                          setState(() => _mainGoal = val);
-                                          _updateProfileField('main_goal', val);
+                                          final finalVal = val.isEmpty ? null : val;
+                                          setState(() => _mainGoal = finalVal);
+                                          _updateProfileField('main_goal', finalVal);
                                         },
                                       ),
                                     ),
@@ -526,7 +535,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                               // 10. Compléments alimentaires
                               _InfoTile(
                                 title: 'Compléments alimentaires',
-                                value: _supplements ?? 'Non spécifié',
+                                value: (_supplements == null || _supplements!.isEmpty)
+                                    ? 'Non spécifié'
+                                    : _supplements!,
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -535,13 +546,15 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerTitle: 'Mes informations',
                                         headerSubtitle: 'Compléments alimentaires',
                                         options: const [
+                                          SettingsOptionItem(value: '', label: 'Non spécifié'),
                                           SettingsOptionItem(value: 'Oui', label: 'Oui'),
                                           SettingsOptionItem(value: 'Non', label: 'Non'),
                                         ],
                                         initialValue: _supplements ?? '',
                                         onChanged: (val) {
-                                          setState(() => _supplements = val);
-                                          _updateProfileField('supplements', val);
+                                          final finalVal = val.isEmpty ? null : val;
+                                          setState(() => _supplements = finalVal);
+                                          _updateProfileField('supplements', finalVal);
                                         },
                                       ),
                                     ),
@@ -556,10 +569,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
             ],
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
 class _SettingsBackButton extends StatelessWidget {
   const _SettingsBackButton({required this.onTap});

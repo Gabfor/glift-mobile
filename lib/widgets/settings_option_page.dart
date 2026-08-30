@@ -51,12 +51,14 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
@@ -85,18 +87,25 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFECE9F1)),
-                    ),
-                    child: Column(
-                      children: [
+            ),
+
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  0,
+                  20,
+                  MediaQuery.of(context).padding.bottom + 40,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFECE9F1)),
+                  ),
+                  child: Column(
+                    children: [
                         for (int i = 0; i < widget.options.length; i++) ...[
                           if (i > 0)
                             const Divider(
@@ -121,9 +130,8 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

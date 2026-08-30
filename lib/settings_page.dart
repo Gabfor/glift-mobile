@@ -14,6 +14,7 @@ import 'display_settings_page.dart';
 import 'sound_settings_page.dart';
 import 'default_timer_page.dart';
 import 'user_informations_page.dart';
+import 'user_subscription_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -516,7 +517,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _subscriptionPlan == 'premium' ? 'Premium' : 'Gratuit',
+                      _subscriptionPlan == 'premium' ? 'Premium' : 'Starter',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -528,7 +529,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
                 onTap: () {
-                  // TODO: Handled in subsequent step
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => UserSubscriptionPage(
+                        supabase: widget.supabase,
+                      ),
+                    ),
+                  ).then((_) {
+                    _applySettingsFromService();
+                  });
                 },
               ),
             ],

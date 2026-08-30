@@ -135,24 +135,13 @@ class PremiumSubscriptionModal extends StatelessWidget {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Tester gratuitement',
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
+                    child: Text(
+                      'Tester gratuitement',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
