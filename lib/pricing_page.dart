@@ -161,13 +161,11 @@ class _PricingPageState extends State<PricingPage> {
                 isEnabled: true,
               ),
               _FeatureItem(
-                boldText: 'Accès aux programmes',
-                regularText: ' du Glift Store',
+                boldText: 'Accès aux bons plans de la Glift Shop',
                 isEnabled: true,
               ),
               _FeatureItem(
-                boldText: 'Offres personnalisées',
-                regularText: ' dans la Glift Shop',
+                boldText: 'Accès aux programmes du Glift Store',
                 isEnabled: true,
               ),
               _FeatureItem(
@@ -206,11 +204,13 @@ class _PricingPageState extends State<PricingPage> {
             period: '/mois',
             features: const [
               _FeatureItem(
-                regularText: 'Un seul entrainement',
+                boldText: 'Un seul',
+                regularText: ' entraînement',
                 isEnabled: true,
               ),
               _FeatureItem(
-                regularText: 'Un maximum de 10 exercices',
+                prefixText: 'Un maximum de ',
+                boldText: '10 exercices',
                 isEnabled: true,
               ),
               _FeatureItem(
@@ -218,11 +218,11 @@ class _PricingPageState extends State<PricingPage> {
                 isEnabled: true,
               ),
               _FeatureItem(
-                regularText: 'Accès aux programmes du Glift Store',
-                isEnabled: false,
+                boldText: 'Accès aux bons plans de la Glift Shop',
+                isEnabled: true,
               ),
               _FeatureItem(
-                regularText: 'Offres personnalisées dans la Glift Shop',
+                regularText: 'Accès aux programmes du Glift Store',
                 isEnabled: false,
               ),
             ],
@@ -349,6 +349,20 @@ class _PlanCard extends StatelessWidget {
                             child: Text.rich(
                               TextSpan(
                                 children: [
+                                  if (feature.prefixText.isNotEmpty)
+                                    TextSpan(
+                                      text: feature.prefixText,
+                                      style: GoogleFonts.quicksand(
+                                        fontWeight: FontWeight.w600,
+                                        color: feature.isEnabled
+                                            ? const Color(0xFF5D6494)
+                                            : const Color(0xFFB1BACC),
+                                        decoration: feature.isEnabled
+                                            ? TextDecoration.none
+                                            : TextDecoration.lineThrough,
+                                        decorationColor: const Color(0xFFB1BACC),
+                                      ),
+                                    ),
                                   if (feature.boldText.isNotEmpty)
                                     TextSpan(
                                       text: feature.boldText,
@@ -363,19 +377,20 @@ class _PlanCard extends StatelessWidget {
                                         decorationColor: const Color(0xFFB1BACC),
                                       ),
                                     ),
-                                  TextSpan(
-                                    text: feature.regularText,
-                                    style: GoogleFonts.quicksand(
-                                      fontWeight: FontWeight.w600,
-                                      color: feature.isEnabled
-                                          ? const Color(0xFF5D6494)
-                                          : const Color(0xFFB1BACC),
-                                      decoration: feature.isEnabled
-                                          ? TextDecoration.none
-                                          : TextDecoration.lineThrough,
-                                      decorationColor: const Color(0xFFB1BACC),
+                                  if (feature.regularText.isNotEmpty)
+                                    TextSpan(
+                                      text: feature.regularText,
+                                      style: GoogleFonts.quicksand(
+                                        fontWeight: FontWeight.w600,
+                                        color: feature.isEnabled
+                                            ? const Color(0xFF5D6494)
+                                            : const Color(0xFFB1BACC),
+                                        decoration: feature.isEnabled
+                                            ? TextDecoration.none
+                                            : TextDecoration.lineThrough,
+                                        decorationColor: const Color(0xFFB1BACC),
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                               style: GoogleFonts.quicksand(
@@ -409,13 +424,15 @@ class _PlanCard extends StatelessWidget {
 }
 
 class _FeatureItem {
+  final String prefixText;
   final String boldText;
   final String regularText;
   final bool isEnabled;
 
   const _FeatureItem({
+    this.prefixText = '',
     this.boldText = '',
-    required this.regularText,
+    this.regularText = '',
     required this.isEnabled,
   });
 }
