@@ -104,12 +104,12 @@ class PremiumSubscriptionModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(
-                  boldText: 'Accès aux bons plans de la Glift Shop',
+                  boldText: 'Accès aux programmes du Glift Store',
                   normalText: '',
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(
-                  boldText: 'Accès aux programmes du Glift Store',
+                  boldText: 'Accès aux bons plans de la Glift Shop',
                   normalText: '',
                 ),
                 const SizedBox(height: 12),
@@ -242,17 +242,19 @@ class PremiumSubscriptionModal extends StatelessWidget {
                   if (boldText.isNotEmpty)
                     TextSpan(
                       text: boldText,
-                      style: const TextStyle(
+                      style: GoogleFonts.quicksand(
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF3A416F),
+                        color: const Color(0xFF3A416F),
                       ),
                     ),
                   if (normalText.isNotEmpty)
                     TextSpan(
                       text: normalText,
-                      style: const TextStyle(
+                      style: GoogleFonts.quicksand(
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF5D6494),
+                        color: const Color(0xFF5D6494),
                       ),
                     ),
                 ],
