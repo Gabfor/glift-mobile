@@ -18,8 +18,8 @@ class WeightUnitSettingsPage extends StatelessWidget {
       headerTitle: 'Réglages',
       headerSubtitle: 'Unités de poids',
       options: const [
-        SettingsOptionItem(value: 'metric', label: 'Métrique (kg)'),
-        SettingsOptionItem(value: 'imperial', label: 'Impérial (lb)'),
+        SettingsOptionItem(value: 'metric', label: 'Kg'),
+        SettingsOptionItem(value: 'imperial', label: 'Lb'),
       ],
       initialValue: initialValue,
       onChanged: onChanged,

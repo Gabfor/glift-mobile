@@ -13,6 +13,7 @@ import 'weight_unit_settings_page.dart';
 import 'display_settings_page.dart';
 import 'sound_settings_page.dart';
 import 'default_timer_page.dart';
+import 'user_informations_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -31,6 +32,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late final PageController _pageController;
+  int _currentTab = 0;
+
   // Local state for toggles (mocked for now as per requirements)
   String _weightUnit = 'metric';
   bool _effort = true;
@@ -39,7 +43,6 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _suivi = true;
   bool _material = true;
   bool _rest = true;
-  bool _tracking = true;
   bool _superset = true;
   bool _showSummary = true;
   bool _showGoals = true;
@@ -50,39 +53,60 @@ class _SettingsPageState extends State<SettingsPage> {
   String _soundEffect = 'radar';
   int _defaultRestTime = 60;
   bool _isLoggingOut = false;
+  bool _newsletterGlift = false;
+  bool _surveys = false;
+  bool _newsletterShop = false;
+  bool _newsletterStore = false;
+  String _subscriptionPlan = 'basic';
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
+    _applySettingsFromService();
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _applySettingsFromService() {
+    if (!mounted) return;
+    final settings = SettingsService.instance;
+    setState(() {
+      _material = settings.getMaterialEnabled();
+      _effort = settings.getShowEffort();
+      _autoTrigger = settings.getAutoTriggerEnabled();
+      _displayType = settings.getDisplayType();
+      _weightUnit = settings.getWeightUnit();
+      _soundEffect = settings.getSoundEffect();
+      _sound = settings.getSoundEnabled();
+      _vibrations = settings.getVibrationEnabled();
+      _links = settings.getShowLinks();
+      _notes = settings.getShowNotes();
+      _suivi = settings.getShowSuivi();
+      _superset = settings.getShowSuperset();
+      _showSummary = settings.getShowSummary();
+      _showGoals = settings.getShowGoals();
+      _newsletterGlift = settings.getNewsletterGlift();
+      _surveys = settings.getSurveys();
+      _newsletterShop = settings.getNewsletterShop();
+      _newsletterStore = settings.getNewsletterStore();
+      _subscriptionPlan = settings.getSubscriptionPlan();
+
+      _rest = settings.getShowRepos();
+      _defaultRestTime = settings.getDefaultRestTime(); 
+    });
   }
 
   Future<void> _loadSettings() async {
     final settings = SettingsService.instance;
     await settings.init();
     await settings.initSupabase(widget.supabase);
-    if (mounted) {
-      setState(() {
-        _material = settings.getMaterialEnabled();
-        _effort = settings.getShowEffort();
-        _autoTrigger = settings.getAutoTriggerEnabled();
-        _displayType = settings.getDisplayType();
-        _weightUnit = settings.getWeightUnit();
-        _soundEffect = settings.getSoundEffect();
-        _sound = settings.getSoundEnabled();
-        _vibrations = settings.getVibrationEnabled();
-        _links = settings.getShowLinks();
-        _notes = settings.getShowNotes();
-        _suivi = settings.getShowSuivi();
-        _superset = settings.getShowSuperset();
-        _showSummary = settings.getShowSummary();
-        _showGoals = settings.getShowGoals();
-
-        _rest = settings.getShowRepos();
-        debugPrint('SettingsPage: Loaded _rest = $_rest'); // DEBUG
-        _defaultRestTime = settings.getDefaultRestTime(); 
-      });
-    }
+    _applySettingsFromService();
   }
 
   Future<void> _signOut() async {
@@ -119,41 +143,87 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GliftPageLayout(
-      title: 'Réglages',
-      subtitle: 'Personnaliser l’application',
-      scrollable: false,
-      padding: EdgeInsets.zero,
-      child: GliftPullToRefresh(
-        onRefresh: () async {
-          await SettingsService.instance.syncFromSupabase();
-          if (mounted) {
-            setState(() {
-              final settings = SettingsService.instance;
-              _material = settings.getMaterialEnabled();
-              _effort = settings.getShowEffort();
-              _autoTrigger = settings.getAutoTriggerEnabled();
-              _displayType = settings.getDisplayType();
-              _weightUnit = settings.getWeightUnit();
-              _soundEffect = settings.getSoundEffect();
-              _sound = settings.getSoundEnabled();
-              _vibrations = settings.getVibrationEnabled();
-              _links = settings.getShowLinks();
-              _notes = settings.getShowNotes();
-              _suivi = settings.getShowSuivi();
-              _superset = settings.getShowSuperset();
-              _showSummary = settings.getShowSummary();
-              _showGoals = settings.getShowGoals();
-              _rest = settings.getShowRepos();
-              _defaultRestTime = settings.getDefaultRestTime();
-            });
-          }
-        },
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-          children: [
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+          child: Text(
+            'Réglages',
+            style: GoogleFonts.quicksand(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  if (_currentTab != 0) {
+                    _pageController.animateToPage(
+                      0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                },
+                child: Text(
+                  'Mon application',
+                  style: GoogleFonts.quicksand(
+                    color: _currentTab == 0
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.5),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              GestureDetector(
+                onTap: () {
+                  if (_currentTab != 1) {
+                    _pageController.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                },
+                child: Text(
+                  'Mon profil',
+                  style: GoogleFonts.quicksand(
+                    color: _currentTab == 1
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.5),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildApplicationTab() {
+    return GliftPullToRefresh(
+      onRefresh: () async {
+        await SettingsService.instance.syncFromSupabase();
+        _applySettingsFromService();
+      },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+        children: [
           // App Settings
           const _SettingsSectionHeader(title: 'RÉGLAGES DE L’APPLICATION'),
           const SizedBox(height: 10),
@@ -165,7 +235,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _weightUnit == 'imperial' ? 'Impérial (lb)' : 'Métrique (kg)',
+                      _weightUnit == 'imperial' ? 'Lb' : 'Kg',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -376,7 +446,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${_defaultRestTime} secondes',
+                      '$_defaultRestTime secondes',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -404,20 +474,120 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
+          const SizedBox(height: 30),
+
+          // Logout Button
+          _buildLogoutButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileTab() {
+    return GliftPullToRefresh(
+      onRefresh: () async {
+        await SettingsService.instance.syncFromSupabase();
+        _applySettingsFromService();
+      },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+        children: [
+          // Profil Section
+          const _SettingsSectionHeader(title: 'PROFIL'),
+          const SizedBox(height: 10),
+          _SettingsContainer(
+            children: [
+              _SettingsTile(
+                title: 'Mes informations',
+                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => UserInformationsPage(
+                        supabase: widget.supabase,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _SettingsTile(
+                title: 'Mon abonnement',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _subscriptionPlan == 'premium' ? 'Premium' : 'Gratuit',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                  ],
+                ),
+                onTap: () {
+                  // TODO: Handled in subsequent step
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
 
-          // Others
+          // Communications Section
+          const _SettingsSectionHeader(title: 'COMMUNICATIONS'),
+          const SizedBox(height: 10),
+          _SettingsContainer(
+            children: [
+              _SettingsSwitchTile(
+                title: 'Newsletter Glift',
+                value: _newsletterGlift,
+                onChanged: (v) {
+                  setState(() => _newsletterGlift = v);
+                  SettingsService.instance.saveNewsletterGlift(v);
+                },
+              ),
+              _SettingsSwitchTile(
+                title: 'Enquêtes sondages',
+                value: _surveys,
+                onChanged: (v) {
+                  setState(() => _surveys = v);
+                  SettingsService.instance.saveSurveys(v);
+                },
+              ),
+              _SettingsSwitchTile(
+                title: 'Newsletter Glift Shop',
+                value: _newsletterShop,
+                onChanged: (v) {
+                  setState(() => _newsletterShop = v);
+                  SettingsService.instance.saveNewsletterShop(v);
+                },
+              ),
+              _SettingsSwitchTile(
+                title: 'Newsletter Glift Store',
+                value: _newsletterStore,
+                onChanged: (v) {
+                  setState(() => _newsletterStore = v);
+                  SettingsService.instance.saveNewsletterStore(v);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Autres Section
           const _SettingsSectionHeader(title: 'AUTRES'),
           const SizedBox(height: 10),
           _SettingsContainer(
             children: [
               _SettingsTile(
-                title: 'Vous aimez Glift ?',
+                title: 'Tu aimes Glift ?',
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Evaluez-nous',
+                      'Nous évaluer',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -436,7 +606,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Contactez-nous',
+                      'Nous contacter',
                       style: GoogleFonts.quicksand(
                         color: const Color(0xFF5D6494),
                         fontSize: 16,
@@ -466,57 +636,82 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 30),
 
           // Logout Button
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _isLoggingOut ? null : _signOut,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isLoggingOut 
-                    ? const Color(0xFFF2F1F6) 
-                    : const Color(0xFFEF4F4E),
-                disabledBackgroundColor: const Color(0xFFF2F1F6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                elevation: 0,
-              ),
-              child: _isLoggingOut
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'En cours...',
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFFD7D4DC),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Text(
-                      'Se déconnecter',
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-            ),
-          ),
+          _buildLogoutButton(),
         ],
       ),
-    ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _isLoggingOut ? null : _signOut,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _isLoggingOut 
+              ? const Color(0xFFF2F1F6) 
+              : const Color(0xFFEF4F4E),
+          disabledBackgroundColor: const Color(0xFFF2F1F6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          elevation: 0,
+        ),
+        child: _isLoggingOut
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'En cours...',
+                    style: GoogleFonts.quicksand(
+                      color: const Color(0xFFD7D4DC),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                'Se déconnecter',
+                style: GoogleFonts.quicksand(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GliftPageLayout(
+      header: _buildHeader(),
+      scrollable: false,
+      padding: EdgeInsets.zero,
+      headerPadding: EdgeInsets.zero,
+      child: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentTab = index;
+          });
+        },
+        children: [
+          _buildApplicationTab(),
+          _buildProfileTab(),
+        ],
+      ),
     );
   }
   String _getSoundEffectLabel(String value) {
@@ -584,7 +779,7 @@ class _SettingsTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 15),
+        padding: const EdgeInsets.only(left: 15, right: 9),
         child: Row(
           children: [
             Text(
@@ -627,7 +822,7 @@ class _SettingsSwitchTile extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.quicksand(
-              color: enabled ? const Color(0xFF3A416F) : const Color(0xFFECE9F1),
+              color: enabled ? const Color(0xFF3A416F) : const Color(0xFFD7D4DC),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -636,16 +831,19 @@ class _SettingsSwitchTile extends StatelessWidget {
           SizedBox(
             width: 44,
             height: 26,
-            child: Switch.adaptive(
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              value: value,
-              onChanged: enabled
-                  ? (v) {
-                      HapticFeedback.lightImpact();
-                      onChanged(v);
-                    }
-                  : null,
-              activeColor: const Color(0xFFA1A5FD),
+            child: IgnorePointer(
+              ignoring: !enabled,
+              child: Switch.adaptive(
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                value: enabled ? value : false,
+                onChanged: (v) {
+                  if (enabled) {
+                    HapticFeedback.lightImpact();
+                    onChanged(v);
+                  }
+                },
+                activeColor: const Color(0xFFA1A5FD),
+              ),
             ),
           ),
         ],

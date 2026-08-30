@@ -49,6 +49,10 @@ class SettingsService {
           'show_superset',
           'show_summary',
           'show_goals',
+          'newsletter',
+          'survey',
+          'newsletter_shop',
+          'newsletter_store',
         ]);
       } on PostgrestException catch (e) {
         // If PostgreSQL error 42703 (undefined column) occurs, fallback to basic columns
@@ -164,6 +168,30 @@ class SettingsService {
         final showGoals = response['show_goals'] as bool;
         if (showGoals != getShowGoals()) {
           await _prefs.setBool(_kShowGoals, showGoals);
+        }
+      }
+      if (response.containsKey('newsletter') && response['newsletter'] != null) {
+        final val = response['newsletter'] as bool;
+        if (val != getNewsletterGlift()) {
+          await _prefs.setBool(_kNewsletterGlift, val);
+        }
+      }
+      if (response.containsKey('survey') && response['survey'] != null) {
+        final val = response['survey'] as bool;
+        if (val != getSurveys()) {
+          await _prefs.setBool(_kSurveys, val);
+        }
+      }
+      if (response.containsKey('newsletter_shop') && response['newsletter_shop'] != null) {
+        final val = response['newsletter_shop'] as bool;
+        if (val != getNewsletterShop()) {
+          await _prefs.setBool(_kNewsletterShop, val);
+        }
+      }
+      if (response.containsKey('newsletter_store') && response['newsletter_store'] != null) {
+        final val = response['newsletter_store'] as bool;
+        if (val != getNewsletterStore()) {
+          await _prefs.setBool(_kNewsletterStore, val);
         }
       }
     }
@@ -542,6 +570,100 @@ class SettingsService {
   bool getShowGoals() {
     if (!_initialized) return true;
     return _prefs.getBool(_kShowGoals) ?? true;
+  }
+
+  // Communications
+  static const String _kNewsletterGlift = 'newsletter_glift';
+  static const String _kSurveys = 'surveys';
+  static const String _kNewsletterShop = 'newsletter_shop';
+  static const String _kNewsletterStore = 'newsletter_store';
+
+  Future<void> saveNewsletterGlift(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kNewsletterGlift, enabled);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'newsletter': enabled,
+        });
+      } catch (e) {
+        print('Error saving newsletter to Supabase: $e');
+      }
+    }
+  }
+
+  bool getNewsletterGlift() {
+    if (!_initialized) return false;
+    return _prefs.getBool(_kNewsletterGlift) ?? false;
+  }
+
+  Future<void> saveSurveys(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kSurveys, enabled);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'survey': enabled,
+        });
+      } catch (e) {
+        print('Error saving survey to Supabase: $e');
+      }
+    }
+  }
+
+  bool getSurveys() {
+    if (!_initialized) return false;
+    return _prefs.getBool(_kSurveys) ?? false;
+  }
+
+  Future<void> saveNewsletterShop(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kNewsletterShop, enabled);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'newsletter_shop': enabled,
+        });
+      } catch (e) {
+        print('Error saving newsletter_shop to Supabase: $e');
+      }
+    }
+  }
+
+  bool getNewsletterShop() {
+    if (!_initialized) return false;
+    return _prefs.getBool(_kNewsletterShop) ?? false;
+  }
+
+  Future<void> saveNewsletterStore(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kNewsletterStore, enabled);
+
+    final user = _supabase?.auth.currentUser;
+    if (user != null) {
+      try {
+        await _supabase!.from('preferences').upsert({
+          'id': user.id,
+          'newsletter_store': enabled,
+        });
+      } catch (e) {
+        print('Error saving newsletter_store to Supabase: $e');
+      }
+    }
+  }
+
+  bool getNewsletterStore() {
+    if (!_initialized) return false;
+    return _prefs.getBool(_kNewsletterStore) ?? false;
   }
 
   // Subscription Plan
