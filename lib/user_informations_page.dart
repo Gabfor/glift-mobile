@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase/supabase.dart';
@@ -43,6 +45,7 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
         _saveName();
       }
     });
+
     _loadProfileData();
   }
 
@@ -100,6 +103,54 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
     }
   }
 
+  void _showCupertinoDatePicker() {
+    DateTime initial = DateTime(1995, 1, 1);
+    if (_birthDate != null && _birthDate!.isNotEmpty) {
+      try {
+        initial = DateTime.parse(_birthDate!);
+      } catch (_) {}
+    }
+
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 280,
+          decoration: const BoxDecoration(
+            color: Color(0xFFF2F2F7),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: CupertinoTheme(
+              data: const CupertinoThemeData(
+                brightness: Brightness.light,
+              ),
+              child: Localizations.override(
+                context: context,
+                locale: const Locale('fr', 'FR'),
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  dateOrder: DatePickerDateOrder.dmy,
+                  initialDateTime: initial,
+                  minimumDate: DateTime(1920, 1, 1),
+                  maximumDate: DateTime.now(),
+                  onDateTimeChanged: (DateTime newDate) {
+                    final formatted = DateFormat('yyyy-MM-dd').format(newDate);
+                    setState(() {
+                      _birthDate = formatted;
+                    });
+                    _updateProfileField('birth_date', formatted);
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _updateProfileField(String column, dynamic value) async {
     final userId = widget.supabase.auth.currentUser?.id;
     if (userId == null) return;
@@ -128,43 +179,33 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
     }
   }
 
-  Future<void> _pickBirthDate() async {
-    DateTime initialDate = DateTime(1995, 1, 1);
-    if (_birthDate != null && _birthDate!.isNotEmpty) {
-      try {
-        initialDate = DateTime.parse(_birthDate!);
-      } catch (_) {}
+  String? _getGenderIcon(String? gender) {
+    if (gender == null || gender.trim().isEmpty) return null;
+    switch (gender.trim().toLowerCase()) {
+      case 'homme':
+        return 'assets/icons/homme.svg';
+      case 'femme':
+        return 'assets/icons/femme.svg';
+      default:
+        return null;
     }
+  }
 
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(1920),
-      lastDate: DateTime.now(),
-      locale: const Locale('fr', 'FR'),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF7069FA),
-              onPrimary: Colors.white,
-              onSurface: Color(0xFF3A416F),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF7069FA),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      final formatted = DateFormat('yyyy-MM-dd').format(picked);
-      setState(() => _birthDate = formatted);
-      _updateProfileField('birth_date', formatted);
+  String? _getCountryFlag(String? country) {
+    if (country == null || country.trim().isEmpty) return null;
+    switch (country.trim().toLowerCase()) {
+      case 'france':
+        return 'assets/icons/flags/france.svg';
+      case 'belgique':
+        return 'assets/icons/flags/belgique.svg';
+      case 'suisse':
+        return 'assets/icons/flags/suisse.svg';
+      case 'canada':
+        return 'assets/icons/flags/canada.svg';
+      case 'autre':
+        return 'assets/icons/flags/autre.svg';
+      default:
+        return null;
     }
   }
 
@@ -233,6 +274,7 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                 value: (_gender == null || _gender!.isEmpty)
                                     ? 'Non spécifié'
                                     : _gender!,
+                                flagIconPath: _getGenderIcon(_gender),
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -242,8 +284,16 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerSubtitle: 'Genre',
                                         options: const [
                                           SettingsOptionItem(value: '', label: 'Non spécifié'),
-                                          SettingsOptionItem(value: 'Homme', label: 'Homme'),
-                                          SettingsOptionItem(value: 'Femme', label: 'Femme'),
+                                          SettingsOptionItem(
+                                            value: 'Homme',
+                                            label: 'Homme',
+                                            iconPath: 'assets/icons/homme.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Femme',
+                                            label: 'Femme',
+                                            iconPath: 'assets/icons/femme.svg',
+                                          ),
                                         ],
                                         initialValue: _gender ?? '',
                                         onChanged: (val) {
@@ -257,23 +307,24 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                 },
                               ),
 
-                              // 2. Prénom (Editable directly in place)
+                              // 2. Prénom (Inline text editing)
                               _EditableTextTile(
                                 title: 'Prénom',
                                 controller: _nameController,
                                 focusNode: _nameFocusNode,
+                                hintText: 'Non spécifié',
                                 onSubmitted: (_) {
                                   _saveName();
                                   _nameFocusNode.unfocus();
                                 },
                               ),
 
-                              // 3. Date de naissance
+                              // 3. Date de naissance (Cupertino native wheel picker)
                               _InfoTile(
                                 title: 'Date de naissance',
                                 value: _formatBirthDate(_birthDate),
                                 showArrow: false,
-                                onTap: _pickBirthDate,
+                                onTap: _showCupertinoDatePicker,
                               ),
 
                               // 4. Email (read-only)
@@ -284,10 +335,13 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                 isMuted: true,
                               ),
 
-                              // 5. Pays de résidence
+                              // 5. Pays de résidence (With flags)
                               _InfoTile(
                                 title: 'Pays de résidence',
-                                value: _country ?? 'Non spécifié',
+                                value: (_country == null || _country!.isEmpty)
+                                    ? 'Non spécifié'
+                                    : _country!,
+                                flagIconPath: _getCountryFlag(_country),
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -296,16 +350,38 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerTitle: 'Mes informations',
                                         headerSubtitle: 'Pays de résidence',
                                         options: const [
-                                          SettingsOptionItem(value: 'France', label: 'France'),
-                                          SettingsOptionItem(value: 'Belgique', label: 'Belgique'),
-                                          SettingsOptionItem(value: 'Suisse', label: 'Suisse'),
-                                          SettingsOptionItem(value: 'Canada', label: 'Canada'),
-                                          SettingsOptionItem(value: 'Autre', label: 'Autre'),
+                                          SettingsOptionItem(value: '', label: 'Non spécifié'),
+                                          SettingsOptionItem(
+                                            value: 'Autre',
+                                            label: 'Autre',
+                                            iconPath: 'assets/icons/flags/autre.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Belgique',
+                                            label: 'Belgique',
+                                            iconPath: 'assets/icons/flags/belgique.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Canada',
+                                            label: 'Canada',
+                                            iconPath: 'assets/icons/flags/canada.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'France',
+                                            label: 'France',
+                                            iconPath: 'assets/icons/flags/france.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Suisse',
+                                            label: 'Suisse',
+                                            iconPath: 'assets/icons/flags/suisse.svg',
+                                          ),
                                         ],
                                         initialValue: _country ?? '',
                                         onChanged: (val) {
-                                          setState(() => _country = val);
-                                          _updateProfileField('country', val);
+                                          final finalVal = val.isEmpty ? null : val;
+                                          setState(() => _country = finalVal);
+                                          _updateProfileField('country', finalVal);
                                         },
                                       ),
                                     ),
@@ -316,7 +392,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                               // 6. Années de pratique
                               _InfoTile(
                                 title: 'Années de pratique',
-                                value: _experience ?? 'Non spécifié',
+                                value: (_experience == null || _experience!.isEmpty)
+                                    ? 'Non spécifié'
+                                    : _experience!,
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -325,6 +403,7 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerTitle: 'Mes informations',
                                         headerSubtitle: 'Années de pratique',
                                         options: const [
+                                          SettingsOptionItem(value: '', label: 'Non spécifié'),
                                           SettingsOptionItem(value: '0', label: '0'),
                                           SettingsOptionItem(value: '1', label: '1'),
                                           SettingsOptionItem(value: '2', label: '2'),
@@ -334,8 +413,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         ],
                                         initialValue: _experience ?? '',
                                         onChanged: (val) {
-                                          setState(() => _experience = val);
-                                          _updateProfileField('experience', val);
+                                          final finalVal = val.isEmpty ? null : val;
+                                          setState(() => _experience = finalVal);
+                                          _updateProfileField('experience', finalVal);
                                         },
                                       ),
                                     ),
@@ -381,7 +461,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                               // 8. Lieu d’entraînement
                               _InfoTile(
                                 title: 'Lieu d’entraînement',
-                                value: _trainingPlace ?? 'Non spécifié',
+                                value: (_trainingPlace == null || _trainingPlace!.isEmpty)
+                                    ? 'Non spécifié'
+                                    : _trainingPlace!,
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -390,14 +472,16 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerTitle: 'Mes informations',
                                         headerSubtitle: 'Lieu d’entraînement',
                                         options: const [
+                                          SettingsOptionItem(value: '', label: 'Non spécifié'),
                                           SettingsOptionItem(value: 'Salle', label: 'Salle'),
                                           SettingsOptionItem(value: 'Domicile', label: 'Domicile'),
                                           SettingsOptionItem(value: 'Les deux', label: 'Les deux'),
                                         ],
                                         initialValue: _trainingPlace ?? '',
                                         onChanged: (val) {
-                                          setState(() => _trainingPlace = val);
-                                          _updateProfileField('training_place', val);
+                                          final finalVal = val.isEmpty ? null : val;
+                                          setState(() => _trainingPlace = finalVal);
+                                          _updateProfileField('training_place', finalVal);
                                         },
                                       ),
                                     ),
@@ -408,7 +492,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                               // 9. Séances par semaine
                               _InfoTile(
                                 title: 'Séances par semaine',
-                                value: _weeklySessions ?? 'Non spécifié',
+                                value: (_weeklySessions == null || _weeklySessions!.isEmpty)
+                                    ? 'Non spécifié'
+                                    : _weeklySessions!,
                                 showArrow: true,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -417,6 +503,7 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         headerTitle: 'Mes informations',
                                         headerSubtitle: 'Séances par semaine',
                                         options: const [
+                                          SettingsOptionItem(value: '', label: 'Non spécifié'),
                                           SettingsOptionItem(value: '1', label: '1'),
                                           SettingsOptionItem(value: '2', label: '2'),
                                           SettingsOptionItem(value: '3', label: '3'),
@@ -426,8 +513,9 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                         ],
                                         initialValue: _weeklySessions ?? '',
                                         onChanged: (val) {
-                                          setState(() => _weeklySessions = val);
-                                          _updateProfileField('weekly_sessions', val);
+                                          final finalVal = val.isEmpty ? null : val;
+                                          setState(() => _weeklySessions = finalVal);
+                                          _updateProfileField('weekly_sessions', finalVal);
                                         },
                                       ),
                                     ),
@@ -503,6 +591,7 @@ class _SettingsBackButton extends StatelessWidget {
 class _InfoTile extends StatelessWidget {
   final String title;
   final String value;
+  final String? flagIconPath;
   final bool showArrow;
   final bool isMuted;
   final VoidCallback? onTap;
@@ -510,6 +599,7 @@ class _InfoTile extends StatelessWidget {
   const _InfoTile({
     required this.title,
     required this.value,
+    this.flagIconPath,
     this.showArrow = false,
     this.isMuted = false,
     this.onTap,
@@ -540,6 +630,22 @@ class _InfoTile extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  if (flagIconPath != null) ...[
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: SvgPicture.asset(
+                            flagIconPath!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   Flexible(
                     child: Text(
                       value,
@@ -576,12 +682,14 @@ class _EditableTextTile extends StatefulWidget {
   final String title;
   final TextEditingController controller;
   final FocusNode focusNode;
+  final String hintText;
   final ValueChanged<String>? onSubmitted;
 
   const _EditableTextTile({
     required this.title,
     required this.controller,
     required this.focusNode,
+    this.hintText = 'Non spécifié',
     this.onSubmitted,
   });
 
@@ -653,7 +761,7 @@ class _EditableTextTileState extends State<_EditableTextTile> {
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'Non spécifié',
+                        hintText: widget.hintText,
                         hintStyle: GoogleFonts.quicksand(
                           color: const Color(0xFFD7D4DC),
                           fontSize: 16,
@@ -669,7 +777,7 @@ class _EditableTextTileState extends State<_EditableTextTile> {
                   if (!_isFocused)
                     IgnorePointer(
                       child: Text(
-                        text.isEmpty ? 'Non spécifié' : text,
+                        text.isEmpty ? widget.hintText : text,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.right,

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/glift_theme.dart';
-import 'glift_page_layout.dart';
 
 class SettingsOptionItem {
   const SettingsOptionItem({
     required this.value,
     required this.label,
+    this.iconPath,
   });
 
   final String value;
   final String label;
+  final String? iconPath;
 }
 
 class SettingsOptionPage extends StatefulWidget {
@@ -84,36 +86,40 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                 ],
               ),
               const SizedBox(height: 30),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFECE9F1)), // Changed from D7D4DC to match separator? Or keep mostly invisible? User didn't specify border color of card, but 0xFFD7D4DC is standard. I'll stick to D7D4DC or maybe ECE9F1 to be softer. Let's use ECE9F1 for border too to match inside separators if that's the "vibe", but user only asked for separator. I'll keep D7D4DC for border unless it looks bad. Wait, user asked to change separator to ECE9F1. The border was D7D4DC. I'll keep D7D4DC for the outer border for now to align with other cards.
-                  // Actually, looking at the mockup mental image, usually borders are subtle. ECE9F1 is very subtle.
-                  // Let's stick to existing border color 0xFFD7D4DC for now.
-                ),
-                child: Column(
-                  children: [
-                    for (int i = 0; i < widget.options.length; i++) ...[
-                      if (i > 0)
-                        const Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Color(0xFFECE9F1),
-                          indent: 15,
-                          endIndent: 15,
-                        ),
-                      _SettingsOptionTile(
-                        label: widget.options[i].label,
-                        isSelected: widget.options[i].value == _selectedValue,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          setState(() => _selectedValue = widget.options[i].value);
-                          widget.onChanged(widget.options[i].value);
-                        },
-                      ),
-                    ],
-                  ],
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFECE9F1)),
+                    ),
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < widget.options.length; i++) ...[
+                          if (i > 0)
+                            const Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: Color(0xFFECE9F1),
+                              indent: 15,
+                              endIndent: 15,
+                            ),
+                          _SettingsOptionTile(
+                            label: widget.options[i].label,
+                            iconPath: widget.options[i].iconPath,
+                            isSelected: widget.options[i].value == _selectedValue,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() => _selectedValue = widget.options[i].value);
+                              widget.onChanged(widget.options[i].value);
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -154,11 +160,13 @@ class _SettingsBackButton extends StatelessWidget {
 class _SettingsOptionTile extends StatelessWidget {
   const _SettingsOptionTile({
     required this.label,
+    this.iconPath,
     required this.isSelected,
     required this.onTap,
   });
 
   final String label;
+  final String? iconPath;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -171,6 +179,22 @@ class _SettingsOptionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Row(
           children: [
+            if (iconPath != null) ...[
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: SvgPicture.asset(
+                      iconPath!,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
             Text(
               label,
               style: GoogleFonts.quicksand(
@@ -183,7 +207,7 @@ class _SettingsOptionTile extends StatelessWidget {
             if (isSelected)
               const Icon(
                 Icons.check,
-                color: const Color(0xFF3A416F),
+                color: Color(0xFF3A416F),
                 size: 22,
               ),
           ],
