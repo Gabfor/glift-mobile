@@ -21,6 +21,8 @@ class UserSubscriptionPage extends StatefulWidget {
 }
 
 class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isScrolled = false;
   bool _isLoading = true;
   bool _isProcessing = false;
   String _subscriptionPlan = 'starter';
@@ -32,7 +34,25 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadSubscriptionData();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final scrolled = _scrollController.offset > 0;
+    if (scrolled != _isScrolled) {
+      setState(() {
+        _isScrolled = scrolled;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   String _getFormattedPeriodEndDate() {
@@ -531,162 +551,189 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
+            // Subscription Cards List
+            _isLoading
+                ? const Center(child: GliftLoader(size: 32))
+                : SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      88,
+                      20,
+                      MediaQuery.of(context).padding.bottom + 40,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ─── SECTION 1 : ABONNEMENT ACTIF ───
+                        Text(
+                          'ABONNEMENT ACTIF',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFFC2BFC6),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        if (isEffectivelyPremium)
+                          _buildPremiumCard(
+                            button: _isCancelled
+                                ? _ActionButton(
+                                    text: 'Réactiver mon abonnement',
+                                    backgroundColor: const Color(0xFF7069FA),
+                                    textColor: Colors.white,
+                                    isLoading: _isProcessing,
+                                    onPressed: _isProcessing ? null : () => _changePlan('premium'),
+                                  )
+                                : _ActionButton(
+                                    text: 'Annuler mon abonnement',
+                                    backgroundColor: const Color(0xFFF15454),
+                                    textColor: Colors.white,
+                                    isLoading: _isProcessing,
+                                    onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
+                                  ),
+                          )
+                        else
+                          _buildStarterCard(
+                            button: const _ActionButton(
+                              text: 'Annuler mon abonnement',
+                              backgroundColor: Color(0xFFF2F1F6),
+                              textColor: Color(0xFFD7D4DC),
+                              onPressed: null,
+                            ),
+                          ),
+
+                        const SizedBox(height: 24),
+
+                        // ─── SECTION 2 : ABONNEMENT INACTIF ───
+                        Text(
+                          'ABONNEMENT INACTIF',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFFC2BFC6),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        if (isEffectivelyPremium)
+                          _buildStarterCard(
+                            button: _isCancelled
+                                ? _ActionButton(
+                                    text: 'Choisir cet abonnement',
+                                    backgroundColor: const Color(0xFFF2F1F6),
+                                    textColor: const Color(0xFFD7D4DC),
+                                    onPressed: _showCancellationInfoDialog,
+                                  )
+                                : _ActionButton(
+                                    text: 'Choisir cet abonnement',
+                                    backgroundColor: Colors.white,
+                                    textColor: const Color(0xFF3A416F),
+                                    borderColor: const Color(0xFF3A416F),
+                                    isLoading: _isProcessing,
+                                    onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
+                                  ),
+                          )
+                        else
+                          _buildPremiumCard(
+                            button: _ActionButton(
+                              text: 'Choisir cet abonnement',
+                              backgroundColor: const Color(0xFF7069FA),
+                              textColor: Colors.white,
+                              isLoading: _isProcessing,
+                              onPressed: _isProcessing ? null : () => _changePlan('premium'),
+                            ),
+                            footerNote: !_hasUsedTrial
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const _PulsingGreenDot(),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '30 jours pour tester, puis 2,49 € /mois',
+                                        style: GoogleFonts.quicksand(
+                                          color: const Color(0xFF5D6494),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : null,
+                          ),
+
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+
             // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Réglages',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                  Container(
+                    color: const Color(0xFFF9FAFB),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Réglages',
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Mon abonnement',
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: _isScrolled ? 1.0 : 0.0,
+                    child: Container(
+                      height: 12,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFF1E2238).withValues(alpha: 0.10),
+                            const Color(0xFF1E2238).withValues(alpha: 0.03),
+                            Colors.transparent,
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Mon abonnement',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            // Subscription Cards List
-            Expanded(
-              child: _isLoading
-                  ? const GliftLoader(size: 32)
-                  : SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(
-                        20,
-                        0,
-                        20,
-                        MediaQuery.of(context).padding.bottom + 40,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ─── SECTION 1 : ABONNEMENT ACTIF ───
-                          Text(
-                            'ABONNEMENT ACTIF',
-                            style: GoogleFonts.quicksand(
-                              color: const Color(0xFFC2BFC6),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          if (isEffectivelyPremium)
-                            _buildPremiumCard(
-                              button: _isCancelled
-                                  ? _ActionButton(
-                                      text: 'Réactiver mon abonnement',
-                                      backgroundColor: const Color(0xFF7069FA),
-                                      textColor: Colors.white,
-                                      isLoading: _isProcessing,
-                                      onPressed: _isProcessing ? null : () => _changePlan('premium'),
-                                    )
-                                  : _ActionButton(
-                                      text: 'Annuler mon abonnement',
-                                      backgroundColor: const Color(0xFFF15454),
-                                      textColor: Colors.white,
-                                      isLoading: _isProcessing,
-                                      onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
-                                    ),
-                            )
-                          else
-                            _buildStarterCard(
-                              button: const _ActionButton(
-                                text: 'Annuler mon abonnement',
-                                backgroundColor: Color(0xFFF2F1F6),
-                                textColor: Color(0xFFD7D4DC),
-                                onPressed: null,
-                              ),
-                            ),
-
-                          const SizedBox(height: 24),
-
-                          // ─── SECTION 2 : ABONNEMENT INACTIF ───
-                          Text(
-                            'ABONNEMENT INACTIF',
-                            style: GoogleFonts.quicksand(
-                              color: const Color(0xFFC2BFC6),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          if (isEffectivelyPremium)
-                            _buildStarterCard(
-                              button: _isCancelled
-                                  ? _ActionButton(
-                                      text: 'Choisir cet abonnement',
-                                      backgroundColor: const Color(0xFFF2F1F6),
-                                      textColor: const Color(0xFFD7D4DC),
-                                      onPressed: _showCancellationInfoDialog,
-                                    )
-                                  : _ActionButton(
-                                      text: 'Choisir cet abonnement',
-                                      backgroundColor: Colors.white,
-                                      textColor: const Color(0xFF3A416F),
-                                      borderColor: const Color(0xFF3A416F),
-                                      isLoading: _isProcessing,
-                                      onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
-                                    ),
-                            )
-                          else
-                            _buildPremiumCard(
-                              button: _ActionButton(
-                                text: 'Choisir cet abonnement',
-                                backgroundColor: const Color(0xFF7069FA),
-                                textColor: Colors.white,
-                                isLoading: _isProcessing,
-                                onPressed: _isProcessing ? null : () => _changePlan('premium'),
-                              ),
-                              footerNote: !_hasUsedTrial
-                                  ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const _PulsingGreenDot(),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '30 jours pour tester, puis 2,49 € /mois',
-                                          style: GoogleFonts.quicksand(
-                                            color: const Color(0xFF5D6494),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : null,
-                            ),
-
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                    ),
             ),
           ],
         ),
