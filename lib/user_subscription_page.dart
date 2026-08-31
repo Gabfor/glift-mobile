@@ -71,7 +71,11 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
         final rawTrialEnd = response['premium_trial_end_at'];
         final rawTrialStarted = response['premium_trial_started_at'];
 
-        DateTime? endDt;
+        DateTime? premiumEndDt;
+        if (rawPremiumEnd != null) {
+          premiumEndDt = DateTime.tryParse(rawPremiumEnd as String);
+        }
+
         DateTime? trialEndDt;
         if (rawTrialEnd != null) {
           trialEndDt = DateTime.tryParse(rawTrialEnd as String);
@@ -82,17 +86,26 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
           }
         }
 
-        if (rawPremiumEnd != null) {
-          endDt = DateTime.tryParse(rawPremiumEnd as String);
-        } else {
-          endDt = trialEndDt;
+        final now = DateTime.now();
+
+        // 1. Est-ce que l'utilisateur est effectivement Premium ?
+        // Identique à glift-web : si le plan est "premium", il est actif sauf si une date de fin de période payante/résiliée (premium_end_at) est dépassée.
+        bool isEffectivePremium = (plan == 'premium');
+        if (isEffectivePremium && premiumEndDt != null && premiumEndDt.isBefore(now)) {
+          isEffectivePremium = false;
         }
 
-        final now = DateTime.now();
-        final isInTrial = isTrial || (trialEndDt != null && trialEndDt.isAfter(now) && rawPremiumEnd == null);
+        // 2. Est-ce que l'utilisateur est actuellement en essai actif ?
+        final isInTrial = isEffectivePremium &&
+            trialEndDt != null &&
+            trialEndDt.isAfter(now) &&
+            rawPremiumEnd == null;
+
+        // 3. Date de fin de période pour l'affichage en cas d'annulation
+        DateTime? endDt = premiumEndDt ?? (isInTrial ? trialEndDt : null);
 
         setState(() {
-          _subscriptionPlan = (plan == 'premium') ? 'premium' : 'starter';
+          _subscriptionPlan = isEffectivePremium ? 'premium' : 'starter';
           _hasUsedTrial = hasUsedTrial;
           _isInTrial = isInTrial;
           _isCancelled = isCancelled;
@@ -512,8 +525,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isEffectivelyPremium = _subscriptionPlan == 'premium' &&
-        (_periodEndDate == null || _periodEndDate!.isAfter(DateTime.now()));
+    final bool isEffectivelyPremium = _subscriptionPlan == 'premium';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
