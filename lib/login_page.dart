@@ -569,13 +569,13 @@ class _InputFieldState extends State<_InputField> {
   bool _isHovered = false;
 
   Color _borderColor() {
-    if (widget.isError) return const Color(0xFFEF4444);
+    if (widget.isError) return const Color(0xFFEF4F4E);
     if (widget.isFocused) return const Color(0xFFA1A5FD);
     return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
   }
 
   Color _messageColor() {
-    if (widget.isError) return const Color(0xFFEF4444);
+    if (widget.isError) return const Color(0xFFEF4F4E);
     return const Color(0xFF5D6494);
   }
 
@@ -696,13 +696,13 @@ class _PasswordField extends StatelessWidget {
   });
 
   Color _borderColor() {
-    if (isError) return const Color(0xFFEF4444);
+    if (isError) return const Color(0xFFEF4F4E);
     if (isFocused) return const Color(0xFFA1A5FD);
     return const Color(0xFFD7D4DC);
   }
 
   Color _messageColor() {
-    if (isError) return const Color(0xFFEF4444);
+    if (isError) return const Color(0xFFEF4F4E);
     return const Color(0xFF5D6494);
   }
 

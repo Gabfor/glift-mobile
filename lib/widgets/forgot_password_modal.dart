@@ -156,13 +156,13 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
 
   Color _emailBorderColor() {
     if (_emailErrorMessage != null) {
-      return const Color(0xFFEF4444);
+      return const Color(0xFFEF4F4E);
     }
     if (_isEmailFocused) {
       return const Color(0xFF7069FA);
     }
     if (_isEmailTouched && _emailController.text.isNotEmpty && !_isEmailFormatValid) {
-      return const Color(0xFFEF4444);
+      return const Color(0xFFEF4F4E);
     }
     if (_isEmailTouched && _isEmailValid) {
       return const Color(0xFF00D591);
@@ -176,7 +176,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
             !_isEmailFocused &&
             !_isEmailFormatValid &&
             _emailController.text.isNotEmpty)) {
-      return const Color(0xFFEF4444);
+      return const Color(0xFFEF4F4E);
     }
     if (_isEmailTouched && !_isEmailFocused && _isEmailValid) {
       return const Color(0xFF00D591);
@@ -695,7 +695,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(
                                   color: _hasOtpError
-                                      ? const Color(0xFFEF4444)
+                                      ? const Color(0xFFEF4F4E)
                                       : isFocused
                                           ? const Color(0xFF7069FA)
                                           : const Color(0xFFD7D4DC),
@@ -773,7 +773,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                   : (_isNewPasswordTouched &&
                                           !_isNewPasswordValid &&
                                           _newPasswordController.text.isNotEmpty)
-                                      ? const Color(0xFFEF4444)
+                                      ? const Color(0xFFEF4F4E)
                                       : const Color(0xFFD7D4DC),
                               width: 1.0,
                             ),
@@ -851,7 +851,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                       : (_isConfirmPasswordTouched &&
                                               !_doPasswordsMatch &&
                                               _confirmPasswordController.text.isNotEmpty)
-                                          ? const Color(0xFFEF4444)
+                                          ? const Color(0xFFEF4F4E)
                                           : const Color(0xFFD7D4DC),
                                   width: 1.0,
                                 ),

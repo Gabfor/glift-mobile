@@ -179,7 +179,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   color: _passwordFocused
                       ? const Color(0xFF7069FA)
                       : (_passwordTouched && !_isPasswordValid && _passwordController.text.isNotEmpty)
-                          ? const Color(0xFFEF4444)
+                          ? const Color(0xFFEF4F4E)
                           : const Color(0xFFD7D4DC),
                   width: 1.0,
                 ),
@@ -271,7 +271,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   color: _confirmPasswordFocused
                       ? const Color(0xFF7069FA)
                       : (_confirmPasswordTouched && !_doPasswordsMatch && _confirmPasswordController.text.isNotEmpty)
-                          ? const Color(0xFFEF4444)
+                          ? const Color(0xFFEF4F4E)
                           : const Color(0xFFD7D4DC),
                   width: 1.0,
                 ),

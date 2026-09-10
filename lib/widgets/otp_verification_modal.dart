@@ -285,7 +285,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: _hasError
-                        ? const Color(0xFFE34A4A)
+                        ? const Color(0xFFEF4F4E)
                         : _hasResent
                             ? const Color(0xFF00D591)
                             : const Color(0xFF5D6494),
@@ -309,7 +309,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                             borderRadius: BorderRadius.circular(5),
                             border: Border.all(
                               color: _hasError
-                                  ? const Color(0xFFEF4444)
+                                  ? const Color(0xFFEF4F4E)
                                   : isFocused
                                       ? const Color(0xFF7069FA)
                                       : const Color(0xFFD7D4DC),

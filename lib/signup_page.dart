@@ -862,14 +862,14 @@ class _InputField extends StatelessWidget {
   });
 
   Color _borderColor() {
-    if (isError) return const Color(0xFFEF4444);
+    if (isError) return const Color(0xFFEF4F4E);
     if (isSuccess) return const Color(0xFF00D591);
     if (isFocused) return const Color(0xFF7069FA);
     return const Color(0xFFD7D4DC);
   }
 
   Color _messageColor() {
-    if (isError) return const Color(0xFFEF4444);
+    if (isError) return const Color(0xFFEF4F4E);
     if (isSuccess) return const Color(0xFF00D591);
     return const Color(0xFF5D6494);
   }
@@ -975,14 +975,14 @@ class _PasswordField extends StatelessWidget {
   });
 
   Color _borderColor() {
-    if (isError) return const Color(0xFFEF4444);
+    if (isError) return const Color(0xFFEF4F4E);
     if (isSuccess) return const Color(0xFF00D591);
     if (isFocused) return const Color(0xFF7069FA);
     return const Color(0xFFD7D4DC);
   }
 
   Color _messageColor() {
-    if (isError) return const Color(0xFFEF4444);
+    if (isError) return const Color(0xFFEF4F4E);
     if (isSuccess) return const Color(0xFF00D591);
     return const Color(0xFF5D6494);
   }
