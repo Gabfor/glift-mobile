@@ -1057,18 +1057,32 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       ),
 
       padding: EdgeInsets.zero,
-      overlay: _inlineTimerData != null
-          ? Positioned(
-              left: (mediaQuery.size.width - inlineTimerWidth) / 2,
-              top: _inlineTimerTop ?? _defaultInlineTop(mediaQuery),
-              child: _InlineRestTimer(
-                width: inlineTimerWidth,
-                data: _inlineTimerData!,
-                onClose: _closeInlineTimer,
-                onDrag: _updateInlineTimerTop,
-                onDragEnd: _snapInlineTimer,
-                onReturnToFull: _returnInlineToFullPage,
-              ),
+      overlay: (_inlineTimerData != null || _isFinishing)
+          ? Stack(
+              children: [
+                if (_inlineTimerData != null)
+                  Positioned(
+                    left: (mediaQuery.size.width - inlineTimerWidth) / 2,
+                    top: _inlineTimerTop ?? _defaultInlineTop(mediaQuery),
+                    child: _InlineRestTimer(
+                      width: inlineTimerWidth,
+                      data: _inlineTimerData!,
+                      onClose: _closeInlineTimer,
+                      onDrag: _updateInlineTimerTop,
+                      onDragEnd: _snapInlineTimer,
+                      onReturnToFull: _returnInlineToFullPage,
+                    ),
+                  ),
+                if (_isFinishing)
+                  Positioned.fill(
+                    child: Container(
+                      color: const Color(0x992E3142),
+                      child: const Center(
+                        child: GliftLoader(),
+                      ),
+                    ),
+                  ),
+              ],
             )
           : null,
       child: Stack(
@@ -1119,15 +1133,6 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onBackspace: _currentBackspaceHandler!,
                 onDecimal: _currentDecimalHandler!,
                 onClose: _closeKeypad,
-              ),
-            ),
-          if (_isFinishing)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.35),
-                child: const Center(
-                  child: GliftLoader(),
-                ),
               ),
             ),
         ],
