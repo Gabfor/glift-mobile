@@ -105,6 +105,8 @@ class DashboardPageState extends State<DashboardPage> {
       if (userId == null) return;
 
       final programs = await _repository.getDashboardPrograms(userId);
+      if (!mounted) return;
+
       if (programs.isEmpty) {
         setState(() {
           _programs = [];
@@ -132,12 +134,14 @@ class DashboardPageState extends State<DashboardPage> {
       
       // Fetch preferences in parallel or after programs
       _preferences = await _repository.getDashboardPreferences(userId);
+      if (!mounted) return;
 
       final selectedProgramIndex =
           programs.indexWhere((program) => program.id == _selectedProgramId);
 
       if (selectedProgramIndex != -1) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
           if (_programPageController.hasClients) {
             _programPageController.jumpToPage(selectedProgramIndex);
           }
@@ -145,6 +149,7 @@ class DashboardPageState extends State<DashboardPage> {
       }
 
       await _loadTrainings(_selectedProgramId!, trainingId: trainingId ?? (_selectedProgramId == widget.initialProgramId ? widget.initialTrainingId : null));
+      if (!mounted) return;
       
       // Scroll to selected program if needed
       if (_selectedProgramId != null) {
@@ -155,13 +160,15 @@ class DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _loadTrainings(String programId, {String? trainingId}) async {
     try {
       final trainings = await _repository.getDashboardTrainings(programId);
+      if (!mounted) return;
+
       if (trainings.isEmpty) {
         setState(() {
           _trainings = [];
@@ -185,20 +192,22 @@ class DashboardPageState extends State<DashboardPage> {
       await _loadExercises(trainings[_selectedTrainingIndex]['id']);
     } catch (e) {
       debugPrint('Error loading trainings: $e');
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _loadExercises(String trainingId) async {
     try {
       final exercises = await _repository.getDashboardExercises(trainingId);
+      if (!mounted) return;
+
       setState(() {
         _exercises = exercises;
         _isLoading = false;
       });
     } catch (e) {
       debugPrint('Error loading exercises: $e');
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

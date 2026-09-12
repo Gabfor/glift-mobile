@@ -31,8 +31,9 @@ class SettingsService {
   static const String _kHasUsedTrial = 'has_used_trial';
 
   Future<void> syncFromSupabase() async {
+    final session = _supabase?.auth.currentSession;
     final user = _supabase?.auth.currentUser;
-    if (user == null) return;
+    if (session == null || user == null) return;
 
     try {
       // 1. Sync Preferences
