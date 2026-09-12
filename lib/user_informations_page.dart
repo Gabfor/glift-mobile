@@ -377,6 +377,26 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
                                             iconPath: 'assets/icons/flags/france.svg',
                                           ),
                                           SettingsOptionItem(
+                                            value: 'Île Maurice',
+                                            label: 'Île Maurice',
+                                            iconPath: 'assets/icons/flags/ile_maurice.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Luxembourg',
+                                            label: 'Luxembourg',
+                                            iconPath: 'assets/icons/flags/luxembourg.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Maroc',
+                                            label: 'Maroc',
+                                            iconPath: 'assets/icons/flags/maroc.svg',
+                                          ),
+                                          SettingsOptionItem(
+                                            value: 'Monaco',
+                                            label: 'Monaco',
+                                            iconPath: 'assets/icons/flags/monaco.svg',
+                                          ),
+                                          SettingsOptionItem(
                                             value: 'Suisse',
                                             label: 'Suisse',
                                             iconPath: 'assets/icons/flags/suisse.svg',
