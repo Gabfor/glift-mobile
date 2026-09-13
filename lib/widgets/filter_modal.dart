@@ -33,10 +33,8 @@ class _FilterModalState extends State<FilterModal> {
 
   bool get _hasActiveFilters {
     for (final section in widget.sections) {
-      final options = section.options.toSet();
-      final selected = _tempSelectedFilters[section.title] ?? {};
-      final isFiltering = selected.length != options.length;
-      if (isFiltering) return true;
+      final selected = _tempSelectedFilters[section.title];
+      if (selected != null && selected.isNotEmpty) return true;
     }
     return false;
   }
@@ -50,9 +48,9 @@ class _FilterModalState extends State<FilterModal> {
       _tempSelectedFilters[key] = Set.from(value);
     });
 
-    // Ensure all checkboxes are selected by default
+    // Ensure all sections have an initialized set (empty by default for additive filtering)
     for (final section in widget.sections) {
-      _tempSelectedFilters[section.title] ??= section.options.toSet();
+      _tempSelectedFilters[section.title] ??= <String>{};
     }
 
     _currentResults = widget.computeResults(_tempSelectedFilters);
@@ -276,9 +274,9 @@ class _SectionToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allSelected = selectedOptions.length == allOptions.length && allOptions.isNotEmpty;
-    final label = allSelected ? 'Tout désélectionner' : 'Tout sélectionner';
-    final onTap = allSelected ? onDeselectAll : onSelectAll;
+    final hasSelected = selectedOptions.isNotEmpty;
+    final label = hasSelected ? 'Tout effacer' : 'Tout sélectionner';
+    final onTap = hasSelected ? onDeselectAll : onSelectAll;
 
     return GestureDetector(
       onTap: onTap,

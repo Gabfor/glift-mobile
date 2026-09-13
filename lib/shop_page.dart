@@ -48,7 +48,6 @@ class _ShopPageState extends State<ShopPage> {
   bool _isLoading = true;
   final Set<String> _selectedTypes = {};
   late String _selectedSort;
-  Map<String, Set<String>> _filterOptionsBySection = {};
   final Set<String> _favoriteOfferIds = {};
   final Set<String> _favoriteOfferIdsForSorting = {};
   bool _favoritesOnly = false;
@@ -172,28 +171,11 @@ class _ShopPageState extends State<ShopPage> {
     try {
       await _loadFavorites();
       final offers = await _repository.getShopOffers();
-      final categories = <String>{};
-      final shops = <String>{};
-      final genders = <String>{};
-      final sports = <String>{};
-
-      for (final offer in offers) {
-        categories.addAll(offer.type.where((t) => t.isNotEmpty));
-        shops.addAll(offer.shops.where((s) => s.isNotEmpty && s.toLowerCase() != 'tous'));
-        genders.addAll(offer.genders.where((g) => g.isNotEmpty && g.toLowerCase() != 'tous'));
-        sports.addAll(offer.sports.where((s) => s.isNotEmpty));
-      }
 
       if (mounted) {
         setState(() {
           _offers = offers;
           _isLoading = false;
-          _filterOptionsBySection = {
-            'Genre': genders,
-            'Catégorie': categories,
-            'Sport': sports,
-            'Boutique': shops,
-          };
         });
       }
     } catch (e) {
@@ -255,50 +237,38 @@ class _ShopPageState extends State<ShopPage> {
         // Genre
         if (selectedFilters.containsKey('Genre')) {
           final selected = selectedFilters['Genre']!;
-          final allOptions = _filterOptionsBySection['Genre'] ?? {};
-          if (selected.isNotEmpty && selected.length < allOptions.length) {
-             final hasUniversal = offer.genders.any((g) => g.toLowerCase() == 'tous');
-             final hasSelected = offer.genders.any((g) => selected.any((s) => s.toLowerCase() == g.toLowerCase()));
-             
-             if (!hasUniversal && !hasSelected) return false;
-          } else if (selected.isEmpty && allOptions.isNotEmpty) {
-            return false;
+          if (selected.isNotEmpty) {
+            final hasUniversal = offer.genders.any((g) => ['tous', 'mixte', 'unisexe'].contains(g.toLowerCase()));
+            final hasSelected = offer.genders.any((g) => selected.any((s) => s.toLowerCase() == g.toLowerCase()));
+            
+            if (!hasUniversal && !hasSelected) return false;
           }
         }
 
         // Catégorie
         if (selectedFilters.containsKey('Catégorie')) {
           final selected = selectedFilters['Catégorie']!;
-          final allOptions = _filterOptionsBySection['Catégorie'] ?? {};
-          if (selected.isNotEmpty && selected.length < allOptions.length) {
-             if (!offer.type.any((type) => selected.any((sel) => type.toLowerCase().contains(sel.toLowerCase())))) return false;
-          } else if (selected.isEmpty && allOptions.isNotEmpty) {
-            return false;
+          if (selected.isNotEmpty) {
+            if (!offer.type.any((type) => selected.any((sel) => type.toLowerCase().contains(sel.toLowerCase()) || sel.toLowerCase().contains(type.toLowerCase())))) return false;
           }
         }
 
         // Sport
         if (selectedFilters.containsKey('Sport')) {
           final selected = selectedFilters['Sport']!;
-          final allOptions = _filterOptionsBySection['Sport'] ?? {};
-          if (selected.isNotEmpty && selected.length < allOptions.length) {
-             if (!offer.sports.any((sport) => selected.any((s) => s.toLowerCase() == sport.toLowerCase()))) return false;
-          } else if (selected.isEmpty && allOptions.isNotEmpty) {
-            return false;
+          if (selected.isNotEmpty) {
+            if (!offer.sports.any((sport) => selected.any((s) => s.toLowerCase() == sport.toLowerCase() || sport.toLowerCase().contains(s.toLowerCase())))) return false;
           }
         }
 
         // Boutique
         if (selectedFilters.containsKey('Boutique')) {
           final selected = selectedFilters['Boutique']!;
-          final allOptions = _filterOptionsBySection['Boutique'] ?? {};
-          if (selected.isNotEmpty && selected.length < allOptions.length) {
-             final hasUniversal = offer.shops.any((s) => s.toLowerCase() == 'tous');
-             final hasSelected = offer.shops.any((s) => selected.contains(s));
-             
-             if (!hasUniversal && !hasSelected) return false;
-          } else if (selected.isEmpty && allOptions.isNotEmpty) {
-            return false;
+          if (selected.isNotEmpty) {
+            final hasUniversal = offer.shops.any((s) => s.toLowerCase() == 'tous');
+            final hasSelected = offer.shops.any((s) => selected.any((sel) => sel.toLowerCase() == s.toLowerCase() || s.toLowerCase().contains(sel.toLowerCase())));
+            
+            if (!hasUniversal && !hasSelected) return false;
           }
         }
 
@@ -491,14 +461,6 @@ class _ShopPageState extends State<ShopPage> {
     }
     return options;
   }
-  
-  // Helper to filter offers IGNORING a specific section
-  List<ShopOffer> _getOffersFilteredExcludingSection(String sectionToExclude) {
-    // Copy filters but clear the specific section
-    final tempFilters = Map<String, Set<String>>.from(_selectedFiltersMap);
-    tempFilters.remove(sectionToExclude);
-    return _applyFilters(tempFilters); // We need to modify _applyFilters to accept the map, which it does.
-  }
 
   void _showFilterModal() {
     // We need to calculate available options for EACH section based on the current selection of OTHER sections.
@@ -559,11 +521,7 @@ class _ShopPageState extends State<ShopPage> {
 
   bool get _hasActiveFilters {
     for (final entry in _selectedFiltersMap.entries) {
-      final options = _filterOptionsBySection[entry.key];
-      final isFiltering = options == null
-          ? entry.value.isNotEmpty
-          : entry.value.length != options.length;
-      if (isFiltering) {
+      if (entry.value.isNotEmpty) {
         return true;
       }
     }

@@ -329,30 +329,9 @@ class _StorePageState extends State<StorePage> {
     return _applyFilters(_selectedFiltersMap);
   }
 
-  Map<String, Set<String>> get _filterOptionsBySection {
-    final userPlan = SettingsService.instance.getSubscriptionPlan();
-    final isPremium = userPlan == 'premium';
-    final map = {
-      'Genre': _getAvailableOptions('Genre', currentPrograms: _programs),
-      'Objectif': _getAvailableOptions('Objectif', currentPrograms: _programs),
-      'Niveau': _getAvailableOptions('Niveau', currentPrograms: _programs),
-      'Lieu': _getAvailableOptions('Lieu', currentPrograms: _programs),
-      'Durée max.': _getAvailableOptions('Durée max.', currentPrograms: _programs),
-      'Partenaire': _getAvailableOptions('Partenaire', currentPrograms: _programs),
-    };
-    if (!isPremium) {
-      map['Disponible'] = _getAvailableOptions('Disponible', currentPrograms: _programs);
-    }
-    return map;
-  }
-
   bool get _hasActiveFilters {
     for (final entry in _selectedFiltersMap.entries) {
-      final options = _filterOptionsBySection[entry.key];
-      final isFiltering = options == null
-          ? entry.value.isNotEmpty
-          : entry.value.length != options.length;
-      if (isFiltering) {
+      if (entry.value.isNotEmpty) {
         return true;
       }
     }
@@ -372,109 +351,85 @@ class _StorePageState extends State<StorePage> {
         bool matches = true;
 
         // Objectif (formerly Catégorie)
-        if (selectedFilters.containsKey('Objectif')) {
-          if (selectedFilters['Objectif']!.isEmpty) {
-            matches = false;
-          } else if (!selectedFilters['Objectif']!.contains(program.goal)) {
+        if (selectedFilters.containsKey('Objectif') && selectedFilters['Objectif']!.isNotEmpty) {
+          if (!selectedFilters['Objectif']!.contains(program.goal)) {
             matches = false;
           }
         }
 
         // Partenaire (formerly Boutique)
-        if (matches && selectedFilters.containsKey('Partenaire')) {
-          if (selectedFilters['Partenaire']!.isEmpty) {
-            matches = false;
-          } else if (program.partnerName == null ||
+        if (matches && selectedFilters.containsKey('Partenaire') && selectedFilters['Partenaire']!.isNotEmpty) {
+          if (program.partnerName == null ||
               !selectedFilters['Partenaire']!.contains(program.partnerName)) {
             matches = false;
           }
         }
 
         // Niveau
-        if (matches && selectedFilters.containsKey('Niveau')) {
+        if (matches && selectedFilters.containsKey('Niveau') && selectedFilters['Niveau']!.isNotEmpty) {
           final selected = selectedFilters['Niveau']!;
-          if (selected.isEmpty) {
+          // 'Tous niveaux' is wildcard: matches if any level is selected
+          if (program.level != 'Tous niveaux' && !selected.contains(program.level)) {
             matches = false;
-          } else {
-             // 'Tous niveaux' is wildcard: matches if any level is selected
-             if (program.level != 'Tous niveaux' && !selected.contains(program.level)) {
-                matches = false;
-             }
           }
         }
 
         // Durée max.
-        if (matches && selectedFilters.containsKey('Durée max.')) {
-          if (selectedFilters['Durée max.']!.isEmpty) {
+        if (matches && selectedFilters.containsKey('Durée max.') && selectedFilters['Durée max.']!.isNotEmpty) {
+          final selected = selectedFilters['Durée max.']!;
+          final programDurationWithUnit = '${program.duration} minutes';
+          if (!selected.contains(programDurationWithUnit)) {
             matches = false;
-          } else {
-            final programDurationWithUnit = '${program.duration} minutes';
-            if (!selectedFilters['Durée max.']!
-                .contains(programDurationWithUnit)) {
-              matches = false;
-            }
           }
         }
 
         // Lieu
-        if (matches && selectedFilters.containsKey('Lieu')) {
+        if (matches && selectedFilters.containsKey('Lieu') && selectedFilters['Lieu']!.isNotEmpty) {
           final selected = selectedFilters['Lieu']!;
-          if (selected.isEmpty) {
-            matches = false;
-          } else if (program.location != null && program.location!.isNotEmpty) {
-             if (!selected.contains(program.location)) matches = false;
+          if (program.location != null && program.location!.isNotEmpty) {
+            if (!selected.contains(program.location)) matches = false;
           }
           // If location is null/empty, we assume it applies everywhere/matches (Wildcard)
         }
 
         // Genre
-        if (matches && selectedFilters.containsKey('Genre')) {
+        if (matches && selectedFilters.containsKey('Genre') && selectedFilters['Genre']!.isNotEmpty) {
           final selected = selectedFilters['Genre']!;
-          if (selected.isEmpty) {
-            matches = false;
-          } else {
-            final gender = program.gender.toLowerCase();
-            final isWildcard = gender.isEmpty || // Empty is wildcard
-                gender == 'tous' ||
-                gender == 'mixte' ||
-                gender == 'unisexe';
+          final gender = program.gender.toLowerCase();
+          final isWildcard = gender.isEmpty || // Empty is wildcard
+              gender == 'tous' ||
+              gender == 'mixte' ||
+              gender == 'unisexe';
 
-            if (!isWildcard) {
-              if (!selected.any((s) => s.toLowerCase() == gender)) {
-                matches = false;
-              }
+          if (!isWildcard) {
+            if (!selected.any((s) => s.toLowerCase() == gender)) {
+              matches = false;
             }
           }
         }
 
         // Disponible
-        if (matches && selectedFilters.containsKey('Disponible')) {
+        if (matches && selectedFilters.containsKey('Disponible') && selectedFilters['Disponible']!.isNotEmpty) {
           final selected = selectedFilters['Disponible']!;
-          if (selected.isEmpty) {
+          final userPlan = SettingsService.instance.getSubscriptionPlan();
+          final programPlan = program.plan;
+          final isAuthenticated = widget.supabase.auth.currentUser != null;
+          final hasLinkedProgram = program.linkedProgramId != null;
+
+          final isRestricted = (userPlan != 'premium' && programPlan == 'premium');
+          final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
+
+          bool matchOui = selected.contains('Oui') && canDownload;
+          bool matchNon = selected.contains('Non') && !canDownload;
+
+          if (!matchOui && !matchNon) {
             matches = false;
-          } else {
-            final userPlan = SettingsService.instance.getSubscriptionPlan();
-            final programPlan = program.plan;
-            final isAuthenticated = widget.supabase.auth.currentUser != null;
-            final hasLinkedProgram = program.linkedProgramId != null;
-
-            final isRestricted = (userPlan != 'premium' && programPlan == 'premium');
-            final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
-
-            bool matchOui = selected.contains('Oui') && canDownload;
-            bool matchNon = selected.contains('Non') && !canDownload;
-
-            if (!matchOui && !matchNon) {
-              matches = false;
-            }
           }
         }
 
         return matches;
       }).toList();
     }
-
-
 
     return filtered;
   }
@@ -539,12 +494,6 @@ class _StorePageState extends State<StorePage> {
       }
     }
     return options;
-  }
-
-  List<StoreProgram> _getProgramsFilteredExcludingSection(String sectionToExclude) {
-    final tempFilters = Map<String, Set<String>>.from(_selectedFiltersMap);
-    tempFilters.remove(sectionToExclude);
-    return _applyFilters(tempFilters);
   }
 
   void _showFilterModal() {
