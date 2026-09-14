@@ -22,6 +22,7 @@ class ShopOffer {
   final int clickCount;
   final List<String> sports;
   final String? createdAt;
+  final String? pays;
 
   ShopOffer({
     required this.id,
@@ -47,6 +48,7 @@ class ShopOffer {
     this.clickCount = 0,
     this.createdAt,
     required this.sports,
+    this.pays,
   });
 
   factory ShopOffer.fromJson(Map<String, dynamic> json) {
@@ -117,6 +119,7 @@ class ShopOffer {
       clickCount: json['click_count'] as int? ?? 0,
       createdAt: json['created_at'] as String?,
       sports: parseList(json['sport']),
+      pays: json['pays'] as String?,
     );
   }
 

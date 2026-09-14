@@ -55,6 +55,7 @@ class _ShopPageState extends State<ShopPage> {
   String? _userGender;
   String? _userGoal;
   String? _userSupplements;
+  String? _userCountry;
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
@@ -193,7 +194,7 @@ class _ShopPageState extends State<ShopPage> {
 
       final data = await widget.supabase
           .from('profiles')
-          .select('gender, main_goal, supplements')
+          .select('gender, main_goal, supplements, country')
           .eq('id', userId)
           .single();
       
@@ -202,6 +203,7 @@ class _ShopPageState extends State<ShopPage> {
           _userGender = data['gender'] as String?;
           _userGoal = data['main_goal'] as String?;
           _userSupplements = data['supplements'] as String?;
+          _userCountry = data['country'] as String?;
         });
       }
     } catch (e) {
@@ -226,6 +228,18 @@ class _ShopPageState extends State<ShopPage> {
 
   List<ShopOffer> _applyFilters(Map<String, Set<String>> selectedFilters) {
     var filtered = List<ShopOffer>.from(_offers);
+
+    // Filter by user country (defaults to France if not set / disconnected)
+    final userCountry = (_userCountry == null || _userCountry!.trim().isEmpty || _userCountry!.toLowerCase() == 'tous')
+        ? 'France'
+        : _userCountry!.trim();
+
+    filtered = filtered.where((offer) {
+      final offerPays = (offer.pays == null || offer.pays!.trim().isEmpty) ? 'Tous' : offer.pays!.trim();
+      final isOfferUniversal = offerPays.toLowerCase() == 'tous';
+
+      return isOfferUniversal || offerPays.toLowerCase() == userCountry.toLowerCase();
+    }).toList();
 
     if (_favoritesOnly) {
       filtered = filtered.where((offer) => _favoriteOfferIds.contains(offer.id)).toList();
