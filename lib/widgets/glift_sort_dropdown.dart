@@ -35,89 +35,83 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        _fieldWidth = constraints.maxWidth;
+    final selectedOption = widget.options.firstWhere(
+      (option) => option['value'] == widget.selectedValue,
+      orElse: () => widget.options.first,
+    );
 
-        final selectedOption = widget.options.firstWhere(
-          (option) => option['value'] == widget.selectedValue,
-          orElse: () => widget.options.first,
-        );
-
-        return CompositedTransformTarget(
-          link: _fieldLink,
-          child: Focus(
-            focusNode: _focusNode,
-            onFocusChange: (hasFocus) {
-              if (!hasFocus) {
-                _removeOverlay();
-              }
-            },
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _toggleOverlay,
-              child: AnimatedContainer(
-                height: 40,
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: _isMenuOpen
-                        ? const Color(0xFFA1A5FD)
-                        : const Color(0xFFD7D4DC),
-                    width: 1.0,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/tri.svg',
-                            width: 16,
-                            height: 14,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              selectedOption['label'] ?? '',
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    AnimatedRotation(
-                      turns: _isMenuOpen ? 0.5 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut,
-                      child: SvgPicture.asset(
-                        'assets/icons/chevron.svg',
-                        width: 9,
-                        height: 6,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF3A416F),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+    return CompositedTransformTarget(
+      link: _fieldLink,
+      child: Focus(
+        focusNode: _focusNode,
+        onFocusChange: (hasFocus) {
+          if (!hasFocus) {
+            _removeOverlay();
+          }
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _toggleOverlay,
+          child: AnimatedContainer(
+            height: 40,
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: _isMenuOpen
+                    ? const Color(0xFFA1A5FD)
+                    : const Color(0xFFD7D4DC),
+                width: 1.0,
               ),
             ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/tri.svg',
+                        width: 16,
+                        height: 14,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          selectedOption['label'] ?? '',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFF3A416F),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                AnimatedRotation(
+                  turns: _isMenuOpen ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: SvgPicture.asset(
+                    'assets/icons/chevron.svg',
+                    width: 9,
+                    height: 6,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF3A416F),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -132,6 +126,11 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
 
   void _showOverlay() {
     if (_overlayEntry != null) return;
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      _fieldWidth = renderBox.size.width;
+    }
 
     final overlay = Overlay.of(context);
 

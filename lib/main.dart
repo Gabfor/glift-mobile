@@ -54,6 +54,17 @@ Future<void> main() async {
   final supabase = Supabase.instance.client;
   debugPrint('DEBUG: Supabase client created');
 
+  if (supabase.auth.currentSession?.isExpired == true) {
+    try {
+      await supabase.auth.refreshSession();
+    } catch (e) {
+      debugPrint('Stale session detected, signing out: $e');
+      try {
+        await supabase.auth.signOut();
+      } catch (_) {}
+    }
+  }
+
   SettingsService.instance.initSupabase(supabase);
   
   final authRepository = SupabaseAuthRepository(supabase);

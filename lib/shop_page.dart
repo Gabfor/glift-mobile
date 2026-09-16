@@ -621,157 +621,145 @@ class _ShopPageState extends State<ShopPage> {
               _loadUserProfile(),
             ]);
           },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(
-                  top: 20,
-                  bottom: 30,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight > 50 ? constraints.maxHeight - 50 : 0,
-                  ),
-                  child: IntrinsicHeight(
-                    child: _isLoading
-                        ? const Center(child: GliftLoader())
-                        : _offers.isEmpty
-                            ? Center(child: _buildEmptyState())
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                          if (_availableFilters.length > 1) ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: GliftSortDropdown(
-                                      options: _sortOptions,
-                                      selectedValue: _selectedSort,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedSort = value;
-                                          FilterService().shopSort = value;
-                                        });
-                                      },
+          child: _isLoading
+              ? const Center(child: GliftLoader())
+              : CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    if (_offers.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: _buildEmptyState()),
+                      )
+                    else ...[
+                      if (_availableFilters.length > 1)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: GliftSortDropdown(
+                                    options: _sortOptions,
+                                    selectedValue: _selectedSort,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedSort = value;
+                                        FilterService().shopSort = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  flex: 1,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _showFilterModal();
+                                    },
+                                    child: Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: const Color(0xFFD7D4DC),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          SvgPicture.asset(
+                                            _hasActiveFilters
+                                                ? 'assets/icons/filtre_green.svg'
+                                                : 'assets/icons/filtre_red.svg',
+                                            height: 16,
+                                            width: 16,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Filtres',
+                                            style: GoogleFonts.quicksand(
+                                              color: const Color(0xFF3A416F),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
+                                ),
+                                if (widget.supabase.auth.currentUser != null) ...[
                                   const SizedBox(width: 10),
-                                  Expanded(
-                                    flex: 1,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        _showFilterModal();
-                                      },
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(5),
-                                          border: Border.all(
-                                            color: const Color(0xFFD7D4DC),
-                                            width: 1.0,
-                                          ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _favoritesOnly = !_favoritesOnly;
+                                      });
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: const Color(0xFFD7D4DC),
+                                          width: 1.0,
                                         ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              _hasActiveFilters
-                                                  ? 'assets/icons/filtre_green.svg'
-                                                  : 'assets/icons/filtre_red.svg',
-                                              height: 16,
-                                              width: 16,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Filtres',
-                                              style: GoogleFonts.quicksand(
-                                                color: const Color(0xFF3A416F),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
+                                      ),
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          _favoritesOnly
+                                              ? 'assets/icons/coeur_rouge.svg'
+                                              : 'assets/icons/coeur_gris.svg',
+                                          height: 24,
+                                          width: 24,
+                                          alignment: Alignment.center,
+                                          fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  if (widget.supabase.auth.currentUser != null) ...[
-                                    const SizedBox(width: 10),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _favoritesOnly = !_favoritesOnly;
-                                        });
-                                      },
-                                      child: Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(5),
-                                          border: Border.all(
-                                            color: const Color(0xFFD7D4DC),
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: SvgPicture.asset(
-                                            _favoritesOnly
-                                                ? 'assets/icons/coeur_rouge.svg'
-                                                : 'assets/icons/coeur_gris.svg',
-                                            height: 24,
-                                            width: 24,
-                                            alignment: Alignment.center,
-                                            fit: BoxFit.contain,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
                                 ],
-                              ),
+                              ],
                             ),
-                            const SizedBox(height: 20),
-                          ],
-                          if (_filteredOffers.isEmpty)
-                            Expanded(
-                              child: Center(
-                                child: _buildEmptyState(),
-                              ),
-                            )
-                          else
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.only(bottom: 50),
-                                itemCount: _filteredOffers.length,
-                                separatorBuilder: (context, index) =>
-                                    const SizedBox(height: 20),
-                                itemBuilder: (context, index) {
-                                  final offer = _filteredOffers[index];
-                                  return _ShopOfferCard(
-                                    offer: offer,
-                                    supabase: widget.supabase,
-                                    isFavorite: _favoriteOfferIds.contains(offer.id),
-                                    onToggleFavorite: () => _toggleFavorite(offer.id),
-                                  );
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                  ),
+                          ),
+                        ),
+                      if (_filteredOffers.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(child: _buildEmptyState()),
+                        )
+                      else
+                        SliverPadding(
+                          padding: EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            top: _availableFilters.length > 1 ? 0 : 20,
+                            bottom: 50,
+                          ),
+                          sliver: SliverList.separated(
+                            itemCount: _filteredOffers.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                            itemBuilder: (context, index) {
+                              final offer = _filteredOffers[index];
+                              return _ShopOfferCard(
+                                offer: offer,
+                                supabase: widget.supabase,
+                                isFavorite: _favoriteOfferIds.contains(offer.id),
+                                onToggleFavorite: () => _toggleFavorite(offer.id),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ],
                 ),
-              );
-            },
-          ),
         ),
       ),
     );

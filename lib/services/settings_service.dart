@@ -33,7 +33,7 @@ class SettingsService {
   Future<void> syncFromSupabase() async {
     final session = _supabase?.auth.currentSession;
     final user = _supabase?.auth.currentUser;
-    if (session == null || user == null) return;
+    if (session == null || user == null || session.isExpired) return;
 
     try {
       // 1. Sync Preferences
@@ -58,7 +58,7 @@ class SettingsService {
       } on PostgrestException catch (e) {
         // If PostgreSQL error 42703 (undefined column) occurs, fallback to basic columns
         if (e.code == '42703') {
-          print('New preference columns missing in Supabase, falling back to basic columns: $e');
+          debugPrint('New preference columns missing in Supabase, falling back to basic columns: $e');
           await _fetchAndSyncPreferences(user.id, [
             'weight_unit',
             'show_effort',
@@ -90,10 +90,22 @@ class SettingsService {
         await _prefs.setBool(_kHasUsedTrial, hasUsedTrial);
       }
 
+    } on AuthException catch (e) {
+      debugPrint('Auth error in syncFromSupabase: $e');
+      try {
+        await _supabase?.auth.signOut();
+      } catch (_) {}
+    } on PostgrestException catch (e) {
+      if (e.code == '42501' || e.code == '401') {
+        debugPrint('RLS permission denied (expired/invalid session), clearing auth state: $e');
+        try {
+          await _supabase?.auth.signOut();
+        } catch (_) {}
+        return;
+      }
+      debugPrint('Error syncing settings: $e');
     } catch (e) {
-      // Create preference row if it doesn't exist? Or just ignore.
-      // Usually preferences are created on signup.
-      print('Error syncing settings: $e');
+      debugPrint('Error syncing settings: $e');
     }
   }
 
