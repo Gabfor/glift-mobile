@@ -621,19 +621,26 @@ class _ShopPageState extends State<ShopPage> {
               _loadUserProfile(),
             ]);
           },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(
-              top: 20,
-              bottom: 30,
-            ),
-            child: _isLoading
-                ? const GliftLoader()
-                : _offers.isEmpty
-                    ? _buildEmptyState()
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(
+                  top: 20,
+                  bottom: 30,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight > 50 ? constraints.maxHeight - 50 : 0,
+                  ),
+                  child: IntrinsicHeight(
+                    child: _isLoading
+                        ? const Center(child: GliftLoader())
+                        : _offers.isEmpty
+                            ? Center(child: _buildEmptyState())
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                           if (_availableFilters.length > 1) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -732,7 +739,11 @@ class _ShopPageState extends State<ShopPage> {
                             const SizedBox(height: 20),
                           ],
                           if (_filteredOffers.isEmpty)
-                            _buildEmptyState()
+                            Expanded(
+                              child: Center(
+                                child: _buildEmptyState(),
+                              ),
+                            )
                           else
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -756,6 +767,10 @@ class _ShopPageState extends State<ShopPage> {
                             ),
                         ],
                       ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

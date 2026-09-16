@@ -203,6 +203,15 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
         return 'assets/icons/flags/suisse.svg';
       case 'canada':
         return 'assets/icons/flags/canada.svg';
+      case 'île maurice':
+      case 'ile maurice':
+        return 'assets/icons/flags/ile_maurice.svg';
+      case 'luxembourg':
+        return 'assets/icons/flags/luxembourg.svg';
+      case 'maroc':
+        return 'assets/icons/flags/maroc.svg';
+      case 'monaco':
+        return 'assets/icons/flags/monaco.svg';
       case 'autre':
         return 'assets/icons/flags/autre.svg';
       default:
