@@ -455,8 +455,16 @@ class _ShopPageState extends State<ShopPage> {
       switch (section) {
         case 'Genre':
           for (var g in offer.genders) {
-            if (g.isNotEmpty && g.toLowerCase() != 'tous') {
-              options.add(g);
+            final lower = g.trim().toLowerCase();
+            if (lower == 'tous' || lower == 'mixte' || lower == 'unisexe') {
+              options.add('Femme');
+              options.add('Homme');
+            } else if (lower == 'femme') {
+              options.add('Femme');
+            } else if (lower == 'homme') {
+              options.add('Homme');
+            } else if (g.trim().isNotEmpty) {
+              options.add(g.trim());
             }
           }
           break;

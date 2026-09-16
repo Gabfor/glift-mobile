@@ -17,6 +17,7 @@ import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/glift_sort_dropdown.dart';
+import 'widgets/empty_shop_widget.dart';
 
 import 'services/filter_service.dart';
 import 'services/settings_service.dart';
@@ -446,13 +447,18 @@ class _StorePageState extends State<StorePage> {
       switch (section) {
         case 'Genre':
           if (program.gender.isNotEmpty) {
-             final g = program.gender;
-             if (g.toLowerCase() == 'tous' || g.toLowerCase() == 'mixte') {
-               options.add('Femme');
-               options.add('Homme');
-             } else {
-               options.add(g);
-             }
+            final g = program.gender.trim();
+            final lower = g.toLowerCase();
+            if (lower == 'tous' || lower == 'mixte' || lower == 'unisexe') {
+              options.add('Femme');
+              options.add('Homme');
+            } else if (lower == 'femme') {
+              options.add('Femme');
+            } else if (lower == 'homme') {
+              options.add('Homme');
+            } else {
+              options.add(g);
+            }
           }
           break;
         case 'Niveau':
@@ -585,10 +591,50 @@ class _StorePageState extends State<StorePage> {
 
   Map<String, Set<String>> _selectedFiltersMap = {};
 
+  Widget _buildEmptyState() {
+    if (_favoritesOnly) {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun favori enregistré...',
+        subtitle:
+            'Pour enregistrer tes programmes préférés, clique simplement sur l\'icône en forme de cœur située en haut à droite.',
+        buttonText: 'Effacer le filtre',
+        onAction: () {
+          setState(() {
+            _favoritesOnly = false;
+          });
+        },
+      );
+    } else if (_hasActiveFilters) {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun résultat avec ces filtres...',
+        subtitle:
+            'Aucun programme ne correspond à ta sélection actuelle. Modifie ou réinitialise tes filtres pour corriger cela.',
+        buttonText: 'Effacer les filtres',
+        onAction: () {
+          setState(() {
+            _selectedFiltersMap.clear();
+            FilterService().storeFilters = {};
+          });
+        },
+      );
+    } else {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun résultat trouvé...',
+        subtitle:
+            'Aucun programme n\'est disponible pour le moment. Nous afficherons de nouveaux programmes très prochainement !',
+        buttonText: 'Actualiser la page',
+        onAction: () {
+          setState(() {
+            _isLoading = true;
+          });
+          _loadPrograms();
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isScrollable = !_isLoading && _programs.isNotEmpty && _filteredPrograms.isNotEmpty;
-
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
       child: GliftPageLayout(
@@ -600,165 +646,149 @@ class _StorePageState extends State<StorePage> {
           onRefresh: () async {
             await _loadPrograms();
           },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(top: 20, bottom: 30),
-            child: _isLoading
-                ? const GliftLoader()
-                : _programs.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Aucun programme disponible',
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFFC2BFC6),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+          child: _isLoading
+              ? const Center(child: GliftLoader())
+              : CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    if (_programs.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: _buildEmptyState()),
                       )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_availableGoals.length > 1) ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: GliftSortDropdown(
-                                      options: _sortOptions,
-                                      selectedValue: _selectedSort,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedSort = value;
-                                          FilterService().storeSort = value;
-                                          _loadPrograms();
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    flex: 1,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        _showFilterModal();
-                                      },
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(5),
-                                          border: Border.all(
-                                            color: const Color(0xFFD7D4DC),
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              _hasActiveFilters
-                                                  ? 'assets/icons/filtre_green.svg'
-                                                  : 'assets/icons/filtre_red.svg',
-                                              height: 16,
-                                              width: 16,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Filtres',
-                                              style: GoogleFonts.quicksand(
-                                                color: const Color(0xFF3A416F),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  if (widget.supabase.auth.currentUser != null) ...[
-                                    const SizedBox(width: 10),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _favoritesOnly = !_favoritesOnly;
-                                        });
-                                      },
-                                      child: Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(5),
-                                          border: Border.all(
-                                            color: const Color(0xFFD7D4DC),
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: SvgPicture.asset(
-                                            _favoritesOnly
-                                                ? 'assets/icons/coeur_red.svg'
-                                                : 'assets/icons/coeur_grey.svg',
-                                            height: 24,
-                                            width: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
-                          if (_filteredPrograms.isEmpty)
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 40),
-                                child: Text(
-                                  _favoritesOnly
-                                      ? 'Aucun programme enregistré\nen favori pour le moment.'
-                                      : 'Aucun programme disponible\navec ces filtres.',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF3A416F),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                    else ...[
+                      if (_availableGoals.length > 1)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: GliftSortDropdown(
+                                    options: _sortOptions,
+                                    selectedValue: _selectedSort,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedSort = value;
+                                        FilterService().storeSort = value;
+                                        _loadPrograms();
+                                      });
+                                    },
                                   ),
                                 ),
-                              ),
-                            )
-                          else
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.only(bottom: 50),
-                                itemCount: _filteredPrograms.length,
-                                separatorBuilder: (context, index) =>
-                                    const SizedBox(height: 20),
-                                itemBuilder: (context, index) {
-                                  final isAuthenticated =
-                                      widget.supabase.auth.currentUser != null;
-                                  return _StoreProgramCard(
-                                    program: _filteredPrograms[index],
-                                    isAuthenticated: isAuthenticated,
-                                    repository: _repository,
-                                    onNavigateToHome: widget.onNavigateToHome,
-                                    isFavorite: _favoriteProgramIds.contains(_filteredPrograms[index].id),
-                                    onToggleFavorite: () => _toggleFavorite(_filteredPrograms[index].id),
-                                  );
-                                },
-                              ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  flex: 1,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _showFilterModal();
+                                    },
+                                    child: Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: const Color(0xFFD7D4DC),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          SvgPicture.asset(
+                                            _hasActiveFilters
+                                                ? 'assets/icons/filtre_green.svg'
+                                                : 'assets/icons/filtre_red.svg',
+                                            height: 16,
+                                            width: 16,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Filtres',
+                                            style: GoogleFonts.quicksand(
+                                              color: const Color(0xFF3A416F),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (widget.supabase.auth.currentUser != null) ...[
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _favoritesOnly = !_favoritesOnly;
+                                      });
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: const Color(0xFFD7D4DC),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          _favoritesOnly
+                                              ? 'assets/icons/coeur_red.svg'
+                                              : 'assets/icons/coeur_grey.svg',
+                                          height: 24,
+                                          width: 24,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                        ],
-                      ),
-          ),
+                          ),
+                        ),
+                      if (_filteredPrograms.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(child: _buildEmptyState()),
+                        )
+                      else
+                        SliverPadding(
+                          padding: EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            top: _availableGoals.length > 1 ? 0 : 20,
+                            bottom: 50,
+                          ),
+                          sliver: SliverList.separated(
+                            itemCount: _filteredPrograms.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                            itemBuilder: (context, index) {
+                              final isAuthenticated =
+                                  widget.supabase.auth.currentUser != null;
+                              return _StoreProgramCard(
+                                program: _filteredPrograms[index],
+                                isAuthenticated: isAuthenticated,
+                                repository: _repository,
+                                onNavigateToHome: widget.onNavigateToHome,
+                                isFavorite: _favoriteProgramIds
+                                    .contains(_filteredPrograms[index].id),
+                                onToggleFavorite: () => _toggleFavorite(
+                                    _filteredPrograms[index].id),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
         ),
       ),
     );
