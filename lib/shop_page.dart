@@ -17,6 +17,8 @@ import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/glift_sort_dropdown.dart';
 import 'widgets/offer_details_modal.dart';
+import 'widgets/empty_shop_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'services/filter_service.dart';
 import 'theme/glift_theme.dart';
@@ -542,10 +544,69 @@ class _ShopPageState extends State<ShopPage> {
     return false;
   }
 
+  Widget _buildEmptyState() {
+    final isCountryEmpty = !_favoritesOnly &&
+        !_hasActiveFilters &&
+        _offers.isNotEmpty &&
+        _filteredOffers.isEmpty;
+
+    if (_favoritesOnly) {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun favori enregistré...',
+        subtitle:
+            'Pour enregistrer tes bons plans préférés, clique simplement sur l\'icône en forme de cœur située en haut à droite.',
+        buttonText: 'Effacer le filtre',
+        onAction: () {
+          setState(() {
+            _favoritesOnly = false;
+          });
+        },
+      );
+    } else if (_hasActiveFilters) {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun résultat avec ces filtres...',
+        subtitle:
+            'Aucun bon plan ne correspond à ta sélection actuelle. Modifie ou réinitialise tes filtres pour corriger cela.',
+        buttonText: 'Effacer les filtres',
+        onAction: () {
+          setState(() {
+            _selectedFiltersMap.clear();
+            FilterService().shopFilters = {};
+          });
+        },
+      );
+    } else if (isCountryEmpty) {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun résultat dans ton pays...',
+        subtitle:
+            'Pour le moment nous n\'avons malheureusement aucun bon plan à te proposer dans ton pays, mais on y travaille !',
+        buttonText: 'Proposer un partenaire',
+        onAction: () async {
+          final uri = Uri.parse(
+              'https://glift.io/nous-contacter?subject=Proposition%20de%20partenariat');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        },
+      );
+    } else {
+      return EmptyShopWidget(
+        title: 'Oups ! Aucun résultat trouvé...',
+        subtitle:
+            'Aucun bon plan n\'est disponible pour le moment. Nous afficherons de nouvelles offres très prochainement !',
+        buttonText: 'Actualiser la page',
+        onAction: () {
+          setState(() {
+            _isLoading = true;
+          });
+          _loadOffers();
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isScrollable = !_isLoading && _offers.isNotEmpty && _filteredOffers.isNotEmpty;
-
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
       child: GliftPageLayout(
@@ -569,16 +630,7 @@ class _ShopPageState extends State<ShopPage> {
             child: _isLoading
                 ? const GliftLoader()
                 : _offers.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Aucune offre disponible',
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFFC2BFC6),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
+                    ? _buildEmptyState()
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -680,22 +732,7 @@ class _ShopPageState extends State<ShopPage> {
                             const SizedBox(height: 20),
                           ],
                           if (_filteredOffers.isEmpty)
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 40),
-                                child: Text(
-                                  _favoritesOnly
-                                      ? 'Aucune offre enregistrée\nen favori pour le moment.'
-                                      : 'Aucune offre disponible\navec ces filtres.',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF3A416F),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            )
+                            _buildEmptyState()
                           else
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20),
