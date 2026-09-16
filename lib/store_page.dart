@@ -596,7 +596,7 @@ class _StorePageState extends State<StorePage> {
       return EmptyShopWidget(
         title: 'Oups ! Aucun favori enregistré...',
         subtitle:
-            'Pour enregistrer tes programmes préférés, clique simplement sur l\'icône en forme de cœur située en haut à droite.',
+            'Pour enregistrer tes programmes préférés, clique simplement sur l\'icône en forme d\'étoile située en haut à droite.',
         buttonText: 'Effacer le filtre',
         onAction: () {
           setState(() {
