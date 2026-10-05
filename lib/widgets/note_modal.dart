@@ -38,25 +38,37 @@ class _NoteModalState extends State<NoteModal> {
   bool _isEditingMaterial = false;
   late final TextEditingController _materialController;
   final FocusNode _materialFocusNode = FocusNode();
-  late final Delta _initialDelta;
+  late Delta _initialDelta;
 
   @override
   void initState() {
     super.initState();
     
     // Initialize Quill Controller with HTML content
-    try {
-      final delta = HtmlToDelta().convert(widget.initialNote ?? '');
-      _initialDelta = delta;
-      _controller = quill.QuillController(
-        document: quill.Document.fromDelta(delta),
-        selection: const TextSelection.collapsed(offset: 0),
-      );
-    } catch (e) {
-      // Fallback for empty or invalid HTML
-      _initialDelta = Delta()..insert('\n');
+    final initialNote = widget.initialNote;
+    if (initialNote != null && initialNote.trim().isNotEmpty) {
+      try {
+        final delta = HtmlToDelta().convert(initialNote);
+        if (delta.isEmpty) {
+          delta.insert('\n');
+        } else {
+          final lastOp = delta.last;
+          if (lastOp.data is! String || !(lastOp.data as String).endsWith('\n')) {
+            delta.insert('\n');
+          }
+        }
+        _controller = quill.QuillController(
+          document: quill.Document.fromDelta(delta),
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      } catch (e) {
+        _controller = quill.QuillController.basic();
+      }
+    } else {
       _controller = quill.QuillController.basic();
     }
+
+    _initialDelta = _controller.document.toDelta();
 
     _materialController = TextEditingController(text: widget.initialMaterial);
     
