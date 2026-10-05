@@ -421,6 +421,18 @@ class _ShopPageState extends State<ShopPage> {
         // Sort based on pre-calculated scores
 
         scoredOffers.sort((a, b) {
+          // 0. Gender Separation Rule : opposite gender is strictly relegated to the end
+          if (_userGender != null) {
+            final ug = _userGender!.trim().toLowerCase();
+            final ogA = (a.offer.gender ?? '').trim().toLowerCase();
+            final ogB = (b.offer.gender ?? '').trim().toLowerCase();
+            final isOppositeA = (ug == 'homme' && ogA == 'femme') || (ug == 'femme' && ogA == 'homme');
+            final isOppositeB = (ug == 'homme' && ogB == 'femme') || (ug == 'femme' && ogB == 'homme');
+            if (isOppositeA != isOppositeB) {
+              return isOppositeA ? 1 : -1;
+            }
+          }
+
           if (a.score != b.score) {
             return b.score.compareTo(a.score);
           }

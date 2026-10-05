@@ -193,10 +193,22 @@ class _StorePageState extends State<StorePage> {
             final String? userSessions = p['weekly_sessions']?.toString().trim();
 
             programs.sort((a, b) {
+              // 0. Gender Separation Rule : opposite gender is strictly relegated to the end
+              if (userGender != null) {
+                final ug = userGender.trim().toLowerCase();
+                final pgA = a.gender.trim().toLowerCase();
+                final pgB = b.gender.trim().toLowerCase();
+                final isOppositeA = (ug == 'homme' && pgA == 'femme') || (ug == 'femme' && pgA == 'homme');
+                final isOppositeB = (ug == 'homme' && pgB == 'femme') || (ug == 'femme' && pgB == 'homme');
+                if (isOppositeA != isOppositeB) {
+                  return isOppositeA ? 1 : -1;
+                }
+              }
+
               int scoreA = 0;
               int scoreB = 0;
 
-              // 0. Favorite Rule (+10 points)
+              // 1. Favorite Rule (+10 points)
               if (_favoriteProgramIdsForSorting.contains(a.id)) {
                 scoreA += 10;
               }
@@ -502,6 +514,25 @@ class _StorePageState extends State<StorePage> {
     return options;
   }
 
+  List<String> _sortLevelOptions(Iterable<String> options) {
+    int getLevelRank(String level) {
+      final l = level.trim().toLowerCase();
+      if (l.contains('débutant') || l.contains('debutant')) return 0;
+      if (l.contains('intermédiaire') || l.contains('intermediaire')) return 1;
+      if (l.contains('confirmé') || l.contains('confirme')) return 2;
+      return 999;
+    }
+
+    final list = options.toList();
+    list.sort((a, b) {
+      final rankA = getLevelRank(a);
+      final rankB = getLevelRank(b);
+      if (rankA != rankB) return rankA.compareTo(rankB);
+      return a.compareTo(b);
+    });
+    return list;
+  }
+
   void _showFilterModal() {
     // Check user plan for "Disponible" visibility
     final userPlan = SettingsService.instance.getSubscriptionPlan();
@@ -540,7 +571,7 @@ class _StorePageState extends State<StorePage> {
       ),
       FilterSection(
         title: 'Niveau',
-        options: levelOptions.toList()..sort(),
+        options: _sortLevelOptions(levelOptions),
       ),
       FilterSection(
         title: 'Lieu',
