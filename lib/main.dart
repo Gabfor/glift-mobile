@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -27,23 +28,30 @@ Future<void> main() async {
   debugPrint('DEBUG: Starting main()');
   WidgetsFlutterBinding.ensureInitialized();
   debugPrint('DEBUG: WidgetsFlutterBinding initialized');
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('FLUTTER ERROR: ${details.exception}');
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('ASYNC ERROR: $error');
+    return true;
+  };
   
-  await Future.wait([
-    initializeDateFormatting('fr_FR', null),
-    NotificationService.instance.initialize(),
-    SettingsService.instance.init(),
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]),
-    Supabase.initialize(
-      url: supabaseUrl,
-      publishableKey: supabaseAnonKey,
-      authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-      ),
-    ),
+  await initializeDateFormatting('fr_FR', null);
+  await SettingsService.instance.init();
+  await NotificationService.instance.initialize();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
   ]);
+  await Supabase.initialize(
+    url: supabaseUrl,
+    publishableKey: supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
+  );
   final supabase = Supabase.instance.client;
   debugPrint('DEBUG: Startup services & Supabase client ready');
 
@@ -58,7 +66,11 @@ Future<void> main() async {
     }
   }
 
-  SettingsService.instance.initSupabase(supabase);
+  try {
+    await SettingsService.instance.initSupabase(supabase);
+  } catch (e) {
+    debugPrint('Error initSupabase: $e');
+  }
   
   final authRepository = SupabaseAuthRepository(supabase);
   final biometricAuthService = BiometricAuthService(

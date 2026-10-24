@@ -15,7 +15,8 @@ class NotificationService implements TimerAlertService {
   NotificationService._internal();
 
   static final NotificationService instance = NotificationService._internal();
-  final AudioPlayer _player = AudioPlayer();
+  AudioPlayer? _player;
+  AudioPlayer get _audioPlayer => _player ??= AudioPlayer();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
@@ -69,11 +70,11 @@ class NotificationService implements TimerAlertService {
       }
 
       // Explicitly stop any previous sound
-      await _player.stop();
+      await _audioPlayer.stop();
       
-      await _player.setSource(AssetSource(assetSource));
+      await _audioPlayer.setSource(AssetSource(assetSource));
       // Use system volume (no setVolume call)
-      await _player.resume();
+      await _audioPlayer.resume();
       
     } catch (e) {
       debugPrint('Error playing notification sound: $e');
