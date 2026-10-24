@@ -131,6 +131,6 @@ class NotificationService implements TimerAlertService {
   }
   
   void dispose() {
-    _player.dispose();
+    _player?.dispose();
   }
 }
