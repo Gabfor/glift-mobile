@@ -55,7 +55,6 @@ class _ShopPageState extends State<ShopPage> {
   bool _favoritesOnly = false;
 
   String? _userGender;
-  String? _userGoal;
   String? _userSupplements;
   String? _userCountry;
 
@@ -203,7 +202,6 @@ class _ShopPageState extends State<ShopPage> {
       if (mounted) {
         setState(() {
           _userGender = data['gender'] as String?;
-          _userGoal = data['main_goal'] as String?;
           _userSupplements = data['supplements'] as String?;
           _userCountry = data['country'] as String?;
         });

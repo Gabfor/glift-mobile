@@ -83,17 +83,10 @@ class NotificationService implements TimerAlertService {
   @override
   Future<void> scheduleTimerNotification({required DateTime scheduledTime}) async {
     if (!SettingsService.instance.getSoundEnabled()) return;
-    final soundEffect = SettingsService.instance.getSoundEffect();
     
     // Default system sound or specific raw resource
     // For iOS, sound names normally need to be bundled and specified. Default is often fine.
     // For Android, we can specify raw sound if we have them in res/raw (bip, radar, etc.)
-    // If not, we just use the default system notification sound.
-    String androidSoundName = 'radar';
-    if (['bip', 'radar', 'gong', 'bell'].contains(soundEffect)) {
-       // androidSoundName = soundEffect;
-    }
-    
     // Using default notification sound for simplicity if custom ones are not registered in Android resources
     // In a real scenario, you'd place bip.mp3 -> bip.mp3 in android/app/src/main/res/raw/
     // Let's rely on the default sound for now to ensure it plays, since we don't have the raw files set up

@@ -12,7 +12,6 @@ import 'widgets/forgot_password_modal.dart';
 import 'main_page.dart';
 import 'pricing_page.dart';
 import 'signup_page.dart';
-import 'supabase_credentials.dart';
 import 'widgets/auth_error_modal.dart';
 import 'widgets/connect_button.dart';
 import 'widgets/glift_page_layout.dart';
@@ -67,17 +66,11 @@ class _LoginPageState extends State<LoginPage> {
 
   String get _passwordMessage => '';
 
-  bool get _showEmailSuccess =>
-      _isEmailValid && (_hasSubmitted || (_emailTouched && !_emailFocused));
-
   bool get _showEmailError {
     final hasText = _emailController.text.trim().isNotEmpty;
     if (!hasText) return false;
     return !_emailFocused && !_isEmailValid && (_hasSubmitted || _emailTouched);
   }
-
-  bool get _showPasswordSuccess =>
-      _isPasswordValid && (_hasSubmitted || (_passwordTouched && !_passwordFocused));
 
   bool get _showPasswordError =>
       _passwordController.text.trim().isNotEmpty &&
@@ -549,7 +542,6 @@ class _InputField extends StatefulWidget {
   final Key? fieldKey;
 
   const _InputField({
-    super.key,
     required this.label,
     required this.controller,
     required this.focusNode,
@@ -681,7 +673,6 @@ class _PasswordField extends StatelessWidget {
   final Key? toggleKey;
 
   const _PasswordField({
-    super.key,
     required this.controller,
     required this.focusNode,
     required this.obscureText,

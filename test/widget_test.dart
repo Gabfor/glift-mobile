@@ -26,5 +26,7 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
 
     expect(find.byType(OnboardingFlow), findsOneWidget);
+
+    await supabase.dispose();
   });
 }

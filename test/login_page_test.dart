@@ -7,6 +7,7 @@ import 'package:supabase/supabase.dart';
 import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/login_page.dart';
+import 'package:glift_mobile/widgets/connect_button.dart';
 
 class FakeAuthRepository implements AuthRepository {
   bool shouldThrowAuth = false;
@@ -81,7 +82,7 @@ void main() {
     final buttonFinder = find.byKey(const Key('loginButton'));
     expect(buttonFinder, findsOneWidget);
 
-    ElevatedButton button = tester.widget(buttonFinder);
+    ConnectButton button = tester.widget(buttonFinder);
     expect(button.onPressed, isNull);
 
     await tester.enterText(find.byKey(const Key('emailInput')),
@@ -112,20 +113,15 @@ void main() {
 
     await tester.pumpWidget(_buildLogin(repository));
 
-    final passwordField = find.byKey(const Key('passwordInput'));
     final toggleButton = find.byKey(const Key('passwordToggle'));
 
-    TextField textField = tester.widget(
-      find.descendant(of: passwordField, matching: find.byType(TextField)),
-    );
+    TextField textField = tester.widget(find.byKey(const Key('passwordInput')));
     expect(textField.obscureText, isTrue);
 
     await tester.tap(toggleButton);
     await tester.pump();
 
-    textField = tester.widget(
-      find.descendant(of: passwordField, matching: find.byType(TextField)),
-    );
+    textField = tester.widget(find.byKey(const Key('passwordInput')));
     expect(textField.obscureText, isFalse);
   });
 
@@ -190,7 +186,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Identifiants invalides. Vérifiez votre email et votre mot de passe.'),
+      find.text('Email ou mot de passe incorrect'),
       findsOneWidget,
     );
   });

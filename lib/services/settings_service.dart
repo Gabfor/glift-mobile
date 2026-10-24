@@ -228,15 +228,13 @@ class SettingsService {
           .from('settings')
           .select('key, value');
       
-      if (response != null) {
-        for (final row in response as List) {
-           final key = row['key'] as String;
-           final value = row['value'] as String;
-           if (key == 'logo_url') {
-               await _prefs.setString(_kLogoUrl, value);
-           } else if (key == 'logo_alt') {
-               await _prefs.setString(_kLogoAlt, value);
-           }
+      for (final row in response) {
+        final key = row['key'] as String;
+        final value = row['value'] as String;
+        if (key == 'logo_url') {
+            await _prefs.setString(_kLogoUrl, value);
+        } else if (key == 'logo_alt') {
+            await _prefs.setString(_kLogoAlt, value);
         }
       }
     } catch (e) {

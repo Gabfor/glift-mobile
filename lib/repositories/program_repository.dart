@@ -69,7 +69,6 @@ class ProgramRepository {
     }
 
     final List<Map<String, dynamic>> updates = [];
-    bool hasChanges = false;
 
     for (int i = 0; i < programs.length; i++) {
         final program = programs[i];
@@ -97,7 +96,6 @@ class ProgramRepository {
                 });
                 updatedTrainings.add(training.copyWith(locked: shouldBeLocked));
                 programChanged = true;
-                hasChanges = true;
             } else {
                 updatedTrainings.add(training);
             }

@@ -7,7 +7,6 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:glift_mobile/login_page.dart';
 import 'package:glift_mobile/signup_page.dart';
@@ -46,7 +45,7 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+    publishableKey: supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
     ),
@@ -284,7 +283,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     });
   }
 
-  Future<void> _handleConnect(BuildContext context) async {
+  Future<void> _handleConnect() async {
     HapticFeedback.lightImpact();
     setState(() {
       _isConnecting = true;
@@ -292,6 +291,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
     // Allow the UI to display the loading state before navigating away
     await Future.delayed(const Duration(milliseconds: 150));
+    if (!mounted) return;
 
     try {
       await Navigator.of(context).push(
@@ -363,7 +363,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   ConnectButton(
                     isEnabled: !_isConnecting,
                     isLoading: _isConnecting,
-                    onPressed: () => _handleConnect(context),
+                    onPressed: _handleConnect,
                   ),
                   const SizedBox(height: 24),
                   Center(
@@ -424,12 +424,6 @@ class OnboardingSlide extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableHeight = constraints.maxHeight;
-        final availableWidth = constraints.maxWidth;
-
-
-
-
-
         return SingleChildScrollView(
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),

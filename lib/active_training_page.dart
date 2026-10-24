@@ -60,7 +60,6 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   double? _inlineTimerTop;
   int? _activeTimerRowIndex;
   final Map<String, List<bool>> _setCompletionStates = {};
-  final ScrollController _scrollController = ScrollController();
   bool _isFinishing = false;
 
   late final AnimationController _inlineTimerAnimationController;
@@ -176,7 +175,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final currentTop = _inlineTimerTop ?? _defaultInlineTop(mediaQuery);
 
     setState(() {
-      _inlineTimerTop = (currentTop + deltaY).clamp(minTop, maxTop) as double;
+      _inlineTimerTop = (currentTop + deltaY).clamp(minTop, maxTop);
     });
   }
 
@@ -191,7 +190,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     final animation = Tween<double>(
       begin: currentTop,
-      end: targetTop.clamp(minTop, maxTop) as double,
+      end: targetTop.clamp(minTop, maxTop),
     ).animate(
       CurvedAnimation(
         parent: _inlineTimerAnimationController,
@@ -223,7 +222,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     const velocityThreshold = 150.0;
     if (velocityY.abs() <= velocityThreshold) {
       setState(() {
-        _inlineTimerTop = currentTop.clamp(minTop, maxTop) as double;
+        _inlineTimerTop = currentTop.clamp(minTop, maxTop);
       });
       return;
     }
@@ -254,16 +253,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   }
 
   void _scrollIntoView(BuildContext focusContext) {
-    debugPrint("DEBUG: _scrollIntoView called");
-    
     // Use Scrollable.of(focusContext) to get the nearest scrollable (the List)
     // This avoids issues with PrimaryScrollController lookup failures
-    ScrollableState? scrollable = Scrollable.of(focusContext);
-    
-    if (scrollable == null) {
-      debugPrint("DEBUG: No Scrollable found!");
-      return;
-    }
+    final scrollable = Scrollable.of(focusContext);
 
     final renderObject = focusContext.findRenderObject();
     if (renderObject is! RenderBox) return;
@@ -275,19 +267,13 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     const safeTop = 90.0;
     final safeBottom = screenHeight * 0.40;
 
-    debugPrint("DEBUG: Cell Y: ${objectOffset.dy}, Safe Zone: $safeTop - $safeBottom");
-
     if (objectOffset.dy >= safeTop && objectOffset.dy <= safeBottom) {
-       debugPrint("DEBUG: Cell in safe zone, skipping scroll");
        return;
     }
 
     // Target position: Center of the safe zone
     final targetTop = (safeTop + safeBottom) / 2;
-
     final scrollDelta = objectOffset.dy - targetTop;
-    
-    debugPrint("DEBUG: Scroll Delta: $scrollDelta (Target: $targetTop)");
 
     if (scrollDelta.abs() > 10) {
       final position = scrollable.position;

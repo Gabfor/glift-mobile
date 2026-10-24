@@ -616,10 +616,6 @@ class _ExerciseChartCard extends StatefulWidget {
 }
 
 class _ExerciseChartCardState extends State<_ExerciseChartCard> {
-  static const double _tooltipWidth = 72;
-  static const double _tooltipHeight = 34;
-  static const double _tooltipVerticalOffset = 10;
-
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
   LineBarSpot? _touchedSpot;
@@ -791,7 +787,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         double maxX = 6;
 
         double realMinY = 0;
-        double realMaxY = 100;
         double interval = 25;
         double chartMaxY = 100;
 
@@ -840,7 +835,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
           chartMaxY = interval * (desiredGridLines - 1);
 
           // Align data to the center of a fixed 7-point window (range of 0 to 6)
-          final int dataCount = _history.length;
           minX = 0;
           maxX = 6;
         }

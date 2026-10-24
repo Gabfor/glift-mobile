@@ -60,10 +60,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   // Single active focus manager
   final ValueNotifier<String?> _activeFocusId = ValueNotifier(null);
 
-  // Keypad state
-  int? _activeRowIndex;
-  int? _activeSeriesIndex;
-  String? _activeFieldType; // 'reps' or 'weight'
   late String _trainingName;
   bool _wasEdited = false;
 
@@ -209,6 +205,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   Future<void> _handleAddExercise() async {
     await HapticFeedback.lightImpact();
+    if (!mounted) return;
     final userPlan = SettingsService.instance.getSubscriptionPlan();
     final isPremium = userPlan == 'premium';
 
@@ -225,6 +222,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     try {
       final newRow = await _programRepository.addTrainingRow(widget.training.id, _rows?.length ?? 0);
+      if (!mounted) return;
       setState(() {
         _rows!.add(newRow);
         _wasEdited = true;
@@ -240,6 +238,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     final rowToDelete = _rows![index];
     try {
       await _programRepository.deleteTrainingRow(rowToDelete.id);
+      if (!mounted) return;
       setState(() {
         _rows!.removeAt(index);
         _wasEdited = true;
@@ -260,6 +259,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   Future<void> _handleEditName() async {
     await HapticFeedback.lightImpact();
+    if (!mounted) return;
 
     final newName = await showFadeDialog<String>(
       context: context,
@@ -269,9 +269,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
         onDelete: () async {
+          final navigator = Navigator.of(context);
           // Close EditNameModal first
-          Navigator.of(context).pop();
+          navigator.pop();
 
+          if (!mounted) return;
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
@@ -279,9 +281,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               objectName: 'l’entraînement',
             ),
           );
-          if (confirm == true) {
+          if (confirm == true && mounted) {
             await _programRepository.deleteTraining(widget.training.id);
-            if (mounted) Navigator.of(context).pop({'edited': true});
+            if (mounted) navigator.pop({'edited': true});
           }
         },
       ),
@@ -290,6 +292,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     if (newName != null && newName != _trainingName && mounted) {
       try {
         await _programRepository.updateTrainingName(widget.training.id, newName);
+        if (!mounted) return;
         setState(() {
           _trainingName = newName;
           _wasEdited = true;
@@ -308,7 +311,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         Navigator.of(context).pop(_wasEdited ? {'edited': true} : null);
       },
@@ -613,16 +616,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   void _scrollIntoView(BuildContext focusContext) {
-
-    debugPrint("DEBUG: Details Page _scrollIntoView");
-
     // Use Scrollable.of(focusContext) to get the nearest scrollable (the ListView)
-    ScrollableState? scrollable = Scrollable.of(focusContext);
-    
-    if (scrollable == null) {
-       debugPrint("DEBUG: Details Page - No Scrollable found");
-       return;
-    }
+    final scrollable = Scrollable.of(focusContext);
 
     final renderObject = focusContext.findRenderObject();
     if (renderObject is! RenderBox) return;
@@ -1264,6 +1259,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
 
   Future<void> _showExerciseNameModal() async {
     await HapticFeedback.lightImpact();
+    if (!mounted) return;
 
     final result = await showFadeDialog<dynamic>(
       context: context,
@@ -1274,7 +1270,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
         fieldLabel: 'Nom de l’exercice',
         showLinkField: true,
         initialLink: widget.row.videoUrl,
-        isDeleteEnabled: !(widget.isLast && (widget.row.exercise == null || widget.row.exercise!.isEmpty)),
+        isDeleteEnabled: !(widget.isLast && widget.row.exercise.isEmpty),
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();

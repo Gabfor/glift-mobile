@@ -10,7 +10,6 @@ import 'package:supabase/supabase.dart';
 
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
-import 'login_page.dart';
 import 'models/program.dart';
 import 'models/training.dart';
 import 'package:glift_mobile/widgets/unlock_training_modal.dart';
@@ -59,7 +58,6 @@ class HomePageState extends State<HomePage> {
   late PageController _pageController;
   late final ScrollController _programScrollController;
   final List<GlobalKey> _programKeys = [];
-  final GlobalKey _pageViewKey = GlobalKey(); // Key to preserve PageView state
   List<Program>? _programs;
 
   String? _selectedProgramId;
@@ -311,6 +309,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _handleEditProgramName(Program program) async {
     await HapticFeedback.lightImpact();
+    if (!mounted) return;
 
     final newName = await showFadeDialog<String>(
       context: context,
@@ -360,6 +359,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _handleEditTrainingName(Training training) async {
     await HapticFeedback.lightImpact();
+    if (!mounted) return;
 
     final newName = await showFadeDialog<String>(
       context: context,

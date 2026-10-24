@@ -71,8 +71,8 @@ class StoreRepository {
           .eq('user_id', user.id);
 
       int nextPosition = 0;
-      if (userPrograms != null && (userPrograms as List).isNotEmpty) {
-        final positions = (userPrograms as List)
+      if (userPrograms.isNotEmpty) {
+        final positions = userPrograms
             .map((p) => (p['position'] as int? ?? 0))
             .toList();
         nextPosition = positions.reduce((a, b) => a > b ? a : b) + 1;

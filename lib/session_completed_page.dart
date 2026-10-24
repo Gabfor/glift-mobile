@@ -8,9 +8,6 @@ import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/main_page.dart';
 import 'package:glift_mobile/services/vibration_service.dart';
-import 'theme/glift_theme.dart';
-
-import 'package:glift_mobile/models/training_row.dart';
 import 'package:glift_mobile/models/achieved_goal.dart';
 import 'package:confetti/confetti.dart';
 import 'package:glift_mobile/services/settings_service.dart';
@@ -175,7 +172,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         _dismiss();
       },
