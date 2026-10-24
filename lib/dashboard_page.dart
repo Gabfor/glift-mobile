@@ -433,60 +433,99 @@ class DashboardPageState extends State<DashboardPage> {
           onRefresh: () async {
             await refreshData(programId: _selectedProgramId);
           },
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-            children: [
-              if (_trainings.isNotEmpty)
-                Row(
+          child: _exercises.isEmpty
+              ? ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                   children: [
-                    _buildArrowButton(
-                      icon: Icons.chevron_left,
-                      onTap: _selectedTrainingIndex > 0
-                          ? () => _onTrainingChanged(-1)
-                          : null,
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
+                    if (_trainings.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          _buildArrowButton(
+                            icon: Icons.chevron_left,
+                            onTap: _selectedTrainingIndex > 0
+                                ? () => _onTrainingChanged(-1)
+                                : null,
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Text(
+                              _trainings[_selectedTrainingIndex]['name'],
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          _buildArrowButton(
+                            icon: Icons.chevron_right,
+                            onTap: _selectedTrainingIndex < _trainings.length - 1
+                                ? () => _onTrainingChanged(1)
+                                : null,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    Center(
                       child: Text(
-                        _trainings[_selectedTrainingIndex]['name'],
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        'Aucun exercice trouvé',
                         style: GoogleFonts.quicksand(
                           color: const Color(0xFF3A416F),
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 20),
-                    _buildArrowButton(
-                      icon: Icons.chevron_right,
-                      onTap: _selectedTrainingIndex < _trainings.length - 1
-                          ? () => _onTrainingChanged(1)
-                          : null,
-                    ),
                   ],
-                ),
-              if (_trainings.isNotEmpty) const SizedBox(height: 20),
-              if (_exercises.isEmpty)
-                Center(
-                  child: Text(
-                    'Aucun exercice trouvé',
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF3A416F),
-                      fontSize: 16,
-                    ),
-                  ),
                 )
-              else
-                ..._exercises.asMap().entries.map((entry) {
-                  final exercise = entry.value;
-                  final isLast = entry.key == _exercises.length - 1;
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  itemCount: _exercises.length + (_trainings.isNotEmpty ? 1 : 0),
+                  separatorBuilder: (context, index) => const SizedBox(height: 20),
+                  itemBuilder: (context, index) {
+                    if (_trainings.isNotEmpty && index == 0) {
+                      return Row(
+                        children: [
+                          _buildArrowButton(
+                            icon: Icons.chevron_left,
+                            onTap: _selectedTrainingIndex > 0
+                                ? () => _onTrainingChanged(-1)
+                                : null,
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Text(
+                              _trainings[_selectedTrainingIndex]['name'],
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          _buildArrowButton(
+                            icon: Icons.chevron_right,
+                            onTap: _selectedTrainingIndex < _trainings.length - 1
+                                ? () => _onTrainingChanged(1)
+                                : null,
+                          ),
+                        ],
+                      );
+                    }
 
-                  return Column(
-                    children: [
-                      _ExerciseChartCard(
+                    final exerciseIndex = _trainings.isNotEmpty ? index - 1 : index;
+                    final exercise = _exercises[exerciseIndex];
+
+                    return RepaintBoundary(
+                      child: _ExerciseChartCard(
                         key: ValueKey('${exercise.id}_${_preferences.getSettingsFor(exercise.id).curveType}'),
                         exercise: exercise,
                         repository: _repository,
@@ -494,12 +533,9 @@ class DashboardPageState extends State<DashboardPage> {
                         settings: _preferences.getSettingsFor(exercise.id),
                         onSettingsChanged: (newSetting) => _onExerciseSettingsChanged(exercise.id, newSetting),
                       ),
-                      if (!isLast) const SizedBox(height: 20),
-                    ],
-                  );
-                }),
-            ],
-          ),
+                    );
+                  },
+                ),
         );
       },
     );

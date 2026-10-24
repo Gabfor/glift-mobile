@@ -28,30 +28,24 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   debugPrint('DEBUG: WidgetsFlutterBinding initialized');
   
-  await initializeDateFormatting('fr_FR', null);
-  debugPrint('DEBUG: Date formatting initialized');
-  
-  await NotificationService.instance.initialize();
-  debugPrint('DEBUG: NotificationService initialized');
-  
-  await SettingsService.instance.init();
-  debugPrint('DEBUG: SettingsService initialized');
-  
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  debugPrint('DEBUG: Orientation set');
-
-  await Supabase.initialize(
-    url: supabaseUrl,
-    publishableKey: supabaseAnonKey,
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce,
+  await Future.wait([
+    initializeDateFormatting('fr_FR', null),
+    NotificationService.instance.initialize(),
+    SettingsService.instance.init(),
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]),
+    Supabase.initialize(
+      url: supabaseUrl,
+      publishableKey: supabaseAnonKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+      ),
     ),
-  );
+  ]);
   final supabase = Supabase.instance.client;
-  debugPrint('DEBUG: Supabase client created');
+  debugPrint('DEBUG: Startup services & Supabase client ready');
 
   if (supabase.auth.currentSession?.isExpired == true) {
     try {

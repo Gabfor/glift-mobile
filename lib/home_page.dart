@@ -162,12 +162,15 @@ class HomePageState extends State<HomePage> {
     }
 
     try {
-      await SettingsService.instance
-          .syncFromSupabase()
-          .timeout(const Duration(seconds: 4));
-      final programs = await _programRepository
-          .getPrograms()
-          .timeout(const Duration(seconds: 4));
+      final results = await Future.wait([
+        SettingsService.instance
+            .syncFromSupabase()
+            .timeout(const Duration(seconds: 4)),
+        _programRepository
+            .getPrograms()
+            .timeout(const Duration(seconds: 4)),
+      ]);
+      final programs = results[1] as List<Program>;
       if (mounted) {
         setState(() {
           _programs = programs;

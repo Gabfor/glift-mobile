@@ -100,13 +100,17 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
   Future<void> _fetchDetails() async {
     try {
-      final rows = await _programRepository.getTrainingDetails(widget.training.id);
-      
-      Map<String, dynamic>? settings;
       final userId = widget.supabase.auth.currentUser?.id;
-      if (userId != null) {
-        settings = await _programRepository.getDashboardPreferences(userId);
-      }
+      final results = await Future.wait([
+        _programRepository.getTrainingDetails(widget.training.id),
+        if (userId != null)
+          _programRepository.getDashboardPreferences(userId)
+        else
+          Future.value(null),
+      ]);
+
+      final rows = results[0] as List<TrainingRow>;
+      final settings = results[1] as Map<String, dynamic>?;
 
       if (mounted) {
         setState(() {

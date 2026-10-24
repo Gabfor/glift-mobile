@@ -39,7 +39,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   final GlobalKey<DashboardPageState> _dashboardKey = GlobalKey();
   final GlobalKey<HomePageState> _homeKey = GlobalKey();
 
-  late final List<Widget> _pages;
+  final Set<int> _loadedTabs = {};
+  final Map<int, Widget> _pageCache = {};
 
   @override
   void initState() {
@@ -53,44 +54,60 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     } else if (widget.initialProgramId != null) {
       _currentIndex = 0;
     }
-    
-    _pages = [
-      DashboardPage(
-        key: _dashboardKey,
-        supabase: widget.supabase,
-        authRepository: widget.authRepository,
-        biometricAuthService: widget.biometricAuthService,
-        initialProgramId: widget.initialProgramId,
-        initialTrainingId: widget.initialTrainingId,
+    _loadedTabs.add(_currentIndex);
+  }
 
-        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
-        onNavigateToStore: _navigateToStore,
-      ),
-      HomePage(
-        key: _homeKey,
-        supabase: widget.supabase,
-        authRepository: widget.authRepository,
-        biometricAuthService: widget.biometricAuthService,
-        initialProgramId: widget.initialProgramId,
-        onNavigateToDashboard: _navigateToDashboard,
-        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
-        onNavigateToStore: _navigateToStore,
-      ),
-      StorePage(
-        supabase: widget.supabase,
-        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
-        onNavigateToHome: (programId) => _navigateToHome(programId: programId),
-      ),
-      ShopPage(
-        supabase: widget.supabase,
-        onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
-      ),
-      SettingsPage(
-        supabase: widget.supabase,
-        authRepository: widget.authRepository,
-        biometricAuthService: widget.biometricAuthService,
-      ),
-    ];
+  Widget _buildPage(int index) {
+    switch (index) {
+      case 0:
+        return DashboardPage(
+          key: _dashboardKey,
+          supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
+          initialProgramId: widget.initialProgramId,
+          initialTrainingId: widget.initialTrainingId,
+          onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+          onNavigateToStore: _navigateToStore,
+        );
+      case 1:
+        return HomePage(
+          key: _homeKey,
+          supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
+          initialProgramId: widget.initialProgramId,
+          onNavigateToDashboard: _navigateToDashboard,
+          onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+          onNavigateToStore: _navigateToStore,
+        );
+      case 2:
+        return StorePage(
+          supabase: widget.supabase,
+          onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+          onNavigateToHome: (programId) => _navigateToHome(programId: programId),
+        );
+      case 3:
+        return ShopPage(
+          supabase: widget.supabase,
+          onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
+        );
+      case 4:
+        return SettingsPage(
+          supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _getPage(int index) {
+    if (!_loadedTabs.contains(index)) {
+      return const SizedBox.shrink();
+    }
+    return _pageCache.putIfAbsent(index, () => _buildPage(index));
   }
 
   @override
@@ -111,6 +128,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   }
 
   void _navigateToDashboard({String? programId, String? trainingId}) {
+    _loadedTabs.add(0);
     setState(() {
       _currentIndex = 0;
       _isBottomNavVisible = true;
@@ -124,6 +142,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   }
 
   void _navigateToHome({String? programId}) {
+    _loadedTabs.add(1);
     setState(() {
       _currentIndex = 1;
       _isBottomNavVisible = true;
@@ -139,6 +158,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   }
 
   void _navigateToStore() {
+    _loadedTabs.add(2);
     setState(() {
       _currentIndex = 2; // Index of StorePage
       _isBottomNavVisible = true;
@@ -149,6 +169,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     if (_currentIndex == 1 && index != 1) {
       _homeKey.currentState?.clearNewIndicator();
     }
+    _loadedTabs.add(index);
     setState(() {
       _currentIndex = index;
       _isBottomNavVisible = true;
@@ -166,7 +187,10 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: List.generate(5, _getPage),
+      ),
       bottomNavigationBar: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (child, animation) {

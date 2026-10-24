@@ -184,22 +184,26 @@ class ProgramRepository {
 
       // Try fetching with dashboard column
       try {
-        final response = await _supabase
-            .from('programs')
-            .select(
-      'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, locked, program_id)',
-            )
-            .eq('user_id', userId)
-            .order('position', ascending: true);
+        final results = await Future.wait<dynamic>(<Future<dynamic>>[
+          _supabase
+              .from('programs')
+              .select(
+                'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, locked, program_id)',
+              )
+              .eq('user_id', userId)
+              .order('position', ascending: true),
+          _supabase
+              .from('training_sessions')
+              .select('training_id, performed_at, duration')
+              .eq('user_id', userId),
+          getLocalPrograms(),
+        ]);
 
-        // Fetch sessions for stats
-        final sessionsResponse = await _supabase
-            .from('training_sessions')
-            .select('training_id, performed_at, duration')
-            .eq('user_id', userId);
+        final response = results[0];
+        final sessionsResponse = results[1];
+        final localPrograms = results[2] as List<Program>;
 
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
-        final localPrograms = await getLocalPrograms();
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
@@ -208,24 +212,26 @@ class ProgramRepository {
         return programs;
       } catch (_) {
         // Fallback: fetch without dashboard column on trainings
-        final response = await _supabase
-            .from('programs')
-            .select(
-      'id, name, position, dashboard, trainings(id, name, position, app, locked, program_id)',
-            )
-            .eq('user_id', userId)
-            .order('position', ascending: true);
+        final fallbackResults = await Future.wait<dynamic>(<Future<dynamic>>[
+          _supabase
+              .from('programs')
+              .select(
+                'id, name, position, dashboard, trainings(id, name, position, app, locked, program_id)',
+              )
+              .eq('user_id', userId)
+              .order('position', ascending: true),
+          _supabase
+              .from('training_sessions')
+              .select('training_id, performed_at, duration')
+              .eq('user_id', userId),
+          getLocalPrograms(),
+        ]);
 
-
-
-        // Fetch sessions even in fallback
-        final sessionsResponse = await _supabase
-            .from('training_sessions')
-            .select('training_id, performed_at, duration')
-            .eq('user_id', userId);
+        final response = fallbackResults[0];
+        final sessionsResponse = fallbackResults[1];
+        final localPrograms = fallbackResults[2] as List<Program>;
 
         final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
-        final localPrograms = await getLocalPrograms();
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
@@ -737,54 +743,59 @@ class ProgramRepository {
 
       final sessionId = sessionResponse['id'];
 
-      // 2. Create exercises and sets
-      for (final row in completedRows) {
-        final exerciseResponse = await _supabase
+      // 2. Create exercises in bulk (single network request)
+      if (completedRows.isNotEmpty) {
+        final exercisesToInsert = completedRows.map((row) => {
+          'session_id': sessionId,
+          'training_row_id': row.id,
+          'exercise_name': row.exercise,
+        }).toList();
+
+        final exercisesResponse = await _supabase
             .from('training_session_exercises')
-            .insert({
-              'session_id': sessionId,
-              'training_row_id': row.id,
-              'exercise_name': row.exercise,
-            })
-            .select()
-            .single();
+            .insert(exercisesToInsert)
+            .select('id, training_row_id');
 
-        final exerciseId = exerciseResponse['id'];
+        final List<dynamic> insertedExercises = exercisesResponse as List<dynamic>;
+        final exerciseIds = insertedExercises.map((e) => e['id'] as String).toList();
 
-        // 3. Create sets
-        final setsData = <Map<String, dynamic>>[];
-        for (int i = 0; i < row.series; i++) {
-          final repsStr = i < row.repetitions.length ? row.repetitions[i] : '0';
-          final weight = i < row.weights.length ? row.weights[i] : '';
+        // 3. Create all sets in bulk (single network request)
+        final allSetsData = <Map<String, dynamic>>[];
+        for (int r = 0; r < completedRows.length; r++) {
+          final row = completedRows[r];
+          final exerciseId = r < exerciseIds.length ? exerciseIds[r] : null;
+          if (exerciseId == null) continue;
 
-          // Parse repetitions safely (handle decimals like "10.0" by rounding)
-          final repsDouble =
-              double.tryParse(repsStr.replaceAll(',', '.')) ?? 0.0;
-          final reps = repsDouble.round();
+          for (int i = 0; i < row.series; i++) {
+            final repsStr = i < row.repetitions.length ? row.repetitions[i] : '0';
+            final weight = i < row.weights.length ? row.weights[i] : '';
 
-          // Only insert sets with valid repetitions (assuming check constraint requires > 0)
-          if (reps > 0) {
-            // Ensure weights array length matches repetitions (check constraint: cardinality(weights) == repetitions)
-            var weightToUse = weight.trim();
-            if (weightToUse.isEmpty || weightToUse == '-') {
-              weightToUse = '0';
+            // Parse repetitions safely (handle decimals like "10.0" by rounding)
+            final repsDouble =
+                double.tryParse(repsStr.replaceAll(',', '.')) ?? 0.0;
+            final reps = repsDouble.round();
+
+            // Only insert sets with valid repetitions (assuming check constraint requires > 0)
+            if (reps > 0) {
+              var weightToUse = weight.trim();
+              if (weightToUse.isEmpty || weightToUse == '-') {
+                weightToUse = '0';
+              }
+              weightToUse = weightToUse.replaceAll(',', '.');
+              final weightsList = List<String>.filled(reps, weightToUse);
+
+              allSetsData.add({
+                'session_exercise_id': exerciseId,
+                'set_number': i + 1,
+                'repetitions': reps,
+                'weights': weightsList,
+              });
             }
-            // Also replace commas with dots just in case it's being passed as string but checked as numeric downstream
-            weightToUse = weightToUse.replaceAll(',', '.');
-            
-            final weightsList = List<String>.filled(reps, weightToUse);
-
-            setsData.add({
-              'session_exercise_id': exerciseId, // Fixed column name
-              'set_number': i + 1,
-              'repetitions': reps, // Fixed type: int instead of List<String>
-              'weights': weightsList, // Match length with repetitions
-            });
           }
         }
 
-        if (setsData.isNotEmpty) {
-          await _supabase.from('training_session_sets').insert(setsData);
+        if (allSetsData.isNotEmpty) {
+          await _supabase.from('training_session_sets').insert(allSetsData);
         }
       }
 

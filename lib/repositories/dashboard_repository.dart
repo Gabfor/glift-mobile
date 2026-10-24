@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase/supabase.dart';
 import '../models/program.dart';
 import '../models/training_row.dart';
@@ -79,6 +80,7 @@ class DashboardRepository {
 
   Future<List<Map<String, dynamic>>> getExerciseHistory(String trainingRowId, String userId, {int? limit}) async {
     try {
+      final effectiveLimit = limit ?? 7;
       final response = await _supabase
           .from('training_sessions')
           .select('''
@@ -96,7 +98,8 @@ class DashboardRepository {
           ''')
           .eq('user_id', userId)
           .eq('exercises.training_row_id', trainingRowId)
-          .order('performed_at', ascending: false);
+          .order('performed_at', ascending: false)
+          .limit(effectiveLimit);
 
       final List<dynamic> data = response as List<dynamic>;
       return data.map((sessionJson) {
@@ -134,7 +137,7 @@ class DashboardRepository {
       return DashboardPreferences.fromJson(response);
     } catch (e) {
       // Return defaults on error to not block the UI
-      print('Error fetching preferences: $e');
+      debugPrint('Error fetching preferences: $e');
       return DashboardPreferences();
     }
   }
@@ -149,7 +152,7 @@ class DashboardRepository {
             'updated_at': DateTime.now().toIso8601String(),
           });
     } catch (e) {
-      print('Error updating preferences: $e');
+      debugPrint('Error updating preferences: $e');
       throw Exception('Erreur lors de la sauvegarde des préférences: $e');
     }
   }
