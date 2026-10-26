@@ -42,7 +42,7 @@ class DashboardRepository {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getDashboardTrainings(String programId) async {
+  Future<List<Map<String, dynamic>>> getDashboardTrainings(String programId, [String? userId]) async {
     try {
       final response = await _supabase
           .from('trainings')
@@ -52,12 +52,68 @@ class DashboardRepository {
           .order('position', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;
-      return data.where((t) => t['dashboard'] != false).map((json) => {
-        'id': json['id'],
-        'name': json['name'],
-        'position': json['position'],
-        'program_id': json['program_id'],
-      }).toList();
+      final List<Map<String, dynamic>> trainings = data
+          .where((t) => t['dashboard'] != false)
+          .map((json) => {
+                'id': json['id'],
+                'name': json['name'],
+                'position': json['position'],
+                'program_id': json['program_id'],
+              })
+          .toList();
+
+      final effectiveUserId = userId ?? _supabase.auth.currentUser?.id;
+      if (effectiveUserId != null && trainings.isNotEmpty) {
+        try {
+          final trainingIds = trainings.map((t) => t['id'] as String).toList();
+          final sessionsResponse = await _supabase
+              .from('training_sessions')
+              .select('training_id, performed_at')
+              .eq('user_id', effectiveUserId)
+              .inFilter('training_id', trainingIds)
+              .order('performed_at', ascending: false);
+
+          final sessionsList = sessionsResponse as List<dynamic>;
+          final Map<String, DateTime> latestByTraining = {};
+          for (final session in sessionsList) {
+            final tId = session['training_id'] as String?;
+            final perfAtStr = session['performed_at'] as String?;
+            if (tId != null && perfAtStr != null && !latestByTraining.containsKey(tId)) {
+              final parsed = DateTime.tryParse(perfAtStr);
+              if (parsed != null) {
+                latestByTraining[tId] = parsed;
+              }
+            }
+          }
+
+          for (final t in trainings) {
+            t['last_performed_at'] = latestByTraining[t['id'] as String];
+          }
+
+          trainings.sort((a, b) {
+            final DateTime? aDate = a['last_performed_at'] as DateTime?;
+            final DateTime? bDate = b['last_performed_at'] as DateTime?;
+
+            if (aDate != null && bDate != null) {
+              final cmp = bDate.compareTo(aDate);
+              if (cmp != 0) return cmp;
+            } else if (aDate != null) {
+              return -1; // a is more recent than null
+            } else if (bDate != null) {
+              return 1; // b is more recent than null
+            }
+
+            final int aPos = a['position'] as int? ?? 0;
+            final int bPos = b['position'] as int? ?? 0;
+            return aPos.compareTo(bPos);
+          });
+        } catch (sessionErr) {
+          // If fetching session recency fails, preserve original order by position
+          // so the dashboard remains functional.
+        }
+      }
+
+      return trainings;
     } catch (e) {
       throw Exception('Erreur lors du chargement des entraînements: $e');
     }

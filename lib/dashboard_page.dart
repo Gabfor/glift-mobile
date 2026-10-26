@@ -166,7 +166,10 @@ class DashboardPageState extends State<DashboardPage> {
 
   Future<void> _loadTrainings(String programId, {String? trainingId}) async {
     try {
-      final trainings = await _repository.getDashboardTrainings(programId);
+      final trainings = await _repository.getDashboardTrainings(
+        programId,
+        widget.supabase.auth.currentUser?.id,
+      );
       if (!mounted) return;
 
       if (trainings.isEmpty) {
