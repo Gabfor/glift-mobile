@@ -45,7 +45,29 @@ class _LoginPageState extends State<LoginPage> {
   bool _emailFocused = false;
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
+  bool _hasNavigated = false;
   StreamSubscription<AuthState>? _authSubscription;
+
+  void _navigateToMainPage() {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+    final client = widget.supabase;
+    if (client == null || widget.authRepository == null || widget.biometricAuthService == null) return;
+
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => MainPage(
+          supabase: client,
+          authRepository: widget.authRepository!,
+          biometricAuthService: widget.biometricAuthService!,
+          initialIndex: 1, // Arriver directement sur l'onglet Programmes
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+      (route) => false,
+    );
+  }
 
   bool get _isFormValid =>
       _isEmailValid && _passwordController.text.trim().isNotEmpty;
@@ -149,44 +171,29 @@ class _LoginPageState extends State<LoginPage> {
             } catch (_) {}
           }
 
-          if (!mounted) return;
+          if (!mounted || _hasNavigated) return;
           if (isNewUser) {
+            _hasNavigated = true;
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (_) => PricingPage(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => PricingPage(
                   userName: userFirstName,
                   supabase: client,
                   authRepository: widget.authRepository!,
                   biometricAuthService: widget.biometricAuthService!,
                 ),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
               ),
               (route) => false,
             );
           } else {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (_) => MainPage(
-                  supabase: client,
-                  authRepository: widget.authRepository!,
-                  biometricAuthService: widget.biometricAuthService!,
-                ),
-              ),
-              (route) => false,
-            );
+            _navigateToMainPage();
           }
         } catch (e) {
           debugPrint('Error syncing profile on OAuth signin: $e');
-          if (!mounted) return;
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => MainPage(
-                supabase: client,
-                authRepository: widget.authRepository!,
-                biometricAuthService: widget.biometricAuthService!,
-              ),
-            ),
-            (route) => false,
-          );
+          if (!mounted || _hasNavigated) return;
+          _navigateToMainPage();
         }
       }
     });
@@ -247,18 +254,8 @@ class _LoginPageState extends State<LoginPage> {
         if (widget.biometricAuthService != null) {
           await widget.biometricAuthService!.persistSession(session);
         }
-        if (!mounted) return;
-        if (widget.biometricAuthService != null) {
-          await Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => MainPage(
-                supabase: widget.supabase!,
-                authRepository: widget.authRepository!,
-                biometricAuthService: widget.biometricAuthService!,
-              ),
-            ),
-          );
-        }
+        if (!mounted || _hasNavigated) return;
+        _navigateToMainPage();
       }
     } on AuthException catch (_) {
       if (!mounted) return;

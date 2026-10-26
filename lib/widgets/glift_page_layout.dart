@@ -120,32 +120,29 @@ class GliftPageLayout extends StatelessWidget {
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 1.0),
-            child: SafeArea(
-              top: false,
-              bottom: false,
-              child: fullPageScroll
-                  ? Padding(
-                      padding: contentPadding,
-                      child: child,
-                    )
-                  : (scrollable
-                      ? SingleChildScrollView(
-                          controller: controller,
-                          physics: physics ?? const NoTopOverscrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          child: Padding(
-                            padding: contentPadding,
-                            child: child,
-                          ),
-                        )
-                      : Padding(
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          child: SafeArea(
+            top: false,
+            bottom: false,
+            child: fullPageScroll
+                ? Padding(
+                    padding: contentPadding,
+                    child: child,
+                  )
+                : (scrollable
+                    ? SingleChildScrollView(
+                        controller: controller,
+                        physics: physics ?? const NoTopOverscrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        child: Padding(
                           padding: contentPadding,
                           child: child,
-                        )),
-            ),
+                        ),
+                      )
+                    : Padding(
+                        padding: contentPadding,
+                        child: child,
+                      )),
           ),
         ),
       );
@@ -223,7 +220,7 @@ class GliftPageLayout extends StatelessWidget {
               top: 0,
               left: 0,
               right: 0,
-              height: 200,
+              height: 400,
               child: Container(color: GliftTheme.accent),
             ),
             Column(

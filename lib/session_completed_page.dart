@@ -121,15 +121,19 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
   }
 
   String _formatVolume(double volume) {
-    // Format volume with space as thousand separator e.g. "3 577"
+    // Format volume with space as thousand separator e.g. "1 957.5" or "3 577"
     // Remove decimal if zero
-    String text = volume % 1 == 0 ? volume.toInt().toString() : volume.toStringAsFixed(1);
+    final parts = (volume % 1 == 0 ? volume.toInt().toString() : volume.toStringAsFixed(1)).split('.');
+    final intPart = parts[0];
     final buffer = StringBuffer();
-    for (int i = 0; i < text.length; i++) {
-        if (i > 0 && (text.length - i) % 3 == 0) {
-            buffer.write(' ');
-        }
-        buffer.write(text[i]);
+    for (int i = 0; i < intPart.length; i++) {
+      if (i > 0 && (intPart.length - i) % 3 == 0) {
+        buffer.write(' ');
+      }
+      buffer.write(intPart[i]);
+    }
+    if (parts.length > 1) {
+      return '${buffer.toString()}.${parts[1]}';
     }
     return buffer.toString();
   }
