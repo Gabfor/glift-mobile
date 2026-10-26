@@ -20,7 +20,7 @@ class NoTopOverscrollPhysics extends ClampingScrollPhysics {
   }
 }
 
-class GliftPageLayout extends StatelessWidget {
+class GliftPageLayout extends StatefulWidget {
   const GliftPageLayout({
     super.key,
     this.title,
@@ -62,32 +62,56 @@ class GliftPageLayout extends StatelessWidget {
   final ScrollPhysics? physics;
 
   @override
+  State<GliftPageLayout> createState() => _GliftPageLayoutState();
+}
+
+class _GliftPageLayoutState extends State<GliftPageLayout> {
+  final ValueNotifier<double> _shadowOpacity = ValueNotifier<double>(0.0);
+
+  @override
+  void dispose() {
+    _shadowOpacity.dispose();
+    super.dispose();
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis == Axis.vertical) {
+      final double offset = notification.metrics.pixels;
+      final double target = (offset / 15.0).clamp(0.0, 1.0);
+      if (_shadowOpacity.value != target) {
+        _shadowOpacity.value = target;
+      }
+    }
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final effectiveFooterBottom = footerIgnoresViewInsets && resizeToAvoidBottomInset
+    final effectiveFooterBottom = widget.footerIgnoresViewInsets && widget.resizeToAvoidBottomInset
         ? -mediaQuery.viewInsets.bottom
-        : (footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom);
-    final additionalBottomSpacing = footer != null
-        ? (footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom) + (footerPadding?.vertical ?? 0.0) + 40.0
+        : (widget.footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom);
+    final additionalBottomSpacing = widget.footer != null
+        ? (widget.footerIgnoresViewInsets ? 0.0 : mediaQuery.viewInsets.bottom) + (widget.footerPadding?.vertical ?? 0.0) + 40.0
         : 0.0;
-    final headerContent = header ??
+    final headerContent = widget.header ??
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (title != null)
+            if (widget.title != null)
               Text(
-                title!,
+                widget.title!,
                 style: GoogleFonts.quicksand(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            if (subtitle != null) ...[
+            if (widget.subtitle != null) ...[
               const SizedBox(height: 8),
               Text(
-                subtitle!,
+                widget.subtitle!,
                 style: GoogleFonts.quicksand(
                   color: Colors.white,
                   fontSize: 16,
@@ -95,15 +119,15 @@ class GliftPageLayout extends StatelessWidget {
                 ),
               ),
             ],
-            if (headerBottom != null) ...[
+            if (widget.headerBottom != null) ...[
               const SizedBox(height: 12),
-              headerBottom!,
+              widget.headerBottom!,
             ],
           ],
         );
 
     Widget buildBody({required Widget child}) {
-      final contentPadding = (padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30))
+      final contentPadding = (widget.padding ?? const EdgeInsets.fromLTRB(20, 20, 20, 30))
           .add(EdgeInsets.only(bottom: additionalBottomSpacing));
 
       return Container(
@@ -121,49 +145,86 @@ class GliftPageLayout extends StatelessWidget {
             topRight: Radius.circular(30),
           ),
           clipBehavior: Clip.antiAliasWithSaveLayer,
-          child: SafeArea(
-            top: false,
-            bottom: false,
-            child: fullPageScroll
-                ? Padding(
-                    padding: contentPadding,
-                    child: child,
-                  )
-                : (scrollable
-                    ? SingleChildScrollView(
-                        controller: controller,
-                        physics: physics ?? const NoTopOverscrollPhysics(),
-                        padding: EdgeInsets.zero,
-                        child: Padding(
-                          padding: contentPadding,
-                          child: child,
-                        ),
-                      )
-                    : Padding(
+          child: Stack(
+            children: [
+              SafeArea(
+                top: false,
+                bottom: false,
+                child: widget.fullPageScroll
+                    ? Padding(
                         padding: contentPadding,
                         child: child,
-                      )),
+                      )
+                    : (widget.scrollable
+                        ? SingleChildScrollView(
+                            controller: widget.controller,
+                            physics: widget.physics ?? const NoTopOverscrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            child: Padding(
+                              padding: contentPadding,
+                              child: child,
+                            ),
+                          )
+                        : Padding(
+                            padding: contentPadding,
+                            child: child,
+                          )),
+              ),
+              ValueListenableBuilder<double>(
+                valueListenable: _shadowOpacity,
+                builder: (context, opacity, _) {
+                  if (opacity <= 0.0) return const SizedBox.shrink();
+                  return Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 16,
+                    child: IgnorePointer(
+                      child: Opacity(
+                        opacity: opacity,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFF1E1742).withValues(alpha: 0.12),
+                                const Color(0xFF1E1742).withValues(alpha: 0.04),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       );
     }
 
     Widget withOverlay(Widget body) {
-      if (overlay == null) return body;
+      if (widget.overlay == null) return body;
 
       return Stack(
         children: [
           body,
-          overlay!,
+          widget.overlay!,
         ],
       );
     }
 
+    Widget scaffold;
+
     // Si la page active le scroll pleine page (ex: Inscription)
-    if (fullPageScroll && scrollable) {
-      return Scaffold(
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-        backgroundColor: backgroundColor ?? GliftTheme.background,
+    if (widget.fullPageScroll && widget.scrollable) {
+      scaffold = Scaffold(
+        resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
+        backgroundColor: widget.backgroundColor ?? GliftTheme.background,
         body: withOverlay(
           Stack(
             children: [
@@ -171,12 +232,12 @@ class GliftPageLayout extends StatelessWidget {
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 300,
+                height: 400,
                 child: Container(color: GliftTheme.accent),
               ),
               SingleChildScrollView(
-                controller: controller,
-                physics: physics ?? const NoTopOverscrollPhysics(),
+                controller: widget.controller,
+                physics: widget.physics ?? const NoTopOverscrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -185,22 +246,68 @@ class GliftPageLayout extends StatelessWidget {
                       color: GliftTheme.accent,
                       padding: EdgeInsets.only(top: mediaQuery.padding.top),
                       child: Padding(
-                        padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                        padding: widget.headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
                         child: headerContent,
                       ),
                     ),
-                    buildBody(child: child),
+                    buildBody(child: widget.child),
                   ],
                 ),
               ),
-              if (footer != null)
+              if (widget.footer != null)
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: effectiveFooterBottom,
                   child: Padding(
-                    padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
-                    child: footer!,
+                    padding: widget.footerPadding ?? const EdgeInsets.only(bottom: 20),
+                    child: widget.footer!,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Pages avec header fixe et body contrôlé (Connexion, Dashboard, Réglages, Store...)
+      scaffold = Scaffold(
+        resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
+        backgroundColor: widget.backgroundColor ?? GliftTheme.background,
+        body: withOverlay(
+          Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 400,
+                child: Container(color: GliftTheme.accent),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: GliftTheme.accent,
+                    padding: EdgeInsets.only(top: mediaQuery.padding.top),
+                    child: Padding(
+                      padding: widget.headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                      child: headerContent,
+                    ),
+                  ),
+                  Expanded(
+                    child: buildBody(child: widget.child),
+                  ),
+                ],
+              ),
+              if (widget.footer != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: effectiveFooterBottom,
+                  child: Padding(
+                    padding: widget.footerPadding ?? const EdgeInsets.only(bottom: 20),
+                    child: widget.footer!,
                   ),
                 ),
             ],
@@ -209,50 +316,9 @@ class GliftPageLayout extends StatelessWidget {
       );
     }
 
-    // Pages avec header fixe et body contrôlé (Connexion, Dashboard, Réglages, Store...)
-    return Scaffold(
-      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-      backgroundColor: backgroundColor ?? GliftTheme.background,
-      body: withOverlay(
-        Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 400,
-              child: Container(color: GliftTheme.accent),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: GliftTheme.accent,
-                  padding: EdgeInsets.only(top: mediaQuery.padding.top),
-                  child: Padding(
-                    padding: headerPadding ?? const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                    child: headerContent,
-                  ),
-                ),
-                Expanded(
-                  child: buildBody(child: child),
-                ),
-              ],
-            ),
-            if (footer != null)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: effectiveFooterBottom,
-                child: Padding(
-                  padding: footerPadding ?? const EdgeInsets.only(bottom: 20),
-                  child: footer!,
-                ),
-              ),
-          ],
-        ),
-      ),
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: scaffold,
     );
   }
 }
