@@ -275,15 +275,17 @@ class DashboardPageState extends State<DashboardPage> {
 
   void _onTrainingChanged(int delta) {
     if (_trainings.isEmpty) return;
-    
-    final newIndex = _selectedTrainingIndex + delta;
-    if (newIndex >= 0 && newIndex < _trainings.length) {
-      setState(() {
-        _selectedTrainingIndex = newIndex;
-        _isLoading = true;
-      });
-      _loadExercises(_trainings[newIndex]['id']);
-    }
+
+    final newIndex =
+        (_selectedTrainingIndex + delta) % _trainings.length;
+    final normalizedIndex =
+        newIndex < 0 ? newIndex + _trainings.length : newIndex;
+
+    setState(() {
+      _selectedTrainingIndex = normalizedIndex;
+      _isLoading = true;
+    });
+    _loadExercises(_trainings[normalizedIndex]['id']);
   }
 
   Future<void> _onExerciseSettingsChanged(String exerciseId, ExerciseDisplaySetting newSetting) async {
@@ -445,7 +447,7 @@ class DashboardPageState extends State<DashboardPage> {
                         children: [
                           _buildArrowButton(
                             icon: Icons.chevron_left,
-                            onTap: _selectedTrainingIndex > 0
+                            onTap: _trainings.length > 1
                                 ? () => _onTrainingChanged(-1)
                                 : null,
                           ),
@@ -466,7 +468,7 @@ class DashboardPageState extends State<DashboardPage> {
                           const SizedBox(width: 20),
                           _buildArrowButton(
                             icon: Icons.chevron_right,
-                            onTap: _selectedTrainingIndex < _trainings.length - 1
+                            onTap: _trainings.length > 1
                                 ? () => _onTrainingChanged(1)
                                 : null,
                           ),
@@ -495,7 +497,7 @@ class DashboardPageState extends State<DashboardPage> {
                         children: [
                           _buildArrowButton(
                             icon: Icons.chevron_left,
-                            onTap: _selectedTrainingIndex > 0
+                            onTap: _trainings.length > 1
                                 ? () => _onTrainingChanged(-1)
                                 : null,
                           ),
@@ -516,7 +518,7 @@ class DashboardPageState extends State<DashboardPage> {
                           const SizedBox(width: 20),
                           _buildArrowButton(
                             icon: Icons.chevron_right,
-                            onTap: _selectedTrainingIndex < _trainings.length - 1
+                            onTap: _trainings.length > 1
                                 ? () => _onTrainingChanged(1)
                                 : null,
                           ),
@@ -873,6 +875,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
 
           chartMaxY = interval * (desiredGridLines - 1);
 
+          // Ensure the highest point has headroom from the top line (symmetrical to bottom padding)
+          if ((chartMaxY + realMinY) - maxV < interval * 0.2) {
+            interval += interval >= 5 ? 5 : 1;
+            chartMaxY = interval * (desiredGridLines - 1);
+          }
+
           // Align data to the center of a fixed 7-point window (range of 0 to 6)
           minX = 0;
           maxX = 6;
@@ -899,12 +907,11 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
              textDirection: ui.TextDirection.ltr,
            )..layout();
            
-           // fixed reservedSize = text width + some padding (e.g. 10)
-           // If alignment is left, we need enough space for the text.
-           // The chart area starts after reservedSize.
-           reservedWidth = textPainter.width + 10;
-           // Minimum width to avoid too cramped look if value is small "0 kg"
-           if (reservedWidth < 40) reservedWidth = 40;
+           // Calculate reservedSize: text width + 24px gap (matching yAxisGap on glift-web)
+           // The text is aligned left, so adding 24px creates a clean separation before the grid/curve begins.
+           reservedWidth = textPainter.width + 24;
+           // Minimum width fallback
+           if (reservedWidth < 50) reservedWidth = 50;
         }
 
         return Container(
