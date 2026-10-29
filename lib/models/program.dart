@@ -22,7 +22,8 @@ class Program {
     if (json['trainings'] != null) {
       trainingsList = (json['trainings'] as List)
           .map((t) => Training.fromJson(t as Map<String, dynamic>))
-          .toList();
+          .toList()
+        ..sort((a, b) => a.position.compareTo(b.position));
     }
 
     return Program(

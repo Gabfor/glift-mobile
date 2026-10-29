@@ -1054,6 +1054,18 @@ class ProgramRepository {
   }
 
   Future<Training> createTraining(String programId, [String name = "Nom de l'entraînement"]) async {
+    final existingTrainings = await _supabase
+        .from('trainings')
+        .select('position')
+        .eq('program_id', programId);
+
+    int nextPosition = 0;
+    if (existingTrainings.isNotEmpty) {
+      final positions = (existingTrainings as List)
+          .map((t) => (t['position'] as int?) ?? 0)
+          .toList();
+      nextPosition = positions.reduce((a, b) => a > b ? a : b) + 1;
+    }
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) throw Exception('Utilisateur non connecté');
 
@@ -1065,7 +1077,7 @@ class ProgramRepository {
           'user_id': userId,
           'app': true,
           'dashboard': true,
-          'position': 0,
+          'position': nextPosition,
           'columns_settings': jsonEncode(<String>[
             if (SettingsService.instance.getMaterialEnabled()) 'materiel',
             if (SettingsService.instance.getShowRepos()) 'repos',
