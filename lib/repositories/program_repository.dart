@@ -188,7 +188,7 @@ class ProgramRepository {
           _supabase
               .from('programs')
               .select(
-                'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, locked, program_id)',
+                'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, locked, program_id, columns_settings)',
               )
               .eq('user_id', userId)
               .order('position', ascending: true),
@@ -216,7 +216,7 @@ class ProgramRepository {
           _supabase
               .from('programs')
               .select(
-                'id, name, position, dashboard, trainings(id, name, position, app, locked, program_id)',
+                'id, name, position, dashboard, trainings(id, name, position, app, locked, program_id, columns_settings)',
               )
               .eq('user_id', userId)
               .order('position', ascending: true),
@@ -319,6 +319,7 @@ class ProgramRepository {
               averageDurationMinutes: avgDuration,
               sessionCount: trainingSessions.length,
               locked: t.locked,
+              columnsSettings: t.columnsSettings,
             );
           }).toList();
 
@@ -1065,6 +1066,11 @@ class ProgramRepository {
           'app': true,
           'dashboard': true,
           'position': 0,
+          'columns_settings': jsonEncode(<String>[
+            if (SettingsService.instance.getMaterialEnabled()) 'materiel',
+            if (SettingsService.instance.getShowRepos()) 'repos',
+            if (SettingsService.instance.getShowEffort()) 'effort',
+          ]),
         })
         .select()
         .single();
@@ -1137,6 +1143,36 @@ class ProgramRepository {
 
   Future<void> deleteTrainingRow(String rowId) async {
     await _supabase.from('training_rows').delete().eq('id', rowId);
+  }
+
+  Future<String?> getTrainingColumnsSettings(String trainingId, {String? fallback}) async {
+    try {
+      final response = await _supabase
+          .from('trainings')
+          .select('columns_settings')
+          .eq('id', trainingId)
+          .maybeSingle();
+
+      if (response != null) {
+        final existing = response['columns_settings']?.toString();
+        if (existing != null && existing.trim().isNotEmpty) {
+          return existing;
+        }
+        final initialColumns = jsonEncode(<String>[
+          if (SettingsService.instance.getMaterialEnabled()) 'materiel',
+          if (SettingsService.instance.getShowRepos()) 'repos',
+          if (SettingsService.instance.getShowEffort()) 'effort',
+        ]);
+        await _supabase
+            .from('trainings')
+            .update({'columns_settings': initialColumns})
+            .eq('id', trainingId);
+        return initialColumns;
+      }
+      return fallback;
+    } catch (_) {
+      return fallback;
+    }
   }
 
   Future<Map<String, dynamic>?> getDashboardPreferences(String userId) async {

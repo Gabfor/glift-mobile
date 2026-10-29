@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:supabase/supabase.dart';
 import '../models/store_program.dart';
 
@@ -101,6 +102,20 @@ class StoreRepository {
 
       if (adminTrainings.isEmpty) return newProgramId;
 
+      // 5b. Get user's default column preferences
+      final prefData = await _supabase
+          .from('preferences')
+          .select('show_effort, show_materiel, show_repos')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      final defaultVisibleColumns = <String>[
+        if (prefData?['show_materiel'] as bool? ?? true) 'materiel',
+        if (prefData?['show_repos'] as bool? ?? true) 'repos',
+        if (prefData?['show_effort'] as bool? ?? true) 'effort',
+      ];
+      final defaultColumnsSettings = jsonEncode(defaultVisibleColumns);
+
       // 6. Copy trainings
       final Map<String, String> trainingMapping = {};
       for (final training in adminTrainings) {
@@ -109,7 +124,7 @@ class StoreRepository {
           'user_id': user.id,
           'program_id': newProgramId,
           'position': training['position'],
-          'columns_settings': training['columns_settings'],
+          'columns_settings': defaultColumnsSettings,
           'app': true,
           'dashboard': true,
         }).select('id').single();

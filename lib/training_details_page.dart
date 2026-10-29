@@ -61,6 +61,24 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   final ValueNotifier<String?> _activeFocusId = ValueNotifier(null);
 
   late String _trainingName;
+  late Training _currentTraining;
+
+  bool get _showEffort => _currentTraining.isColumnVisible(
+        'effort',
+        fallback: SettingsService.instance.getShowEffort(),
+      );
+
+  bool get _showRepos => _currentTraining.isColumnVisible(
+        'repos',
+        fallback: SettingsService.instance.getShowRepos(),
+      );
+
+  bool get _showMaterial =>
+      SettingsService.instance.getShowNotes() &&
+      _currentTraining.isColumnVisible(
+        'materiel',
+        fallback: SettingsService.instance.getMaterialEnabled(),
+      );
   bool _wasEdited = false;
 
   @override
@@ -76,6 +94,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     super.initState();
     _programRepository = ProgramRepository(widget.supabase);
     _trainingName = widget.training.name;
+    _currentTraining = widget.training;
     _fetchDetails();
   }
 
@@ -85,6 +104,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       await SettingsService.instance.syncFromSupabase();
       
       final rows = await _programRepository.getTrainingDetails(widget.training.id);
+      final columnsSettings = await _programRepository.getTrainingColumnsSettings(
+        widget.training.id,
+        fallback: _currentTraining.columnsSettings,
+      );
+      _currentTraining = _currentTraining.copyWith(columnsSettings: columnsSettings);
       if (mounted) {
         setState(() {
           _rows = rows;
@@ -187,7 +211,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     final result = await Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => ActiveTrainingPage(
-          training: widget.training,
+          training: _currentTraining,
           supabase: widget.supabase,
           authRepository: widget.authRepository,
           biometricAuthService: widget.biometricAuthService,
@@ -480,7 +504,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                   onDeleteSuperset: (supersetId) => _handleDeleteSuperset(supersetId),
                   showDecoration: false,
                   hideSetControls: true, 
-                  showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+                  showTimer: group.indexOf(r) == 0 && _showRepos,
+                  showEffort: _showEffort,
+                  showMaterial: _showMaterial,
                   activeFocusId: _activeFocusId,
                   isLast: _rows!.length == 1,
                 );
@@ -507,7 +533,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                   _handleMaterialUpdate(rowIndex, material),
               onDeleteSuperset: (_) async {}, 
               showDecoration: true,
-              showTimer: SettingsService.instance.getShowRepos(),
+              showTimer: _showRepos,
+              showEffort: _showEffort,
+              showMaterial: _showMaterial,
               activeFocusId: _activeFocusId,
               isLast: _rows!.length == 1,
             ),
@@ -993,6 +1021,8 @@ class _ExerciseCard extends StatefulWidget {
     required this.activeFocusId,
     this.showDecoration = true,
     this.showTimer = true,
+    this.showEffort = true,
+    this.showMaterial = true,
     this.isLast = false,
     this.hideSetControls = false,
   });
@@ -1017,6 +1047,8 @@ class _ExerciseCard extends StatefulWidget {
   final bool showDecoration;
 
   final bool showTimer;
+  final bool showEffort;
+  final bool showMaterial;
   final ValueNotifier<String?> activeFocusId;
 
   @override
@@ -1246,6 +1278,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
         initialMaterial: widget.row.material,
         onSave: widget.onNoteUpdate,
         onSaveMaterial: widget.onMaterialUpdate,
+        showMaterial: widget.showMaterial,
       ),
     );
   }
@@ -1467,7 +1500,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
             const _GridHeader('Reps.', flex: 86),
             const SizedBox(width: 10),
             const _GridHeader('Poids', flex: 86),
-            if (SettingsService.instance.getShowEffort()) ...[
+            if (widget.showEffort) ...[
               const SizedBox(width: 10),
               const _GridHeader('Effort', flex: 68),
             ],
@@ -1477,7 +1510,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
         ...List.generate(widget.row.series, (index) {
           final reps = index < _repetitions.length ? _repetitions[index] : '-';
           final weight = index < _weights.length ? _weights[index] : '-';
-          final visuals = SettingsService.instance.getShowEffort()
+          final visuals = widget.showEffort
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
 
@@ -1570,7 +1603,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                     ),
                   ),
                 ),
-                if (SettingsService.instance.getShowEffort()) ...[
+                if (widget.showEffort) ...[
                   const SizedBox(width: 10),
                   Expanded(
                     flex: 68,

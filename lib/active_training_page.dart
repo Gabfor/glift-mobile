@@ -77,6 +77,24 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   final ValueNotifier<String?> _activeFocusId = ValueNotifier(null);
 
   DateTime? _startTime;
+  late Training _currentTraining;
+
+  bool get _showEffort => _currentTraining.isColumnVisible(
+        'effort',
+        fallback: SettingsService.instance.getShowEffort(),
+      );
+
+  bool get _showRepos => _currentTraining.isColumnVisible(
+        'repos',
+        fallback: SettingsService.instance.getShowRepos(),
+      );
+
+  bool get _showMaterial =>
+      SettingsService.instance.getShowNotes() &&
+      _currentTraining.isColumnVisible(
+        'materiel',
+        fallback: SettingsService.instance.getMaterialEnabled(),
+      );
 
   @override
   void initState() {
@@ -88,6 +106,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     );
     // Initialize with a default value, it will be reset if needed but good to have
     _startTime = DateTime.now();
+    _currentTraining = widget.training;
     _fetchDetails();
   }
   
@@ -110,6 +129,11 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       ]);
 
       final rows = results[0] as List<TrainingRow>;
+      final columnsSettings = await _programRepository.getTrainingColumnsSettings(
+        widget.training.id,
+        fallback: _currentTraining.columnsSettings,
+      );
+      _currentTraining = _currentTraining.copyWith(columnsSettings: columnsSettings);
       final settings = results[1] as Map<String, dynamic>?;
 
       if (mounted) {
@@ -1233,7 +1257,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 onCloseTimer: _closeInlineTimer,
                 showDecoration: false,
                 showActions: false,
-                showTimer: group.indexOf(r) == 0 && SettingsService.instance.getShowRepos(),
+                showTimer: group.indexOf(r) == 0 && _showRepos,
+                showEffort: _showEffort,
+                showMaterial: _showMaterial,
                 showSuivi: group.indexOf(r) == group.length - 1,
                 activeFocusId: _activeFocusId,
               );
@@ -1271,7 +1297,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             onCloseTimer: _closeInlineTimer,
             showDecoration: true,
             showActions: true,
-            showTimer: SettingsService.instance.getShowRepos(),
+            showTimer: _showRepos,
+            showEffort: _showEffort,
+            showMaterial: _showMaterial,
             activeFocusId: _activeFocusId,
           ));
           i++;
@@ -1386,6 +1414,8 @@ class _ActiveExerciseCard extends StatefulWidget {
     this.showDecoration = true,
     this.showActions = true,
     this.showTimer = true,
+    this.showEffort = true,
+    this.showMaterial = true,
     this.showSuivi = true,
   });
 
@@ -1417,6 +1447,8 @@ class _ActiveExerciseCard extends StatefulWidget {
   final bool showDecoration;
   final bool showActions;
   final bool showTimer;
+  final bool showEffort;
+  final bool showMaterial;
   final bool showSuivi;
 
   @override
@@ -2028,6 +2060,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         initialMaterial: widget.row.material,
         onSave: widget.onNoteUpdate,
         onSaveMaterial: widget.onMaterialUpdate,
+        showMaterial: widget.showMaterial,
       ),
     );
   }
@@ -2133,7 +2166,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             _GridHeader('Reps.', flex: 86),
             const SizedBox(width: 10),
             _GridHeader('Poids', flex: 86),
-            if (SettingsService.instance.getShowEffort()) ...[
+            if (widget.showEffort) ...[
               const SizedBox(width: 10),
               _GridHeader('Effort', flex: 68),
             ],
@@ -2151,7 +2184,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
         ...List.generate(widget.row.series, (index) {
           final reps = index < _repetitions.length ? _repetitions[index] : '-';
           final weight = index < _weights.length ? _weights[index] : '-';
-          final visuals = SettingsService.instance.getShowEffort()
+          final visuals = widget.showEffort
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
 
@@ -2255,7 +2288,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     ),
                   ),
                 ),
-                if (SettingsService.instance.getShowEffort()) ...[
+                if (widget.showEffort) ...[
                   const SizedBox(width: 10),
 
                   // Effort toggle

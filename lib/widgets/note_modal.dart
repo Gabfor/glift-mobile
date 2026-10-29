@@ -12,6 +12,7 @@ class NoteModal extends StatefulWidget {
   final String? initialMaterial;
   final Function(String) onSave;
   final Function(String) onSaveMaterial;
+  final bool? showMaterial;
 
   const NoteModal({
     super.key,
@@ -19,6 +20,7 @@ class NoteModal extends StatefulWidget {
     this.initialMaterial,
     required this.onSave,
     required this.onSaveMaterial,
+    this.showMaterial,
   });
 
   @override
@@ -200,7 +202,7 @@ class _NoteModalState extends State<NoteModal> {
             const SizedBox(height: 24),
             
             // Material Section
-            if (SettingsService.instance.getMaterialEnabled()) ...[
+            if (widget.showMaterial ?? SettingsService.instance.getMaterialEnabled()) ...[
               Text(
                 'Matériel',
                 style: GoogleFonts.quicksand(

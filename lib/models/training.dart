@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Training {
   final String id;
   final String name;
@@ -9,6 +11,7 @@ class Training {
   final DateTime? lastSessionDate;
   final int? averageDurationMinutes;
   final int? sessionCount;
+  final String? columnsSettings;
 
   Training({
     required this.id,
@@ -21,7 +24,29 @@ class Training {
     this.lastSessionDate,
     this.averageDurationMinutes,
     this.sessionCount,
+    this.columnsSettings,
   });
+
+  List<String>? get parsedColumnsSettings {
+    if (columnsSettings == null || columnsSettings!.trim().isEmpty) {
+      return null;
+    }
+    try {
+      final decoded = jsonDecode(columnsSettings!);
+      if (decoded is List) {
+        return decoded.map((e) => e.toString()).toList();
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool isColumnVisible(String columnName, {required bool fallback}) {
+    final parsed = parsedColumnsSettings;
+    if (parsed != null) {
+      return parsed.contains(columnName);
+    }
+    return fallback;
+  }
 
   factory Training.fromJson(Map<String, dynamic> json) {
     return Training(
@@ -37,6 +62,7 @@ class Training {
           : null,
       averageDurationMinutes: json['averageDurationMinutes'],
       sessionCount: json['sessionCount'],
+      columnsSettings: json['columns_settings']?.toString(),
     );
   }
 
@@ -51,6 +77,7 @@ class Training {
     'lastSessionDate': lastSessionDate?.toIso8601String(),
     'averageDurationMinutes': averageDurationMinutes,
     'sessionCount': sessionCount,
+    'columns_settings': columnsSettings,
   };
 
   Training copyWith({
@@ -64,6 +91,7 @@ class Training {
     DateTime? lastSessionDate,
     int? averageDurationMinutes,
     int? sessionCount,
+    String? columnsSettings,
   }) {
     return Training(
       id: id ?? this.id,
@@ -77,6 +105,7 @@ class Training {
       averageDurationMinutes:
           averageDurationMinutes ?? this.averageDurationMinutes,
       sessionCount: sessionCount ?? this.sessionCount,
+      columnsSettings: columnsSettings ?? this.columnsSettings,
     );
   }
 }

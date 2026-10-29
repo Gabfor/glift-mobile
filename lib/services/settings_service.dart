@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase/supabase.dart';
 import 'package:flutter/foundation.dart';
@@ -277,9 +278,29 @@ class SettingsService {
     return _prefs.getString(_kDisplayType) ?? 'Miniature';
   }
 
+  Future<void> _freezeExistingNullTrainingColumns() async {
+    final user = _supabase?.auth.currentUser;
+    if (user == null) return;
+    try {
+      final previousColumns = jsonEncode(<String>[
+        if (getMaterialEnabled()) 'materiel',
+        if (getShowRepos()) 'repos',
+        if (getShowEffort()) 'effort',
+      ]);
+      await _supabase!
+          .from('trainings')
+          .update({'columns_settings': previousColumns})
+          .eq('user_id', user.id)
+          .isFilter('columns_settings', null);
+    } catch (e) {
+      debugPrint('Error freezing null training columns: $e');
+    }
+  }
+
   // Material
   Future<void> saveMaterialEnabled(bool enabled) async {
     await _initIfNeeded();
+    await _freezeExistingNullTrainingColumns();
     await _prefs.setBool(_kMaterial, enabled);
 
     final user = _supabase?.auth.currentUser;
@@ -385,6 +406,7 @@ class SettingsService {
   // Show Effort
   Future<void> saveShowEffort(bool show) async {
     await _initIfNeeded();
+    await _freezeExistingNullTrainingColumns();
     await _prefs.setBool(_kShowEffort, show);
 
     final user = _supabase?.auth.currentUser;
@@ -408,6 +430,7 @@ class SettingsService {
   // Show Repos
   Future<void> saveShowRepos(bool show) async {
     await _initIfNeeded();
+    await _freezeExistingNullTrainingColumns();
     await _prefs.setBool(_kShowRepos, show);
 
     final user = _supabase?.auth.currentUser;
