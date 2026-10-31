@@ -964,7 +964,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.exercise.exercise,
+                      widget.exercise.exercise.trim().isEmpty ? "Exercice sans nom" : widget.exercise.exercise,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.quicksand(

@@ -46,7 +46,7 @@ class TrainingRow {
     return TrainingRow(
       id: json['id'] as String,
       trainingId: json['training_id'] as String,
-      exercise: json['exercice'] as String,
+      exercise: json['exercice'] as String? ?? '',
       series: json['series'] as int,
       repetitions: _toDisplayStrings('repetitions'),
       weights: _toDisplayStrings('poids'),
