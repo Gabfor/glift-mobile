@@ -660,10 +660,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
   LineBarSpot? _touchedSpot;
-  LineBarSpot? _lastTouchedSpot;
-  Offset? _touchPosition;
-  Timer? _tooltipDelayTimer;
-  Timer? _tooltipHideTimer;
 
   String _formatWeight(double value) {
     final text = value.toString();
@@ -806,13 +802,6 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
       print('Error loading history: $e');
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  void dispose() {
-    _tooltipDelayTimer?.cancel();
-    _tooltipHideTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -976,7 +965,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               if (_touchedSpot != null) {
                                 final spot = _touchedSpot!;
                                 final chartWidth = constraints.maxWidth - reservedWidth; // Subtract reservedSize
-                                final chartHeight = constraints.maxHeight - 60;
+                                final chartHeight = constraints.maxHeight - 41; // Subtract bottomTitles reservedSize
 
                                 // Calculate xPercent based on the fixed view range (minX to maxX)
                                 final xPercent =
@@ -1119,6 +1108,16 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 maxY: chartMaxY, // Chart ends at range
                                 lineBarsData: [
                                   LineChartBarData(
+                                    showingIndicators: () {
+                                      if (_touchedSpot == null) return <int>[];
+                                      final int dataCount = _history.length;
+                                      final int offset = (7 - dataCount) ~/ 2;
+                                      final index = (_touchedSpot!.x - offset).round();
+                                      if (index >= 0 && index < _history.length) {
+                                        return [index];
+                                      }
+                                      return <int>[];
+                                    }(),
                                     spots: _history.asMap().entries.map((e) {
                                       final int dataCount = _history.length;
                                       final int offset = (7 - dataCount) ~/ 2;
@@ -1164,6 +1163,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   ),
                                 ],
                                 lineTouchData: LineTouchData(
+                                  enabled: true,
+                                  handleBuiltInTouches: false,
+                                  touchSpotThreshold: 25,
                                   getTouchedSpotIndicator:
                                       (barData, spotIndexes) {
                                         return spotIndexes.map((barSpot) {
@@ -1195,58 +1197,54 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         }).toList();
                                       },
                                   touchCallback: (event, response) {
-                                    if (!event.isInterestedForInteractions ||
-                                        response == null ||
-                                        response.lineBarSpots == null ||
-                                        response.lineBarSpots!.isEmpty) {
-                                      _tooltipDelayTimer?.cancel();
-                                      _tooltipHideTimer?.cancel();
-                                      _tooltipHideTimer = Timer(
-                                        const Duration(milliseconds: 120),
-                                        () {
-                                          if (!mounted) return;
+                                    if (response != null &&
+                                        response.lineBarSpots != null &&
+                                        response.lineBarSpots!.isNotEmpty) {
+                                      final spot = response.lineBarSpots!.first;
 
-                                          if (_touchedSpot != null ||
-                                              _touchPosition != null ||
-                                              _lastTouchedSpot != null) {
-                                            setState(() {
-                                              _touchedSpot = null;
-                                              _touchPosition = null;
-                                              _lastTouchedSpot = null;
-                                            });
-                                          }
-                                        },
-                                      );
-                                      return;
-                                    }
-
-                                    final newSpot =
-                                        response.lineBarSpots!.first;
-                                    final previousSpot =
-                                        _touchedSpot ?? _lastTouchedSpot;
-                                    final hasNewSpot =
-                                        previousSpot == null ||
-                                        previousSpot.x != newSpot.x ||
-                                        previousSpot.y != newSpot.y;
-
-                                    _tooltipDelayTimer?.cancel();
-                                    _tooltipHideTimer?.cancel();
-                                    _tooltipDelayTimer = Timer(
-                                      const Duration(milliseconds: 175),
-                                      () {
-                                        if (!mounted) return;
+                                      if (event is FlTapDownEvent) {
+                                        final isSameSpot = _touchedSpot != null &&
+                                            _touchedSpot!.x == spot.x &&
+                                            _touchedSpot!.y == spot.y;
 
                                         setState(() {
-                                          _touchedSpot = newSpot;
-                                          _touchPosition = event.localPosition;
-                                          _lastTouchedSpot = newSpot;
+                                          _touchedSpot = isSameSpot ? null : spot;
                                         });
 
-                                        if (hasNewSpot) {
+                                        if (!isSameSpot) {
                                           HapticFeedback.lightImpact();
                                         }
-                                      },
-                                    );
+                                        return;
+                                      }
+
+                                      if (event is FlTapUpEvent && _touchedSpot == null) {
+                                        setState(() {
+                                          _touchedSpot = spot;
+                                        });
+                                        HapticFeedback.lightImpact();
+                                        return;
+                                      }
+
+                                      if (event is FlPanStartEvent || event is FlPanUpdateEvent) {
+                                        final isNewSpot = _touchedSpot == null ||
+                                            _touchedSpot!.x != spot.x ||
+                                            _touchedSpot!.y != spot.y;
+
+                                        if (isNewSpot) {
+                                          setState(() {
+                                            _touchedSpot = spot;
+                                          });
+                                          HapticFeedback.lightImpact();
+                                        }
+                                        return;
+                                      }
+                                    } else if (event is FlTapDownEvent) {
+                                      if (_touchedSpot != null) {
+                                        setState(() {
+                                          _touchedSpot = null;
+                                        });
+                                      }
+                                    }
                                   },
                                   touchTooltipData: LineTouchTooltipData(
                                     tooltipPadding: EdgeInsets.zero,
@@ -1280,8 +1278,11 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   label: () {
                                     final int dataCount = _history.length;
                                     final int offset = (7 - dataCount) ~/ 2;
-                                    final index = (_touchedSpot!.x - offset).toInt();
-                                    return '${_formatWeight((_history[index]['value'] as double) * conversion)} $unitLabel';
+                                    final index = (_touchedSpot!.x - offset).round();
+                                    if (index >= 0 && index < _history.length) {
+                                      return '${_formatWeight((_history[index]['value'] as double) * conversion)} $unitLabel';
+                                    }
+                                    return '';
                                   }(),
                                 ),
                               ),
