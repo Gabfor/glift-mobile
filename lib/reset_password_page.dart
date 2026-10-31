@@ -110,12 +110,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         primaryButtonText: 'Se connecter',
         onPrimaryPressed: () {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => LoginPage(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
                 supabase: widget.supabase,
                 authRepository: widget.authRepository,
                 biometricAuthService: widget.biometricAuthService,
               ),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
             ),
             (route) => false,
           );

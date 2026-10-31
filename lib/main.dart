@@ -289,32 +289,19 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     });
   }
 
-  Future<void> _handleConnect() async {
+  void _handleConnect() {
     HapticFeedback.lightImpact();
-    setState(() {
-      _isConnecting = true;
-    });
-
-    // Allow the UI to display the loading state before navigating away
-    await Future.delayed(const Duration(milliseconds: 150));
-    if (!mounted) return;
-
-    try {
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => LoginPage(
-            authRepository: widget.authRepository,
-            supabase: widget.supabase,
-            biometricAuthService: widget.biometricAuthService,
-          ),
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
+          authRepository: widget.authRepository,
+          supabase: widget.supabase,
+          biometricAuthService: widget.biometricAuthService,
         ),
-      );
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _isConnecting = false;
-      });
-    }
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
 
   void _openSignup() {
