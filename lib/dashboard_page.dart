@@ -67,6 +67,7 @@ class DashboardPageState extends State<DashboardPage> {
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
   Timer? _navigationInactivityTimer;
+  final ValueNotifier<String?> _activeTooltipExerciseId = ValueNotifier<String?>(null);
 
   @override
   void initState() {
@@ -81,6 +82,7 @@ class DashboardPageState extends State<DashboardPage> {
   @override
   void dispose() {
     _navigationInactivityTimer?.cancel();
+    _activeTooltipExerciseId.dispose();
     _programPageController.dispose();
     _programScrollController.dispose();
     super.dispose();
@@ -537,6 +539,7 @@ class DashboardPageState extends State<DashboardPage> {
                         userId: widget.supabase.auth.currentUser!.id,
                         settings: _preferences.getSettingsFor(exercise.id),
                         onSettingsChanged: (newSetting) => _onExerciseSettingsChanged(exercise.id, newSetting),
+                        activeTooltipExerciseId: _activeTooltipExerciseId,
                       ),
                     );
                   },
@@ -642,6 +645,7 @@ class _ExerciseChartCard extends StatefulWidget {
   final String userId;
   final ExerciseDisplaySetting settings;
   final Function(ExerciseDisplaySetting) onSettingsChanged;
+  final ValueNotifier<String?> activeTooltipExerciseId;
 
   const _ExerciseChartCard({
     super.key,
@@ -650,6 +654,7 @@ class _ExerciseChartCard extends StatefulWidget {
     required this.userId,
     required this.settings,
     required this.onSettingsChanged,
+    required this.activeTooltipExerciseId,
   });
 
   @override
@@ -673,15 +678,53 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
   @override
   void initState() {
     super.initState();
+    widget.activeTooltipExerciseId.addListener(_handleActiveTooltipChanged);
     _loadHistory();
   }
 
   @override
   void didUpdateWidget(covariant _ExerciseChartCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.activeTooltipExerciseId != widget.activeTooltipExerciseId) {
+      oldWidget.activeTooltipExerciseId.removeListener(_handleActiveTooltipChanged);
+      widget.activeTooltipExerciseId.addListener(_handleActiveTooltipChanged);
+    }
     if (widget.exercise != oldWidget.exercise ||
         widget.userId != oldWidget.userId) {
       _loadHistory();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.activeTooltipExerciseId.removeListener(_handleActiveTooltipChanged);
+    super.dispose();
+  }
+
+  void _handleActiveTooltipChanged() {
+    if (widget.activeTooltipExerciseId.value != widget.exercise.id &&
+        _touchedSpot != null) {
+      setState(() {
+        _touchedSpot = null;
+      });
+    }
+  }
+
+  void _selectSpot(LineBarSpot spot) {
+    widget.activeTooltipExerciseId.value = widget.exercise.id;
+    setState(() {
+      _touchedSpot = spot;
+    });
+  }
+
+  void _clearTooltip() {
+    if (_touchedSpot != null) {
+      setState(() {
+        _touchedSpot = null;
+      });
+    }
+    if (widget.activeTooltipExerciseId.value == widget.exercise.id) {
+      widget.activeTooltipExerciseId.value = null;
     }
   }
 
@@ -982,9 +1025,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                     16; // 10px spacing + 6px dot radius
                               }
 
-                              return Stack(
-                                clipBehavior: Clip.none,
-                                children: [
+                              return TapRegion(
+                                enabled: _touchedSpot != null,
+                                onTapOutside: (_) => _clearTooltip(),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
                                   SizedBox.expand(
                                     child: LineChart(
                                       LineChartData(
@@ -1207,21 +1253,12 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                             _touchedSpot!.x == spot.x &&
                                             _touchedSpot!.y == spot.y;
 
-                                        setState(() {
-                                          _touchedSpot = isSameSpot ? null : spot;
-                                        });
-
-                                        if (!isSameSpot) {
+                                        if (isSameSpot) {
+                                          _clearTooltip();
+                                        } else {
+                                          _selectSpot(spot);
                                           HapticFeedback.lightImpact();
                                         }
-                                        return;
-                                      }
-
-                                      if (event is FlTapUpEvent && _touchedSpot == null) {
-                                        setState(() {
-                                          _touchedSpot = spot;
-                                        });
-                                        HapticFeedback.lightImpact();
                                         return;
                                       }
 
@@ -1231,19 +1268,13 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                             _touchedSpot!.y != spot.y;
 
                                         if (isNewSpot) {
-                                          setState(() {
-                                            _touchedSpot = spot;
-                                          });
+                                          _selectSpot(spot);
                                           HapticFeedback.lightImpact();
                                         }
                                         return;
                                       }
-                                    } else if (event is FlTapDownEvent) {
-                                      if (_touchedSpot != null) {
-                                        setState(() {
-                                          _touchedSpot = null;
-                                        });
-                                      }
+                                    } else if (event is FlTapDownEvent || event is FlPanDownEvent) {
+                                      _clearTooltip();
                                     }
                                   },
                                   touchTooltipData: LineTouchTooltipData(
@@ -1273,22 +1304,27 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                               top: tooltipTop,
                               child: FractionalTranslation(
                                 translation: const Offset(-0.5, -1.0),
-                                child: _TooltipWithArrow(
-                                  backgroundColor: const Color(0xFF2D2E32),
-                                  label: () {
-                                    final int dataCount = _history.length;
-                                    final int offset = (7 - dataCount) ~/ 2;
-                                    final index = (_touchedSpot!.x - offset).round();
-                                    if (index >= 0 && index < _history.length) {
-                                      return '${_formatWeight((_history[index]['value'] as double) * conversion)} $unitLabel';
-                                    }
-                                    return '';
-                                  }(),
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTapDown: (_) => _clearTooltip(),
+                                  child: _TooltipWithArrow(
+                                    backgroundColor: const Color(0xFF2D2E32),
+                                    label: () {
+                                      final int dataCount = _history.length;
+                                      final int offset = (7 - dataCount) ~/ 2;
+                                      final index = (_touchedSpot!.x - offset).round();
+                                      if (index >= 0 && index < _history.length) {
+                                        return '${_formatWeight((_history[index]['value'] as double) * conversion)} $unitLabel';
+                                      }
+                                      return '';
+                                    }(),
+                                  ),
                                 ),
                               ),
                             ),
                         ],
-                      );
+                      ),
+                    );
                     },
                   ),
           ),
