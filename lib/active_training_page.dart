@@ -2086,7 +2086,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               ? GestureDetector(
                   onTap: isLocked ? null : _launchVideoUrl,
                   child: Text(
-                    widget.row.exercise,
+                    widget.row.exercise.trim().isEmpty ? "Exercice sans nom" : widget.row.exercise,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.quicksand(
@@ -2099,7 +2099,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   ),
                 )
               : Text(
-                  widget.row.exercise,
+                  widget.row.exercise.trim().isEmpty ? "Exercice sans nom" : widget.row.exercise,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.quicksand(
