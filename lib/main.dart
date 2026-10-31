@@ -228,15 +228,18 @@ class _SplashLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const maxAnimationWidth = 300.0;
+        const maxAnimationWidth = 220.0;
         final animationWidth = math.min(
           maxAnimationWidth,
-          constraints.maxWidth * 0.75,
+          constraints.maxWidth,
         );
         return Center(
-          child: SplashAnimation(
-            width: animationWidth,
-            onCompleted: onAnimationCompleted,
+          child: Transform.translate(
+            offset: const Offset(0, -65),
+            child: SplashAnimation(
+              width: animationWidth,
+              onCompleted: onAnimationCompleted,
+            ),
           ),
         );
       },
