@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -23,6 +23,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'services/notification_service.dart';
 import 'services/settings_service.dart';
+import 'widgets/splash_animation.dart';
 
 Future<void> main() async {
   debugPrint('DEBUG: Starting main()');
@@ -161,24 +162,40 @@ class SplashToOnboarding extends StatefulWidget {
 
 class _SplashToOnboardingState extends State<SplashToOnboarding> {
   bool _showSplash = true;
+  Timer? _fallbackTimer;
 
   @override
   void initState() {
     super.initState();
     debugPrint('Supabase client ready: $supabaseUrl');
-    Future<void>.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _showSplash = false;
-        });
-      }
-    });
+    // Sécurité : on quitte le splash même si l'animation ne se termine pas.
+    _fallbackTimer = Timer(const Duration(seconds: 6), _hideSplash);
+  }
+
+  void _onAnimationCompleted() {
+    // Petite pause sur le logo final avant d'enchaîner.
+    Future<void>.delayed(const Duration(milliseconds: 500), _hideSplash);
+  }
+
+  void _hideSplash() {
+    _fallbackTimer?.cancel();
+    if (mounted && _showSplash) {
+      setState(() {
+        _showSplash = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _fallbackTimer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_showSplash) {
-      return const SplashScreen();
+      return SplashScreen(onAnimationCompleted: _onAnimationCompleted);
     }
 
     return OnboardingFlow(
@@ -190,31 +207,38 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
 }
 
 class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({super.key, this.onAnimationCompleted});
+
+  final VoidCallback? onAnimationCompleted;
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: _SplashLogo(),
+    return Scaffold(
+      body: _SplashLogo(onAnimationCompleted: onAnimationCompleted),
     );
   }
 }
 
 class _SplashLogo extends StatelessWidget {
-  const _SplashLogo();
+  const _SplashLogo({this.onAnimationCompleted});
+
+  final VoidCallback? onAnimationCompleted;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const maxLogoSize = 220.0;
-        final availableWidth = constraints.maxWidth * 0.6;
-        final availableHeight = constraints.maxHeight;
-        final logoSize = math.min(
-          maxLogoSize,
-          math.min(availableWidth, availableHeight),
+        const maxAnimationWidth = 300.0;
+        final animationWidth = math.min(
+          maxAnimationWidth,
+          constraints.maxWidth * 0.75,
         );
-        return Center(child: _Logo(size: logoSize));
+        return Center(
+          child: SplashAnimation(
+            width: animationWidth,
+            onCompleted: onAnimationCompleted,
+          ),
+        );
       },
     );
   }
@@ -491,53 +515,6 @@ class _PageIndicator extends StatelessWidget {
           ),
         );
       }),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  const _Logo({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final logoUrl = SettingsService.instance.getLogoUrl();
-
-    Widget logo;
-    if (logoUrl != null && logoUrl.isNotEmpty) {
-      if (logoUrl.toLowerCase().endsWith('.svg')) {
-        logo = SvgPicture.network(
-          logoUrl,
-          fit: BoxFit.contain,
-          placeholderBuilder: (BuildContext context) => SvgPicture.asset(
-            'assets/images/logo_app.svg',
-            fit: BoxFit.contain,
-          ),
-        );
-      } else {
-         logo = Image.network(
-          logoUrl,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return SvgPicture.asset(
-              'assets/images/logo_app.svg',
-              fit: BoxFit.contain,
-            );
-          },
-        );
-      }
-    } else {
-      logo = SvgPicture.asset(
-        'assets/images/logo_app.svg',
-        fit: BoxFit.contain,
-      );
-    }
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: logo,
     );
   }
 }
