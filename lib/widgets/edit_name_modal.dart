@@ -41,7 +41,20 @@ class _EditNameModalState extends State<EditNameModal> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialName);
+    final normalized = widget.initialName.trim().replaceAll('’', "'");
+    final normalizedLabel = widget.fieldLabel?.trim().replaceAll('’', "'");
+    final isDefaultName = normalized.isEmpty ||
+        (normalizedLabel != null && normalized.toLowerCase() == normalizedLabel.toLowerCase()) ||
+        normalized == "Nom du programme" ||
+        normalized == "Nom de l'entraînement" ||
+        normalized == "Nom de l'exercice";
+    final initialText = isDefaultName ? '' : widget.initialName;
+    _controller = TextEditingController(text: initialText);
+    if (initialText.isNotEmpty) {
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: initialText.length),
+      );
+    }
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
