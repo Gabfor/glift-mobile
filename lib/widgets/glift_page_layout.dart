@@ -145,63 +145,66 @@ class _GliftPageLayoutState extends State<GliftPageLayout> {
             topRight: Radius.circular(30),
           ),
           clipBehavior: Clip.antiAliasWithSaveLayer,
-          child: Stack(
-            children: [
-              SafeArea(
-                top: false,
-                bottom: false,
-                child: widget.fullPageScroll
-                    ? Padding(
-                        padding: contentPadding,
-                        child: child,
-                      )
-                    : (widget.scrollable
-                        ? SingleChildScrollView(
-                            controller: widget.controller,
-                            physics: widget.physics ?? const NoTopOverscrollPhysics(),
-                            padding: EdgeInsets.zero,
-                            child: Padding(
+          child: ColoredBox(
+            color: GliftTheme.background,
+            child: Stack(
+              children: [
+                SafeArea(
+                  top: false,
+                  bottom: false,
+                  child: widget.fullPageScroll
+                      ? Padding(
+                          padding: contentPadding,
+                          child: child,
+                        )
+                      : (widget.scrollable
+                          ? SingleChildScrollView(
+                              controller: widget.controller,
+                              physics: widget.physics ?? const NoTopOverscrollPhysics(),
+                              padding: EdgeInsets.zero,
+                              child: Padding(
+                                padding: contentPadding,
+                                child: child,
+                              ),
+                            )
+                          : Padding(
                               padding: contentPadding,
                               child: child,
-                            ),
-                          )
-                        : Padding(
-                            padding: contentPadding,
-                            child: child,
-                          )),
-              ),
-              ValueListenableBuilder<double>(
-                valueListenable: _shadowOpacity,
-                builder: (context, opacity, _) {
-                  if (opacity <= 0.0) return const SizedBox.shrink();
-                  return Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 16,
-                    child: IgnorePointer(
-                      child: Opacity(
-                        opacity: opacity,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                const Color(0xFF1E1742).withValues(alpha: 0.12),
-                                const Color(0xFF1E1742).withValues(alpha: 0.04),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.45, 1.0],
+                            )),
+                ),
+                ValueListenableBuilder<double>(
+                  valueListenable: _shadowOpacity,
+                  builder: (context, opacity, _) {
+                    if (opacity <= 0.0) return const SizedBox.shrink();
+                    return Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 16,
+                      child: IgnorePointer(
+                        child: Opacity(
+                          opacity: opacity,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  const Color(0xFF1E1742).withValues(alpha: 0.12),
+                                  const Color(0xFF1E1742).withValues(alpha: 0.04),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.45, 1.0],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       );
