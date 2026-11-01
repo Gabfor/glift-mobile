@@ -30,47 +30,46 @@ class ProgramRepository {
     String? targetUnlockedId;
 
     if (!isPremium) {
-      // Check current state (Freeze logic match Web)
-      // If 0 or 1 training is unlocked, we respect the current state and do not intervene.
-      int unlockedCount = 0;
-      for (final p in programs) {
-         for (final t in p.trainings) {
-            if (t.locked == false) unlockedCount++;
-         }
-      }
-      
-      if (unlockedCount <= 1) {
-         return programs;
-      }
-
-      // Find the "First Visible" training
+      // 1. Collect all visible trainings in the app
+      final List<Training> visibleTrainings = [];
       for (final program in programs) {
-        
-        if (!program.app) {
-           continue;
-        }
-
-        final sortedTrainings = List<Training>.from(program.trainings)
+        if (!program.app) continue;
+        final sorted = List<Training>.from(program.trainings)
           ..sort((a, b) => a.position.compareTo(b.position));
-        
-        for (final training in sortedTrainings) {
-          if (training.app) {
-            targetUnlockedId = training.id;
-            break;
+        for (final t in sorted) {
+          if (t.app) {
+            visibleTrainings.add(t);
           }
         }
-        if (targetUnlockedId != null) break;
       }
 
-      // Fallback
-      if (targetUnlockedId == null && programs.isNotEmpty) {
-           final firstProgram = programs.first;
-           final sortedTrainings = List<Training>.from(firstProgram.trainings)
-             ..sort((a, b) => a.position.compareTo(b.position));
-           
-           if (sortedTrainings.isNotEmpty) {
-             targetUnlockedId = sortedTrainings.first.id;
-           }
+      final visibleUnlocked = visibleTrainings.where((t) => !t.locked).toList();
+      final allTrainings = programs.expand((p) => p.trainings).toList();
+      final allUnlocked = allTrainings.where((t) => !t.locked).toList();
+
+      if (visibleTrainings.isNotEmpty) {
+        // If exactly 1 visible training is unlocked and no other hidden training is unlocked, preserve state
+        if (visibleUnlocked.length == 1 && allUnlocked.length == 1 && visibleUnlocked.first.id == allUnlocked.first.id) {
+          return programs;
+        }
+
+        if (visibleUnlocked.length == 1) {
+          targetUnlockedId = visibleUnlocked.first.id;
+        } else if (visibleUnlocked.length > 1) {
+          targetUnlockedId = visibleTrainings.first.id;
+        } else {
+          // No visible training is unlocked -> unlock the 1st visible training!
+          targetUnlockedId = visibleTrainings.first.id;
+        }
+      } else {
+        // All programs/trainings are hidden in the app
+        // Maintain exactly 1 unlocked training in the account
+        if (allUnlocked.length == 1) {
+          return programs;
+        }
+        if (allTrainings.isNotEmpty) {
+          targetUnlockedId = allTrainings.first.id;
+        }
       }
     }
 
