@@ -121,9 +121,9 @@ class GliftModal extends StatelessWidget {
   /// Modale de confirmation type (icône Attention + 2 boutons Annuler / Confirmer)
   static Future<bool?> showConfirm({
     required BuildContext context,
-    String iconAsset = 'assets/images/Attention.svg',
+    String iconAsset = 'assets/icons/message_erreur.svg',
     double iconHeight = 35,
-    double iconWidth = 39,
+    double iconWidth = 35,
     required String title,
     String? description,
     Widget? content,

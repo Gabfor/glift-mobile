@@ -38,7 +38,7 @@ class UnlockExerciseModal extends StatelessWidget {
                 // Image
                 Center(
                   child: SvgPicture.asset(
-                    'assets/images/Attention_violet.svg',
+                    'assets/icons/message.svg',
                     height: 35,
                     width: 39,
                     fit: BoxFit.contain,

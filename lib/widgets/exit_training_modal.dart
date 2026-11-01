@@ -24,9 +24,9 @@ class ExitTrainingModal extends StatelessWidget {
                 // Image
                 Center(
                   child: SvgPicture.asset(
-                    'assets/images/Attention.svg',
+                    'assets/icons/message_erreur.svg',
                     height: 35,
-                    width: 39,
+                    width: 35,
                     fit: BoxFit.contain,
                   ),
                 ),
