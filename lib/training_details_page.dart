@@ -330,6 +330,23 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
+  void _openFreeTimer() {
+    HapticFeedback.lightImpact();
+    final duration = SettingsService.instance.getDefaultRestTime();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TimerPage(
+          durationInSeconds: duration,
+          storedDurationInSeconds: null,
+          autoStart: true,
+          enableVibration: SettingsService.instance.getVibrationEnabled(),
+          enableSound: SettingsService.instance.getSoundEnabled(),
+          onSave: null,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -382,6 +399,25 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          GestureDetector(
+            onTap: _openFreeTimer,
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/timer_off.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
             ),
           ),
         ],

@@ -260,10 +260,15 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   }
 
   Future<void> _returnInlineToFullPage(InlineTimerData data) async {
-    final rowIndex = _activeTimerRowIndex ?? 0;
+    final isFreeTimer = _activeTimerRowIndex == null;
+    final rowIndex = _activeTimerRowIndex;
 
     _closeInlineTimer();
-    await _openTimerForRow(rowIndex, data.durationInSeconds, inlineData: data, forceFullScreen: true);
+    if (isFreeTimer || rowIndex == null) {
+      await _openFreeTimer(inlineData: data, forceFullScreen: true);
+    } else {
+      await _openTimerForRow(rowIndex, data.durationInSeconds, inlineData: data, forceFullScreen: true);
+    }
   }
 
   void _closeKeypad() {
@@ -498,6 +503,76 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         // If instant, return child directly (or handle in duration)
+        if (entryDuration == Duration.zero) return child;
+
+        const begin = Offset(1.0, 0.0); // From Right
+        const end = Offset.zero;
+        const curve = Curves.easeInOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+
+    final result = await Navigator.of(context).push<InlineTimerData>(route);
+
+    if (!mounted) return;
+    if (result != null) {
+      _activateInlineTimer(result);
+    }
+  }
+
+  Future<void> _openFreeTimer({
+    InlineTimerData? inlineData,
+    bool forceFullScreen = false,
+  }) async {
+    if (_inlineTimerData != null && inlineData == null) {
+      await _returnInlineToFullPage(_inlineTimerData!);
+      return;
+    }
+
+    final defaultDuration = SettingsService.instance.getDefaultRestTime();
+    final duration = inlineData?.durationInSeconds ?? defaultDuration;
+    final displayType = SettingsService.instance.getDisplayType();
+
+    // If preference is 'Miniature', open inline directly, UNLESS forced to full screen
+    if (displayType == 'Miniature' && !forceFullScreen) {
+      _activeTimerRowIndex = null;
+      _activateInlineTimer(InlineTimerData(
+        remainingSeconds: inlineData?.remainingSeconds ?? duration,
+        isRunning: inlineData?.isRunning ?? true,
+        durationInSeconds: duration,
+        enableSound: inlineData?.enableSound ?? SettingsService.instance.getSoundEnabled(),
+        enableVibration: inlineData?.enableVibration ?? SettingsService.instance.getVibrationEnabled(),
+      ));
+      return;
+    }
+
+    _activeTimerRowIndex = null;
+
+    final entryDuration = (forceFullScreen)
+        ? Duration.zero
+        : const Duration(milliseconds: 300);
+
+    final route = PageRouteBuilder<InlineTimerData>(
+      transitionDuration: entryDuration,
+      reverseTransitionDuration: const Duration(milliseconds: 300), // Keep exit animation for Close
+      pageBuilder: (context, animation, secondaryAnimation) => TimerPage(
+        durationInSeconds: duration,
+        storedDurationInSeconds: null,
+        initialRemainingSeconds: inlineData?.remainingSeconds,
+        enableSound: inlineData?.enableSound ?? SettingsService.instance.getSoundEnabled(),
+        enableVibration: inlineData?.enableVibration ?? SettingsService.instance.getVibrationEnabled(),
+        autoStart: inlineData?.isRunning ?? true,
+        isActiveTraining: true,
+        onSave: null,
+        onMinimize: _activateInlineTimer, // Handle instant minimize
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
         if (entryDuration == Duration.zero) return child;
 
         const begin = Offset(1.0, 0.0); // From Right
@@ -1065,6 +1140,34 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                   maxLines: 1,
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              if (_inlineTimerData != null) {
+                _returnInlineToFullPage(_inlineTimerData!);
+              } else {
+                _openFreeTimer();
+              }
+            },
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  _inlineTimerData != null
+                      ? 'assets/icons/timer_on.svg'
+                      : 'assets/icons/timer_off.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
             ),
           ),
         ],
