@@ -215,13 +215,15 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
           widget.authRepository != null &&
           widget.biometricAuthService != null) {
         await Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => PricingPage(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => PricingPage(
               userName: widget.name,
               supabase: client,
               authRepository: widget.authRepository!,
               biometricAuthService: widget.biometricAuthService!,
             ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
           ),
         );
       }

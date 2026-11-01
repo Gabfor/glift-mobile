@@ -69,7 +69,6 @@ class HomePageState extends State<HomePage> {
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
-  Timer? _navigationInactivityTimer;
 
 
   @override
@@ -107,7 +106,6 @@ class HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _navigationInactivityTimer?.cancel();
     _pageController.dispose();
     _programScrollController.dispose();
     super.dispose();
@@ -421,14 +419,6 @@ class HomePageState extends State<HomePage> {
     widget.onNavigationVisibilityChanged?.call(false);
   }
 
-  void _resetNavigationInactivityTimer() {
-    _navigationInactivityTimer?.cancel();
-    _navigationInactivityTimer = Timer(
-      const Duration(seconds: 2),
-      _showNavigation,
-    );
-  }
-
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification.depth != 0) return false;
 
@@ -438,14 +428,12 @@ class HomePageState extends State<HomePage> {
     }
 
     if (notification is ScrollUpdateNotification) {
-      _resetNavigationInactivityTimer();
-
       final currentOffset = max(notification.metrics.pixels, 0.0).toDouble();
 
       if (currentOffset <= 0) {
-       _lastScrollOffset = 0;
-       _showNavigation();
-       return false;
+        _lastScrollOffset = 0;
+        _showNavigation();
+        return false;
       }
 
       final delta = currentOffset - _lastScrollOffset;

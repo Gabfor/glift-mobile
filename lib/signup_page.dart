@@ -248,24 +248,28 @@ class _SignupPageState extends State<SignupPage> {
           if (!mounted) return;
           if (isNewUser) {
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (_) => PricingPage(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => PricingPage(
                   userName: userFirstName,
                   supabase: client,
                   authRepository: widget.authRepository!,
                   biometricAuthService: widget.biometricAuthService!,
                 ),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
               ),
               (route) => false,
             );
           } else {
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (_) => MainPage(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => MainPage(
                   supabase: client,
                   authRepository: widget.authRepository!,
                   biometricAuthService: widget.biometricAuthService!,
                 ),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
               ),
               (route) => false,
             );
@@ -274,12 +278,14 @@ class _SignupPageState extends State<SignupPage> {
           debugPrint('Error syncing profile on OAuth signup: $e');
           if (!mounted) return;
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => MainPage(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => MainPage(
                 supabase: client,
                 authRepository: widget.authRepository!,
                 biometricAuthService: widget.biometricAuthService!,
               ),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
             ),
             (route) => false,
           );

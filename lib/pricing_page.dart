@@ -78,29 +78,11 @@ class _PricingPageState extends State<PricingPage> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => MainPage(
-            supabase: widget.supabase,
-            authRepository: widget.authRepository,
-            biometricAuthService: widget.biometricAuthService,
-          ),
-        ),
-        (route) => false,
-      );
+      _navigateToMainPage();
     } catch (e) {
       debugPrint('Error selecting plan: $e');
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => MainPage(
-            supabase: widget.supabase,
-            authRepository: widget.authRepository,
-            biometricAuthService: widget.biometricAuthService,
-          ),
-        ),
-        (route) => false,
-      );
+      _navigateToMainPage();
     } finally {
       if (mounted) {
         setState(() {
@@ -109,6 +91,21 @@ class _PricingPageState extends State<PricingPage> {
         });
       }
     }
+  }
+
+  void _navigateToMainPage() {
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => MainPage(
+          supabase: widget.supabase,
+          authRepository: widget.authRepository,
+          biometricAuthService: widget.biometricAuthService,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+      (route) => false,
+    );
   }
 
   @override

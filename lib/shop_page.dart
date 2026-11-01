@@ -60,7 +60,6 @@ class _ShopPageState extends State<ShopPage> {
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
-  Timer? _navigationRevealTimer;
 
   @override
   void initState() {
@@ -165,7 +164,6 @@ class _ShopPageState extends State<ShopPage> {
 
   @override
   void dispose() {
-    _navigationRevealTimer?.cancel();
     super.dispose();
   }
 
@@ -793,7 +791,6 @@ class _ShopPageState extends State<ShopPage> {
           _isNavigationVisible = true;
           widget.onNavigationVisibilityChanged?.call(true);
         }
-        _navigationRevealTimer?.cancel();
         return false;
       }
 
@@ -802,27 +799,15 @@ class _ShopPageState extends State<ShopPage> {
       if (delta > 10 && _isNavigationVisible) {
         _isNavigationVisible = false;
         widget.onNavigationVisibilityChanged?.call(false);
-        _scheduleNavigationReveal();
       } else if (delta < -10 && !_isNavigationVisible) {
         _isNavigationVisible = true;
         widget.onNavigationVisibilityChanged?.call(true);
-        _navigationRevealTimer?.cancel();
       }
 
       _lastScrollOffset = currentOffset;
     }
 
     return false;
-  }
-
-  void _scheduleNavigationReveal() {
-    _navigationRevealTimer?.cancel();
-    _navigationRevealTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted && !_isNavigationVisible) {
-        _isNavigationVisible = true;
-        widget.onNavigationVisibilityChanged?.call(true);
-      }
-    });
   }
 }
 

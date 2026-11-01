@@ -66,7 +66,6 @@ class DashboardPageState extends State<DashboardPage> {
 
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
-  Timer? _navigationInactivityTimer;
   final ValueNotifier<String?> _activeTooltipExerciseId = ValueNotifier<String?>(null);
 
   @override
@@ -81,7 +80,6 @@ class DashboardPageState extends State<DashboardPage> {
 
   @override
   void dispose() {
-    _navigationInactivityTimer?.cancel();
     _activeTooltipExerciseId.dispose();
     _programPageController.dispose();
     _programScrollController.dispose();
@@ -330,14 +328,6 @@ class DashboardPageState extends State<DashboardPage> {
     widget.onNavigationVisibilityChanged?.call(false);
   }
 
-  void _resetNavigationInactivityTimer() {
-    _navigationInactivityTimer?.cancel();
-    _navigationInactivityTimer = Timer(
-      const Duration(seconds: 2),
-      _showNavigation,
-    );
-  }
-
   bool _handleScrollNotification(ScrollNotification notification) {
     final axisDirection = notification.metrics.axisDirection;
 
@@ -349,8 +339,6 @@ class DashboardPageState extends State<DashboardPage> {
     }
 
     if (notification is ScrollUpdateNotification) {
-      _resetNavigationInactivityTimer();
-
       final currentOffset = max(notification.metrics.pixels, 0.0).toDouble();
 
       if (currentOffset <= 0) {
