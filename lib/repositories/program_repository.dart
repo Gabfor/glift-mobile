@@ -14,6 +14,12 @@ class ProgramRepository {
 
   static const String _programsCacheKey = 'cached_programs';
 
+  List<Program> _allPrograms = [];
+  List<Program> get allPrograms => _allPrograms;
+
+  int get totalTrainingsInAccount => _allPrograms.expand((p) => p.trainings).length;
+  int get unlockedTrainingsInAccount => _allPrograms.expand((p) => p.trainings).where((t) => !t.locked).length;
+
   /// Ensures that all trainings have the correct 'locked' status based on the user's subscription plan.
   /// If inconsistencies are found, it updates the database and the returned objects.
   Future<List<Program>> _ensureLockedConsistency(List<Program> programs) async {
@@ -127,26 +133,44 @@ class ProgramRepository {
     return programs;
   }
 
-  List<Program> _filterVisiblePrograms(List<Program> programs) {
-      final processed = programs.map((p) {
-          final visibleTrainings = p.trainings.where((t) => t.app).toList();
-          return Program(
-              id: p.id,
-              name: p.name,
-              trainings: visibleTrainings,
-              position: p.position,
-              dashboard: p.dashboard,
-              app: p.app,
-          );
-      }).where((p) => p.app).toList();
+  List<Program> filterVisiblePrograms(List<Program> programs) {
+    final bool isPremium = SettingsService.instance.isPremium();
+    final int allTrainingsCount = programs.expand((p) => p.trainings).length;
 
-      return processed.asMap().entries.where((entry) {
-        final p = entry.value;
-        final isEmpty = p.trainings.isEmpty;
-        final isLast = entry.key == processed.length - 1;
-        
-        return !isEmpty || isLast;
-      }).map((e) => e.value).toList();
+    final processed = programs.map((p) {
+      final visibleTrainings = p.trainings.where((t) => t.app).toList();
+      return Program(
+        id: p.id,
+        name: p.name,
+        trainings: visibleTrainings,
+        position: p.position,
+        dashboard: p.dashboard,
+        app: p.app,
+      );
+    }).where((p) {
+      if (!p.app) return false;
+      // For Starter users who already have trainings in their account,
+      // empty programs should never be shown in the app.
+      if (!isPremium && allTrainingsCount > 0 && p.trainings.isEmpty) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    if (!isPremium) {
+      if (allTrainingsCount > 0) {
+        return processed.where((p) => p.trainings.isNotEmpty).toList();
+      }
+      return processed;
+    }
+
+    return processed.asMap().entries.where((entry) {
+      final p = entry.value;
+      final isEmpty = p.trainings.isEmpty;
+      final isLast = entry.key == processed.length - 1;
+      
+      return !isEmpty || isLast;
+    }).map((e) => e.value).toList();
   }
 
 
@@ -214,7 +238,8 @@ class ProgramRepository {
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
-        programs = _filterVisiblePrograms(programs);
+        _allPrograms = List<Program>.from(programs);
+        programs = filterVisiblePrograms(programs);
         await saveLocalPrograms(programs);
         return programs;
       } catch (_) {
@@ -242,7 +267,8 @@ class ProgramRepository {
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
-        programs = _filterVisiblePrograms(programs);
+        _allPrograms = List<Program>.from(programs);
+        programs = filterVisiblePrograms(programs);
         await saveLocalPrograms(programs);
         return programs;
       }
@@ -404,49 +430,67 @@ class ProgramRepository {
         })
         .toList();
 
-    // MIRROR WEB BEHAVIOR: Ensure there is at least one empty program at the end
-    // If no empty program exists, we create one directly in Supabase
-    bool hasEmpty = resultList.any((p) => p.trainings.isEmpty && p.app);
-    
-    if (!hasEmpty) {
-       try {
-           final newProgram = await _supabase
-               .from('programs')
-               .insert({
-                   'name': 'Nom du programme', 
-                   'user_id': userId, 
-                   'position': resultList.length
-               })
-               .select()
-               .single();
-               
-           resultList.add(Program(
-               id: newProgram['id'].toString(),
-               name: newProgram['name'] as String,
-               trainings: [],
-               position: newProgram['position'] as int? ?? resultList.length,
-               dashboard: newProgram['dashboard'] as bool? ?? true,
-               app: newProgram['app'] as bool? ?? true,
-           ));
-       } catch (e) {
-           debugPrint('Error creating empty trailing program: $e');
-           // Fallback for UI so it doesn't break if offline or error
-           resultList.add(Program(
-               id: 'virtual_fallback_${DateTime.now().millisecondsSinceEpoch}',
-               name: 'Nom du programme',
-               trainings: [],
-               position: resultList.length,
-               dashboard: true,
-               app: true,
-           ));
-       }
-    } else {
-       // Move ALL empty programs to the end seamlessly
-       final nonEmpty = resultList.where((p) => p.trainings.isNotEmpty).toList();
-       final emptyPrograms = resultList.where((p) => p.trainings.isEmpty).toList();
-       resultList = [...nonEmpty, ...emptyPrograms];
+    final bool isPremium = SettingsService.instance.isPremium();
+
+    if (!isPremium) {
+      final totalTrainingsCount = resultList.expand((p) => p.trainings).length;
+      if (totalTrainingsCount > 0) {
+        // Clean up any empty ghost programs that were created automatically
+        final ghostPrograms = resultList.where((p) => p.trainings.isEmpty && p.name == 'Nom du programme').toList();
+        for (final ghost in ghostPrograms) {
+          try {
+            await _supabase.from('programs').delete().eq('id', ghost.id);
+            resultList.removeWhere((p) => p.id == ghost.id);
+          } catch (e) {
+            debugPrint('Error cleaning up ghost program: $e');
+          }
+        }
+      }
+      return resultList;
     }
-    
+
+    // For Premium users only: mirror web behavior
+    final allHiddenInApp = resultList.every((p) => !p.app);
+    if (!allHiddenInApp) {
+      bool hasEmpty = resultList.any((p) => p.trainings.isEmpty && p.app);
+      if (!hasEmpty) {
+        try {
+          final newProgram = await _supabase
+              .from('programs')
+              .insert({
+                  'name': 'Nom du programme', 
+                  'user_id': userId, 
+                  'position': resultList.length
+              })
+              .select()
+              .single();
+              
+          resultList.add(Program(
+              id: newProgram['id'].toString(),
+              name: newProgram['name'] as String,
+              trainings: [],
+              position: newProgram['position'] as int? ?? resultList.length,
+              dashboard: newProgram['dashboard'] as bool? ?? true,
+              app: newProgram['app'] as bool? ?? true,
+          ));
+        } catch (e) {
+          debugPrint('Error creating empty trailing program: $e');
+          resultList.add(Program(
+              id: 'virtual_fallback_${DateTime.now().millisecondsSinceEpoch}',
+              name: 'Nom du programme',
+              trainings: [],
+              position: resultList.length,
+              dashboard: true,
+              app: true,
+          ));
+        }
+      } else {
+        final nonEmpty = resultList.where((p) => p.trainings.isNotEmpty).toList();
+        final emptyPrograms = resultList.where((p) => p.trainings.isEmpty).toList();
+        resultList = [...nonEmpty, ...emptyPrograms];
+      }
+    }
+
     return resultList;
   }
 

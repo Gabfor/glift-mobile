@@ -143,14 +143,15 @@ class HomePageState extends State<HomePage> {
     // 1. Load local cache first
     try {
       final localPrograms = await _programRepository.getLocalPrograms();
-      if (mounted && localPrograms.isNotEmpty) {
+      final filteredLocal = _programRepository.filterVisiblePrograms(localPrograms);
+      if (mounted && filteredLocal.isNotEmpty) {
         setState(() {
-          _programs = localPrograms;
+          _programs = filteredLocal;
           _programKeys
             ..clear()
-            ..addAll(List.generate(localPrograms.length, (_) => GlobalKey()));
+            ..addAll(List.generate(filteredLocal.length, (_) => GlobalKey()));
           if (_selectedProgramId == null) {
-            _selectedProgramId = localPrograms.first.id;
+            _selectedProgramId = filteredLocal.first.id;
           }
           // _isLoading = false; // Intentionally keeping loading state to prevent flash of deleted programs
         });
@@ -711,11 +712,18 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAddTrainingCard(Program program) {
-    final unlockedCount = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
-    final totalTrainings = _programs?.expand((p) => p.trainings).length ?? 0;
+  bool get _isAddTrainingRestricted {
     final isPremium = SettingsService.instance.isPremium();
-    final isAddRestricted = !isPremium && (unlockedCount > 0 || totalTrainings > 0);
+    if (isPremium) return false;
+    final accountTrainings = _programRepository.totalTrainingsInAccount;
+    final accountUnlocked = _programRepository.unlockedTrainingsInAccount;
+    final visibleTrainings = _programs?.expand((p) => p.trainings).length ?? 0;
+    final visibleUnlocked = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
+    return accountTrainings > 0 || accountUnlocked > 0 || visibleTrainings > 0 || visibleUnlocked > 0;
+  }
+
+  Widget _buildAddTrainingCard(Program program) {
+    final isAddRestricted = _isAddTrainingRestricted;
     final themeColor = isAddRestricted ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
 
     return GestureDetector(
@@ -756,12 +764,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _handleAddTraining(Program program) async {
     try {
-      final unlockedCount = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
-      final totalTrainings = _programs?.expand((p) => p.trainings).length ?? 0;
-      final isPremium = SettingsService.instance.isPremium();
-      final isAddRestricted = !isPremium && (unlockedCount > 0 || totalTrainings > 0);
-
-      if (isAddRestricted) {
+      if (_isAddTrainingRestricted) {
         await showFadeDialog(
           context: context,
           builder: (context) => const AddTrainingLockedModal(),
