@@ -9,6 +9,7 @@ import 'login_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'services/settings_service.dart';
+import 'repositories/program_repository.dart';
 import 'weight_unit_settings_page.dart';
 import 'display_settings_page.dart';
 import 'sound_settings_page.dart';
@@ -117,6 +118,8 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() => _isLoggingOut = true);
 
     try {
+      await SettingsService.instance.clearUserData();
+      await ProgramRepository(widget.supabase).clearLocalCache();
       await widget.supabase.auth.signOut();
       if (mounted) {
         // Navigate to login page with instant transition and clear the navigation stack

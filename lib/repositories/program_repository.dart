@@ -17,9 +17,9 @@ class ProgramRepository {
   /// Ensures that all trainings have the correct 'locked' status based on the user's subscription plan.
   /// If inconsistencies are found, it updates the database and the returned objects.
   Future<List<Program>> _ensureLockedConsistency(List<Program> programs) async {
-    final userPlan = SettingsService.instance.getSubscriptionPlan(); // 'basic' or 'premium'
+    final bool isPremium = SettingsService.instance.isPremium();
 
-    final bool isPremium = userPlan == 'premium';
+
     
     String? targetUnlockedId;
 
@@ -173,6 +173,13 @@ class ProgramRepository {
     } catch (e) {
       // Ignore cache errors
     }
+  }
+
+  Future<void> clearLocalCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_programsCacheKey);
+    } catch (_) {}
   }
 
   Future<List<Program>> getPrograms() async {
@@ -467,8 +474,8 @@ class ProgramRepository {
   }
 
   Future<List<TrainingRow>> _ensureExerciseLockedConsistency(List<TrainingRow> rows) async {
-    final userPlan = SettingsService.instance.getSubscriptionPlan();
-    final isPremium = userPlan == 'premium';
+    final isPremium = SettingsService.instance.isPremium();
+
     
     // 1. Calculate base lock status based on limit (10) and plan
     // We use a temporary list or map to hold this intermediate state
@@ -1068,6 +1075,16 @@ class ProgramRepository {
     }
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) throw Exception('Utilisateur non connecté');
+
+    final isPremium = SettingsService.instance.isPremium();
+    if (!isPremium) {
+      final localPrograms = await getLocalPrograms();
+      final totalTrainings = localPrograms.expand((p) => p.trainings).length;
+      final unlockedTrainings = localPrograms.expand((p) => p.trainings).where((t) => !t.locked).length;
+      if (totalTrainings > 0 || unlockedTrainings > 0) {
+        throw Exception('Abonnement Starter limité à 1 entraînement.');
+      }
+    }
 
     final response = await _supabase
         .from('trainings')

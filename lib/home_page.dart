@@ -80,7 +80,13 @@ class HomePageState extends State<HomePage> {
     _programScrollController = ScrollController();
     _selectedProgramId = widget.initialProgramId;
 
+    SettingsService.instance.subscriptionPlanNotifier.addListener(_onPlanChanged);
+
     _fetchPrograms();
+  }
+
+  void _onPlanChanged() {
+    if (mounted) setState(() {});
   }
 
   void clearNewIndicator() {
@@ -106,6 +112,7 @@ class HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    SettingsService.instance.subscriptionPlanNotifier.removeListener(_onPlanChanged);
     _pageController.dispose();
     _programScrollController.dispose();
     super.dispose();
@@ -706,8 +713,9 @@ class HomePageState extends State<HomePage> {
 
   Widget _buildAddTrainingCard(Program program) {
     final unlockedCount = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
-    final isPremium = SettingsService.instance.getSubscriptionPlan() == 'premium';
-    final isAddRestricted = !isPremium && unlockedCount > 0;
+    final totalTrainings = _programs?.expand((p) => p.trainings).length ?? 0;
+    final isPremium = SettingsService.instance.isPremium();
+    final isAddRestricted = !isPremium && (unlockedCount > 0 || totalTrainings > 0);
     final themeColor = isAddRestricted ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
 
     return GestureDetector(
@@ -749,8 +757,9 @@ class HomePageState extends State<HomePage> {
   Future<void> _handleAddTraining(Program program) async {
     try {
       final unlockedCount = _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
-      final isPremium = SettingsService.instance.getSubscriptionPlan() == 'premium';
-      final isAddRestricted = !isPremium && unlockedCount > 0;
+      final totalTrainings = _programs?.expand((p) => p.trainings).length ?? 0;
+      final isPremium = SettingsService.instance.isPremium();
+      final isAddRestricted = !isPremium && (unlockedCount > 0 || totalTrainings > 0);
 
       if (isAddRestricted) {
         await showFadeDialog(

@@ -18,6 +18,7 @@ class SettingsService {
     _prefs = await SharedPreferences.getInstance();
     _initialized = true;
     weightUnitNotifier.value = getWeightUnit();
+    subscriptionPlanNotifier.value = getSubscriptionPlan();
   }
 
   Future<void> initSupabase(SupabaseClient client) async {
@@ -38,7 +39,6 @@ class SettingsService {
 
     try {
       // 1. Sync Preferences
-      // Try fetching all columns including the newer ones.
       try {
         await _fetchAndSyncPreferences(user.id, [
           'weight_unit',
@@ -67,28 +67,45 @@ class SettingsService {
             'show_repos',
           ]);
         } else {
-          rethrow;
+          debugPrint('Error syncing preferences: $e');
         }
+      } catch (e) {
+        debugPrint('Error syncing preferences: $e');
       }
 
-      // 2. Sync Profile (Subscription Plan & Trial status)
-      final profileResponse = await _supabase!
-          .from('profiles')
-          .select('subscription_plan, premium_trial_started_at, trial')
-          .eq('id', user.id)
-          .maybeSingle();
+      // 2. Sync Profile (Subscription Plan & Trial status) - exactly matches glift-web UserContext
+      try {
+        final profileResponse = await _supabase!
+            .from('profiles')
+            .select('subscription_plan, premium_trial_started_at, premium_trial_end_at, premium_end_at, trial')
+            .eq('id', user.id)
+            .maybeSingle();
 
-      if (profileResponse != null) {
-        if (profileResponse['subscription_plan'] != null) {
-          final plan = profileResponse['subscription_plan'] as String;
+        if (profileResponse != null) {
+          final rawPlan = (profileResponse['subscription_plan'] as String?)?.toLowerCase().trim() ?? 'starter';
+          final rawPremiumEnd = profileResponse['premium_end_at'];
+          DateTime? premiumEndDt;
+          if (rawPremiumEnd != null) {
+            premiumEndDt = DateTime.tryParse(rawPremiumEnd as String);
+          }
+          final now = DateTime.now();
+          bool effectiveIsPremium = (rawPlan == 'premium');
+          if (effectiveIsPremium && premiumEndDt != null && premiumEndDt.isBefore(now)) {
+            effectiveIsPremium = false;
+          }
+
+          final plan = effectiveIsPremium ? 'premium' : (rawPlan == 'premium' ? 'starter' : rawPlan);
           if (plan != getSubscriptionPlan()) {
             await _prefs.setString(_kSubscriptionPlan, plan);
+            subscriptionPlanNotifier.value = plan;
           }
+          final trialStarted = profileResponse['premium_trial_started_at'] != null;
+          final isTrial = profileResponse['trial'] == true;
+          final hasUsedTrial = trialStarted || isTrial;
+          await _prefs.setBool(_kHasUsedTrial, hasUsedTrial);
         }
-        final trialStarted = profileResponse['premium_trial_started_at'] != null;
-        final isTrial = profileResponse['trial'] == true;
-        final hasUsedTrial = trialStarted || isTrial;
-        await _prefs.setBool(_kHasUsedTrial, hasUsedTrial);
+      } catch (e) {
+        debugPrint('Error syncing profile in syncFromSupabase: $e');
       }
 
     } on AuthException catch (e) {
@@ -245,6 +262,7 @@ class SettingsService {
 
   // Notifiers
   final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
+  final ValueNotifier<String> subscriptionPlanNotifier = ValueNotifier('starter');
 
   // Logo
   String? getLogoUrl() {
@@ -702,8 +720,19 @@ class SettingsService {
 
   // Subscription Plan
   String getSubscriptionPlan() {
-    if (!_initialized) return 'basic';
-    return _prefs.getString(_kSubscriptionPlan) ?? 'basic';
+    if (!_initialized) return 'starter';
+    final plan = _prefs.getString(_kSubscriptionPlan);
+    if (plan == null || plan.isEmpty || plan == 'basic') return 'starter';
+    return plan;
+  }
+
+  bool isPremium() => getSubscriptionPlan() == 'premium';
+
+  Future<void> clearUserData() async {
+    if (!_initialized) return;
+    await _prefs.remove(_kSubscriptionPlan);
+    await _prefs.remove(_kHasUsedTrial);
+    subscriptionPlanNotifier.value = 'starter';
   }
 
   bool getHasUsedTrial() {

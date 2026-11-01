@@ -230,8 +230,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   Future<void> _handleAddExercise() async {
     await HapticFeedback.lightImpact();
     if (!mounted) return;
-    final userPlan = SettingsService.instance.getSubscriptionPlan();
-    final isPremium = userPlan == 'premium';
+    final isPremium = SettingsService.instance.isPremium();
 
     if (!isPremium && _rows != null && _rows!.length >= 10) {
       showFadeDialog(
@@ -545,7 +544,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       }
     }
 
-    final isPremium = SettingsService.instance.getSubscriptionPlan() == 'premium';
+    final isPremium = SettingsService.instance.isPremium();
     final isAddExerciseLocked = !isPremium && _rows != null && _rows!.length >= 10;
     final addExerciseColor = isAddExerciseLocked ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
 

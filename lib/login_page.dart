@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/biometric_auth_service.dart';
 import 'auth/auth_repository.dart';
+import 'services/settings_service.dart';
 import 'widgets/forgot_password_modal.dart';
 import 'main_page.dart';
 import 'pricing_page.dart';
@@ -172,6 +173,10 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           if (!mounted || _hasNavigated) return;
+          try {
+            await SettingsService.instance.syncFromSupabase();
+          } catch (_) {}
+          if (!mounted || _hasNavigated) return;
           if (isNewUser) {
             _hasNavigated = true;
             Navigator.of(context).pushAndRemoveUntil(
@@ -254,6 +259,9 @@ class _LoginPageState extends State<LoginPage> {
         if (widget.biometricAuthService != null) {
           await widget.biometricAuthService!.persistSession(session);
         }
+        try {
+          await SettingsService.instance.syncFromSupabase();
+        } catch (_) {}
         if (!mounted || _hasNavigated) return;
         _navigateToMainPage();
       }
