@@ -31,7 +31,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   String? _validateEmail(String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return 'Veuillez saisir un email valide.';
+      return 'Format d’adresse invalide.';
     }
     final emailRegex = RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(trimmed)) {
@@ -55,7 +55,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       }
       setState(() {
         _feedback =
-            'Email envoyé ! Vérifiez votre boîte de réception pour réinitialiser votre mot de passe.';
+            'Email envoyé ! Vérifie ta boîte de réception pour réinitialiser ton mot de passe.';
       });
     } on AuthException catch (error) {
       setState(() {
@@ -64,7 +64,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } catch (_) {
       setState(() {
         _feedback =
-            'Service temporairement indisponible. Réessayez plus tard.';
+            'Service temporairement indisponible. Réessaie plus tard.';
       });
     } finally {
       setState(() {
@@ -84,7 +84,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Recevez un lien de réinitialisation par email.',
+              'Reçois un lien de réinitialisation par email.',
               style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

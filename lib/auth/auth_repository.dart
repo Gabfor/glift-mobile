@@ -29,7 +29,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
       if (session == null) {
         throw const AuthException(
-          'Identifiants invalides. Vérifiez votre email et votre mot de passe.',
+          'Identifiants invalides. Vérifie ton email et ton mot de passe.',
         );
       }
 
@@ -42,11 +42,11 @@ class SupabaseAuthRepository implements AuthRepository {
       throw AuthException(
         error.message.isNotEmpty
             ? error.message
-            : 'Identifiants invalides. Vérifiez votre email et votre mot de passe.',
+            : 'Identifiants invalides. Vérifie ton email et ton mot de passe.',
       );
     } catch (_) {
       throw const AuthException(
-        'Service temporairement indisponible. Réessayez plus tard.',
+        'Service temporairement indisponible. Réessaie plus tard.',
       );
     }
   }

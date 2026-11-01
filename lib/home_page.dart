@@ -316,7 +316,7 @@ class HomePageState extends State<HomePage> {
       builder: (context) => EditNameModal(
         initialName: program.name,
         title: 'Nom du programme',
-        description: 'Vous pouvez modifier le nom de ce programme ci-dessous.',
+        description: 'Tu peux modifier le nom de ce programme ci-dessous.',
         fieldLabel: 'Nom du programme',
         isDeleteEnabled: !(program.name == 'Nom du programme' && program.trainings.isEmpty),
         onDelete: () async {
@@ -326,7 +326,7 @@ class HomePageState extends State<HomePage> {
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
-              question: 'Voulez-vous vraiment supprimer ce programme ?',
+              question: 'Veux-tu vraiment supprimer ce programme ?',
               objectName: 'le programme',
             ),
           );
@@ -366,7 +366,7 @@ class HomePageState extends State<HomePage> {
       builder: (context) => EditNameModal(
         initialName: training.name,
         title: 'Nom de l’entraînement',
-        description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
+        description: 'Tu peux modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
         onDelete: () async {
           // Close EditNameModal first
@@ -375,7 +375,7 @@ class HomePageState extends State<HomePage> {
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
-              question: 'Voulez-vous vraiment supprimer cet entraînement ?',
+              question: 'Veux-tu vraiment supprimer cet entraînement ?',
               objectName: 'l’entraînement',
             ),
           );

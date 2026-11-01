@@ -131,7 +131,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       GliftModal.showError(
         context: context,
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le mot de passe. Veuillez réessayer.',
+        description: 'Impossible de mettre à jour le mot de passe. Merci de réessayer.',
       );
     }
   }

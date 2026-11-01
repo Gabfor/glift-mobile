@@ -38,7 +38,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Face ID est utilisé pour vous connecter rapidement et en toute sécurité à Glift.</string>
+	<string>Face ID est utilisé pour te connecter rapidement et en toute sécurité à Glift.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

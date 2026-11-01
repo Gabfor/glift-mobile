@@ -62,7 +62,7 @@ class BiometricAuthService {
 
     try {
       final didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Déverrouillez Glift avec Face ID ou Touch ID',
+        localizedReason: 'Déverrouille Glift avec Face ID ou Touch ID',
         options: const AuthenticationOptions(
           biometricOnly: true,
           stickyAuth: true,

@@ -246,7 +246,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
 
                            // Subtitle
                            Text(
-                             'Vous avez terminé une nouvelle séance d’entraînement.',
+                             'Tu as terminé une nouvelle séance d’entraînement.',
                              textAlign: TextAlign.center,
                              style: GoogleFonts.quicksand(
                                fontSize: 14,
@@ -297,8 +297,8 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                             if (_displayGoals.isNotEmpty) ...[
                                Text(
                                   _displayGoals.length > 1
-                                      ? 'Vous avez également atteint ${_displayGoals.length} objectifs !'
-                                      : 'Vous avez également atteint 1 objectif !',
+                                      ? 'Tu as également atteint ${_displayGoals.length} objectifs !'
+                                      : 'Tu as également atteint 1 objectif !',
                                   style: GoogleFonts.quicksand(
                                      fontSize: 14,
                                      fontWeight: FontWeight.w700,

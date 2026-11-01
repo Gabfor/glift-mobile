@@ -238,7 +238,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         context: context,
         builder: (context) => const UnlockExerciseModal(
           title: "Ajout d'exercice impossible",
-          description: "Votre formule d’abonnement actuelle vous limite à 10 exercices utilisables.",
+          description: "Ta formule d’abonnement actuelle te limite à 10 exercices utilisables.",
         ),
       );
       return;
@@ -290,7 +290,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       builder: (context) => EditNameModal(
         initialName: _trainingName,
         title: 'Nom de l’entraînement',
-        description: 'Vous pouvez modifier le nom de cet entraînement ci-dessous.',
+        description: 'Tu peux modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
         onDelete: () async {
           final navigator = Navigator.of(context);
@@ -301,7 +301,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
-              question: 'Voulez-vous vraiment supprimer cet entraînement ?',
+              question: 'Veux-tu vraiment supprimer cet entraînement ?',
               objectName: 'l’entraînement',
             ),
           );
@@ -1299,7 +1299,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
       builder: (context) => EditNameModal(
         initialName: widget.row.exercise,
         title: 'Nom de l’exercice',
-        description: 'Vous pouvez modifier le nom de cet exercice et/ou ajouter un lien ci-dessous.',
+        description: 'Tu peux modifier le nom de cet exercice et/ou ajouter un lien ci-dessous.',
         fieldLabel: 'Nom de l’exercice',
         showLinkField: true,
         initialLink: widget.row.videoUrl,
@@ -1314,8 +1314,8 @@ class _ExerciseCardState extends State<_ExerciseCard>
             context: context,
             builder: (context) => DeleteConfirmationModal(
               question: isSuperset 
-                  ? 'Voulez-vous vraiment supprimer ces exercices en superset ?'
-                  : 'Voulez-vous vraiment supprimer cet exercice ?',
+                  ? 'Veux-tu vraiment supprimer ces exercices en superset ?'
+                  : 'Veux-tu vraiment supprimer cet exercice ?',
               objectName: isSuperset ? 'le superset' : 'l’exercice',
             ),
           );

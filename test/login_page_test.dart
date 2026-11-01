@@ -13,7 +13,7 @@ class FakeAuthRepository implements AuthRepository {
   bool shouldThrowAuth = false;
   bool shouldThrow = false;
   String message =
-      'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
+      'Identifiants invalides. Vérifie ton email et ton mot de passe.';
   Future<void> Function()? onSignIn;
 
   @override
@@ -133,8 +133,8 @@ void main() {
     await tester.tap(find.byKey(const Key('loginButton')));
     await tester.pump();
 
-    expect(find.text('Veuillez saisir un email valide.'), findsNothing);
-    expect(find.text('Veuillez saisir votre mot de passe.'), findsNothing);
+    expect(find.text('Format d’adresse invalide'), findsNothing);
+    expect(find.text('Mot de passe invalide'), findsNothing);
   });
 
   testWidgets('Invalid email shows validation message after leaving field',
@@ -147,7 +147,7 @@ void main() {
     await tester.tap(find.byKey(const Key('passwordInput')));
     await tester.pump();
 
-    expect(find.text('Veuillez saisir un email valide.'), findsOneWidget);
+    expect(find.text('Format d’adresse invalide'), findsOneWidget);
   });
 
   testWidgets('Password field is not marked as error when left empty',
@@ -174,7 +174,7 @@ void main() {
   testWidgets('Supabase auth error is displayed', (tester) async {
     final repository = FakeAuthRepository()
       ..shouldThrowAuth = true
-      ..message = 'Identifiants invalides. Vérifiez votre email et votre mot de passe.';
+      ..message = 'Identifiants invalides. Vérifie ton email et ton mot de passe.';
 
     await tester.pumpWidget(_buildLogin(repository));
 

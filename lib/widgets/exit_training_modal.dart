@@ -48,7 +48,7 @@ class ExitTrainingModal extends StatelessWidget {
                 
                 // Warning Text 1
                 Text(
-                  'Si vous quittez cet entraînement, votre progression ne sera pas sauvegardée.',
+                  'Si tu quittes cet entraînement, ta progression ne sera pas sauvegardée.',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700, // Bold
@@ -77,14 +77,14 @@ class ExitTrainingModal extends StatelessWidget {
                           fontWeight: FontWeight.w700, // Bold
                         ),
                       ),
-                      const TextSpan(text: '” vous perdrez toute progression. En cliquant sur “'),
+                      const TextSpan(text: '” tu perdras toute progression. En cliquant sur “'),
                       TextSpan(
                         text: 'Annuler',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w700, // Bold
                         ),
                       ),
-                      const TextSpan(text: '” vous pourrez reprendre votre entraînement.'),
+                      const TextSpan(text: '” tu pourras reprendre ton entraînement.'),
                     ],
                   ),
                 ),

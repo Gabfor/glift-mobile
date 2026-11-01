@@ -133,7 +133,7 @@ class _PricingPageState extends State<PricingPage> {
 
     return GliftPageLayout(
       title: greetingTitle,
-      subtitle: 'Choisissez votre formule d’abonnement',
+      subtitle: 'Choisis ta formule d’abonnement',
       scrollable: true,
       fullPageScroll: false,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),

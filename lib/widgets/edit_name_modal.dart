@@ -298,7 +298,7 @@ class _EditNameModalState extends State<EditNameModal> {
                                 left: 14.5,
                                 right: 44.5,
                               ),
-                              hintText: 'Insérez votre lien ici',
+                              hintText: 'Insère ton lien ici',
                               hintStyle: GoogleFonts.quicksand(
                                 color: const Color(0xFFD7D4DC),
                                 fontWeight: FontWeight.w600,

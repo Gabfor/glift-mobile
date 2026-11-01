@@ -59,7 +59,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                   height: 1.4,
                 ),
                 children: [
-                  const TextSpan(text: 'Rendez-vous sur le '),
+                  const TextSpan(text: 'Rends-toi sur le '),
                   TextSpan(
                     text: 'Store',
                     style: GoogleFonts.quicksand(
@@ -70,7 +70,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                     recognizer: _storeRecognizer,
                   ),
                   const TextSpan(
-                      text: ' pour trouver votre prochain programme !'),
+                      text: ' pour trouver ton prochain programme !'),
                 ],
               ),
               textAlign: TextAlign.center,

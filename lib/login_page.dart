@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
   String get _emailMessage {
     final trimmed = _emailController.text.trim();
     if (trimmed.isEmpty) return '';
-    return _isEmailValid ? '' : 'Veuillez saisir un email valide.';
+    return _isEmailValid ? '' : 'Format d’adresse invalide';
   }
 
   String get _passwordMessage => '';
@@ -272,16 +272,18 @@ class _LoginPageState extends State<LoginPage> {
         description:
             'Nous n’arrivons pas à te connecter. Vérifie qu’il s’agit bien de l’email utilisé lors de ton inscription ou qu’il n’y a pas d’erreur dans le mot de passe.',
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
       AuthErrorModal.show(
         context,
-        title: 'Erreur de connexion',
-        description:
-            'Une erreur inattendue est survenue. Veuillez vérifier votre connexion et réessayer.',
+        title: 'Erreur',
+        description: msg.isNotEmpty
+            ? msg
+            : 'Une erreur inattendue est survenue. Vérifie ta connexion et réessaie.',
       );
     }
   }

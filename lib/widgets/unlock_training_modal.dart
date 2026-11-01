@@ -55,7 +55,7 @@ class UnlockTrainingModal extends StatelessWidget {
 
                 // Warning Text 1
                 Text(
-                  'Votre formule d’abonnement actuelle vous limite à un seul entraînement utilisable.',
+                  'Ta formule d’abonnement actuelle te limite à un seul entraînement utilisable.',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -87,7 +87,7 @@ class UnlockTrainingModal extends StatelessWidget {
                       ),
                       const TextSpan(
                         text:
-                            ' vous serez redirigé vers votre compte où vous pourrez modifier votre formule d’abonnement et débloquer tous vos entraînements.',
+                            ' tu seras redirigé vers ton compte où tu pourras modifier ta formule d’abonnement et débloquer tous tes entraînements.',
                       ),
                     ],
                   ),

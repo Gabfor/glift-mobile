@@ -8,17 +8,15 @@ class AuthErrorModal extends StatelessWidget {
 
   const AuthErrorModal({
     super.key,
-    this.title = 'Email ou mot de passe incorrect',
-    this.description =
-        'Nous n’arrivons pas à te connecter. Vérifie qu’il s’agit bien de l’email utilisé lors de ton inscription ou qu’il n’y a pas d’erreur dans le mot de passe.',
+    this.title = 'Erreur',
+    this.description = '',
     this.buttonText = 'Fermer',
   });
 
   static Future<void> show(
     BuildContext context, {
-    String title = 'Email ou mot de passe incorrect',
-    String description =
-        'Nous n’arrivons pas à te connecter. Vérifie qu’il s’agit bien de l’email utilisé lors de ton inscription ou qu’il n’y a pas d’erreur dans le mot de passe.',
+    String title = 'Erreur',
+    String description = '',
     String buttonText = 'Fermer',
   }) {
     return GliftModal.showError(
@@ -26,6 +24,16 @@ class AuthErrorModal extends StatelessWidget {
       title: title,
       description: description,
       buttonText: buttonText,
+    );
+  }
+
+  static Future<void> showInvalidCredentials(BuildContext context) {
+    return GliftModal.showError(
+      context: context,
+      title: 'Email ou mot de passe incorrect',
+      description:
+          'Nous n’arrivons pas à te connecter. Vérifie qu’il s’agit bien de l’email utilisé lors de ton inscription ou qu’il n’y a pas d’erreur dans le mot de passe.',
+      buttonText: 'Fermer',
     );
   }
 

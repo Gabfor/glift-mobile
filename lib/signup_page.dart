@@ -14,6 +14,7 @@ import 'main_page.dart';
 import 'pricing_page.dart';
 import 'services/auth_code_service.dart';
 import 'supabase_credentials.dart';
+import 'widgets/auth_error_modal.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/otp_verification_modal.dart';
 
@@ -48,8 +49,6 @@ class _SignupPageState extends State<SignupPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
-  String? _errorTitle;
-  String? _errorDescription;
   String? _externalEmailError;
   StreamSubscription<AuthState>? _authSubscription;
 
@@ -323,11 +322,14 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   void _handleError(String? message) {
+    if (!mounted) return;
     if (message == null || message.trim().isEmpty) {
-      _errorTitle = 'Mince, il y a un problème...';
-      _errorDescription =
-          'Nous sommes désolés mais nous rencontrons actuellement une erreur. Merci de réessayer dans un instant.';
-      _externalEmailError = null;
+      AuthErrorModal.show(
+        context,
+        title: 'Mince, il y a un problème...',
+        description:
+            'Nous sommes désolés mais nous rencontrons actuellement une erreur. Merci de réessayer dans un instant.',
+      );
       return;
     }
 
@@ -341,14 +343,21 @@ class _SignupPageState extends State<SignupPage> {
         normalized.contains('email deja');
 
     if (emailAlreadyUsed) {
-      _errorTitle = 'Inscription impossible';
-      _errorDescription =
-          'Vous ne pouvez pas utiliser cet email car il est déjà associé à un compte actif sur la plateforme.';
-      _externalEmailError = 'Mince, cet email est déjà utilisé';
+      setState(() {
+        _externalEmailError = 'Mince, cet email est déjà utilisé';
+      });
+      AuthErrorModal.show(
+        context,
+        title: 'Inscription impossible',
+        description:
+            'Tu ne peux pas utiliser cet email car il est déjà associé à un compte actif sur la plateforme.',
+      );
     } else {
-      _errorTitle = message;
-      _errorDescription = null;
-      _externalEmailError = null;
+      AuthErrorModal.show(
+        context,
+        title: 'Erreur',
+        description: message,
+      );
     }
   }
 
@@ -359,8 +368,6 @@ class _SignupPageState extends State<SignupPage> {
       _firstNameTouched = true;
       _emailTouched = true;
       _passwordTouched = true;
-      _errorTitle = null;
-      _errorDescription = null;
       _externalEmailError = null;
       _isLoading = true;
     });
@@ -421,8 +428,6 @@ class _SignupPageState extends State<SignupPage> {
     HapticFeedback.lightImpact();
     setState(() {
       _isLoading = true;
-      _errorTitle = null;
-      _errorDescription = null;
       _externalEmailError = null;
     });
 
@@ -494,64 +499,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            if (_errorTitle != null) ...[
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF1F1),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: 3,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE34A4A),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(5),
-                            bottomLeft: Radius.circular(5),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _errorTitle!,
-                            style: GoogleFonts.quicksand(
-                              color: const Color(0xFFE34A4A),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          if (_errorDescription != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              _errorDescription!,
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFFE34A4A),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+
             const SizedBox(height: 8),
             _InputField(
               label: 'Prénom',
@@ -566,8 +514,6 @@ class _SignupPageState extends State<SignupPage> {
               onChanged: (_) {
                 setState(() {
                   _firstNameTouched = true;
-                  _errorTitle = null;
-                  _errorDescription = null;
                 });
               },
             ),
@@ -584,8 +530,6 @@ class _SignupPageState extends State<SignupPage> {
               onChanged: (_) {
                 setState(() {
                   _emailTouched = true;
-                  _errorTitle = null;
-                  _errorDescription = null;
                   _externalEmailError = null;
                 });
               },
@@ -607,8 +551,6 @@ class _SignupPageState extends State<SignupPage> {
               onChanged: (_) {
                 setState(() {
                   _passwordTouched = true;
-                  _errorTitle = null;
-                  _errorDescription = null;
                 });
               },
               onToggleVisibility: _togglePasswordVisibility,

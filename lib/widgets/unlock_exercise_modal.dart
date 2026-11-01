@@ -10,7 +10,7 @@ class UnlockExerciseModal extends StatelessWidget {
   const UnlockExerciseModal({
     super.key,
     this.title = 'Exercice bloqué',
-    this.description = 'Cet exercice est bloqué car votre formule d’abonnement actuelle vous limite à 10 exercices utilisables.',
+    this.description = 'Cet exercice est bloqué car ta formule d’abonnement actuelle te limite à 10 exercices utilisables.',
   });
 
   Future<void> _launchURL() async {
@@ -94,7 +94,7 @@ class UnlockExerciseModal extends StatelessWidget {
                       ),
                       const TextSpan(
                         text:
-                            ' vous serez redirigé vers votre compte où vous pourrez modifier votre formule d’abonnement et débloquer cet exercice.',
+                            ' tu seras redirigé vers ton compte où tu pourras modifier ta formule d’abonnement et débloquer cet exercice.',
                       ),
                     ],
                   ),

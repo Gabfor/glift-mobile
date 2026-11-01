@@ -284,11 +284,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: _hasError
-                        ? const Color(0xFFEF4F4E)
-                        : _hasResent
-                            ? const Color(0xFF00D591)
-                            : const Color(0xFF5D6494),
+                    color: const Color(0xFF3A416F),
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,

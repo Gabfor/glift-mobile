@@ -441,7 +441,7 @@ class _NoteModalState extends State<NoteModal> {
                                 focusNode: _focusNode,
                                 scrollController: _scrollController,
                                 config: quill.QuillEditorConfig(
-                                  placeholder: 'Ajoutez vos notes ici',
+                                  placeholder: 'Ajoute tes notes ici',
                                   // Custom style builder to enforce specific font weights
                                   customStyleBuilder: (attribute) {
                                     if (attribute.key == 'bold') {

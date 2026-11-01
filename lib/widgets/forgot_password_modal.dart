@@ -318,7 +318,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
 
     if (!_isEmailValid) {
       setState(() {
-        _emailErrorMessage = 'Veuillez saisir une adresse e-mail valide.';
+        _emailErrorMessage = 'Format d’adresse invalide';
       });
       return;
     }
@@ -344,11 +344,11 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
           debugPrint('✅ [ForgotPasswordModal] Reset email sent successfully to $email');
         } else if (response.statusCode == 429) {
           throw const AuthException(
-            'Veuillez patienter quelques instants avant de réessayer.',
+            'Patiente quelques instants avant de réessayer.',
             statusCode: '429',
           );
         } else {
-          String msg = 'Impossible d’envoyer l’e-mail. Veuillez réessayer.';
+          String msg = 'Impossible d’envoyer l’e-mail. Merci de réessayer.';
           try {
             final data = jsonDecode(responseBody);
             if (data is Map && data['msg'] != null) {
@@ -382,7 +382,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
         if (e.statusCode == '429' ||
             e.message.toLowerCase().contains('rate') ||
             e.message.toLowerCase().contains('wait')) {
-          _emailErrorMessage = 'Veuillez patienter quelques instants avant de réessayer.';
+          _emailErrorMessage = 'Patiente quelques instants avant de réessayer.';
         } else {
           _emailErrorMessage = e.message;
         }
@@ -392,7 +392,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _emailErrorMessage = 'Impossible d’envoyer l’e-mail. Veuillez réessayer.';
+        _emailErrorMessage = 'Impossible d’envoyer l’e-mail. Merci de réessayer.';
       });
     }
   }
