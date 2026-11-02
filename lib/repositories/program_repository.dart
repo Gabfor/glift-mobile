@@ -29,47 +29,24 @@ class ProgramRepository {
     
     String? targetUnlockedId;
 
-    if (!isPremium) {
-      // 1. Collect all visible trainings in the app
-      final List<Training> visibleTrainings = [];
-      for (final program in programs) {
-        if (!program.app) continue;
-        final sorted = List<Training>.from(program.trainings)
-          ..sort((a, b) => a.position.compareTo(b.position));
-        for (final t in sorted) {
-          if (t.app) {
-            visibleTrainings.add(t);
-          }
+    if (!isPremium && programs.isNotEmpty) {
+      // Active training for Starter account is strictly the 1st training of the 1st program containing trainings.
+      // Visibility (app / dashboard) must NEVER alter which training is active.
+      final sortedPrograms = List<Program>.from(programs)
+        ..sort((a, b) => a.position.compareTo(b.position));
+
+      Program? firstProgWithTrainings;
+      for (final p in sortedPrograms) {
+        if (p.trainings.isNotEmpty) {
+          firstProgWithTrainings = p;
+          break;
         }
       }
 
-      final visibleUnlocked = visibleTrainings.where((t) => !t.locked).toList();
-      final allTrainings = programs.expand((p) => p.trainings).toList();
-      final allUnlocked = allTrainings.where((t) => !t.locked).toList();
-
-      if (visibleTrainings.isNotEmpty) {
-        // If exactly 1 visible training is unlocked and no other hidden training is unlocked, preserve state
-        if (visibleUnlocked.length == 1 && allUnlocked.length == 1 && visibleUnlocked.first.id == allUnlocked.first.id) {
-          return programs;
-        }
-
-        if (visibleUnlocked.length == 1) {
-          targetUnlockedId = visibleUnlocked.first.id;
-        } else if (visibleUnlocked.length > 1) {
-          targetUnlockedId = visibleTrainings.first.id;
-        } else {
-          // No visible training is unlocked -> unlock the 1st visible training!
-          targetUnlockedId = visibleTrainings.first.id;
-        }
-      } else {
-        // All programs/trainings are hidden in the app
-        // Maintain exactly 1 unlocked training in the account
-        if (allUnlocked.length == 1) {
-          return programs;
-        }
-        if (allTrainings.isNotEmpty) {
-          targetUnlockedId = allTrainings.first.id;
-        }
+      if (firstProgWithTrainings != null && firstProgWithTrainings.trainings.isNotEmpty) {
+        final sortedTrainings = List<Training>.from(firstProgWithTrainings.trainings)
+          ..sort((a, b) => a.position.compareTo(b.position));
+        targetUnlockedId = sortedTrainings.first.id;
       }
     }
 
@@ -86,11 +63,7 @@ class ProgramRepository {
             if (isPremium) {
                 shouldBeLocked = false;
             } else {
-                if (training.id == targetUnlockedId) {
-                    shouldBeLocked = false;
-                } else {
-                    shouldBeLocked = true;
-                }
+                shouldBeLocked = targetUnlockedId != null ? (training.id != targetUnlockedId) : false;
             }
 
             if (training.locked != shouldBeLocked) {
@@ -121,7 +94,7 @@ class ProgramRepository {
     if (updates.isNotEmpty) {
       try {
         await Future.wait(updates.map((update) => 
-            _supabase.from('trainings').update(update).eq('id', update['id'])
+            _supabase.from('trainings').update({'locked': update['locked']}).eq('id', update['id'])
         ));
       } catch (e) {
         debugPrint('❌ Error syncing locked status to DB: $e');
