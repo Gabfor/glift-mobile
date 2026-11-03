@@ -332,16 +332,19 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   void _openFreeTimer() {
     HapticFeedback.lightImpact();
-    final duration = SettingsService.instance.getDefaultRestTime();
+    final duration = SettingsService.instance.getFreeTimerDuration();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => TimerPage(
           durationInSeconds: duration,
-          storedDurationInSeconds: null,
+          storedDurationInSeconds: duration,
           autoStart: true,
           enableVibration: SettingsService.instance.getVibrationEnabled(),
           enableSound: SettingsService.instance.getSoundEnabled(),
-          onSave: null,
+          saveButtonLabel: 'Mémoriser ce temps',
+          onSave: (newDuration) async {
+            await SettingsService.instance.saveFreeTimerDuration(newDuration);
+          },
         ),
       ),
     );
@@ -413,7 +416,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               ),
               child: Center(
                 child: SvgPicture.asset(
-                  'assets/icons/timer_off.svg',
+                  'assets/icons/timer_libre.svg',
                   width: 24,
                   height: 24,
                 ),

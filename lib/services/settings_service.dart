@@ -421,6 +421,19 @@ class SettingsService {
     return _prefs.getInt(_kDefaultRestTime) ?? 60;
   }
 
+  // Free Timer Duration
+  static const String _kFreeTimerDuration = 'free_timer_duration';
+
+  Future<void> saveFreeTimerDuration(int seconds) async {
+    await _initIfNeeded();
+    await _prefs.setInt(_kFreeTimerDuration, seconds);
+  }
+
+  int getFreeTimerDuration() {
+    if (!_initialized) return getDefaultRestTime();
+    return _prefs.getInt(_kFreeTimerDuration) ?? getDefaultRestTime();
+  }
+
   // Show Effort
   Future<void> saveShowEffort(bool show) async {
     await _initIfNeeded();

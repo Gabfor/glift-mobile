@@ -535,7 +535,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       return;
     }
 
-    final defaultDuration = SettingsService.instance.getDefaultRestTime();
+    final defaultDuration = SettingsService.instance.getFreeTimerDuration();
     final duration = inlineData?.durationInSeconds ?? defaultDuration;
     final displayType = SettingsService.instance.getDisplayType();
 
@@ -563,13 +563,16 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       reverseTransitionDuration: const Duration(milliseconds: 300), // Keep exit animation for Close
       pageBuilder: (context, animation, secondaryAnimation) => TimerPage(
         durationInSeconds: duration,
-        storedDurationInSeconds: null,
+        storedDurationInSeconds: defaultDuration,
         initialRemainingSeconds: inlineData?.remainingSeconds,
         enableSound: inlineData?.enableSound ?? SettingsService.instance.getSoundEnabled(),
         enableVibration: inlineData?.enableVibration ?? SettingsService.instance.getVibrationEnabled(),
         autoStart: inlineData?.isRunning ?? true,
         isActiveTraining: true,
-        onSave: null,
+        saveButtonLabel: 'Mémoriser ce temps',
+        onSave: (newDuration) async {
+          await SettingsService.instance.saveFreeTimerDuration(newDuration);
+        },
         onMinimize: _activateInlineTimer, // Handle instant minimize
       ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -1163,7 +1166,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 child: SvgPicture.asset(
                   _inlineTimerData != null
                       ? 'assets/icons/timer_on.svg'
-                      : 'assets/icons/timer_off.svg',
+                      : 'assets/icons/timer_libre.svg',
                   width: 24,
                   height: 24,
                 ),

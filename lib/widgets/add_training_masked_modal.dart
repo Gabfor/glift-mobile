@@ -99,7 +99,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                   text: TextSpan(
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF5D6494),
                       height: 1.4,
                     ),

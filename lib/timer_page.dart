@@ -33,6 +33,7 @@ class TimerPage extends StatefulWidget {
     this.autoStart = true,
     this.isActiveTraining = false,
     this.onSave,
+    this.saveButtonLabel,
     this.onMinimize,
     TimerAlertService? alertService,
     VibrationService? vibrationService,
@@ -48,6 +49,7 @@ class TimerPage extends StatefulWidget {
   final bool isActiveTraining;
 
   final Future<void> Function(int)? onSave;
+  final String? saveButtonLabel;
   final ValueChanged<InlineTimerData>? onMinimize; // New callback for instant minimization
   final TimerAlertService alertService;
   final VibrationService vibrationService;
@@ -598,7 +600,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                               ),
                             )
                           : Text(
-                              'Sauvegarder ce temps de repos',
+                              widget.saveButtonLabel ?? 'Sauvegarder ce temps de repos',
                               style: GoogleFonts.quicksand(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
