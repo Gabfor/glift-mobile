@@ -24,6 +24,7 @@ import 'widgets/empty_programs_widget.dart';
 import 'widgets/edit_name_modal.dart';
 import 'widgets/delete_confirmation_modal.dart';
 import 'widgets/add_training_locked_modal.dart';
+import 'widgets/add_training_masked_modal.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -769,9 +770,15 @@ class HomePageState extends State<HomePage> {
   Future<void> _handleAddTraining(Program program) async {
     try {
       if (_isAddTrainingRestricted) {
+        final visibleUnlocked =
+            _programs?.expand((p) => p.trainings).where((t) => !t.locked).length ?? 0;
+        final isTrainingMasked = visibleUnlocked == 0;
+
         await showFadeDialog(
           context: context,
-          builder: (context) => const AddTrainingLockedModal(),
+          builder: (context) => isTrainingMasked
+              ? const AddTrainingMaskedModal()
+              : const AddTrainingLockedModal(),
         );
         return;
       }
