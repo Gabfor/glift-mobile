@@ -338,7 +338,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         builder: (context) => TimerPage(
           durationInSeconds: duration,
           storedDurationInSeconds: duration,
-          autoStart: true,
+          autoStart: false,
           enableVibration: SettingsService.instance.getVibrationEnabled(),
           enableSound: SettingsService.instance.getSoundEnabled(),
           saveButtonLabel: 'Mémoriser ce temps',
