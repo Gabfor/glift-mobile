@@ -106,9 +106,6 @@ class ProgramRepository {
   }
 
   List<Program> filterVisiblePrograms(List<Program> programs) {
-    final bool isPremium = SettingsService.instance.isPremium();
-    final int allTrainingsCount = programs.expand((p) => p.trainings).length;
-
     final processed = programs.map((p) {
       final visibleTrainings = p.trainings.where((t) => t.app).toList();
       return Program(
@@ -119,22 +116,7 @@ class ProgramRepository {
         dashboard: p.dashboard,
         app: p.app,
       );
-    }).where((p) {
-      if (!p.app) return false;
-      // For Starter users who already have trainings in their account,
-      // empty programs should never be shown in the app.
-      if (!isPremium && allTrainingsCount > 0 && p.trainings.isEmpty) {
-        return false;
-      }
-      return true;
-    }).toList();
-
-    if (!isPremium) {
-      if (allTrainingsCount > 0) {
-        return processed.where((p) => p.trainings.isNotEmpty).toList();
-      }
-      return processed;
-    }
+    }).where((p) => p.app).toList();
 
     return processed.asMap().entries.where((entry) {
       final p = entry.value;
@@ -402,29 +384,8 @@ class ProgramRepository {
         })
         .toList();
 
-    final bool isPremium = SettingsService.instance.isPremium();
-
-    if (!isPremium) {
-      final totalTrainingsCount = resultList.expand((p) => p.trainings).length;
-      if (totalTrainingsCount > 0) {
-        // Clean up any empty ghost programs that were created automatically
-        final ghostPrograms = resultList.where((p) => p.trainings.isEmpty && p.name == 'Nom du programme').toList();
-        for (final ghost in ghostPrograms) {
-          try {
-            await _supabase.from('programs').delete().eq('id', ghost.id);
-            resultList.removeWhere((p) => p.id == ghost.id);
-          } catch (e) {
-            debugPrint('Error cleaning up ghost program: $e');
-          }
-        }
-      }
-      return resultList;
-    }
-
-    // For Premium users only: mirror web behavior
-    final allHiddenInApp = resultList.every((p) => !p.app);
-    if (!allHiddenInApp) {
-      bool hasEmpty = resultList.any((p) => p.trainings.isEmpty && p.app);
+    // Mirror web behavior: always ensure an empty trailing program exists
+    bool hasEmpty = resultList.any((p) => p.trainings.isEmpty && p.app);
       if (!hasEmpty) {
         try {
           final newProgram = await _supabase
@@ -461,7 +422,6 @@ class ProgramRepository {
         final emptyPrograms = resultList.where((p) => p.trainings.isEmpty).toList();
         resultList = [...nonEmpty, ...emptyPrograms];
       }
-    }
 
     return resultList;
   }
