@@ -1,3 +1,4 @@
+import '../services/settings_service.dart';
 import 'dart:convert';
 import 'package:supabase/supabase.dart';
 import '../models/store_program.dart';
@@ -64,6 +65,18 @@ class StoreRepository {
           .select('*')
           .eq('id', linkedProgramId)
           .single();
+
+      // Check Starter quota
+      final bool isPremium = SettingsService.instance.isPremium();
+      if (!isPremium) {
+        final existingTrainings = await _supabase
+            .from('trainings')
+            .select('id')
+            .eq('user_id', user.id);
+        if ((existingTrainings as List).isNotEmpty) {
+          throw Exception('Abonnement Starter limité à 1 entraînement.');
+        }
+      }
 
       // 3. Get max position for user programs
       final userPrograms = await _supabase

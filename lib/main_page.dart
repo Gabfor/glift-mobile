@@ -69,6 +69,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
           initialTrainingId: widget.initialTrainingId,
           onNavigationVisibilityChanged: _handleNavigationVisibilityChanged,
           onNavigateToStore: _navigateToStore,
+          onNavigateToHome: () => _navigateToHome(),
         );
       case 1:
         return HomePage(

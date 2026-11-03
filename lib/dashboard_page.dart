@@ -33,6 +33,7 @@ class DashboardPage extends StatefulWidget {
     this.initialTrainingId,
     this.onNavigationVisibilityChanged,
     this.onNavigateToStore,
+    this.onNavigateToHome,
   });
 
   final SupabaseClient supabase;
@@ -42,6 +43,7 @@ class DashboardPage extends StatefulWidget {
   final String? initialTrainingId;
   final ValueChanged<bool>? onNavigationVisibilityChanged;
   final VoidCallback? onNavigateToStore;
+  final VoidCallback? onNavigateToHome;
 
   @override
   State<DashboardPage> createState() => DashboardPageState();
@@ -391,7 +393,13 @@ class DashboardPageState extends State<DashboardPage> {
             SliverFillRemaining(
               hasScrollBody: false,
               child: widget.onNavigateToStore != null
-                  ? EmptyProgramsWidget(onGoToStore: widget.onNavigateToStore!)
+                  ? EmptyProgramsWidget(
+                      onGoToStore: widget.onNavigateToStore!,
+                      onManageTrainings: widget.onNavigateToHome,
+                      isAllMasked: _programs.isEmpty &&
+                          _repository.totalProgramsInAccount > 0,
+                      isDashboard: true,
+                    )
                   : Center(
                       child: Text(
                         'Aucun programme disponible',

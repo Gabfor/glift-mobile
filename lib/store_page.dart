@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
 
@@ -59,10 +60,33 @@ class _StorePageState extends State<StorePage> {
   bool _isNavigationVisible = true;
   double _lastScrollOffset = 0;
 
+  bool _hasExistingTrainings = false;
+
+  Future<void> _checkAccountTrainings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? programsJson = prefs.getString('cached_programs');
+    int trainingsCount = 0;
+    if (programsJson != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(programsJson);
+        for (final p in decoded) {
+          final trainings = p['trainings'] as List?;
+          if (trainings != null) trainingsCount += trainings.length;
+        }
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() {
+        _hasExistingTrainings = trainingsCount > 0;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _repository = StoreRepository(widget.supabase);
+    _checkAccountTrainings();
 
     _initializeFilters();
 
@@ -427,7 +451,7 @@ class _StorePageState extends State<StorePage> {
           final isAuthenticated = widget.supabase.auth.currentUser != null;
           final hasLinkedProgram = program.linkedProgramId != null;
 
-          final isRestricted = (userPlan != 'premium' && programPlan == 'premium');
+          final isRestricted = (userPlan != 'premium' && (programPlan == 'premium' || _hasExistingTrainings));
           final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
 
           bool matchOui = selected.contains('Oui') && canDownload;
@@ -502,7 +526,7 @@ class _StorePageState extends State<StorePage> {
             final programPlan = program.plan;
             final hasLinkedProgram = program.linkedProgramId != null;
 
-            final isRestricted = (userPlan != 'premium' && programPlan == 'premium');
+            final isRestricted = (userPlan != 'premium' && (programPlan == 'premium' || _hasExistingTrainings));
             final canDownload = isAuthenticated && hasLinkedProgram && !isRestricted;
             
             options.add(canDownload ? 'Oui' : 'Non');
@@ -807,6 +831,7 @@ class _StorePageState extends State<StorePage> {
                                 isAuthenticated: isAuthenticated,
                                 repository: _repository,
                                 onNavigateToHome: widget.onNavigateToHome,
+                                hasExistingTrainings: _hasExistingTrainings,
                                 isFavorite: _favoriteProgramIds
                                     .contains(_filteredPrograms[index].id),
                                 onToggleFavorite: () => _toggleFavorite(
@@ -860,6 +885,7 @@ class _StoreProgramCard extends StatefulWidget {
   final void Function(String? programId)? onNavigateToHome;
   final bool isFavorite;
   final VoidCallback? onToggleFavorite;
+  final bool hasExistingTrainings;
 
   const _StoreProgramCard({
     required this.program,
@@ -868,6 +894,7 @@ class _StoreProgramCard extends StatefulWidget {
     this.onNavigateToHome,
     this.isFavorite = false,
     this.onToggleFavorite,
+    this.hasExistingTrainings = false,
   });
 
   @override
@@ -902,8 +929,8 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
     final userPlan = SettingsService.instance.getSubscriptionPlan();
     final programPlan = widget.program.plan;
 
-    // Logic: Restricted if user is not premium AND program is premium.
-    if (userPlan != 'premium' && programPlan == 'premium') {
+    // Logic: Restricted if user is not premium AND (program is premium OR starter quota reached)
+    if (userPlan != 'premium' && (programPlan == 'premium' || widget.hasExistingTrainings)) {
       if (mounted) setState(() => _isRestricted = true);
     } else {
       if (mounted) setState(() => _isRestricted = false);

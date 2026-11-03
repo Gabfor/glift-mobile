@@ -605,7 +605,11 @@ class HomePageState extends State<HomePage> {
             SliverFillRemaining(
               hasScrollBody: false,
               child: widget.onNavigateToStore != null
-                  ? EmptyProgramsWidget(onGoToStore: widget.onNavigateToStore!)
+                  ? EmptyProgramsWidget(
+                      onGoToStore: widget.onNavigateToStore!,
+                      isAllMasked: (_programs?.isEmpty ?? true) &&
+                          _programRepository.allPrograms.isNotEmpty,
+                    )
                   : Center(
                       child: Text(
                         'Aucun programme disponible',

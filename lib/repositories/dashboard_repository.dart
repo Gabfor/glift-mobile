@@ -6,9 +6,10 @@ import '../models/dashboard_preferences.dart';
 
 class DashboardRepository {
   final SupabaseClient _supabase;
+  int _totalProgramsInAccount = 0;
+  int get totalProgramsInAccount => _totalProgramsInAccount;
 
   DashboardRepository(this._supabase);
-
 
   Future<List<Program>> getDashboardPrograms(String userId) async {
     try {
@@ -16,10 +17,10 @@ class DashboardRepository {
           .from('programs')
           .select('id, name, position, dashboard, app, trainings(id)')
           .eq('user_id', userId)
-          .or('dashboard.eq.true,dashboard.is.null')
           .order('position', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;
+      _totalProgramsInAccount = data.length;
       return data.map((json) {
         // Filter out programs explicitly hidden from dashboard
         if (json['dashboard'] == false) return null;
