@@ -264,15 +264,16 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
             clipBehavior: Clip.none,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 44, 24, 24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Red Exclamation Badge
                     SvgPicture.asset(
                       'assets/icons/message_erreur.svg',
-                      width: 44,
-                      height: 44,
+                      width: 39,
+                      height: 35,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 16),
 
@@ -360,14 +361,14 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                 'Annuler',
                                 style: GoogleFonts.quicksand(
                                   color: const Color(0xFF3A416F),
-                                  fontSize: 15,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: SizedBox(
                             height: 48,
@@ -386,7 +387,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                 'Confirmer',
                                 style: GoogleFonts.quicksand(
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -401,18 +402,17 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
 
               // Close Button (Top right)
               Positioned(
-                top: 16,
-                right: 16,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(dialogContext).pop(),
-                  behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Icon(
-                      Icons.close,
-                      size: 20,
-                      color: Color(0xFF5D6494),
-                    ),
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  color: const Color(0xFF3A416F),
+                  iconSize: 24,
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),
@@ -437,28 +437,16 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
             clipBehavior: Clip.none,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 44, 24, 24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Purple Exclamation Badge
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF7069FA),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '!',
-                        style: GoogleFonts.quicksand(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          height: 1.0,
-                        ),
-                      ),
+                    SvgPicture.asset(
+                      'assets/icons/message.svg',
+                      width: 39,
+                      height: 35,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 16),
 
@@ -509,7 +497,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                           'Fermer',
                           style: GoogleFonts.quicksand(
                             color: const Color(0xFF3A416F),
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -521,18 +509,17 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
 
               // Close Button (Top right)
               Positioned(
-                top: 16,
-                right: 16,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(dialogContext).pop(),
-                  behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Icon(
-                      Icons.close,
-                      size: 20,
-                      color: Color(0xFF5D6494),
-                    ),
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  color: const Color(0xFF3A416F),
+                  iconSize: 24,
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),

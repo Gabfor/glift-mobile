@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'widgets/unlock_exercise_modal.dart';
 import 'widgets/edit_name_modal.dart';
 import 'widgets/delete_confirmation_modal.dart';
+import 'widgets/unnamed_exercise_warning_modal.dart';
 import 'widgets/glift_loader.dart';
 import 'utils/dialog_utils.dart';
 
@@ -208,6 +209,25 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   Future<void> _openActiveTraining() async {
+    final hasUnnamedExercises = _rows != null &&
+        _rows!.any((row) {
+          final name = row.exercise.trim().replaceAll('’', "'");
+          return name.isEmpty || name.toLowerCase() == "nom de l'exercice";
+        });
+
+    if (hasUnnamedExercises) {
+      final shouldStart = await showFadeDialog<bool>(
+        context: context,
+        builder: (context) => const UnnamedExerciseWarningModal(),
+      );
+
+      if (shouldStart != true || !mounted) {
+        return;
+      }
+    }
+
+    if (!mounted) return;
+
     final result = await Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => ActiveTrainingPage(

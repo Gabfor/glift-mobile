@@ -103,7 +103,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: SingleChildScrollView(
           child: Padding(

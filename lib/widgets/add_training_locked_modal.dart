@@ -79,7 +79,7 @@ class AddTrainingLockedModal extends StatelessWidget {
                     children: [
                       const TextSpan(text: 'En cliquant sur '),
                       TextSpan(
-                        text: '« Débloquer »',
+                        text: '“Débloquer”',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF3A416F),
