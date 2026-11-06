@@ -9,6 +9,7 @@ import 'utils/dialog_utils.dart';
 import 'widgets/download_restricted_modal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase/supabase.dart';
 
 import 'repositories/store_repository.dart';
@@ -902,6 +903,19 @@ class _StoreProgramCard extends StatefulWidget {
 }
 
 class _StoreProgramCardState extends State<_StoreProgramCard> {
+  Future<void> _launchProgramLink(String? urlString) async {
+    if (urlString == null) return;
+    final trimmed = urlString.trim();
+    if (trimmed.isEmpty || trimmed == '#') return;
+    final fullUrl = trimmed.startsWith('http://') || trimmed.startsWith('https://')
+        ? trimmed
+        : 'https://$trimmed';
+    final uri = Uri.tryParse(fullUrl);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   bool _isDownloading = false;
   bool _isRestricted = false;
 
@@ -1249,15 +1263,26 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                   ],
                 ),
                 const SizedBox(height: 15),
-                Center(
-                  child: Text(
-                    'En savoir plus',
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFF5D6494),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final link = program.link?.trim();
+                    final hasLink = link != null && link.isNotEmpty && link != '#';
+                    return Center(
+                      child: GestureDetector(
+                        onTap: hasLink ? () => _launchProgramLink(link) : null,
+                        child: Text(
+                          'En savoir plus',
+                          style: GoogleFonts.quicksand(
+                            color: hasLink
+                                ? const Color(0xFF5D6494)
+                                : const Color(0xFFD7D4DC),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

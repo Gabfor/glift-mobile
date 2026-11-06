@@ -40,6 +40,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
 
   bool _isValidating = false;
   bool _isResending = false;
+  bool _isResendHovered = false;
   bool _hasError = false;
   bool _hasResent = false;
   int _focusedIndex = -1;
@@ -361,25 +362,32 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                 const SizedBox(height: 14),
 
                 // Bouton "Renvoyer le code"
-                GestureDetector(
-                  onTap: _isResending || _isValidating ? null : _handleResend,
-                  child: _isResending
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF7069FA),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  onEnter: (_) => setState(() => _isResendHovered = true),
+                  onExit: (_) => setState(() => _isResendHovered = false),
+                  child: GestureDetector(
+                    onTap: _isResending || _isValidating ? null : _handleResend,
+                    child: _isResending
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF7069FA),
+                            ),
+                          )
+                        : Text(
+                            'Renvoyer le code',
+                            style: GoogleFonts.quicksand(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _isResendHovered
+                                  ? const Color(0xFF6660E4)
+                                  : const Color(0xFF7069FA),
+                            ),
                           ),
-                        )
-                      : Text(
-                          'Renvoyer le code',
-                          style: GoogleFonts.quicksand(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF7069FA),
-                          ),
-                        ),
+                  ),
                 ),
                 const SizedBox(height: 22),
 

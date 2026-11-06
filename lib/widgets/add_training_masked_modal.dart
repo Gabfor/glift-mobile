@@ -13,6 +13,7 @@ class AddTrainingMaskedModal extends StatefulWidget {
 
 class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
   late final TapGestureRecognizer _websiteRecognizer;
+  bool _isWebsiteHovered = false;
 
   @override
   void initState() {
@@ -110,9 +111,14 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                       TextSpan(
                         text: 'site internet',
                         recognizer: _websiteRecognizer,
+                        mouseCursor: SystemMouseCursors.click,
+                        onEnter: (_) => setState(() => _isWebsiteHovered = true),
+                        onExit: (_) => setState(() => _isWebsiteHovered = false),
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF7069FA),
+                          color: _isWebsiteHovered
+                              ? const Color(0xFF6660E4)
+                              : const Color(0xFF7069FA),
                         ),
                       ),
                       const TextSpan(
