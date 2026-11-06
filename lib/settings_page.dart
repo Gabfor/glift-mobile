@@ -49,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _showSummary = true;
   bool _showGoals = true;
   bool _autoTrigger = true;
+  bool _autoClose = true;
   bool _vibrations = true;
   bool _sound = true;
   String _displayType = 'Miniature';
@@ -82,6 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _material = settings.getMaterialEnabled();
       _effort = settings.getShowEffort();
       _autoTrigger = settings.getAutoTriggerEnabled();
+      _autoClose = settings.getAutoCloseEnabled();
       _displayType = settings.getDisplayType();
       _weightUnit = settings.getWeightUnit();
       _soundEffect = settings.getSoundEffect();
@@ -364,6 +366,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) {
                   setState(() => _autoTrigger = v);
                   SettingsService.instance.saveAutoTriggerEnabled(v);
+                },
+              ),
+              _SettingsSwitchTile(
+                title: 'Fermeture automatique',
+                value: _autoClose,
+                onChanged: (v) {
+                  setState(() => _autoClose = v);
+                  SettingsService.instance.saveAutoCloseEnabled(v);
                 },
               ),
               _SettingsSwitchTile(

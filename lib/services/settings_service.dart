@@ -232,6 +232,7 @@ class SettingsService {
   static const String _kDisplayType = 'timer_display_type';
   static const String _kMaterial = 'exercise_material_enabled';
   static const String _kAutoTrigger = 'timer_auto_trigger_enabled';
+  static const String _kAutoClose = 'timer_auto_close_enabled';
   static const String _kWeightUnit = 'weight_unit';
   static const String _kSoundEffect = 'timer_sound_effect';
   static const String _kSoundEnabled = 'timer_sound_enabled';
@@ -348,6 +349,17 @@ class SettingsService {
   bool getAutoTriggerEnabled() {
     if (!_initialized) return true;
     return _prefs.getBool(_kAutoTrigger) ?? true;
+  }
+
+  // Auto Close
+  Future<void> saveAutoCloseEnabled(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kAutoClose, enabled);
+  }
+
+  bool getAutoCloseEnabled() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kAutoClose) ?? true;
   }
 
   // Weight Unit

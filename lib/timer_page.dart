@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:glift_mobile/services/notification_service.dart';
 import 'package:glift_mobile/services/vibration_service.dart';
+import 'package:glift_mobile/services/settings_service.dart';
 
 class InlineTimerData {
   InlineTimerData({
@@ -195,6 +196,15 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _onTimerCompleted() async {
+    _timer?.cancel();
+    _timer = null;
+    _endTime = null;
+    widget.alertService.cancelTimerNotification();
+    setState(() {
+      _isRunning = false;
+      _remainingSeconds = 0;
+    });
+
     if (widget.enableVibration) {
       final hasVibrator = await widget.vibrationService.hasVibrator();
       if (hasVibrator) {
@@ -208,7 +218,18 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       await widget.alertService.playSound();
     }
 
-    _stopTimer();
+    if (SettingsService.instance.getAutoCloseEnabled()) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted && !_isRunning && _remainingSeconds == 0) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      if (mounted && !_isRunning) {
+        setState(() {
+          _remainingSeconds = _lastEditedDuration;
+        });
+      }
+    }
   }
 
   void _enterMinutesEdit() {

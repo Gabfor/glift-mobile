@@ -470,7 +470,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         remainingSeconds: duration,
         isRunning: true,
         durationInSeconds: inlineData?.durationInSeconds ?? duration,
-        enableSound: SettingsService.instance.getAutoTriggerEnabled(),
+        enableSound: SettingsService.instance.getSoundEnabled(),
         enableVibration: SettingsService.instance.getVibrationEnabled(),
       ));
       _activeTimerRowIndex = index;
@@ -493,7 +493,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
         durationInSeconds: inlineData?.durationInSeconds ?? duration,
         storedDurationInSeconds: int.tryParse(_rows![index].rest) ?? 0,
         initialRemainingSeconds: inlineData?.remainingSeconds,
-        enableSound: inlineData?.enableSound ?? true,
+        enableSound: inlineData?.enableSound ?? SettingsService.instance.getSoundEnabled(),
         enableVibration: inlineData?.enableVibration ??
             SettingsService.instance.getVibrationEnabled(),
         autoStart: inlineData?.isRunning ?? true,
@@ -1713,6 +1713,15 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
   }
 
   Future<void> _onTimerCompleted() async {
+    _timer?.cancel();
+    _timer = null;
+    _endTime = null;
+    _alertService.cancelTimerNotification();
+    setState(() {
+      _isRunning = false;
+      _remainingSeconds = 0;
+    });
+
     if (widget.data.enableVibration) {
       final hasVibrator = await _vibrationService.hasVibrator();
       if (hasVibrator) {
@@ -1726,7 +1735,18 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
       await _alertService.playSound();
     }
 
-    _stopTimer();
+    if (SettingsService.instance.getAutoCloseEnabled()) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted && !_isRunning && _remainingSeconds == 0) {
+        widget.onClose();
+      }
+    } else {
+      if (mounted && !_isRunning) {
+        setState(() {
+          _remainingSeconds = widget.data.durationInSeconds;
+        });
+      }
+    }
   }
 
   InlineTimerData _currentData() {
@@ -2129,10 +2149,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
     final isLastSet = index == widget.row.series - 1;
     
     if (isNowCompleted && !isLastSet) {
-      int duration = int.tryParse(widget.row.rest) ?? 0;
-      if (duration == 0) {
-        duration = SettingsService.instance.getDefaultRestTime();
-      }
+      final duration = int.tryParse(widget.row.rest) ?? 0;
       final autoTrigger = SettingsService.instance.getAutoTriggerEnabled();
       if (duration > 0 && autoTrigger) {
         widget.onAutoTriggerTimer(widget.index, duration);
