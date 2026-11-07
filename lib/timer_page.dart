@@ -239,7 +239,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _handleCheckmarkAnimationComplete() async {
-    await Future.delayed(const Duration(milliseconds: 900));
+    await Future.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
     if (_isCompleting && !_isRunning && _remainingSeconds == 0) {
       Navigator.of(context).pop();
