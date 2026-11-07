@@ -705,16 +705,17 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                     duration: const Duration(milliseconds: 200),
                     opacity: _isScrolled ? 1.0 : 0.0,
                     child: Container(
-                      height: 12,
+                      height: 16,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            const Color(0xFF1E2238).withValues(alpha: 0.10),
-                            const Color(0xFF1E2238).withValues(alpha: 0.03),
+                            const Color(0xFF1E1742).withValues(alpha: 0.12),
+                            const Color(0xFF1E1742).withValues(alpha: 0.04),
                             Colors.transparent,
                           ],
+                          stops: const [0.0, 0.45, 1.0],
                         ),
                       ),
                     ),

@@ -39,6 +39,7 @@ class SettingsOptionPage extends StatefulWidget {
 
 class _SettingsOptionPageState extends State<SettingsOptionPage> {
   late String _selectedValue;
+  final ValueNotifier<double> _shadowOpacity = ValueNotifier<double>(0.0);
 
   @override
   void initState() {
@@ -47,54 +48,41 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
   }
 
   @override
+  void dispose() {
+    _shadowOpacity.dispose();
+    super.dispose();
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis == Axis.vertical) {
+      final double offset = notification.metrics.pixels;
+      final double target = (offset / 15.0).clamp(0.0, 1.0);
+      if (_shadowOpacity.value != target) {
+        _shadowOpacity.value = target;
+      }
+    }
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    const double headerHeight = 84.0;
+    const double gapBelowHeader = 10.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.headerTitle,
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.headerSubtitle,
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
+            // Scrollable options list
+            NotificationListener<ScrollNotification>(
+              onNotification: _handleScrollNotification,
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.fromLTRB(
                   20,
-                  0,
+                  headerHeight + gapBelowHeader,
                   20,
                   MediaQuery.of(context).padding.bottom + 40,
                 ),
@@ -106,30 +94,100 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                   ),
                   child: Column(
                     children: [
-                        for (int i = 0; i < widget.options.length; i++) ...[
-                          if (i > 0)
-                            const Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: Color(0xFFECE9F1),
-                              indent: 15,
-                              endIndent: 15,
-                            ),
-                          _SettingsOptionTile(
-                            label: widget.options[i].label,
-                            iconPath: widget.options[i].iconPath,
-                            isSelected: widget.options[i].value == _selectedValue,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              setState(() => _selectedValue = widget.options[i].value);
-                              widget.onChanged(widget.options[i].value);
-                            },
+                      for (int i = 0; i < widget.options.length; i++) ...[
+                        if (i > 0)
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Color(0xFFECE9F1),
+                            indent: 15,
+                            endIndent: 15,
                           ),
-                        ],
+                        _SettingsOptionTile(
+                          label: widget.options[i].label,
+                          iconPath: widget.options[i].iconPath,
+                          isSelected: widget.options[i].value == _selectedValue,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            setState(() => _selectedValue = widget.options[i].value);
+                            widget.onChanged(widget.options[i].value);
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Header (fixed on top with scroll shadow)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    color: const Color(0xFFF9FAFB),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.headerTitle,
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.headerSubtitle,
+                              style: GoogleFonts.quicksand(
+                                color: const Color(0xFF3A416F),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                ),
+                  ValueListenableBuilder<double>(
+                    valueListenable: _shadowOpacity,
+                    builder: (context, opacity, _) {
+                      return IgnorePointer(
+                        child: Opacity(
+                          opacity: opacity,
+                          child: Container(
+                            height: 16,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  const Color(0xFF1E1742).withValues(alpha: 0.12),
+                                  const Color(0xFF1E1742).withValues(alpha: 0.04),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.45, 1.0],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -194,10 +252,15 @@ class _SettingsOptionTile extends StatelessWidget {
                 child: Center(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(2),
-                    child: SvgPicture.asset(
-                      iconPath!,
-                      fit: BoxFit.contain,
-                    ),
+                    child: iconPath!.startsWith('http')
+                        ? SvgPicture.network(
+                            iconPath!,
+                            fit: BoxFit.contain,
+                          )
+                        : SvgPicture.asset(
+                            iconPath!,
+                            fit: BoxFit.contain,
+                          ),
                   ),
                 ),
               ),

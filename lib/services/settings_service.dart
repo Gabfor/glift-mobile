@@ -942,6 +942,8 @@ class RingtoneInfo {
   final int durationMs;
   final bool isActive;
   final bool isDefault;
+  final String? iconUrl;
+  final String? imageAlt;
 
   const RingtoneInfo({
     required this.id,
@@ -951,6 +953,8 @@ class RingtoneInfo {
     required this.durationMs,
     required this.isActive,
     required this.isDefault,
+    this.iconUrl,
+    this.imageAlt,
   });
 
   String get soundKey {
@@ -966,6 +970,8 @@ class RingtoneInfo {
       durationMs: (json['duration_ms'] as num?)?.toInt() ?? 0,
       isActive: json['is_active'] as bool? ?? true,
       isDefault: json['is_default'] as bool? ?? false,
+      iconUrl: json['icon_url'] as String?,
+      imageAlt: json['image_alt'] as String?,
     );
   }
 
@@ -977,5 +983,7 @@ class RingtoneInfo {
     'duration_ms': durationMs,
     'is_active': isActive,
     'is_default': isDefault,
+    if (iconUrl != null) 'icon_url': iconUrl,
+    if (imageAlt != null) 'image_alt': imageAlt,
   };
 }

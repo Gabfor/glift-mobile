@@ -76,7 +76,7 @@ class _SoundSettingsPageState extends State<SoundSettingsPage> {
     final options = [
       const SettingsOptionItem(value: 'none', label: 'Aucun'),
       ..._activeRingtones.map(
-        (r) => SettingsOptionItem(value: r.soundKey, label: r.name),
+        (r) => SettingsOptionItem(value: r.soundKey, label: r.name, iconPath: r.iconUrl),
       ),
     ];
 
