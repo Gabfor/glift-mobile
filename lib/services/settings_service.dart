@@ -405,39 +405,46 @@ class SettingsService {
 
   // Ringtones & Sound Effects
   static const List<RingtoneInfo> defaultRingtones = [
-    RingtoneInfo(id: '1', name: 'Bip', filename: 'bip.mp3', url: '/sounds/bip.mp3', durationMs: 2200, isActive: true, isDefault: false),
-    RingtoneInfo(id: '2', name: 'Radar', filename: 'radar.mp3', url: '/sounds/radar.mp3', durationMs: 2200, isActive: true, isDefault: true),
-    RingtoneInfo(id: '3', name: 'Gong', filename: 'gong.mp3', url: '/sounds/gong.mp3', durationMs: 2200, isActive: true, isDefault: false),
-    RingtoneInfo(id: '4', name: 'Cloche', filename: 'bell.mp3', url: '/sounds/bell.mp3', durationMs: 2200, isActive: true, isDefault: false),
     RingtoneInfo(id: '5', name: 'Arpège Succès', filename: 'chime_asc.mp3', url: '/sounds/chime_asc.mp3', durationMs: 2200, isActive: true, isDefault: false),
     RingtoneInfo(id: '6', name: 'Bip Sport', filename: 'bip_sport.mp3', url: '/sounds/bip_sport.mp3', durationMs: 2200, isActive: true, isDefault: false),
-    RingtoneInfo(id: '7', name: 'Cloche Zen', filename: 'cloche_zen.mp3', url: '/sounds/cloche_zen.mp3', durationMs: 2200, isActive: true, isDefault: false),
-    RingtoneInfo(id: '8', name: 'Gong Énergique', filename: 'gong_court.mp3', url: '/sounds/gong_court.mp3', durationMs: 2200, isActive: true, isDefault: false),
-    RingtoneInfo(id: '9', name: 'Compte à Rebours', filename: 'countdown_ding.mp3', url: '/sounds/countdown_ding.mp3', durationMs: 2200, isActive: true, isDefault: false),
     RingtoneInfo(id: '10', name: 'Bol de Cristal', filename: 'crystal_bowl.mp3', url: '/sounds/crystal_bowl.mp3', durationMs: 2200, isActive: true, isDefault: false),
     RingtoneInfo(id: '11', name: 'Buzzer Clean', filename: 'buzzer_clean.mp3', url: '/sounds/buzzer_clean.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '7', name: 'Cloche Zen', filename: 'cloche_zen.mp3', url: '/sounds/cloche_zen.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '13', name: 'Clochettes de Noël', filename: 'clochettes_noel.mp3', url: '/sounds/clochettes_noel.mp3', durationMs: 2500, isActive: true, isDefault: false),
+    RingtoneInfo(id: '9', name: 'Compte à Rebours', filename: 'countdown_ding.mp3', url: '/sounds/countdown_ding.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '14', name: "Frisson d'Halloween", filename: 'frisson_halloween.mp3', url: '/sounds/frisson_halloween.mp3', durationMs: 2400, isActive: true, isDefault: false),
+    RingtoneInfo(id: '3', name: 'Gong', filename: 'gong.mp3', url: '/sounds/gong.mp3', durationMs: 2520, isActive: true, isDefault: false),
+    RingtoneInfo(id: '8', name: 'Gong Énergique', filename: 'gong_court.mp3', url: '/sounds/gong_court.mp3', durationMs: 2200, isActive: true, isDefault: false),
     RingtoneInfo(id: '12', name: 'Marimba Vital', filename: 'marimba_pop.mp3', url: '/sounds/marimba_pop.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '2', name: 'Radar', filename: 'radar.mp3', url: '/sounds/radar.mp3', durationMs: 1567, isActive: true, isDefault: true),
   ];
 
   List<RingtoneInfo> getRingtones() {
-    if (!_initialized) return defaultRingtones;
-    final jsonStr = _prefs.getString(_kTimerRingtones);
-    if (jsonStr == null || jsonStr.trim().isEmpty) return defaultRingtones;
-    try {
-      final decoded = jsonDecode(jsonStr);
-      if (decoded is List) {
-        return decoded
-            .map((item) => RingtoneInfo.fromJson(Map<String, dynamic>.from(item as Map)))
-            .toList();
+    List<RingtoneInfo> list = defaultRingtones;
+    if (_initialized) {
+      final jsonStr = _prefs.getString(_kTimerRingtones);
+      if (jsonStr != null && jsonStr.trim().isNotEmpty) {
+        try {
+          final decoded = jsonDecode(jsonStr);
+          if (decoded is List) {
+            list = decoded
+                .map((item) => RingtoneInfo.fromJson(Map<String, dynamic>.from(item as Map)))
+                .toList();
+          }
+        } catch (e) {
+          debugPrint('Error parsing ringtones: $e');
+        }
       }
-    } catch (e) {
-      debugPrint('Error parsing ringtones: $e');
     }
-    return defaultRingtones;
+    final sorted = List<RingtoneInfo>.from(list);
+    sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return sorted;
   }
 
   List<RingtoneInfo> getActiveRingtones() {
-    return getRingtones().where((r) => r.isActive).toList();
+    final active = getRingtones().where((r) => r.isActive).toList();
+    active.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return active;
   }
 
   RingtoneInfo getDefaultRingtone() {
