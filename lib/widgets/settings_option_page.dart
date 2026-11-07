@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/glift_theme.dart';
+import '../services/settings_service.dart';
+import 'glift_pull_to_refresh.dart';
 
 class SettingsOptionItem {
   const SettingsOptionItem({
@@ -25,6 +27,7 @@ class SettingsOptionPage extends StatefulWidget {
     required this.options,
     required this.initialValue,
     required this.onChanged,
+    this.onRefresh,
   });
 
   final String headerTitle;
@@ -32,6 +35,7 @@ class SettingsOptionPage extends StatefulWidget {
   final List<SettingsOptionItem> options;
   final String initialValue;
   final ValueChanged<String> onChanged;
+  final Future<void> Function()? onRefresh;
 
   @override
   State<SettingsOptionPage> createState() => _SettingsOptionPageState();
@@ -75,46 +79,56 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
         bottom: false,
         child: Stack(
           children: [
-            // Scrollable options list
-            NotificationListener<ScrollNotification>(
-              onNotification: _handleScrollNotification,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  20,
-                  headerHeight + gapBelowHeader,
-                  20,
-                  MediaQuery.of(context).padding.bottom + 40,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFECE9F1)),
-                  ),
-                  child: Column(
-                    children: [
-                      for (int i = 0; i < widget.options.length; i++) ...[
-                        if (i > 0)
-                          const Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Color(0xFFECE9F1),
-                            indent: 15,
-                            endIndent: 15,
-                          ),
-                        _SettingsOptionTile(
-                          label: widget.options[i].label,
-                          iconPath: widget.options[i].iconPath,
-                          isSelected: widget.options[i].value == _selectedValue,
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            setState(() => _selectedValue = widget.options[i].value);
-                            widget.onChanged(widget.options[i].value);
-                          },
-                        ),
-                      ],
-                    ],
+            // Scrollable options list with pull-to-refresh
+            Positioned.fill(
+              top: headerHeight,
+              child: GliftPullToRefresh(
+                onRefresh: widget.onRefresh ?? () async {
+                  await SettingsService.instance.syncFromSupabase();
+                },
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: _handleScrollNotification,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      gapBelowHeader,
+                      20,
+                      MediaQuery.of(context).padding.bottom + 40,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFECE9F1)),
+                      ),
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < widget.options.length; i++) ...[
+                            if (i > 0)
+                              const Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Color(0xFFECE9F1),
+                                indent: 15,
+                                endIndent: 15,
+                              ),
+                            _SettingsOptionTile(
+                              label: widget.options[i].label,
+                              iconPath: widget.options[i].iconPath,
+                              isSelected: widget.options[i].value == _selectedValue,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                setState(() => _selectedValue = widget.options[i].value);
+                                widget.onChanged(widget.options[i].value);
+                              },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -247,8 +261,8 @@ class _SettingsOptionTile extends StatelessWidget {
           children: [
             if (iconPath != null) ...[
               SizedBox(
-                width: 24,
-                height: 24,
+                width: 25,
+                height: 25,
                 child: Center(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(2),

@@ -92,6 +92,7 @@ class _SoundSettingsPageState extends State<SoundSettingsPage> {
       headerSubtitle: 'Sonnerie',
       options: options,
       initialValue: safeInitialValue,
+      onRefresh: _syncLatestRingtones,
       onChanged: (value) {
         widget.onChanged(value);
         _playSound(value);
