@@ -1740,18 +1740,10 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
       await _alertService.playSound();
     }
 
-    if (SettingsService.instance.getAutoCloseEnabled()) {
-      if (mounted) {
-        setState(() {
-          _isCompleting = true;
-        });
-      }
-    } else {
-      if (mounted && !_isRunning) {
-        setState(() {
-          _remainingSeconds = widget.data.durationInSeconds;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _isCompleting = true;
+      });
     }
   }
 
@@ -1759,10 +1751,14 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
     await Future.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
     if (_isCompleting && !_isRunning && _remainingSeconds == 0) {
-      widget.onClose();
-      setState(() {
-        _isCompleting = false;
-      });
+      if (SettingsService.instance.getAutoCloseEnabled()) {
+        widget.onClose();
+      } else {
+        setState(() {
+          _isCompleting = false;
+          _remainingSeconds = widget.data.durationInSeconds;
+        });
+      }
     }
   }
 

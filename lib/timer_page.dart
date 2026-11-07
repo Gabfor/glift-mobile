@@ -223,18 +223,10 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       await widget.alertService.playSound();
     }
 
-    if (SettingsService.instance.getAutoCloseEnabled()) {
-      if (mounted) {
-        setState(() {
-          _isCompleting = true;
-        });
-      }
-    } else {
-      if (mounted && !_isRunning) {
-        setState(() {
-          _remainingSeconds = _lastEditedDuration;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _isCompleting = true;
+      });
     }
   }
 
@@ -242,10 +234,16 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     await Future.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
     if (_isCompleting && !_isRunning && _remainingSeconds == 0) {
-      Navigator.of(context).pop();
-      setState(() {
-        _isCompleting = false;
-      });
+      if (SettingsService.instance.getAutoCloseEnabled()) {
+        Navigator.of(context).pop();
+        // Ne pas remettre _isCompleting à false ici afin que la coche verte
+        // reste visible pendant l'animation de disparition de la page
+      } else {
+        setState(() {
+          _isCompleting = false;
+          _remainingSeconds = _lastEditedDuration;
+        });
+      }
     }
   }
 
