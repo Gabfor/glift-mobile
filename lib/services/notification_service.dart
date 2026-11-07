@@ -48,31 +48,25 @@ class NotificationService implements TimerAlertService {
       
       if (soundEffect == 'none') return;
       
-      String assetSource = 'sounds/bip.mp3'; // Default fallback? Or match specific values
-      
-      if (soundEffect == 'bip') {
-        assetSource = 'sounds/bip.mp3';
-      } else if (soundEffect == 'radar') {
-        assetSource = 'sounds/radar.mp3';
-      } else if (soundEffect == 'gong') {
-        assetSource = 'sounds/gong.mp3';
-      } else if (soundEffect == 'bell') {
-        assetSource = 'sounds/bell.mp3';
-      } else {
-         // Fallback if somehow value is unknown, strictly speaking we could default to 'radar' or return.
-         // Let's assume 'radar' as default if unknown, or just keys match.
-         // If "radar" was default in settings service, logic holds.
-         if (soundEffect.isNotEmpty) {
-            assetSource = 'sounds/$soundEffect.mp3'; 
-         } else {
-             assetSource = 'sounds/radar.mp3';
-         }
-      }
+      final ringtone = SettingsService.instance.findRingtone(soundEffect);
 
       // Explicitly stop any previous sound
       await _audioPlayer.stop();
-      
-      await _audioPlayer.setSource(AssetSource(assetSource));
+
+      if (ringtone != null && ringtone.url.startsWith('http')) {
+        await _audioPlayer.setSource(UrlSource(ringtone.url));
+      } else {
+        final filename = ringtone?.filename ??
+            (soundEffect == 'radar'
+                ? 'radar.mp3'
+                : soundEffect == 'bell'
+                    ? 'bell.mp3'
+                    : soundEffect == 'gong'
+                        ? 'gong.mp3'
+                        : 'bip.mp3');
+        await _audioPlayer.setSource(AssetSource('sounds/$filename'));
+      }
+
       // Use system volume (no setVolume call)
       await _audioPlayer.resume();
       
@@ -84,14 +78,6 @@ class NotificationService implements TimerAlertService {
   @override
   Future<void> scheduleTimerNotification({required DateTime scheduledTime}) async {
     if (!SettingsService.instance.getSoundEnabled()) return;
-    
-    // Default system sound or specific raw resource
-    // For iOS, sound names normally need to be bundled and specified. Default is often fine.
-    // For Android, we can specify raw sound if we have them in res/raw (bip, radar, etc.)
-    // Using default notification sound for simplicity if custom ones are not registered in Android resources
-    // In a real scenario, you'd place bip.mp3 -> bip.mp3 in android/app/src/main/res/raw/
-    // Let's rely on the default sound for now to ensure it plays, since we don't have the raw files set up
-    // in Android/iOS native assets.
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -99,13 +85,10 @@ class NotificationService implements TimerAlertService {
             channelDescription: 'Notifications for completed rest timers',
             importance: Importance.max,
             priority: Priority.high,
-            // playSound: true,
-            // sound: RawResourceAndroidNotificationSound(androidSoundName), // Requires files in raw/
             );
             
     const DarwinNotificationDetails iOSPlatformChannelSpecifics =
         DarwinNotificationDetails(
-            // sound: '$soundEffect.mp3', // Requires copy bundle resources
             presentSound: true,
             presentAlert: true,
         );

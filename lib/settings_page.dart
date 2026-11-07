@@ -110,6 +110,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final settings = SettingsService.instance;
     await settings.init();
     await settings.initSupabase(widget.supabase);
+    await settings.syncRingtones();
     _applySettingsFromService();
   }
 
@@ -409,8 +410,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
                   ],
                 ),
-                onTap: () {
-                  Navigator.of(context).push(
+                onTap: () async {
+                  await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => SoundSettingsPage(
                         initialValue: _soundEffect,
@@ -421,6 +422,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                   );
+                  if (mounted) {
+                    setState(() {
+                      _soundEffect = SettingsService.instance.getSoundEffect();
+                    });
+                  }
                 },
               ),
               _SettingsTile(
@@ -737,12 +743,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
   String _getSoundEffectLabel(String value) {
-    if (value == 'none') return 'Aucun';
-    if (value == 'bip') return 'Bip';
-    if (value == 'radar') return 'Radar';
-    if (value == 'gong') return 'Gong';
-    if (value == 'bell') return 'Cloche';
-    return 'Radar';
+    return SettingsService.instance.getSoundEffectLabel(value);
   }
 }
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 
 class SettingsService {
@@ -12,6 +12,15 @@ class SettingsService {
   late SharedPreferences _prefs;
   SupabaseClient? _supabase;
   bool _initialized = false;
+
+  SupabaseClient? get _client {
+    if (_supabase != null) return _supabase;
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<void> init() async {
     if (_initialized) return;
@@ -25,6 +34,7 @@ class SettingsService {
     _supabase = client;
     await syncFromSupabase();
     await syncSiteSettings();
+    await syncRingtones();
   }
 
   static const String _kShowEffort = 'show_effort';
@@ -239,11 +249,14 @@ class SettingsService {
   static const String _kVibrationEnabled = 'timer_vibration_enabled';
   static const String _kLogoUrl = 'logo_url';
   static const String _kLogoAlt = 'logo_alt';
+  static const String _kTimerRingtones = 'timer_ringtones';
   // Note: _kShowEffort, _kShowRepos, _kSubscriptionPlan are defined above
 
   Future<void> syncSiteSettings() async {
+    final client = _client;
+    if (client == null) return;
     try {
-      final response = await _supabase!
+      final response = await client
           .from('settings')
           .select('key, value');
       
@@ -254,10 +267,13 @@ class SettingsService {
             await _prefs.setString(_kLogoUrl, value);
         } else if (key == 'logo_alt') {
             await _prefs.setString(_kLogoAlt, value);
+        } else if (key == 'timer_ringtones') {
+            await _prefs.setString(_kTimerRingtones, value);
+            _verifyCurrentSoundEffect();
         }
       }
     } catch (e) {
-      print('Error syncing site settings: $e');
+      debugPrint('Error syncing site settings: $e');
     }
   }
 
@@ -387,6 +403,122 @@ class SettingsService {
     return _prefs.getString(_kWeightUnit) ?? 'metric';
   }
 
+  // Ringtones & Sound Effects
+  static const List<RingtoneInfo> defaultRingtones = [
+    RingtoneInfo(id: '1', name: 'Bip', filename: 'bip.mp3', url: '/sounds/bip.mp3', durationMs: 696, isActive: true, isDefault: false),
+    RingtoneInfo(id: '2', name: 'Radar', filename: 'radar.mp3', url: '/sounds/radar.mp3', durationMs: 1567, isActive: true, isDefault: true),
+    RingtoneInfo(id: '3', name: 'Gong', filename: 'gong.mp3', url: '/sounds/gong.mp3', durationMs: 2520, isActive: true, isDefault: false),
+    RingtoneInfo(id: '4', name: 'Cloche', filename: 'bell.mp3', url: '/sounds/bell.mp3', durationMs: 3720, isActive: true, isDefault: false),
+  ];
+
+  List<RingtoneInfo> getRingtones() {
+    if (!_initialized) return defaultRingtones;
+    final jsonStr = _prefs.getString(_kTimerRingtones);
+    if (jsonStr == null || jsonStr.trim().isEmpty) return defaultRingtones;
+    try {
+      final decoded = jsonDecode(jsonStr);
+      if (decoded is List) {
+        return decoded
+            .map((item) => RingtoneInfo.fromJson(Map<String, dynamic>.from(item as Map)))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Error parsing ringtones: $e');
+    }
+    return defaultRingtones;
+  }
+
+  List<RingtoneInfo> getActiveRingtones() {
+    return getRingtones().where((r) => r.isActive).toList();
+  }
+
+  RingtoneInfo getDefaultRingtone() {
+    final active = getActiveRingtones();
+    if (active.isEmpty) return defaultRingtones[1]; // Radar
+    try {
+      return active.firstWhere((r) => r.isDefault);
+    } catch (_) {
+      return active.first;
+    }
+  }
+
+  RingtoneInfo? findRingtone(String soundKey) {
+    final all = getRingtones();
+    try {
+      return all.firstWhere((r) =>
+          r.soundKey == soundKey ||
+          r.name.toLowerCase() == soundKey.toLowerCase() ||
+          r.filename.toLowerCase() == soundKey.toLowerCase());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String getSoundEffectLabel(String value) {
+    if (value == 'none') return 'Aucun';
+    final ringtone = findRingtone(value);
+    if (ringtone != null) return ringtone.name;
+    if (value == 'bip') return 'Bip';
+    if (value == 'radar') return 'Radar';
+    if (value == 'gong') return 'Gong';
+    if (value == 'bell') return 'Cloche';
+    return value;
+  }
+
+  Future<void> syncRingtones() async {
+    final client = _client;
+    if (client == null) return;
+
+    try {
+      // 1. Try settings table (always updated by admin)
+      final row = await client
+          .from('settings')
+          .select('value')
+          .eq('key', 'timer_ringtones')
+          .maybeSingle();
+      if (row != null && row['value'] != null) {
+        await _prefs.setString(_kTimerRingtones, row['value'] as String);
+        _verifyCurrentSoundEffect();
+        debugPrint('[SettingsService] Synced timer_ringtones from settings: ${row['value']}');
+        return;
+      }
+    } catch (e) {
+      debugPrint('[SettingsService] Settings table query error: $e');
+    }
+
+    try {
+      // 2. Try public.ringtones if table exists
+      final response = await client
+          .from('ringtones')
+          .select('*')
+          .order('name');
+      if (response.isNotEmpty) {
+        await _prefs.setString(_kTimerRingtones, jsonEncode(response));
+        _verifyCurrentSoundEffect();
+        debugPrint('[SettingsService] Synced ringtones from ringtones table');
+        return;
+      }
+    } catch (_) {
+      // ringtones table does not exist yet
+    }
+  }
+
+  void _verifyCurrentSoundEffect() {
+    final current = _prefs.getString(_kSoundEffect) ?? 'radar';
+    if (current == 'none') return;
+
+    final active = getActiveRingtones();
+    final isActive = active.any((r) =>
+        r.soundKey == current ||
+        r.name.toLowerCase() == current.toLowerCase() ||
+        r.filename.toLowerCase() == current.toLowerCase());
+
+    if (!isActive) {
+      final defaultRing = getDefaultRingtone();
+      _prefs.setString(_kSoundEffect, defaultRing.soundKey);
+    }
+  }
+
   // Sound Effect
   Future<void> saveSoundEffect(String effect) async {
     await _initIfNeeded();
@@ -395,7 +527,22 @@ class SettingsService {
 
   String getSoundEffect() {
     if (!_initialized) return 'radar';
-    return _prefs.getString(_kSoundEffect) ?? 'radar';
+    final current = _prefs.getString(_kSoundEffect) ?? 'radar';
+    if (current == 'none') return 'none';
+
+    final active = getActiveRingtones();
+    final isActive = active.any((r) =>
+        r.soundKey == current ||
+        r.name.toLowerCase() == current.toLowerCase() ||
+        r.filename.toLowerCase() == current.toLowerCase());
+
+    if (!isActive) {
+      final defaultRing = getDefaultRingtone();
+      saveSoundEffect(defaultRing.soundKey);
+      return defaultRing.soundKey;
+    }
+
+    return current;
   }
 
   // Sound Enabled
@@ -770,4 +917,50 @@ class SettingsService {
       await init();
     }
   }
+}
+
+class RingtoneInfo {
+  final String id;
+  final String name;
+  final String filename;
+  final String url;
+  final int durationMs;
+  final bool isActive;
+  final bool isDefault;
+
+  const RingtoneInfo({
+    required this.id,
+    required this.name,
+    required this.filename,
+    required this.url,
+    required this.durationMs,
+    required this.isActive,
+    required this.isDefault,
+  });
+
+  String get soundKey {
+    return filename.toLowerCase().replaceAll('.mp3', '').replaceAll('.wav', '');
+  }
+
+  factory RingtoneInfo.fromJson(Map<String, dynamic> json) {
+    return RingtoneInfo(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? '',
+      filename: json['filename'] as String? ?? '',
+      url: json['url'] as String? ?? '',
+      durationMs: (json['duration_ms'] as num?)?.toInt() ?? 0,
+      isActive: json['is_active'] as bool? ?? true,
+      isDefault: json['is_default'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'filename': filename,
+    'url': url,
+    'duration_ms': durationMs,
+    'is_active': isActive,
+    'is_default': isDefault,
+  };
 }
