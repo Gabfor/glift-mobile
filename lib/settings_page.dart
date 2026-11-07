@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
@@ -398,6 +399,27 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (_getSoundEffectIcon(_soundEffect) != null) ...[
+                      SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: _getSoundEffectIcon(_soundEffect)!.startsWith('http')
+                                ? SvgPicture.network(
+                                    _getSoundEffectIcon(_soundEffect)!,
+                                    fit: BoxFit.contain,
+                                  )
+                                : SvgPicture.asset(
+                                    _getSoundEffectIcon(_soundEffect)!,
+                                    fit: BoxFit.contain,
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     Text(
                       _getSoundEffectLabel(_soundEffect),
                       style: GoogleFonts.quicksand(
@@ -744,6 +766,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
   String _getSoundEffectLabel(String value) {
     return SettingsService.instance.getSoundEffectLabel(value);
+  }
+
+  String? _getSoundEffectIcon(String value) {
+    return SettingsService.instance.getSoundEffectIcon(value);
   }
 }
 

@@ -480,6 +480,12 @@ class SettingsService {
     return value;
   }
 
+  String? getSoundEffectIcon(String value) {
+    if (value == 'none') return null;
+    final ringtone = findRingtone(value);
+    return ringtone?.iconUrl;
+  }
+
   Future<void> syncRingtones() async {
     final client = _client;
     if (client == null) return;
