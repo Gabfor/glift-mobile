@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:glift_mobile/services/notification_service.dart';
 import 'package:glift_mobile/services/vibration_service.dart';
 import 'package:glift_mobile/services/settings_service.dart';
+import 'package:glift_mobile/widgets/animated_checkmark.dart';
 
 class InlineTimerData {
   InlineTimerData({
@@ -67,6 +68,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   bool _wasRunningBeforeEdit = false;
   bool _isModified = false;
   bool _isSaving = false;
+  bool _isCompleting = false;
   late int _lastEditedDuration;
   late int _savedDuration;
 
@@ -150,6 +152,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
 
     setState(() {
       _isRunning = true;
+      _isCompleting = false;
       _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
 
@@ -181,6 +184,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     widget.alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
+      _isCompleting = false;
     });
   }
 
@@ -191,6 +195,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     widget.alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
+      _isCompleting = false;
       _remainingSeconds = _lastEditedDuration;
     });
   }
@@ -219,9 +224,10 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     }
 
     if (SettingsService.instance.getAutoCloseEnabled()) {
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted && !_isRunning && _remainingSeconds == 0) {
-        Navigator.of(context).pop();
+      if (mounted) {
+        setState(() {
+          _isCompleting = true;
+        });
       }
     } else {
       if (mounted && !_isRunning) {
@@ -229,6 +235,17 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
           _remainingSeconds = _lastEditedDuration;
         });
       }
+    }
+  }
+
+  Future<void> _handleCheckmarkAnimationComplete() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
+    if (_isCompleting && !_isRunning && _remainingSeconds == 0) {
+      Navigator.of(context).pop();
+      setState(() {
+        _isCompleting = false;
+      });
     }
   }
 
@@ -508,87 +525,101 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
 
             // Main Content
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  // Timer Display
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        child: _EditableTimeValue(
-                          value: minutes,
-                          label: 'Minutes',
-                          isEditing: _isEditingMinutes,
-                          controller: _minutesController,
-                          focusNode: _minutesFocusNode,
-                          onTap: _enterMinutesEdit,
-                          maxLength: 2,
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: _isCompleting ? 0.3 : 1.0,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Timer Display
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 140,
+                              child: _EditableTimeValue(
+                                value: minutes,
+                                label: 'Minutes',
+                                isEditing: _isEditingMinutes,
+                                controller: _minutesController,
+                                focusNode: _minutesFocusNode,
+                                onTap: _enterMinutesEdit,
+                                maxLength: 2,
+                              ),
+                            ),
+                            Container(
+                              width: 20,
+                              height: 90,
+                              alignment: Alignment.center,
+                              child: Text(
+                                ':',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.redHatText(
+                                  fontSize: 80,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF3A416F),
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 140,
+                              child: _EditableTimeValue(
+                                value: seconds,
+                                label: 'Secondes',
+                                isEditing: _isEditingSeconds,
+                                controller: _secondsController,
+                                focusNode: _secondsFocusNode,
+                                onTap: _enterSecondsEdit,
+                                maxLength: 2,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      Container(
-                        width: 20,
-                        height: 90,
-                        alignment: Alignment.center,
-                        child: Text(
-                          ':',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.redHatText(
-                            fontSize: 80,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF3A416F),
-                            height: 1.0,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 140,
-                        child: _EditableTimeValue(
-                          value: seconds,
-                          label: 'Secondes',
-                          isEditing: _isEditingSeconds,
-                          controller: _secondsController,
-                          focusNode: _secondsFocusNode,
-                          onTap: _enterSecondsEdit,
-                          maxLength: 2,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 25),
+                        const SizedBox(height: 25),
 
-                  // Controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Pause Button (Left)
-                      GestureDetector(
-                        onTap: _isRunning ? _pauseTimer : null,
-                        child: SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: SvgPicture.asset(
-                            'assets/icons/pause.svg',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
+                        // Controls
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Pause Button (Left)
+                            GestureDetector(
+                              onTap: _isRunning ? _pauseTimer : null,
+                              child: SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: SvgPicture.asset(
+                                  'assets/icons/pause.svg',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
 
-                      // Play/Stop Button (Right)
-                      GestureDetector(
-                        onTap: _isRunning ? _stopTimer : _startTimer,
-                        child: SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: SvgPicture.asset(
-                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                          ),
+                            // Play/Stop Button (Right)
+                            GestureDetector(
+                              onTap: _isRunning ? _stopTimer : _startTimer,
+                              child: SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: SvgPicture.asset(
+                                  _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  if (_isCompleting)
+                    AnimatedCheckmark(
+                      size: 120,
+                      onAnimationComplete: _handleCheckmarkAnimationComplete,
+                    ),
                 ],
               ),
             ),

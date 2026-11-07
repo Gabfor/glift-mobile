@@ -1589,6 +1589,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
   late bool _isRunning;
   Timer? _timer;
   DateTime? _endTime;
+  bool _isCompleting = false;
 
   late final TimerAlertService _alertService;
   late final VibrationService _vibrationService;
@@ -1640,6 +1641,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
       _endTime = null;
       _alertService.cancelTimerNotification();
       setState(() {
+        _isCompleting = false;
         _remainingSeconds = widget.data.remainingSeconds;
         _isRunning = widget.data.isRunning;
       });
@@ -1667,6 +1669,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
 
     setState(() {
       _isRunning = true;
+      _isCompleting = false;
       _endTime = DateTime.now().add(Duration(seconds: _remainingSeconds));
     });
 
@@ -1698,6 +1701,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
     _alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
+      _isCompleting = false;
     });
   }
 
@@ -1708,6 +1712,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
     _alertService.cancelTimerNotification();
     setState(() {
       _isRunning = false;
+      _isCompleting = false;
       _remainingSeconds = widget.data.durationInSeconds;
     });
   }
@@ -1736,9 +1741,10 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
     }
 
     if (SettingsService.instance.getAutoCloseEnabled()) {
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted && !_isRunning && _remainingSeconds == 0) {
-        widget.onClose();
+      if (mounted) {
+        setState(() {
+          _isCompleting = true;
+        });
       }
     } else {
       if (mounted && !_isRunning) {
@@ -1746,6 +1752,17 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
           _remainingSeconds = widget.data.durationInSeconds;
         });
       }
+    }
+  }
+
+  Future<void> _handleCheckmarkAnimationComplete() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
+    if (_isCompleting && !_isRunning && _remainingSeconds == 0) {
+      widget.onClose();
+      setState(() {
+        _isCompleting = false;
+      });
     }
   }
 
@@ -1806,101 +1823,115 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            Row(
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => widget.onReturnToFull(_currentData()),
-                  child: SizedBox(
-                    width: 34,
-                    height: 34,
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/screen_big.svg',
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    _stopTimer();
-                    widget.onClose();
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/close.svg',
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: SizedBox(
-                height: 72,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildTimeSegment(minutes),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(
-                        ':',
-                        style: _timerTextStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    _buildTimeSegment(seconds),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: _isRunning ? _pauseTimer : null,
-                      behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            'assets/icons/pause.svg',
-                            width: 38,
-                            height: 38,
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: _isCompleting ? 0.3 : 1.0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => widget.onReturnToFull(_currentData()),
+                        child: SizedBox(
+                          width: 34,
+                          height: 34,
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/icons/screen_big.svg',
+                              width: 30,
+                              height: 30,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: _isRunning ? _stopTimer : _startTimer,
-                      behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
-                            width: 38,
-                            height: 38,
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          _stopTimer();
+                          widget.onClose();
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/icons/close.svg',
+                              width: 30,
+                              height: 30,
+                            ),
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: SizedBox(
+                      height: 72,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _buildTimeSegment(minutes),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Text(
+                              ':',
+                              style: _timerTextStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          _buildTimeSegment(seconds),
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: _isRunning ? _pauseTimer : null,
+                            behavior: HitTestBehavior.opaque,
+                            child: SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/icons/pause.svg',
+                                  width: 38,
+                                  height: 38,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: _isRunning ? _stopTimer : _startTimer,
+                            behavior: HitTestBehavior.opaque,
+                            child: SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                                  width: 38,
+                                  height: 38,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+            if (_isCompleting)
+              AnimatedCheckmark(
+                size: 70,
+                onAnimationComplete: _handleCheckmarkAnimationComplete,
+              ),
           ],
         ),
       ),

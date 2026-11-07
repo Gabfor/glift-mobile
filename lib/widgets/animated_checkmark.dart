@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 class AnimatedCheckmark extends StatefulWidget {
   final VoidCallback onAnimationComplete;
+  final double size;
+  final double? strokeWidth;
 
   const AnimatedCheckmark({
     super.key,
     required this.onAnimationComplete,
+    this.size = 100.0,
+    this.strokeWidth,
   });
 
   @override
@@ -42,10 +46,13 @@ class _AnimatedCheckmarkState extends State<AnimatedCheckmark>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 100,
-      height: 100,
+      width: widget.size,
+      height: widget.size,
       child: CustomPaint(
-        painter: _CheckmarkPainter(_animation),
+        painter: _CheckmarkPainter(
+          _animation,
+          strokeWidth: widget.strokeWidth ?? (widget.size * 0.06),
+        ),
       ),
     );
   }
@@ -53,15 +60,16 @@ class _AnimatedCheckmarkState extends State<AnimatedCheckmark>
 
 class _CheckmarkPainter extends CustomPainter {
   final Animation<double> animation;
+  final double strokeWidth;
 
-  _CheckmarkPainter(this.animation) : super(repaint: animation);
+  _CheckmarkPainter(this.animation, {required this.strokeWidth}) : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = const Color(0xFF00D591)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.0
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
