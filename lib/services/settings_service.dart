@@ -405,10 +405,18 @@ class SettingsService {
 
   // Ringtones & Sound Effects
   static const List<RingtoneInfo> defaultRingtones = [
-    RingtoneInfo(id: '1', name: 'Bip', filename: 'bip.mp3', url: '/sounds/bip.mp3', durationMs: 696, isActive: true, isDefault: false),
-    RingtoneInfo(id: '2', name: 'Radar', filename: 'radar.mp3', url: '/sounds/radar.mp3', durationMs: 1567, isActive: true, isDefault: true),
-    RingtoneInfo(id: '3', name: 'Gong', filename: 'gong.mp3', url: '/sounds/gong.mp3', durationMs: 2520, isActive: true, isDefault: false),
-    RingtoneInfo(id: '4', name: 'Cloche', filename: 'bell.mp3', url: '/sounds/bell.mp3', durationMs: 3720, isActive: true, isDefault: false),
+    RingtoneInfo(id: '1', name: 'Bip', filename: 'bip.mp3', url: '/sounds/bip.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '2', name: 'Radar', filename: 'radar.mp3', url: '/sounds/radar.mp3', durationMs: 2200, isActive: true, isDefault: true),
+    RingtoneInfo(id: '3', name: 'Gong', filename: 'gong.mp3', url: '/sounds/gong.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '4', name: 'Cloche', filename: 'bell.mp3', url: '/sounds/bell.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '5', name: 'Arpège Succès', filename: 'chime_asc.mp3', url: '/sounds/chime_asc.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '6', name: 'Bip Sport', filename: 'bip_sport.mp3', url: '/sounds/bip_sport.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '7', name: 'Cloche Zen', filename: 'cloche_zen.mp3', url: '/sounds/cloche_zen.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '8', name: 'Gong Énergique', filename: 'gong_court.mp3', url: '/sounds/gong_court.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '9', name: 'Compte à Rebours', filename: 'countdown_ding.mp3', url: '/sounds/countdown_ding.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '10', name: 'Bol de Cristal', filename: 'crystal_bowl.mp3', url: '/sounds/crystal_bowl.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '11', name: 'Buzzer Clean', filename: 'buzzer_clean.mp3', url: '/sounds/buzzer_clean.mp3', durationMs: 2200, isActive: true, isDefault: false),
+    RingtoneInfo(id: '12', name: 'Marimba Vital', filename: 'marimba_pop.mp3', url: '/sounds/marimba_pop.mp3', durationMs: 2200, isActive: true, isDefault: false),
   ];
 
   List<RingtoneInfo> getRingtones() {
