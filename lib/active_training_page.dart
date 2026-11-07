@@ -138,7 +138,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
       if (mounted) {
         setState(() {
-          _rows = rows;
+          _rows = rows.where((row) => !row.isHidden).toList();
           _exerciseSettings = settings;
           // Set start time when data is loaded, time spent loading
           _isLoading = false;
@@ -341,21 +341,10 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
+      _rows![index] = oldRow.copyWith(
         repetitions: repetitions,
         weights: weights,
         efforts: efforts,
-        rest: oldRow.rest,
-        note: oldRow.note,
-        material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
     });
 
@@ -378,21 +367,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
+      _rows![index] = oldRow.copyWith(
         rest: newDuration.toString(),
-        note: oldRow.note,
-        material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
     });
 
@@ -408,21 +384,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
-        rest: oldRow.rest,
-        note: oldRow.note,
+      _rows![index] = oldRow.copyWith(
         material: material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
     });
 
@@ -604,21 +567,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
-        rest: oldRow.rest,
+      _rows![index] = oldRow.copyWith(
         note: note,
-        material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
     });
 
@@ -2281,7 +2231,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     widget.onOpenTimer(widget.index, duration);
                   },
                   child: SvgPicture.asset(
-                    hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg',
+                    widget.row.isHidden
+                        ? (hasRest ? 'assets/icons/timer_on_grey.svg' : 'assets/icons/timer_off_grey.svg')
+                        : (hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg'),
                     width: 24,
                     height: 24,
                   ),
@@ -2292,9 +2244,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 GestureDetector(
                   onTap: _showNoteModal,
                   child: SvgPicture.asset(
-                    hasNote
-                        ? 'assets/icons/note_on.svg'
-                        : 'assets/icons/note_off.svg',
+                    widget.row.isHidden
+                        ? (hasNote ? 'assets/icons/note_on_grey.svg' : 'assets/icons/note_off_grey.svg')
+                        : (hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg'),
                     width: 24,
                     height: 24,
                   ),

@@ -504,22 +504,7 @@ class ProgramRepository {
           'locked': shouldBeLocked,
         });
         
-        updatedRows.add(TrainingRow(
-          id: row.id,
-          trainingId: row.trainingId,
-          exercise: row.exercise,
-          series: row.series,
-          repetitions: row.repetitions,
-          weights: row.weights,
-          efforts: row.efforts,
-          rest: row.rest,
-          note: row.note,
-          material: row.material,
-          videoUrl: row.videoUrl,
-          order: row.order,
-          supersetId: row.supersetId,
-          locked: shouldBeLocked,
-        ));
+        updatedRows.add(row.copyWith(locked: shouldBeLocked));
       } else {
         updatedRows.add(row);
       }

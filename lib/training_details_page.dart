@@ -211,6 +211,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   Future<void> _openActiveTraining() async {
     final hasUnnamedExercises = _rows != null &&
         _rows!.any((row) {
+          if (row.isHidden) return false;
           final name = row.exercise.trim().replaceAll('’', "'");
           return name.isEmpty || name.toLowerCase() == "nom de l'exercice";
         });
@@ -1455,6 +1456,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
     final hasLink = widget.row.videoUrl != null &&
         widget.row.videoUrl!.isNotEmpty &&
         SettingsService.instance.getShowLinks();
+    final isGreyed = widget.row.locked || widget.row.isHidden;
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1482,10 +1484,10 @@ class _ExerciseCardState extends State<_ExerciseCard>
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: widget.row.locked || widget.row.exercise.isEmpty
+                    color: isGreyed || widget.row.exercise.isEmpty
                         ? const Color(0xFFD7D4DC)
                         : (hasLink ? const Color(0xFF7069FA) : const Color(0xFF3A416F)),
-                    decoration: (hasLink && !widget.row.locked) ? TextDecoration.underline : null,
+                    decoration: (hasLink && !isGreyed) ? TextDecoration.underline : null,
                     decorationColor: const Color(0xFF7069FA),
                   ),
                 ),
@@ -1525,9 +1527,13 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         );
                       },
                       child: SvgPicture.asset(
-                        hasRest
-                            ? 'assets/icons/timer_on.svg'
-                            : 'assets/icons/timer_off.svg',
+                        widget.row.isHidden
+                            ? (hasRest
+                                ? 'assets/icons/timer_on_grey.svg'
+                                : 'assets/icons/timer_off_grey.svg')
+                            : (hasRest
+                                ? 'assets/icons/timer_on.svg'
+                                : 'assets/icons/timer_off.svg'),
                         width: 24,
                         height: 24,
                       ),
@@ -1538,9 +1544,13 @@ class _ExerciseCardState extends State<_ExerciseCard>
                     GestureDetector(
                       onTap: _showNoteModal,
                       child: SvgPicture.asset(
-                        hasNote
-                            ? 'assets/icons/note_on.svg'
-                            : 'assets/icons/note_off.svg',
+                        widget.row.isHidden
+                            ? (hasNote
+                                ? 'assets/icons/note_on_grey.svg'
+                                : 'assets/icons/note_off_grey.svg')
+                            : (hasNote
+                                ? 'assets/icons/note_on.svg'
+                                : 'assets/icons/note_off.svg'),
                         width: 24,
                         height: 24,
                       ),
@@ -1572,12 +1582,12 @@ class _ExerciseCardState extends State<_ExerciseCard>
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
 
-          // Override for locked
+          // Override for locked or hidden
           final isColored = visuals.backgroundColor != Colors.white;
           final lockedColor = isColored ? const Color(0xFFF2F1F6) : const Color(0xFFF8F9FA);
 
-          final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
-          final textColor = widget.row.locked ? const Color(0xFFD7D4DC) : visuals.textColor;
+          final bgColor = isGreyed ? lockedColor : visuals.backgroundColor;
+          final textColor = isGreyed ? const Color(0xFFD7D4DC) : visuals.textColor;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -1601,7 +1611,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFFD7D4DC),
-                          ).copyWith(color: widget.row.locked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F)),
+                          ).copyWith(color: isGreyed ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F)),
                         ),
                       ),
                     ),
@@ -1671,14 +1681,14 @@ class _ExerciseCardState extends State<_ExerciseCard>
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: widget.row.locked ? lockedColor : Colors.white,
+                          color: isGreyed ? lockedColor : Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: const Color(0xFFECE9F1),
                             width: 1,
                           ),
                         ),
-                        child: widget.row.locked 
+                        child: isGreyed 
                          ? Image.asset(
                           visuals.iconPath.replaceAll('.png', '_nb.png'),
                           width: 26,
@@ -1705,7 +1715,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
               GestureDetector(
                 onTap: widget.row.series > 1 && !widget.row.locked ? _handleRemoveSet : null,
                 child: SvgPicture.asset(
-                  (widget.row.series > 1 && !widget.row.locked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg',
+                  (widget.row.series > 1 && !widget.row.locked)
+                      ? (widget.row.isHidden ? 'assets/icons/supp_exo_grey.svg' : 'assets/icons/supp_exo_purple.svg')
+                      : 'assets/icons/supp_exo_grey.svg',
                   width: 24,
                   height: 24,
                 ),
@@ -1714,7 +1726,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
               GestureDetector(
                 onTap: (widget.row.series >= 6 || widget.row.locked) ? null : _handleAddSet,
                 child: SvgPicture.asset(
-                  (widget.row.series >= 6 || widget.row.locked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
+                  (widget.row.series >= 6 || widget.row.locked)
+                      ? 'assets/icons/add_exo_grey.svg'
+                      : (widget.row.isHidden ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg'),
                   width: 24,
                   height: 24,
                 ),

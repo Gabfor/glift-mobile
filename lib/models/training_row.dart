@@ -13,6 +13,7 @@ class TrainingRow {
   final int order;
   final String? supersetId;
   final bool locked;
+  final bool isHidden;
 
   TrainingRow({
     required this.id,
@@ -29,10 +30,11 @@ class TrainingRow {
     required this.order,
     this.supersetId,
     required this.locked,
+    this.isHidden = false,
   });
 
   factory TrainingRow.fromJson(Map<String, dynamic> json) {
-    List<String> _toDisplayStrings(String fieldName) {
+    List<String> toDisplayStrings(String fieldName) {
       final raw = json[fieldName] as List<dynamic>? ?? [];
       return raw
           .map((value) {
@@ -48,9 +50,9 @@ class TrainingRow {
       trainingId: json['training_id'] as String,
       exercise: json['exercice'] as String? ?? '',
       series: json['series'] as int,
-      repetitions: _toDisplayStrings('repetitions'),
-      weights: _toDisplayStrings('poids'),
-      efforts: _toDisplayStrings('effort'),
+      repetitions: toDisplayStrings('repetitions'),
+      weights: toDisplayStrings('poids'),
+      efforts: toDisplayStrings('effort'),
       rest: json['repos'] as String,
       note: json['note'] as String?,
       material: json['materiel'] as String?,
@@ -60,6 +62,7 @@ class TrainingRow {
       order: json['order'] as int,
       supersetId: json['superset_id'] as String?,
       locked: json['locked'] as bool? ?? false,
+      isHidden: json['is_hidden'] as bool? ?? false,
     );
   }
 
@@ -79,6 +82,43 @@ class TrainingRow {
       'locked': locked,
       'note': note,
       'materiel': material,
+      'is_hidden': isHidden,
     };
+  }
+
+  TrainingRow copyWith({
+    String? id,
+    String? trainingId,
+    String? exercise,
+    int? series,
+    List<String>? repetitions,
+    List<String>? weights,
+    List<String>? efforts,
+    String? rest,
+    String? note,
+    String? material,
+    String? videoUrl,
+    int? order,
+    String? supersetId,
+    bool? locked,
+    bool? isHidden,
+  }) {
+    return TrainingRow(
+      id: id ?? this.id,
+      trainingId: trainingId ?? this.trainingId,
+      exercise: exercise ?? this.exercise,
+      series: series ?? this.series,
+      repetitions: repetitions ?? this.repetitions,
+      weights: weights ?? this.weights,
+      efforts: efforts ?? this.efforts,
+      rest: rest ?? this.rest,
+      note: note ?? this.note,
+      material: material ?? this.material,
+      videoUrl: videoUrl ?? this.videoUrl,
+      order: order ?? this.order,
+      supersetId: supersetId ?? this.supersetId,
+      locked: locked ?? this.locked,
+      isHidden: isHidden ?? this.isHidden,
+    );
   }
 }
