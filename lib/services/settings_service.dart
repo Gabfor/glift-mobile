@@ -280,6 +280,11 @@ class SettingsService {
   // Notifiers
   final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
   final ValueNotifier<String> subscriptionPlanNotifier = ValueNotifier('starter');
+  final ValueNotifier<int> visibilityChangedNotifier = ValueNotifier<int>(0);
+
+  void notifyVisibilityChanged() {
+    visibilityChangedNotifier.value++;
+  }
 
   // Logo
   String? getLogoUrl() {

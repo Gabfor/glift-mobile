@@ -77,11 +77,19 @@ class DashboardPageState extends State<DashboardPage> {
     _programPageController = PageController();
     _programScrollController = ScrollController();
     _selectedProgramId = widget.initialProgramId;
+    SettingsService.instance.visibilityChangedNotifier.addListener(_onVisibilityChanged);
     _loadData();
+  }
+
+  void _onVisibilityChanged() {
+    if (mounted) {
+      _loadData();
+    }
   }
 
   @override
   void dispose() {
+    SettingsService.instance.visibilityChangedNotifier.removeListener(_onVisibilityChanged);
     _activeTooltipExerciseId.dispose();
     _programPageController.dispose();
     _programScrollController.dispose();

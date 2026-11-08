@@ -83,12 +83,19 @@ class HomePageState extends State<HomePage> {
     _selectedProgramId = widget.initialProgramId;
 
     SettingsService.instance.subscriptionPlanNotifier.addListener(_onPlanChanged);
+    SettingsService.instance.visibilityChangedNotifier.addListener(_onVisibilityChanged);
 
     _fetchPrograms();
   }
 
   void _onPlanChanged() {
     if (mounted) setState(() {});
+  }
+
+  void _onVisibilityChanged() {
+    if (mounted) {
+      _fetchPrograms();
+    }
   }
 
   void clearNewIndicator() {
@@ -115,6 +122,7 @@ class HomePageState extends State<HomePage> {
   @override
   void dispose() {
     SettingsService.instance.subscriptionPlanNotifier.removeListener(_onPlanChanged);
+    SettingsService.instance.visibilityChangedNotifier.removeListener(_onVisibilityChanged);
     _pageController.dispose();
     _programScrollController.dispose();
     super.dispose();

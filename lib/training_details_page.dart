@@ -89,6 +89,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
   @override
   void dispose() {
+    SettingsService.instance.visibilityChangedNotifier.removeListener(_onVisibilityChanged);
     _activeFocusId.dispose();
     _scrollEndTimer?.cancel();
     _scrollController.dispose();
@@ -101,7 +102,14 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     _programRepository = ProgramRepository(widget.supabase);
     _trainingName = widget.training.name;
     _currentTraining = widget.training;
+    SettingsService.instance.visibilityChangedNotifier.addListener(_onVisibilityChanged);
     _fetchDetails();
+  }
+
+  void _onVisibilityChanged() {
+    if (mounted) {
+      _fetchDetails();
+    }
   }
 
   Future<void> _fetchDetails() async {

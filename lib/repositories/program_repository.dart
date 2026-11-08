@@ -626,6 +626,10 @@ class ProgramRepository {
       if (updates.isEmpty) return;
 
       await _supabase.from('training_rows').update(updates).eq('id', rowId);
+
+      if (isHidden != null) {
+        SettingsService.instance.notifyVisibilityChanged();
+      }
     } catch (e) {
       throw Exception('Erreur lors de la mise à jour de l\'exercice: $e');
     }
@@ -990,6 +994,7 @@ class ProgramRepository {
       if (changed) {
         await saveLocalPrograms(programs);
       }
+      SettingsService.instance.notifyVisibilityChanged();
     } catch (e) {
       throw Exception("Erreur lors de la mise à jour de la visibilité de l'entraînement: $e");
     }
@@ -1122,6 +1127,7 @@ class ProgramRepository {
       if (changed) {
         await saveLocalPrograms(programs);
       }
+      SettingsService.instance.notifyVisibilityChanged();
     } catch (e) {
       throw Exception('Erreur lors de la mise à jour de la visibilité tableau de bord: $e');
     }
@@ -1149,6 +1155,7 @@ class ProgramRepository {
       if (changed) {
         await saveLocalPrograms(programs);
       }
+      SettingsService.instance.notifyVisibilityChanged();
     } catch (e) {
       throw Exception("Erreur lors de la mise à jour de la visibilité tableau de bord de l'entraînement: $e");
     }
@@ -1195,6 +1202,7 @@ class ProgramRepository {
       if (changed) {
         await saveLocalPrograms(programs);
       }
+      SettingsService.instance.notifyVisibilityChanged();
     } catch (e) {
       throw Exception('Erreur lors de la mise à jour de la visibilité du programme: $e');
     }
