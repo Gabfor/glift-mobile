@@ -76,7 +76,7 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
         if (p.trainings.isEmpty) return false;
         if (p.name.trim() == 'Nom du programme') return false;
         return true;
-      }).toList();
+      }).toList()..sort((a, b) => a.position.compareTo(b.position));
 
       if (mounted) {
         setState(() {

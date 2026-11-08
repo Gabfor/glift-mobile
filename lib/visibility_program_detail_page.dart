@@ -51,7 +51,9 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
   void initState() {
     super.initState();
     _repository = ProgramRepository(widget.supabase);
-    _program = widget.program;
+    final sortedTrainings = List<Training>.from(widget.program.trainings)
+      ..sort((a, b) => a.position.compareTo(b.position));
+    _program = widget.program.copyWith(trainings: sortedTrainings);
     _isAppVisible = widget.program.app;
     _isDashboardVisible = widget.program.dashboard;
   }
@@ -80,9 +82,12 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
         (p) => p.id == _program.id,
         orElse: () => _program,
       );
+      final sortedTrainings = List<Training>.from(updated.trainings)
+        ..sort((a, b) => a.position.compareTo(b.position));
+      final programWithSortedTrainings = updated.copyWith(trainings: sortedTrainings);
       if (mounted) {
         setState(() {
-          _program = updated;
+          _program = programWithSortedTrainings;
           _isAppVisible = updated.app;
           _isDashboardVisible = updated.dashboard;
         });

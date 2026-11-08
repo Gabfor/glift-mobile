@@ -324,10 +324,10 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   // Interaction handlers
   void _moveRowDown(int index) {
     if (_rows == null || index >= _rows!.length - 1) return;
-    
+    final nextBlockEndIndex = _getGroupEndIndex(_rows!, index + 1);
     setState(() {
       final item = _rows!.removeAt(index);
-      _rows!.insert(index + 1, item);
+      _rows!.insert(nextBlockEndIndex, item);
     });
   }
 
@@ -1006,13 +1006,14 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
   
   int _getGroupEndIndex(List<TrainingRow> rows, int startIndex) {
     final startRow = rows[startIndex];
-    if (startRow.supersetId == null) return startIndex;
+    if (startRow.supersetId == null || !SettingsService.instance.getShowSuperset()) return startIndex;
     
     int currentIndex = startIndex;
     while (currentIndex + 1 < rows.length && 
            rows[currentIndex + 1].supersetId == startRow.supersetId) {
       currentIndex++;
     }
+    if (currentIndex == startIndex) return startIndex;
     return currentIndex;
   }
 
@@ -1239,13 +1240,16 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
     final lastActiveRowIds = <String>{};
     if (activeRows.isNotEmpty) {
       final lastActiveRow = activeRows.last;
-      if (lastActiveRow.supersetId != null) {
+      if (lastActiveRow.supersetId != null && SettingsService.instance.getShowSuperset()) {
         final lastSupersetId = lastActiveRow.supersetId;
-        lastActiveRowIds.addAll(
-          activeRows
-              .where((row) => row.supersetId == lastSupersetId)
-              .map((row) => row.id),
-        );
+        final matchingRows = activeRows.where((row) => row.supersetId == lastSupersetId).toList();
+        if (matchingRows.length >= 2) {
+          lastActiveRowIds.addAll(
+            matchingRows.map((row) => row.id),
+          );
+        } else {
+          lastActiveRowIds.add(lastActiveRow.id);
+        }
       } else {
         lastActiveRowIds.add(lastActiveRow.id);
       }
@@ -1266,63 +1270,68 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             j++;
           }
 
-          final isCompleted = _isRowCompleted(row.id);
-          final isIgnored = _isRowIgnored(row.id);
-          // Check if it is effectively the last block
-          final isLast = rowIndex + group.length >= _rows!.length ||
-              (isActiveSubset && group.any((r) => lastActiveRowIds.contains(r.id)));
-          final isLocked = group.any((r) => r.locked);
+          if (group.length >= 2) {
+            final isCompleted = _isRowCompleted(row.id);
+            final isIgnored = _isRowIgnored(row.id);
+            // Check if it is effectively the last block
+            final isLast = rowIndex + group.length >= _rows!.length ||
+                (isActiveSubset && group.any((r) => lastActiveRowIds.contains(r.id)));
+            final isLocked = group.any((r) => r.locked);
 
-          items.add(SupersetGroupCard(
-            isCompleted: isCompleted,
-            isIgnored: isIgnored,
-            isLast: isLast,
-            isLocked: isLocked,
-            onComplete: () => _completeBlock(rowIndex, group.length),
-            onIgnore: () => _ignoreBlock(rowIndex, group.length),
-            onMoveDown: () => _moveBlockDown(rowIndex),
-            children: group.map((r) {
-              final rIndex = _rows!.indexOf(r);
-              return _ActiveExerciseCard(
-                key: ValueKey(r.id),
-                index: rIndex,
-                row: r,
-                onFocus: _handleFocus,
-                initialCompletedSets:
-                    _setCompletionStates[r.id] ?? List<bool>.filled(r.series, false),
-                onSetCompletionChanged: (completedSets) {
-                  setState(() {
-                    _setCompletionStates[r.id] = List<bool>.from(completedSets);
-                  });
-                },
-                isLast: rIndex == _rows!.length - 1 ||
-                    (isActiveSubset && lastActiveRowIds.contains(r.id)),
-                isCompleted: _isRowCompleted(r.id),
-                isIgnored: _isRowIgnored(r.id),
-                onMoveDown: () {},
-                onComplete: () {},
-                onIgnore: () {},
-                onUpdate: (reps, weights, efforts) =>
-                    _handleRowUpdate(rIndex, reps, weights, efforts),
-                onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
-                onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
-                onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
-                onOpenTimer: (idx, duration) => _openTimerForRow(idx, duration),
-                onAutoTriggerTimer: (idx, duration) => 
-                    _openTimerForRow(idx, duration, autoTrigger: true),
-                onCloseTimer: _closeInlineTimer,
-                showDecoration: false,
-                showActions: false,
-                showTimer: group.indexOf(r) == 0 && _showRepos,
-                showEffort: _showEffort,
-                showMaterial: _showMaterial,
-                showSuivi: group.indexOf(r) == group.length - 1,
-                activeFocusId: _activeFocusId,
-              );
-            }).toList(),
-          ));
-          i = j;
-        } else {
+            items.add(SupersetGroupCard(
+              isCompleted: isCompleted,
+              isIgnored: isIgnored,
+              isLast: isLast,
+              isLocked: isLocked,
+              onComplete: () => _completeBlock(rowIndex, group.length),
+              onIgnore: () => _ignoreBlock(rowIndex, group.length),
+              onMoveDown: () => _moveBlockDown(rowIndex),
+              children: group.map((r) {
+                final rIndex = _rows!.indexOf(r);
+                return _ActiveExerciseCard(
+                  key: ValueKey(r.id),
+                  index: rIndex,
+                  row: r,
+                  onFocus: _handleFocus,
+                  initialCompletedSets:
+                      _setCompletionStates[r.id] ?? List<bool>.filled(r.series, false),
+                  onSetCompletionChanged: (completedSets) {
+                    setState(() {
+                      _setCompletionStates[r.id] = List<bool>.from(completedSets);
+                    });
+                  },
+                  isLast: rIndex == _rows!.length - 1 ||
+                      (isActiveSubset && lastActiveRowIds.contains(r.id)),
+                  isCompleted: _isRowCompleted(r.id),
+                  isIgnored: _isRowIgnored(r.id),
+                  onMoveDown: () {},
+                  onComplete: () {},
+                  onIgnore: () {},
+                  onUpdate: (reps, weights, efforts) =>
+                      _handleRowUpdate(rIndex, reps, weights, efforts),
+                  onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
+                  onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
+                  onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+                  onOpenTimer: (idx, duration) => _openTimerForRow(idx, duration),
+                  onAutoTriggerTimer: (idx, duration) => 
+                      _openTimerForRow(idx, duration, autoTrigger: true),
+                  onCloseTimer: _closeInlineTimer,
+                  showDecoration: false,
+                  showActions: false,
+                  showTimer: group.indexOf(r) == 0 && _showRepos,
+                  showEffort: _showEffort,
+                  showMaterial: _showMaterial,
+                  showSuivi: group.indexOf(r) == group.length - 1,
+                  activeFocusId: _activeFocusId,
+                );
+              }).toList(),
+            ));
+            i = j;
+            continue;
+          }
+        }
+
+        {
           items.add(_ActiveExerciseCard(
             key: ValueKey(row.id),
             index: rowIndex,

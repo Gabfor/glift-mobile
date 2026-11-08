@@ -250,6 +250,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
@@ -434,17 +436,15 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    Flexible(
-                      child: Text(
-                        _getSoundEffectLabel(_soundEffect),
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      _getSoundEffectLabel(_soundEffect),
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
@@ -474,17 +474,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        _displayType,
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      _displayType,
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
@@ -509,17 +507,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        '$_defaultRestTime secondes',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      '$_defaultRestTime secondes',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
@@ -583,17 +579,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        _subscriptionPlan == 'premium' ? 'Premium' : 'Starter',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      _subscriptionPlan == 'premium' ? 'Premium' : 'Starter',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
@@ -666,17 +660,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        'Nous évaluer',
-                        style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      'Nous évaluer',
+                      style: GoogleFonts.quicksand(
+                        color: const Color(0xFF5D6494),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
@@ -835,12 +827,14 @@ class _SettingsContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFD7D4DC)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: children,
       ),
     );
@@ -880,10 +874,7 @@ class _SettingsTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Flexible(
-              fit: FlexFit.loose,
-              child: trailing,
-            ),
+            trailing,
           ],
         ),
       ),

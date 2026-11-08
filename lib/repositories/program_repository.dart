@@ -1050,6 +1050,17 @@ class ProgramRepository {
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
+
+        // Ordre identique à glift-web :
+        // 1. Programmes triés par position croissante
+        // 2. Entraînements triés par position croissante
+        programs.sort((a, b) => a.position.compareTo(b.position));
+        for (int i = 0; i < programs.length; i++) {
+          final sortedTrainings = List<Training>.from(programs[i].trainings)
+            ..sort((a, b) => a.position.compareTo(b.position));
+          programs[i] = programs[i].copyWith(trainings: sortedTrainings);
+        }
+
         _allPrograms = List<Program>.from(programs);
         return programs;
       } catch (_) {
@@ -1075,6 +1086,15 @@ class ProgramRepository {
 
         var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
         programs = await _ensureLockedConsistency(programs);
+
+        // Ordre identique à glift-web
+        programs.sort((a, b) => a.position.compareTo(b.position));
+        for (int i = 0; i < programs.length; i++) {
+          final sortedTrainings = List<Training>.from(programs[i].trainings)
+            ..sort((a, b) => a.position.compareTo(b.position));
+          programs[i] = programs[i].copyWith(trainings: sortedTrainings);
+        }
+
         _allPrograms = List<Program>.from(programs);
         return programs;
       }

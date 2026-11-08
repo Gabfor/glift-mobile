@@ -81,6 +81,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
   Future<void> _fetchRows() async {
     try {
       final rows = await _repository.getTrainingDetails(widget.training.id);
+      rows.sort((a, b) => a.order.compareTo(b.order));
       if (mounted) {
         setState(() {
           _rows = rows;
@@ -109,6 +110,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
         orElse: () => widget.training,
       );
       final rows = await _repository.getTrainingDetails(widget.training.id);
+      rows.sort((a, b) => a.order.compareTo(b.order));
       if (mounted) {
         setState(() {
           _isAppVisible = tr.app;
