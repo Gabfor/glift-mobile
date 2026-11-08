@@ -17,6 +17,7 @@ import 'sound_settings_page.dart';
 import 'default_timer_page.dart';
 import 'user_informations_page.dart';
 import 'user_subscription_page.dart';
+import 'visibility_programs_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -263,6 +264,20 @@ class _SettingsPageState extends State<SettingsPage> {
                           setState(() => _weightUnit = value);
                           SettingsService.instance.saveWeightUnit(value);
                         },
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 1, color: Color(0xFFECE9F1)),
+              _SettingsTile(
+                title: 'Régler la visibilité',
+                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => VisibilityProgramsPage(
+                        supabase: widget.supabase,
                       ),
                     ),
                   );

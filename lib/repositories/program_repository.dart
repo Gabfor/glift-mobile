@@ -1008,6 +1008,120 @@ class ProgramRepository {
     }
   }
 
+  Future<List<Program>> getAllProgramsRaw() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+
+      try {
+        final results = await Future.wait<dynamic>(<Future<dynamic>>[
+          _supabase
+              .from('programs')
+              .select(
+                'id, name, position, dashboard, app, trainings(id, name, position, app, dashboard, locked, program_id, columns_settings)',
+              )
+              .eq('user_id', userId)
+              .order('position', ascending: true),
+          _supabase
+              .from('training_sessions')
+              .select('training_id, performed_at, duration')
+              .eq('user_id', userId),
+          getLocalPrograms(),
+        ]);
+
+        final response = results[0];
+        final sessionsResponse = results[1];
+        final localPrograms = results[2] as List<Program>;
+        final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+
+        var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
+        programs = await _ensureLockedConsistency(programs);
+        _allPrograms = List<Program>.from(programs);
+        return programs;
+      } catch (_) {
+        final fallbackResults = await Future.wait<dynamic>(<Future<dynamic>>[
+          _supabase
+              .from('programs')
+              .select(
+                'id, name, position, dashboard, trainings(id, name, position, app, locked, program_id, columns_settings)',
+              )
+              .eq('user_id', userId)
+              .order('position', ascending: true),
+          _supabase
+              .from('training_sessions')
+              .select('training_id, performed_at, duration')
+              .eq('user_id', userId),
+          getLocalPrograms(),
+        ]);
+
+        final response = fallbackResults[0];
+        final sessionsResponse = fallbackResults[1];
+        final localPrograms = fallbackResults[2] as List<Program>;
+        final sessions = (sessionsResponse as List<dynamic>).cast<Map<String, dynamic>>();
+
+        var programs = await _processProgramsResponse(response, userId, sessions, localPrograms);
+        programs = await _ensureLockedConsistency(programs);
+        _allPrograms = List<Program>.from(programs);
+        return programs;
+      }
+    } catch (e) {
+      throw Exception('Erreur lors du chargement des programmes: $e');
+    }
+  }
+
+  Future<void> updateProgramDashboardVisibility(String programId, bool dashboardVisible) async {
+    try {
+      await _supabase
+          .from('programs')
+          .update({'dashboard': dashboardVisible})
+          .eq('id', programId);
+
+      final programs = await getLocalPrograms();
+      bool changed = false;
+      for (var i = 0; i < programs.length; i++) {
+        if (programs[i].id == programId) {
+          programs[i] = programs[i].copyWith(dashboard: dashboardVisible);
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour de la visibilité tableau de bord: $e');
+    }
+  }
+
+  Future<void> updateTrainingDashboardVisibility(String trainingId, bool dashboardVisible) async {
+    try {
+      await _supabase
+          .from('trainings')
+          .update({'dashboard': dashboardVisible})
+          .eq('id', trainingId);
+
+      final programs = await getLocalPrograms();
+      bool changed = false;
+      for (var p = 0; p < programs.length; p++) {
+        for (var i = 0; i < programs[p].trainings.length; i++) {
+          if (programs[p].trainings[i].id == trainingId) {
+            programs[p].trainings[i] = programs[p].trainings[i].copyWith(dashboard: dashboardVisible);
+            changed = true;
+            break;
+          }
+        }
+        if (changed) break;
+      }
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la mise à jour de la visibilité tableau de bord de l'entraînement: $e");
+    }
+  }
+
   Future<void> updateProgramVisibility(String programId, bool appVisible) async {
     try {
       if (!appVisible) {

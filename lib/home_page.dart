@@ -25,6 +25,7 @@ import 'widgets/edit_name_modal.dart';
 import 'widgets/delete_confirmation_modal.dart';
 import 'widgets/add_training_locked_modal.dart';
 import 'widgets/add_training_masked_modal.dart';
+import 'visibility_programs_page.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -631,6 +632,15 @@ class HomePageState extends State<HomePage> {
               child: widget.onNavigateToStore != null
                   ? EmptyProgramsWidget(
                       onGoToStore: widget.onNavigateToStore!,
+                      onManageVisibility: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => VisibilityProgramsPage(
+                              supabase: widget.supabase,
+                            ),
+                          ),
+                        ).then((_) => _fetchPrograms());
+                      },
                       isAllMasked: (_programs?.isEmpty ?? true) &&
                           _programRepository.allPrograms.isNotEmpty,
                     )

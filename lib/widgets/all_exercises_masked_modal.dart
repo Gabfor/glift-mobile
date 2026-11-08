@@ -58,9 +58,9 @@ class AllExercisesMaskedModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Description Text (How to fix)
+                // Description Text
                 Text(
-                  'Pour démarrer ta séance, tu dois afficher au moins un exercice dans ton entraînement.\n\nDémasque un exercice en cliquant sur son nom puis sur l’icône en haut à gauche, ou ajoute un nouvel exercice.',
+                  'Pour pouvoir démarrer ta séance, tu dois rendre visible au moins un exercice dans ton entraînement.',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -71,25 +71,24 @@ class AllExercisesMaskedModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Action Button
+                // Button
                 SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
+                  child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7069FA),
-                      elevation: 0,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF3A416F)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
                     child: Text(
-                      'Compris',
+                      'Fermer',
                       style: GoogleFonts.quicksand(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: const Color(0xFF3A416F),
                       ),
                     ),
                   ),
@@ -121,4 +120,3 @@ class AllExercisesMaskedModal extends StatelessWidget {
     );
   }
 }
-

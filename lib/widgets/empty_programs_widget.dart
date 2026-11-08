@@ -8,12 +8,14 @@ class EmptyProgramsWidget extends StatefulWidget {
     super.key,
     required this.onGoToStore,
     this.onManageTrainings,
+    this.onManageVisibility,
     this.isAllMasked = false,
     this.isDashboard = false,
   });
 
   final VoidCallback onGoToStore;
   final VoidCallback? onManageTrainings;
+  final VoidCallback? onManageVisibility;
   final bool isAllMasked;
   final bool isDashboard;
 
@@ -124,7 +126,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Tu as masqué l’ensemble de tes programmes dans l’application. Modifie leur visibilité depuis Glift Web pour les faire réapparaître ici.',
+                'Tu as masqué l’ensemble de tes programmes dans l’application. Modifie leur visibilité depuis tes réglages pour les faire réapparaître ici.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.quicksand(
                   fontSize: 16,
@@ -133,6 +135,37 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                   height: 1.4,
                 ),
               ),
+              if (widget.onManageVisibility != null) ...[
+                const SizedBox(height: 30),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    widget.onManageVisibility!();
+                  },
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7069FA),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Régler la visibilité',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
