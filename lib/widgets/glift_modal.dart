@@ -352,8 +352,8 @@ class GliftModal extends StatelessWidget {
               child: GestureDetector(
                 onTap: onClose ?? () => Navigator.of(context).pop(false),
                 behavior: HitTestBehavior.opaque,
-                child: const Padding(
-                  padding: EdgeInsets.all(6.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
                   child: SvgPicture.asset(
                     'assets/icons/close_modal.svg',
                     width: 20,

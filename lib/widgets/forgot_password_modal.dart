@@ -1042,8 +1042,8 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
             child: GestureDetector(
               onTap: _isLoading ? null : () => Navigator.of(context).pop(false),
               behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.all(6.0),
+              child: Padding(
+                padding: const EdgeInsets.all(6.0),
                 child: SvgPicture.asset(
                   'assets/icons/close_modal.svg',
                   width: 20,
