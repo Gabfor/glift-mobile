@@ -590,58 +590,53 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
       int i = 0;
       while (i < _rows!.length) {
         final row = _rows![i];
-        if (row.supersetId != null && SettingsService.instance.getShowSuperset() && !row.isHidden) {
+        if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
           final group = <TrainingRow>[row];
           int j = i + 1;
-          while (j < _rows!.length && _rows![j].supersetId == row.supersetId && !_rows![j].isHidden) {
+          while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {
             group.add(_rows![j]);
             j++;
           }
 
-          if (group.length >= 2) {
-            final isLocked = group.any((r) => r.locked);
-            final groupIndices = group.map((r) => _rows!.indexOf(r)).toList();
-            
-            reorderableItems.add(Padding(
-              key: ValueKey('superset_${row.supersetId}'),
-              padding: const EdgeInsets.only(bottom: 20),
-              child: _SupersetGroupContainer(
-                isLocked: isLocked,
-                series: group.first.series,
-                onAddSet: () => _handleSupersetSetsUpdate(groupIndices, true),
-                onRemoveSet: () => _handleSupersetSetsUpdate(groupIndices, false),
-                children: group.map<Widget>((r) {
-                  final rIndex = _rows!.indexOf(r);
-                  return _ExerciseCard(
-                    key: ValueKey(r.id),
-                    row: r,
-                    onFocus: _handleFocus,
-                    onUpdate: (series, reps, weights, efforts) =>
-                        _handleRowUpdate(rIndex, series, reps, weights, efforts),
-                    onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
-                    onToggleHide: (newHidden) => _handleToggleHide(rIndex, newHidden),
-                    onDelete: () => _handleDeleteRow(rIndex),
-                    onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
-                    onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
-                    onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
-                    onDeleteSuperset: (supersetId) => _handleDeleteSuperset(supersetId),
-                    showDecoration: false,
-                    hideSetControls: true, 
-                    showTimer: group.indexOf(r) == 0 && _showRepos,
-                    showEffort: _showEffort,
-                    showMaterial: _showMaterial,
-                    activeFocusId: _activeFocusId,
-                    isLast: _rows!.length == 1,
-                  );
-                }).toList(),
-              ),
-            ));
-            i = j;
-            continue;
-          }
-        }
-
-        {
+          final isLocked = group.any((r) => r.locked);
+          final groupIndices = group.map((r) => _rows!.indexOf(r)).toList();
+          
+          reorderableItems.add(Padding(
+            key: ValueKey('superset_${row.supersetId}'),
+            padding: const EdgeInsets.only(bottom: 20),
+            child: _SupersetGroupContainer(
+              isLocked: isLocked,
+              series: group.first.series,
+              onAddSet: () => _handleSupersetSetsUpdate(groupIndices, true),
+              onRemoveSet: () => _handleSupersetSetsUpdate(groupIndices, false),
+              children: group.map<Widget>((r) {
+                final rIndex = _rows!.indexOf(r);
+                return _ExerciseCard(
+                  key: ValueKey(r.id),
+                  row: r,
+                  onFocus: _handleFocus,
+                  onUpdate: (series, reps, weights, efforts) =>
+                      _handleRowUpdate(rIndex, series, reps, weights, efforts),
+                  onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
+                  onToggleHide: (newHidden) => _handleToggleHide(rIndex, newHidden),
+                  onDelete: () => _handleDeleteRow(rIndex),
+                  onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
+                  onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
+                  onMaterialUpdate: (material) => _handleMaterialUpdate(rIndex, material),
+                  onDeleteSuperset: (supersetId) => _handleDeleteSuperset(supersetId),
+                  showDecoration: false,
+                  hideSetControls: true, 
+                  showTimer: group.indexOf(r) == 0 && _showRepos,
+                  showEffort: _showEffort,
+                  showMaterial: _showMaterial,
+                  activeFocusId: _activeFocusId,
+                  isLast: _rows!.length == 1,
+                );
+              }).toList(),
+            ),
+          ));
+          i = j;
+        } else {
           final rowIndex = i;
           reorderableItems.add(Padding(
             key: ValueKey(row.id),
@@ -954,21 +949,19 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     int i = 0;
     while (i < _rows!.length) {
       final row = _rows![i];
-      if (row.supersetId != null && SettingsService.instance.getShowSuperset() && !row.isHidden) {
+      if (row.supersetId != null && SettingsService.instance.getShowSuperset()) {
         final group = <TrainingRow>[row];
         int j = i + 1;
-        while (j < _rows!.length && _rows![j].supersetId == row.supersetId && !_rows![j].isHidden) {
+        while (j < _rows!.length && _rows![j].supersetId == row.supersetId) {
           group.add(_rows![j]);
           j++;
         }
-        if (group.length >= 2) {
-          units.add(group);
-          i = j;
-          continue;
-        }
+        units.add(group);
+        i = j;
+      } else {
+        units.add([row]);
+        i++;
       }
-      units.add([row]);
-      i++;
     }
 
     if (newIndex > oldIndex) {
@@ -1393,7 +1386,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
           // Close EditNameModal first
           Navigator.of(context).pop();
 
-          final isSuperset = !widget.showDecoration && widget.row.supersetId != null && SettingsService.instance.getShowSuperset();
+          final isSuperset = widget.row.supersetId != null && SettingsService.instance.getShowSuperset();
           
           final confirm = await showFadeDialog<bool>(
             context: context,
