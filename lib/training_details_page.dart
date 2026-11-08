@@ -15,6 +15,7 @@ import 'widgets/unlock_exercise_modal.dart';
 import 'widgets/edit_name_modal.dart';
 import 'widgets/delete_confirmation_modal.dart';
 import 'widgets/unnamed_exercise_warning_modal.dart';
+import 'widgets/all_exercises_masked_modal.dart';
 import 'widgets/glift_loader.dart';
 import 'utils/dialog_utils.dart';
 
@@ -209,6 +210,18 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   Future<void> _openActiveTraining() async {
+    final allExercisesMasked = _rows != null &&
+        _rows!.isNotEmpty &&
+        _rows!.every((row) => row.isHidden);
+
+    if (allExercisesMasked) {
+      await showFadeDialog(
+        context: context,
+        builder: (context) => const AllExercisesMaskedModal(),
+      );
+      return;
+    }
+
     final hasUnnamedExercises = _rows != null &&
         _rows!.any((row) {
           if (row.isHidden) return false;
