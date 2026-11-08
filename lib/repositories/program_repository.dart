@@ -1010,6 +1010,17 @@ class ProgramRepository {
 
   Future<void> updateProgramVisibility(String programId, bool appVisible) async {
     try {
+      if (!appVisible) {
+        final currentPrograms = await getLocalPrograms();
+        final currentProgram = currentPrograms.firstWhere(
+          (p) => p.id == programId,
+          orElse: () => Program(id: '', name: '', trainings: [], position: 0, dashboard: true, app: true),
+        );
+        if (currentProgram.trainings.isEmpty) {
+          return; // Impossible de masquer un programme vide
+        }
+      }
+
       await _supabase
           .from('programs')
           .update({'app': appVisible})

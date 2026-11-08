@@ -13,6 +13,7 @@ class EditNameModal extends StatefulWidget {
   final VoidCallback? onDelete;
   final bool isDeleteEnabled;
   final bool showHideOption;
+  final bool isHideEnabled;
   final bool isHidden;
   final ValueChanged<bool>? onToggleHide;
 
@@ -27,6 +28,7 @@ class EditNameModal extends StatefulWidget {
     this.onDelete,
     this.isDeleteEnabled = true,
     this.showHideOption = false,
+    this.isHideEnabled = true,
     this.isHidden = false,
     this.onToggleHide,
   });
@@ -446,7 +448,7 @@ class _EditNameModalState extends State<EditNameModal> {
                   if (widget.onDelete != null)
                     IconButton(
                       icon: SvgPicture.asset(
-                        widget.isDeleteEnabled ? 'assets/icons/delete_purple.svg' : 'assets/icons/delete_grey.svg',
+                        widget.isDeleteEnabled ? 'assets/icons/delete_purple.svg' : 'assets/icons/delete_bin_grey.svg',
                         width: 25,
                         height: 25,
                       ),
@@ -458,18 +460,22 @@ class _EditNameModalState extends State<EditNameModal> {
                   if (widget.showHideOption)
                     IconButton(
                       icon: SvgPicture.asset(
-                        _isHidden ? 'assets/icons/show_purple.svg' : 'assets/icons/hide_purple.svg',
+                        !widget.isHideEnabled
+                            ? 'assets/icons/masque_grey.svg'
+                            : (_isHidden ? 'assets/icons/show_purple.svg' : 'assets/icons/hide_purple.svg'),
                         width: 25,
                         height: 25,
                       ),
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        final newHidden = !_isHidden;
-                        setState(() {
-                          _isHidden = newHidden;
-                        });
-                        widget.onToggleHide?.call(newHidden);
-                      },
+                      onPressed: widget.isHideEnabled
+                          ? () {
+                              HapticFeedback.lightImpact();
+                              final newHidden = !_isHidden;
+                              setState(() {
+                                _isHidden = newHidden;
+                              });
+                              widget.onToggleHide?.call(newHidden);
+                            }
+                          : null,
                       padding: const EdgeInsets.all(8),
                       constraints: const BoxConstraints(),
                       style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),

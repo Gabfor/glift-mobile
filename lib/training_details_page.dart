@@ -1329,6 +1329,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
         initialLink: widget.row.videoUrl,
         isDeleteEnabled: !(widget.isLast && widget.row.exercise.isEmpty),
         showHideOption: true,
+        isHideEnabled: widget.row.exercise.trim().isNotEmpty,
         isHidden: widget.row.isHidden,
         onToggleHide: (newHidden) {
           widget.onToggleHide?.call(newHidden);

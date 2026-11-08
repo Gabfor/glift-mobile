@@ -327,6 +327,7 @@ class HomePageState extends State<HomePage> {
         fieldLabel: 'Nom du programme',
         isDeleteEnabled: !(program.name == 'Nom du programme' && program.trainings.isEmpty),
         showHideOption: true,
+        isHideEnabled: program.trainings.isNotEmpty,
         isHidden: !program.app,
         onToggleHide: (newHidden) async {
           final newAppVisible = !newHidden;

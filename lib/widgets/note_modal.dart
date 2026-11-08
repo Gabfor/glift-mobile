@@ -113,6 +113,8 @@ class _NoteModalState extends State<NoteModal> {
       setState(() {
         _isEditingMaterial = false;
       });
+    } else {
+      setState(() {});
     }
   }
 
@@ -226,12 +228,29 @@ class _NoteModalState extends State<NoteModal> {
                     });
                   }
                 },
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
                   height: 50,
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFD7D4DC)),
+                    border: Border.all(
+                      color: (_isEditingMaterial || _materialFocusNode.hasFocus)
+                          ? const Color(0xFFA1A5FD)
+                          : const Color(0xFFD7D4DC),
+                      width: 1.0,
+                    ),
+                    boxShadow: (_isEditingMaterial || _materialFocusNode.hasFocus)
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFA1A5FD).withOpacity(0.5),
+                              offset: Offset.zero,
+                              blurRadius: 0,
+                              spreadRadius: 0.5,
+                            ),
+                          ]
+                        : [],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -342,13 +361,24 @@ class _NoteModalState extends State<NoteModal> {
             ),
             const SizedBox(height: 5),
             Expanded(
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
                       color: _isFocused ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
-                      width: _isFocused ? 2 : 1, 
+                      width: 1.0, 
                     ),
+                    boxShadow: _isFocused
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFA1A5FD).withOpacity(0.5),
+                              offset: Offset.zero,
+                              blurRadius: 0,
+                              spreadRadius: 0.5,
+                            ),
+                          ]
+                        : [],
                     color: Colors.white,
                   ),
                   child: ClipRRect(
