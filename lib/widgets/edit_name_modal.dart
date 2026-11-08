@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -462,6 +463,7 @@ class _EditNameModalState extends State<EditNameModal> {
                         height: 25,
                       ),
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         final newHidden = !_isHidden;
                         setState(() {
                           _isHidden = newHidden;

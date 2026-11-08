@@ -835,6 +835,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   Future<void> _handleToggleHide(int index, [bool? specificValue]) async {
+    HapticFeedback.lightImpact();
     if (_rows == null || index < 0 || index >= _rows!.length) return;
     final row = _rows![index];
     final newHidden = specificValue ?? !row.isHidden;
@@ -847,7 +848,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     try {
       await _programRepository.updateTrainingRow(_rows![index].id, isHidden: newHidden);
     } catch (e) {
-      debugPrint('Error updating hidden state: ');
+      debugPrint('Error updating hidden state: $e');
     }
   }
 
