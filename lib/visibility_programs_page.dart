@@ -70,11 +70,9 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
   Future<void> _loadPrograms() async {
     try {
       final programs = await _repository.getAllProgramsRaw();
-      // On affiche que les programmes avec des modifications :
-      // pas le programme par défaut "Nom du programme" et aucun programme sans entraînement créé
+      // On affiche que les programmes avec des modifications (ayant au moins un entraînement créé)
       final filtered = programs.where((p) {
         if (p.trainings.isEmpty) return false;
-        if (p.name.trim() == 'Nom du programme') return false;
         return true;
       }).toList()..sort((a, b) => a.position.compareTo(b.position));
 

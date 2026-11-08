@@ -354,7 +354,7 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
               maxLines: 1,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 15),
           SizedBox(
             width: 44,
             height: 26,
