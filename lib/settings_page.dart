@@ -269,7 +269,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 },
               ),
-              const Divider(height: 1, color: Color(0xFFECE9F1)),
               _SettingsTile(
                 title: 'Régler la visibilité',
                 trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),

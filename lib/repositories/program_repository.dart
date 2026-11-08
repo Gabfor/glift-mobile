@@ -106,25 +106,37 @@ class ProgramRepository {
   }
 
   List<Program> filterVisiblePrograms(List<Program> programs) {
-    final processed = programs.map((p) {
-      final visibleTrainings = p.trainings.where((t) => t.app).toList();
-      return Program(
-        id: p.id,
-        name: p.name,
-        trainings: visibleTrainings,
-        position: p.position,
-        dashboard: p.dashboard,
-        app: p.app,
-      );
-    }).where((p) => p.app).toList();
+    final visiblePrograms = programs
+        .where((p) => p.app)
+        .map((p) {
+          final visibleTrainings = p.trainings.where((t) => t.app).toList();
+          return Program(
+            id: p.id,
+            name: p.name,
+            trainings: visibleTrainings,
+            position: p.position,
+            dashboard: p.dashboard,
+            app: p.app,
+          );
+        })
+        .toList();
 
-    return processed.asMap().entries.where((entry) {
-      final p = entry.value;
-      final isEmpty = p.trainings.isEmpty;
-      final isLast = entry.key == processed.length - 1;
-      
-      return !isEmpty || isLast;
-    }).map((e) => e.value).toList();
+    // Conserver tous les programmes visibles (app: true), même si tous leurs entraînements sont masqués.
+    // Dédupliquer uniquement les éventuels programmes par défaut non modifiés "Nom du programme" vides en fin de liste.
+    bool seenDefaultEmpty = false;
+    final result = <Program>[];
+    for (final p in visiblePrograms.reversed) {
+      final isDefaultEmpty = p.name.trim() == 'Nom du programme' && p.trainings.isEmpty;
+      if (isDefaultEmpty) {
+        if (!seenDefaultEmpty) {
+          seenDefaultEmpty = true;
+          result.add(p);
+        }
+      } else {
+        result.add(p);
+      }
+    }
+    return result.reversed.toList();
   }
 
 

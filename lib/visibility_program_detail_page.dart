@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'models/program.dart';
 import 'models/training.dart';
 import 'repositories/program_repository.dart';
 import 'visibility_training_detail_page.dart';
+import 'widgets/glift_pull_to_refresh.dart';
+
+class _ClampedBottomScrollPhysics extends ScrollPhysics {
+  const _ClampedBottomScrollPhysics({super.parent});
+
+  @override
+  _ClampedBottomScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _ClampedBottomScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    if (value > position.maxScrollExtent) {
+      return value - position.maxScrollExtent;
+    }
+    return super.applyBoundaryConditions(position, value);
+  }
+}
 
 class VisibilityProgramDetailPage extends StatefulWidget {
   final Program program;
@@ -27,6 +45,7 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
   late Program _program;
   late bool _isAppVisible;
   late bool _isDashboardVisible;
+  final ValueNotifier<double> _shadowOpacity = ValueNotifier<double>(0.0);
 
   @override
   void initState() {
@@ -35,6 +54,23 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
     _program = widget.program;
     _isAppVisible = widget.program.app;
     _isDashboardVisible = widget.program.dashboard;
+  }
+
+  @override
+  void dispose() {
+    _shadowOpacity.dispose();
+    super.dispose();
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis == Axis.vertical) {
+      final double offset = notification.metrics.pixels;
+      final double target = (offset / 15.0).clamp(0.0, 1.0);
+      if (_shadowOpacity.value != target) {
+        _shadowOpacity.value = target;
+      }
+    }
+    return false;
   }
 
   Future<void> _refreshProgram() async {
@@ -98,157 +134,183 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
 
   @override
   Widget build(BuildContext context) {
+    const double headerHeight = 84.0;
+    const double gapBelowHeader = 10.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         bottom: false,
-        child: Column(
+        child: Stack(
           children: [
-            // Header
-            Container(
-              color: const Color(0xFFF9FAFB),
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.circular(24),
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF3A416F),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.chevron_left,
-                        color: Colors.white,
-                        size: 28,
+            // Scrollable Content
+            Positioned.fill(
+              top: headerHeight,
+              child: GliftPullToRefresh(
+                onRefresh: _refreshProgram,
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: _handleScrollNotification,
+                  child: SingleChildScrollView(
+                    physics: const _ClampedBottomScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      gapBelowHeader,
+                      20,
+                      MediaQuery.of(context).padding.bottom + 40,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // SECTION 1: RÉGLAGE DE LA VISIBILITÉ
                         Text(
-                          'Régler la visibilité',
+                          'RÉGLAGE DE LA VISIBILITÉ',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: const Color(0xFFC2BFC6),
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _program.name,
-                          style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
-                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFECE9F1)),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildSwitchRow(
+                                title: 'Application mobile',
+                                value: _isAppVisible,
+                                onChanged: _updateAppVisibility,
+                              ),
+                              _buildSwitchRow(
+                                title: 'Tableau de bord',
+                                value: _isDashboardVisible,
+                                onChanged: _updateDashboardVisibility,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+
+                        // SECTION 2: ENTRAÎNEMENTS
+                        Text(
+                          'ENTRAÎNEMENTS',
+                          style: GoogleFonts.quicksand(
+                            color: const Color(0xFFC2BFC6),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFECE9F1)),
+                          ),
+                          child: (_program.trainings.isEmpty)
+                              ? Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Center(
+                                    child: Text(
+                                      'Aucun entraînement dans ce programme',
+                                      style: GoogleFonts.quicksand(
+                                        color: const Color(0xFF5D6494),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                )
+                              : Column(
+                                  children: _program.trainings.map((training) {
+                                    return _buildTrainingTile(training);
+                                  }).toList(),
+                                ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
 
-            // Content
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(
-                  20,
-                  0,
-                  20,
-                  MediaQuery.of(context).padding.bottom + 40,
-                ),
+            // Pinned Header with scroll shadow
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // SECTION 1: RÉGLAGE DE LA VISIBILITÉ
-                  Text(
-                    'RÉGLAGE DE LA VISIBILITÉ',
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFFA09CA8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFD7D4DC)),
-                    ),
-                    child: Column(
+                    color: const Color(0xFFF9FAFB),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _buildSwitchRow(
-                          title: 'Application mobile',
-                          value: _isAppVisible,
-                          onChanged: _updateAppVisibility,
-                        ),
-                        const Divider(height: 1, color: Color(0xFFECE9F1)),
-                        _buildSwitchRow(
-                          title: 'Tableau de bord',
-                          value: _isDashboardVisible,
-                          onChanged: _updateDashboardVisibility,
+                        _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Régler la visibilité',
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF3A416F),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _program.name,
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF3A416F),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 25),
-
-                  // SECTION 2: ENTRAÎNEMENTS
-                  Text(
-                    'ENTRAÎNEMENTS',
-                    style: GoogleFonts.quicksand(
-                      color: const Color(0xFFA09CA8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFD7D4DC)),
-                    ),
-                    child: (_program.trainings.isEmpty)
-                        ? Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Text(
-                              'Aucun entraînement dans ce programme',
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFF5D6494),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                  ValueListenableBuilder<double>(
+                    valueListenable: _shadowOpacity,
+                    builder: (context, opacity, _) {
+                      return IgnorePointer(
+                        child: Opacity(
+                          opacity: opacity,
+                          child: Container(
+                            height: 16,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  const Color(0xFF1E1742).withValues(alpha: 0.12),
+                                  const Color(0xFF1E1742).withValues(alpha: 0.04),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.45, 1.0],
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        : Column(
-                            children: List.generate(
-                              _program.trainings.length,
-                              (index) {
-                                final training = _program.trainings[index];
-                                return Column(
-                                  children: [
-                                    if (index > 0)
-                                      const Divider(height: 1, color: Color(0xFFECE9F1)),
-                                    _buildTrainingTile(training),
-                                  ],
-                                );
-                              },
                             ),
                           ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -266,7 +328,7 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
   }) {
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
         children: [
           Expanded(
@@ -280,7 +342,6 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 12),
           SizedBox(
             width: 44,
             height: 26,
@@ -298,6 +359,7 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
 
   Widget _buildTrainingTile(Training training) {
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () async {
         await Navigator.of(context).push(
           MaterialPageRoute(
@@ -312,7 +374,7 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
       },
       child: Container(
         height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.only(left: 15, right: 15),
         child: Row(
           children: [
             Expanded(
@@ -326,7 +388,10 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+            const Icon(
+              Icons.chevron_right,
+              color: Color(0xFF5D6494),
+            ),
           ],
         ),
       ),
@@ -334,3 +399,29 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
   }
 }
 
+class _SettingsBackButton extends StatelessWidget {
+  const _SettingsBackButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(
+          color: Color(0xFF3A416F),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.chevron_left,
+          color: Colors.white,
+          size: 28,
+        ),
+      ),
+    );
+  }
+}
