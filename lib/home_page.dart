@@ -708,6 +708,7 @@ class HomePageState extends State<HomePage> {
                   final result = await Navigator.of(context).push(
                     PageRouteBuilder(
                       pageBuilder: (_, __, ___) => TrainingDetailsPage(
+                        program: program,
                         training: training,
                         supabase: widget.supabase,
                         authRepository: widget.authRepository,
@@ -825,6 +826,7 @@ class HomePageState extends State<HomePage> {
       final result = await Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => TrainingDetailsPage(
+            program: program,
             training: newTraining,
             supabase: widget.supabase,
             authRepository: widget.authRepository,

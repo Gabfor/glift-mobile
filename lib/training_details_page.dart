@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase/supabase.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../models/program.dart';
 import '../models/training.dart';
 import '../models/training_row.dart';
 import '../repositories/program_repository.dart';
@@ -18,6 +19,7 @@ import 'widgets/unnamed_exercise_warning_modal.dart';
 import 'widgets/all_exercises_masked_modal.dart';
 import 'widgets/glift_loader.dart';
 import 'utils/dialog_utils.dart';
+import 'visibility_training_detail_page.dart';
 
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
@@ -34,12 +36,14 @@ import '../auth/biometric_auth_service.dart';
 class TrainingDetailsPage extends StatefulWidget {
   const TrainingDetailsPage({
     super.key,
+    this.program,
     required this.training,
     required this.supabase,
     required this.authRepository,
     required this.biometricAuthService,
   });
 
+  final Program? program;
   final Training training;
   final SupabaseClient supabase;
   final AuthRepository authRepository;
@@ -215,10 +219,41 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         _rows!.every((row) => row.isHidden);
 
     if (allExercisesMasked) {
-      await showFadeDialog(
+      final goToSettings = await showFadeDialog<bool>(
         context: context,
         builder: (context) => const AllExercisesMaskedModal(),
       );
+
+      if (goToSettings == true && mounted) {
+        Program? targetProgram = widget.program;
+        if (targetProgram == null) {
+          final allPrograms = await _programRepository.getAllProgramsRaw();
+          targetProgram = allPrograms.firstWhere(
+            (p) => p.id == widget.training.programId,
+            orElse: () => Program(
+              id: widget.training.programId ?? '',
+              name: '',
+              trainings: [_currentTraining],
+              position: 0,
+              dashboard: true,
+              app: true,
+            ),
+          );
+        }
+
+        if (mounted) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => VisibilityTrainingDetailPage(
+                program: targetProgram!,
+                training: _currentTraining,
+                supabase: widget.supabase,
+              ),
+            ),
+          );
+          _fetchDetails();
+        }
+      }
       return;
     }
 

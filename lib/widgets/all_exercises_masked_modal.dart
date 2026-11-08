@@ -3,7 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AllExercisesMaskedModal extends StatelessWidget {
-  const AllExercisesMaskedModal({super.key});
+  final VoidCallback? onSettingsTap;
+
+  const AllExercisesMaskedModal({
+    super.key,
+    this.onSettingsTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -71,27 +76,60 @@ class AllExercisesMaskedModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF3A416F)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                // Buttons (Annuler & Réglages)
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: Text(
+                            'Annuler',
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF3A416F),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      'Fermer',
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                            onSettingsTap?.call();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6C6EF5),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: Text(
+                            'Réglages',
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -107,7 +145,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                 width: 25,
                 height: 25,
               ),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pop(false),
               padding: const EdgeInsets.all(8),
               constraints: const BoxConstraints(),
               style: IconButton.styleFrom(

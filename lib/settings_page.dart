@@ -434,12 +434,16 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    Text(
-                      _getSoundEffectLabel(_soundEffect),
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        _getSoundEffectLabel(_soundEffect),
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF5D6494),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -470,12 +474,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      _displayType,
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        _displayType,
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF5D6494),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -501,12 +509,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '$_defaultRestTime secondes',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        '$_defaultRestTime secondes',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF5D6494),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -571,12 +583,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      _subscriptionPlan == 'premium' ? 'Premium' : 'Starter',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        _subscriptionPlan == 'premium' ? 'Premium' : 'Starter',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF5D6494),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -650,12 +666,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Nous évaluer',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        'Nous évaluer',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF5D6494),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -801,6 +821,8 @@ class _SettingsSectionHeader extends StatelessWidget {
         fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
     );
   }
 }
@@ -845,16 +867,23 @@ class _SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.only(left: 15, right: 9),
         child: Row(
           children: [
-            Text(
-              title,
-              style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.quicksand(
+                  color: const Color(0xFF3A416F),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
-            const Spacer(),
-            trailing,
+            const SizedBox(width: 8),
+            Flexible(
+              fit: FlexFit.loose,
+              child: trailing,
+            ),
           ],
         ),
       ),
@@ -882,15 +911,19 @@ class _SettingsSwitchTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
         children: [
-          Text(
-            title,
-            style: GoogleFonts.quicksand(
-              color: enabled ? const Color(0xFF3A416F) : const Color(0xFFD7D4DC),
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.quicksand(
+                color: enabled ? const Color(0xFF3A416F) : const Color(0xFFD7D4DC),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           SizedBox(
             width: 44,
             height: 26,

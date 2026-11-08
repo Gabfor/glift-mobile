@@ -150,27 +150,33 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                       children: [
                         _SettingsBackButton(onTap: () => Navigator.of(context).pop()),
                         const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.headerTitle,
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.headerTitle,
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF3A416F),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.headerSubtitle,
-                              style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.headerSubtitle,
+                                style: GoogleFonts.quicksand(
+                                  color: const Color(0xFF3A416F),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -280,21 +286,26 @@ class _SettingsOptionTile extends StatelessWidget {
               ),
               const SizedBox(width: 12),
             ],
-            Text(
-              label,
-              style: GoogleFonts.quicksand(
-                color: GliftTheme.body,
-                fontSize: 16,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.quicksand(
+                  color: GliftTheme.body,
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
-            const Spacer(),
-            if (isSelected)
+            if (isSelected) ...[
+              const SizedBox(width: 8),
               const Icon(
                 Icons.check,
                 color: Color(0xFF3A416F),
                 size: 22,
               ),
+            ],
           ],
         ),
       ),

@@ -129,9 +129,11 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Section: PROGRAMMES
+                              // Section: PROGRAMME(S)
                               Text(
-                                'PROGRAMMES',
+                                (_programs != null && _programs!.length > 1)
+                                    ? 'PROGRAMMES'
+                                    : 'PROGRAMME',
                                 style: GoogleFonts.quicksand(
                                   color: const Color(0xFFC2BFC6),
                                   fontSize: 14,
@@ -162,6 +164,10 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
                                       )
                                     : Column(
                                         children: _programs!.map((program) {
+                                          final programName = program.name.trim().isEmpty
+                                              ? 'Programme sans nom'
+                                              : program.name.trim();
+
                                           return InkWell(
                                             borderRadius: BorderRadius.circular(12),
                                             onTap: () async {
@@ -182,13 +188,14 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
                                                 children: [
                                                   Expanded(
                                                     child: Text(
-                                                      program.name,
+                                                      programName,
                                                       style: GoogleFonts.quicksand(
                                                         color: const Color(0xFF3A416F),
                                                         fontSize: 16,
                                                         fontWeight: FontWeight.w700,
                                                       ),
                                                       overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                     ),
                                                   ),
                                                   const Icon(
@@ -237,6 +244,7 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -247,6 +255,7 @@ class _VisibilityProgramsPageState extends State<VisibilityProgramsPage> {
                                   fontWeight: FontWeight.w700,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ],
                           ),

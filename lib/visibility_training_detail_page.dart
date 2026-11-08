@@ -246,9 +246,11 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                         ),
                         const SizedBox(height: 25),
 
-                        // SECTION 2: EXERCICES A AFFICHER DANS L'ENTRAINEMENT
+                        // SECTION 2: EXERCICE(S) A AFFICHER DANS L'ENTRAINEMENT
                         Text(
-                          'EXERCICES A AFFICHER DANS L’ENTRAINEMENT',
+                          (_rows != null && _rows!.length > 1)
+                              ? 'EXERCICES A AFFICHER DANS L’ENTRAINEMENT'
+                              : 'EXERCICE A AFFICHER DANS L’ENTRAINEMENT',
                           style: GoogleFonts.quicksand(
                             color: const Color(0xFFC2BFC6),
                             fontSize: 14,
@@ -285,8 +287,12 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                                   : Column(
                                       children: _rows!.map((row) {
                                         final isVisibleInTraining = !row.isHidden;
+                                        final rawName = row.exercise.trim();
+                                        final exerciseName = rawName.isEmpty
+                                            ? 'Exercice sans nom'
+                                            : rawName;
                                         return _buildSwitchRow(
-                                          title: row.exercise,
+                                          title: exerciseName,
                                           value: isVisibleInTraining,
                                           onChanged: (visible) =>
                                               _toggleExerciseVisibility(row, visible),
@@ -322,23 +328,29 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.program.name,
+                                widget.program.name.trim().isEmpty
+                                    ? 'Programme sans nom'
+                                    : widget.program.name.trim(),
                                 style: GoogleFonts.quicksand(
                                   color: const Color(0xFF3A416F),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                widget.training.name,
+                                widget.training.name.trim().isEmpty
+                                    ? 'Entraînement sans nom'
+                                    : widget.training.name.trim(),
                                 style: GoogleFonts.quicksand(
                                   color: const Color(0xFF3A416F),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ],
                           ),
@@ -399,8 +411,10 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                 fontWeight: FontWeight.w700,
               ),
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
+          const SizedBox(width: 8),
           SizedBox(
             width: 44,
             height: 26,

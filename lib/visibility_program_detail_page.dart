@@ -198,9 +198,11 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
                         ),
                         const SizedBox(height: 25),
 
-                        // SECTION 2: ENTRAÎNEMENTS
+                        // SECTION 2: ENTRAÎNEMENT(S)
                         Text(
-                          'ENTRAÎNEMENTS',
+                          _program.trainings.length > 1
+                              ? 'ENTRAÎNEMENTS'
+                              : 'ENTRAÎNEMENT',
                           style: GoogleFonts.quicksand(
                             color: const Color(0xFFC2BFC6),
                             fontSize: 14,
@@ -270,16 +272,20 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                _program.name,
+                                _program.name.trim().isEmpty
+                                    ? 'Programme sans nom'
+                                    : _program.name.trim(),
                                 style: GoogleFonts.quicksand(
                                   color: const Color(0xFF3A416F),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ],
                           ),
@@ -340,8 +346,10 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
                 fontWeight: FontWeight.w700,
               ),
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
+          const SizedBox(width: 8),
           SizedBox(
             width: 44,
             height: 26,
@@ -358,6 +366,10 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
   }
 
   Widget _buildTrainingTile(Training training) {
+    final trainingName = training.name.trim().isEmpty
+        ? 'Entraînement sans nom'
+        : training.name.trim();
+
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () async {
@@ -379,13 +391,14 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
           children: [
             Expanded(
               child: Text(
-                training.name,
+                trainingName,
                 style: GoogleFonts.quicksand(
                   color: const Color(0xFF3A416F),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
                 overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
             const Icon(
