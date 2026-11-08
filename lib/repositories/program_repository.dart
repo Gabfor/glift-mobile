@@ -567,6 +567,7 @@ class ProgramRepository {
     String? material,
     String? videoUrl,
     bool updateVideoUrl = false,
+    bool? isHidden,
   }) async {
     List<num?>? _prepareNumericValues(List<String>? values) {
       if (values == null) return null;
@@ -608,6 +609,7 @@ class ProgramRepository {
       if (note != null) updates['note'] = note;
       if (material != null) updates['materiel'] = material;
       if (updateVideoUrl || videoUrl != null) updates['link'] = videoUrl;
+      if (isHidden != null) updates['is_hidden'] = isHidden;
 
       if (updates.isEmpty) return;
 

@@ -556,6 +556,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                   onUpdate: (series, reps, weights, efforts) =>
                       _handleRowUpdate(rIndex, series, reps, weights, efforts),
                   onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
+                  onToggleHide: (newHidden) => _handleToggleHide(rIndex, newHidden),
                   onDelete: () => _handleDeleteRow(rIndex),
                   onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
                   onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
@@ -584,6 +585,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               onUpdate: (series, reps, weights, efforts) =>
                   _handleRowUpdate(rowIndex, series, reps, weights, efforts),
               onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
+              onToggleHide: (newHidden) => _handleToggleHide(rowIndex, newHidden),
               onDelete: () => _handleDeleteRow(rowIndex),
               onRestUpdate: (newDuration) =>
                   _handleRestUpdate(rowIndex, newDuration),
@@ -751,21 +753,9 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
+      _rows![index] = oldRow.copyWith(
         exercise: exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
-        rest: oldRow.rest,
-        note: oldRow.note,
-        material: oldRow.material,
         videoUrl: link,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
       _wasEdited = true;
     });
@@ -782,21 +772,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
+      _rows![index] = oldRow.copyWith(
         rest: newDuration.toString(),
-        note: oldRow.note,
-        material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
       _wasEdited = true;
     });
@@ -821,21 +798,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
+      _rows![index] = oldRow.copyWith(
         series: series,
         repetitions: repetitions,
         weights: weights,
         efforts: efforts,
-        rest: oldRow.rest,
-        note: oldRow.note,
-        material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
       _wasEdited = true;
     });
@@ -853,26 +820,30 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
+  Future<void> _handleToggleHide(int index, [bool? specificValue]) async {
+    if (_rows == null || index < 0 || index >= _rows!.length) return;
+    final row = _rows![index];
+    final newHidden = specificValue ?? !row.isHidden;
+
+    setState(() {
+      _rows![index] = row.copyWith(isHidden: newHidden);
+      _wasEdited = true;
+    });
+
+    try {
+      await _programRepository.updateTrainingRow(_rows![index].id, isHidden: newHidden);
+    } catch (e) {
+      debugPrint('Error updating hidden state: ');
+    }
+  }
+
   Future<void> _handleMaterialUpdate(int index, String material) async {
     if (_rows == null) return;
     
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
-        rest: oldRow.rest,
-        note: oldRow.note,
+      _rows![index] = oldRow.copyWith(
         material: material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
       _wasEdited = true;
     });
@@ -892,21 +863,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     setState(() {
       final oldRow = _rows![index];
-      _rows![index] = TrainingRow(
-        id: oldRow.id,
-        trainingId: oldRow.trainingId,
-        exercise: oldRow.exercise,
-        series: oldRow.series,
-        repetitions: oldRow.repetitions,
-        weights: oldRow.weights,
-        efforts: oldRow.efforts,
-        rest: oldRow.rest,
+      _rows![index] = oldRow.copyWith(
         note: note,
-        material: oldRow.material,
-        videoUrl: oldRow.videoUrl,
-        order: oldRow.order,
-        supersetId: oldRow.supersetId,
-        locked: oldRow.locked,
       );
       _wasEdited = true;
     });
@@ -995,21 +953,11 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         if (newEfforts.isNotEmpty) newEfforts.removeLast();
       }
 
-      updatedRows[index] = TrainingRow(
-        id: row.id,
-        trainingId: row.trainingId,
-        exercise: row.exercise,
+      updatedRows[index] = row.copyWith(
         series: newSeries,
         repetitions: newReps,
         weights: newWeights,
         efforts: newEfforts,
-        rest: row.rest,
-        note: row.note,
-        material: row.material,
-        videoUrl: row.videoUrl,
-        order: row.order,
-        supersetId: row.supersetId,
-        locked: row.locked,
       );
 
       updates.add(_programRepository.updateTrainingRow(
@@ -1072,6 +1020,7 @@ class _ExerciseCard extends StatefulWidget {
     required this.onFocus,
     required this.onUpdate,
     required this.onExerciseUpdate,
+    this.onToggleHide,
     required this.onDelete,
     required this.onRestUpdate,
     required this.onNoteUpdate,
@@ -1098,6 +1047,7 @@ class _ExerciseCard extends StatefulWidget {
   }) onFocus;
   final Future<void> Function(int, List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(String, String?) onExerciseUpdate;
+  final Future<void> Function(bool)? onToggleHide;
   final Future<void> Function() onDelete;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
@@ -1363,6 +1313,11 @@ class _ExerciseCardState extends State<_ExerciseCard>
         showLinkField: true,
         initialLink: widget.row.videoUrl,
         isDeleteEnabled: !(widget.isLast && widget.row.exercise.isEmpty),
+        showHideOption: true,
+        isHidden: widget.row.isHidden,
+        onToggleHide: (newHidden) {
+          widget.onToggleHide?.call(newHidden);
+        },
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();
