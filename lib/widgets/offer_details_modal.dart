@@ -117,10 +117,10 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                   alignment: Alignment.topRight,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(
-                      Icons.close,
-                      color: Color(0xFF3A416F),
-                      size: 24,
+                    child: SvgPicture.asset(
+                      'assets/icons/close_modal.svg',
+                      width: 24,
+                      height: 24,
                     ),
                   ),
                 ),

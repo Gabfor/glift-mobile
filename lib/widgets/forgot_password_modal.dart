@@ -1044,10 +1044,10 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
               behavior: HitTestBehavior.opaque,
               child: const Padding(
                 padding: EdgeInsets.all(6.0),
-                child: Icon(
-                  Icons.close,
-                  size: 20,
-                  color: Color(0xFF3A416F),
+                child: SvgPicture.asset(
+                  'assets/icons/close_modal.svg',
+                  width: 20,
+                  height: 20,
                 ),
               ),
             ),

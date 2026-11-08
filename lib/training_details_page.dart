@@ -312,6 +312,20 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         title: 'Nom de l’entraînement',
         description: 'Tu peux modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
+        showHideOption: true,
+        isHidden: !_currentTraining.app,
+        onToggleHide: (newHidden) async {
+          final newAppVisible = !newHidden;
+          setState(() {
+            _currentTraining = _currentTraining.copyWith(app: newAppVisible);
+            _wasEdited = true;
+          });
+          try {
+            await _programRepository.updateTrainingVisibility(_currentTraining.id, newAppVisible);
+          } catch (e) {
+            debugPrint('Error updating training visibility: $e');
+          }
+        },
         onDelete: () async {
           final navigator = Navigator.of(context);
           // Close EditNameModal first

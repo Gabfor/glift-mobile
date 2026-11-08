@@ -955,6 +955,34 @@ class ProgramRepository {
     }
   }
 
+  Future<void> updateTrainingVisibility(String trainingId, bool appVisible) async {
+    try {
+      await _supabase
+          .from('trainings')
+          .update({'app': appVisible})
+          .eq('id', trainingId);
+
+      // Update local cache
+      final programs = await getLocalPrograms();
+      bool changed = false;
+      for (var p in programs) {
+        for (var i = 0; i < p.trainings.length; i++) {
+          if (p.trainings[i].id == trainingId) {
+            p.trainings[i] = p.trainings[i].copyWith(app: appVisible);
+            changed = true;
+            break;
+          }
+        }
+        if (changed) break;
+      }
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la mise à jour de la visibilité de l'entraînement: $e");
+    }
+  }
+
   Future<void> updateProgramName(String programId, String name) async {
     try {
       await _supabase
@@ -977,6 +1005,41 @@ class ProgramRepository {
       }
     } catch (e) {
       throw Exception('Erreur lors de la mise à jour du nom du programme: $e');
+    }
+  }
+
+  Future<void> updateProgramVisibility(String programId, bool appVisible) async {
+    try {
+      await _supabase
+          .from('programs')
+          .update({'app': appVisible})
+          .eq('id', programId);
+
+      // Cascader la visibilité aux entraînements du programme (comme sur glift-web)
+      await _supabase
+          .from('trainings')
+          .update({'app': appVisible})
+          .eq('program_id', programId);
+
+      // Update local cache
+      final programs = await getLocalPrograms();
+      bool changed = false;
+      for (var i = 0; i < programs.length; i++) {
+        if (programs[i].id == programId) {
+          final updatedTrainings = programs[i].trainings.map((t) => t.copyWith(app: appVisible)).toList();
+          programs[i] = programs[i].copyWith(
+            app: appVisible,
+            trainings: updatedTrainings,
+          );
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
+        await saveLocalPrograms(programs);
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour de la visibilité du programme: $e');
     }
   }
 

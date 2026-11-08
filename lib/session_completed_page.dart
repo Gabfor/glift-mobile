@@ -431,11 +431,11 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                            width: 48, 
                            height: 48,
                            alignment: Alignment.center,
-                           child: const Icon(
-                             Icons.close,
-                             color: Color(0xFF3A416F),
-                             size: 24,
-                           ),
+                           child: SvgPicture.asset(
+                              'assets/icons/close_modal.svg',
+                              width: 24,
+                              height: 24,
+                            ),
                          ),
                        ),
                      ),

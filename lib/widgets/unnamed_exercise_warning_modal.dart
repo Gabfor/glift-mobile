@@ -160,9 +160,11 @@ class UnnamedExerciseWarningModal extends StatelessWidget {
             right: 8,
             top: 8,
             child: IconButton(
-              icon: const Icon(Icons.close),
-              color: const Color(0xFF3A416F),
-              iconSize: 24,
+              icon: SvgPicture.asset(
+                'assets/icons/close_modal.svg',
+                width: 25,
+                height: 25,
+              ),
               onPressed: () => Navigator.of(context).pop(false),
               padding: const EdgeInsets.all(8),
               constraints: const BoxConstraints(),

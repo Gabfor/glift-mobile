@@ -489,9 +489,11 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
             right: 8,
             top: 8,
             child: IconButton(
-              icon: const Icon(Icons.close),
-              color: const Color(0xFF5D6494),
-              iconSize: 22,
+              icon: SvgPicture.asset(
+                'assets/icons/close_modal.svg',
+                width: 25,
+                height: 25,
+              ),
               onPressed: _isValidating
                   ? null
                   : () => Navigator.of(context).pop(false),

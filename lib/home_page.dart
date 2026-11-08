@@ -326,6 +326,17 @@ class HomePageState extends State<HomePage> {
         description: 'Tu peux modifier le nom de ce programme ci-dessous.',
         fieldLabel: 'Nom du programme',
         isDeleteEnabled: !(program.name == 'Nom du programme' && program.trainings.isEmpty),
+        showHideOption: true,
+        isHidden: !program.app,
+        onToggleHide: (newHidden) async {
+          final newAppVisible = !newHidden;
+          try {
+            await _programRepository.updateProgramVisibility(program.id, newAppVisible);
+            await _fetchPrograms();
+          } catch (e) {
+            debugPrint('Error updating program visibility: $e');
+          }
+        },
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();
@@ -375,6 +386,17 @@ class HomePageState extends State<HomePage> {
         title: 'Nom de l’entraînement',
         description: 'Tu peux modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
+        showHideOption: true,
+        isHidden: !training.app,
+        onToggleHide: (newHidden) async {
+          final newAppVisible = !newHidden;
+          try {
+            await _programRepository.updateTrainingVisibility(training.id, newAppVisible);
+            await _fetchPrograms();
+          } catch (e) {
+            debugPrint('Error updating training visibility: $e');
+          }
+        },
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();

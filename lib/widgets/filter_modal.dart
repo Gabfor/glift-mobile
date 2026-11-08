@@ -102,7 +102,11 @@ class _FilterModalState extends State<FilterModal> {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, color: Color(0xFF3A416F)),
+                    child: SvgPicture.asset(
+                      'assets/icons/close_modal.svg',
+                      width: 24,
+                      height: 24,
+                    ),
                   ),
                 ),
                 Row(
