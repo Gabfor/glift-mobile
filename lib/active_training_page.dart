@@ -1014,6 +1014,10 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       currentIndex++;
     }
     if (currentIndex == startIndex) return startIndex;
+    final block = rows.sublist(startIndex, currentIndex + 1);
+    final hasLocked = block.any((r) => r.locked);
+    final hasUnlocked = block.any((r) => !r.locked);
+    if (hasLocked && hasUnlocked) return startIndex;
     return currentIndex;
   }
 
@@ -1243,7 +1247,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
       if (lastActiveRow.supersetId != null && SettingsService.instance.getShowSuperset()) {
         final lastSupersetId = lastActiveRow.supersetId;
         final matchingRows = activeRows.where((row) => row.supersetId == lastSupersetId).toList();
-        if (matchingRows.length >= 2) {
+        final hasLocked = matchingRows.any((r) => r.locked);
+        final hasUnlocked = matchingRows.any((r) => !r.locked);
+        if (matchingRows.length >= 2 && !(hasLocked && hasUnlocked)) {
           lastActiveRowIds.addAll(
             matchingRows.map((row) => row.id),
           );
@@ -1270,13 +1276,16 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
             j++;
           }
 
-          if (group.length >= 2) {
+          final hasLocked = group.any((r) => r.locked);
+          final hasUnlocked = group.any((r) => !r.locked);
+
+          if (group.length >= 2 && !(hasLocked && hasUnlocked)) {
             final isCompleted = _isRowCompleted(row.id);
             final isIgnored = _isRowIgnored(row.id);
             // Check if it is effectively the last block
             final isLast = rowIndex + group.length >= _rows!.length ||
                 (isActiveSubset && group.any((r) => lastActiveRowIds.contains(r.id)));
-            final isLocked = group.any((r) => r.locked);
+            final isLocked = hasLocked;
 
             items.add(SupersetGroupCard(
               isCompleted: isCompleted,

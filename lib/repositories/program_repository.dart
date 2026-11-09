@@ -464,58 +464,20 @@ class ProgramRepository {
   Future<List<TrainingRow>> _ensureExerciseLockedConsistency(List<TrainingRow> rows) async {
     final isPremium = SettingsService.instance.isPremium();
 
-    
-    // 1. Calculate base lock status based on limit (10) and plan
-    // We use a temporary list or map to hold this intermediate state
-    final List<bool> baseLockStatus = [];
-    for (int i = 0; i < rows.length; i++) {
-        if (isPremium) {
-            baseLockStatus.add(false);
-        } else {
-            // Basic plan: First 10 (indices 0-9) are free, rest (10+) are locked.
-            baseLockStatus.add(i >= 10);
-        }
-    }
-
-    // 2. Determine lock status for each superset based on the BASE status
-    // If any exercise in a superset is base-locked, the whole superset becomes locked.
-    final Map<String, bool> supersetLockStatus = {};
-    for (int i = 0; i < rows.length; i++) {
-      final row = rows[i];
-      if (row.supersetId != null) {
-        final isRowLocked = baseLockStatus[i];
-        
-        // If current status is already true, it stays true.
-        // If not, we set it to this row's status.
-        final currentStatus = supersetLockStatus[row.supersetId];
-        if (currentStatus == true) continue; 
-        
-        supersetLockStatus[row.supersetId!] = isRowLocked;
-      }
-    }
-
     final List<Map<String, dynamic>> updates = [];
     final List<TrainingRow> updatedRows = [];
 
-    // 3. Apply final status
+    // Strictly mirrors glift-web: rows 0..9 are unlocked, rows >= 10 are locked for starter plan.
     for (int i = 0; i < rows.length; i++) {
       final row = rows[i];
-      bool shouldBeLocked;
-
-      if (row.supersetId != null) {
-        // Use the aggregated superset status
-        shouldBeLocked = supersetLockStatus[row.supersetId] ?? false;
-      } else {
-        // Use the base limit status
-        shouldBeLocked = baseLockStatus[i];
-      }
+      final shouldBeLocked = isPremium ? false : (i >= 10);
 
       if (row.locked != shouldBeLocked) {
         updates.add({
           'id': row.id,
           'locked': shouldBeLocked,
         });
-        
+
         updatedRows.add(row.copyWith(locked: shouldBeLocked));
       } else {
         updatedRows.add(row);
