@@ -1,10 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../user_subscription_page.dart';
+import '../visibility_programs_page.dart';
 
 class AddTrainingMaskedModal extends StatefulWidget {
   const AddTrainingMaskedModal({super.key});
@@ -14,33 +15,32 @@ class AddTrainingMaskedModal extends StatefulWidget {
 }
 
 class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
-  late final TapGestureRecognizer _websiteRecognizer;
-  bool _isWebsiteHovered = false;
+  late final TapGestureRecognizer _settingsRecognizer;
+  bool _isSettingsHovered = false;
 
   @override
   void initState() {
     super.initState();
-    _websiteRecognizer = TapGestureRecognizer()..onTap = _launchTrainingsURL;
+    _settingsRecognizer = TapGestureRecognizer()..onTap = _openVisibilitySettings;
   }
 
   @override
   void dispose() {
-    _websiteRecognizer.dispose();
+    _settingsRecognizer.dispose();
     super.dispose();
   }
 
-  Future<void> _launchTrainingsURL() async {
-    final Uri url = Uri.parse('https://glift.io/entrainements');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      await launchUrl(url);
-    }
-  }
-
-  Future<void> _launchUnlockURL() async {
-    final Uri url = Uri.parse('https://glift.io/compte#mon-abonnement');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      await launchUrl(url);
-    }
+  void _openVisibilitySettings() {
+    HapticFeedback.lightImpact();
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    navigator.push(
+      MaterialPageRoute(
+        builder: (context) => VisibilityProgramsPage(
+          supabase: Supabase.instance.client,
+        ),
+      ),
+    );
   }
 
   @override
@@ -108,17 +108,17 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                     ),
                     children: [
                       const TextSpan(
-                        text: 'Rends toi sur le ',
+                        text: 'Rends-toi dans ',
                       ),
                       TextSpan(
-                        text: 'site internet',
-                        recognizer: _websiteRecognizer,
+                        text: 'tes réglages',
+                        recognizer: _settingsRecognizer,
                         mouseCursor: SystemMouseCursors.click,
-                        onEnter: (_) => setState(() => _isWebsiteHovered = true),
-                        onExit: (_) => setState(() => _isWebsiteHovered = false),
+                        onEnter: (_) => setState(() => _isSettingsHovered = true),
+                        onExit: (_) => setState(() => _isSettingsHovered = false),
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w600,
-                          color: _isWebsiteHovered
+                          color: _isSettingsHovered
                               ? const Color(0xFF6660E4)
                               : const Color(0xFF7069FA),
                         ),
