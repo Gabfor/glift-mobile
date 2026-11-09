@@ -12,10 +12,6 @@ class EditNameModal extends StatefulWidget {
   final String? initialLink;
   final VoidCallback? onDelete;
   final bool isDeleteEnabled;
-  final bool showHideOption;
-  final bool isHideEnabled;
-  final bool isHidden;
-  final ValueChanged<bool>? onToggleHide;
 
   const EditNameModal({
     super.key,
@@ -27,10 +23,6 @@ class EditNameModal extends StatefulWidget {
     this.initialLink,
     this.onDelete,
     this.isDeleteEnabled = true,
-    this.showHideOption = false,
-    this.isHideEnabled = true,
-    this.isHidden = false,
-    this.onToggleHide,
   });
 
   @override
@@ -39,7 +31,6 @@ class EditNameModal extends StatefulWidget {
 
 class _EditNameModalState extends State<EditNameModal> {
   late TextEditingController _controller;
-  late bool _isHidden;
   bool _isFocused = false;
   final FocusNode _focusNode = FocusNode();
   
@@ -50,7 +41,6 @@ class _EditNameModalState extends State<EditNameModal> {
   @override
   void initState() {
     super.initState();
-    _isHidden = widget.isHidden;
     final normalized = widget.initialName.trim().replaceAll('’', "'");
     final normalizedLabel = widget.fieldLabel?.trim().replaceAll('’', "'");
     final isDefaultName = normalized.isEmpty ||
@@ -438,49 +428,20 @@ class _EditNameModalState extends State<EditNameModal> {
             ),
           ),
           
-          if (widget.onDelete != null || widget.showHideOption)
+          if (widget.onDelete != null)
             Positioned(
               left: 8,
               top: 8,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.onDelete != null)
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        widget.isDeleteEnabled ? 'assets/icons/delete_purple.svg' : 'assets/icons/delete_bin_grey.svg',
-                        width: 25,
-                        height: 25,
-                      ),
-                      onPressed: widget.isDeleteEnabled ? widget.onDelete : null,
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(),
-                      style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    ),
-                  if (widget.showHideOption)
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        !widget.isHideEnabled
-                            ? 'assets/icons/masque_grey.svg'
-                            : (_isHidden ? 'assets/icons/show_purple.svg' : 'assets/icons/hide_purple.svg'),
-                        width: 25,
-                        height: 25,
-                      ),
-                      onPressed: widget.isHideEnabled
-                          ? () {
-                              HapticFeedback.lightImpact();
-                              final newHidden = !_isHidden;
-                              setState(() {
-                                _isHidden = newHidden;
-                              });
-                              widget.onToggleHide?.call(newHidden);
-                            }
-                          : null,
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(),
-                      style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    ),
-                ],
+              child: IconButton(
+                icon: SvgPicture.asset(
+                  widget.isDeleteEnabled ? 'assets/icons/delete_purple.svg' : 'assets/icons/delete_bin_grey.svg',
+                  width: 25,
+                  height: 25,
+                ),
+                onPressed: widget.isDeleteEnabled ? widget.onDelete : null,
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+                style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
               ),
             ),
         ],

@@ -368,20 +368,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         title: 'Nom de l’entraînement',
         description: 'Tu peux modifier le nom de cet entraînement ci-dessous.',
         fieldLabel: 'Nom de l’entraînement',
-        showHideOption: true,
-        isHidden: !_currentTraining.app,
-        onToggleHide: (newHidden) async {
-          final newAppVisible = !newHidden;
-          setState(() {
-            _currentTraining = _currentTraining.copyWith(app: newAppVisible);
-            _wasEdited = true;
-          });
-          try {
-            await _programRepository.updateTrainingVisibility(_currentTraining.id, newAppVisible);
-          } catch (e) {
-            debugPrint('Error updating training visibility: $e');
-          }
-        },
         onDelete: () async {
           final navigator = Navigator.of(context);
           // Close EditNameModal first
@@ -626,7 +612,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                   onUpdate: (series, reps, weights, efforts) =>
                       _handleRowUpdate(rIndex, series, reps, weights, efforts),
                   onExerciseUpdate: (name, link) => _handleExerciseUpdate(rIndex, name, link),
-                  onToggleHide: (newHidden) => _handleToggleHide(rIndex, newHidden),
                   onDelete: () => _handleDeleteRow(rIndex),
                   onRestUpdate: (newDuration) => _handleRestUpdate(rIndex, newDuration),
                   onNoteUpdate: (note) => _handleNoteUpdate(rIndex, note),
@@ -655,7 +640,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               onUpdate: (series, reps, weights, efforts) =>
                   _handleRowUpdate(rowIndex, series, reps, weights, efforts),
               onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
-              onToggleHide: (newHidden) => _handleToggleHide(rowIndex, newHidden),
               onDelete: () => _handleDeleteRow(rowIndex),
               onRestUpdate: (newDuration) =>
                   _handleRestUpdate(rowIndex, newDuration),
@@ -890,24 +874,6 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     }
   }
 
-  Future<void> _handleToggleHide(int index, [bool? specificValue]) async {
-    HapticFeedback.lightImpact();
-    if (_rows == null || index < 0 || index >= _rows!.length) return;
-    final row = _rows![index];
-    final newHidden = specificValue ?? !row.isHidden;
-
-    setState(() {
-      _rows![index] = row.copyWith(isHidden: newHidden);
-      _wasEdited = true;
-    });
-
-    try {
-      await _programRepository.updateTrainingRow(_rows![index].id, isHidden: newHidden);
-    } catch (e) {
-      debugPrint('Error updating hidden state: $e');
-    }
-  }
-
   Future<void> _handleMaterialUpdate(int index, String material) async {
     if (_rows == null) return;
     
@@ -1091,7 +1057,6 @@ class _ExerciseCard extends StatefulWidget {
     required this.onFocus,
     required this.onUpdate,
     required this.onExerciseUpdate,
-    this.onToggleHide,
     required this.onDelete,
     required this.onRestUpdate,
     required this.onNoteUpdate,
@@ -1118,7 +1083,6 @@ class _ExerciseCard extends StatefulWidget {
   }) onFocus;
   final Future<void> Function(int, List<String>, List<String>, List<String>) onUpdate;
   final Future<void> Function(String, String?) onExerciseUpdate;
-  final Future<void> Function(bool)? onToggleHide;
   final Future<void> Function() onDelete;
   final Future<void> Function(int) onRestUpdate;
   final Future<void> Function(String) onNoteUpdate;
@@ -1384,12 +1348,6 @@ class _ExerciseCardState extends State<_ExerciseCard>
         showLinkField: true,
         initialLink: widget.row.videoUrl,
         isDeleteEnabled: !(widget.isLast && widget.row.exercise.isEmpty),
-        showHideOption: true,
-        isHideEnabled: widget.row.exercise.trim().isNotEmpty,
-        isHidden: widget.row.isHidden,
-        onToggleHide: (newHidden) {
-          widget.onToggleHide?.call(newHidden);
-        },
         onDelete: () async {
           // Close EditNameModal first
           Navigator.of(context).pop();
