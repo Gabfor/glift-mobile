@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/settings_service.dart';
+import '../user_subscription_page.dart';
 
 class PremiumSubscriptionModal extends StatelessWidget {
   const PremiumSubscriptionModal({super.key});
-
-  Future<void> _launchURL() async {
-    final Uri url = Uri.parse('https://glift.io/compte#mon-abonnement');
-    if (!await launchUrl(url)) {
-      throw Exception('Could not launch $url');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,8 +119,15 @@ class PremiumSubscriptionModal extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
-                      _launchURL();
+                      final navigator = Navigator.of(context);
+                      navigator.pop();
+                      navigator.push(
+                        MaterialPageRoute(
+                          builder: (context) => UserSubscriptionPage(
+                            supabase: Supabase.instance.client,
+                          ),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF7069FA),

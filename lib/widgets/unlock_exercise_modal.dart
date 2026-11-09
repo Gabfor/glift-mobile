@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../user_subscription_page.dart';
 
 class UnlockExerciseModal extends StatelessWidget {
   final String title;
@@ -12,13 +13,6 @@ class UnlockExerciseModal extends StatelessWidget {
     this.title = 'Exercice bloqué',
     this.description = 'Cet exercice est bloqué car ta formule d’abonnement actuelle te limite à 10 exercices utilisables.',
   });
-
-  Future<void> _launchURL() async {
-    final Uri url = Uri.parse('https://glift.io/compte#mon-abonnement');
-    if (!await launchUrl(url)) {
-      throw Exception('Could not launch $url');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +88,7 @@ class UnlockExerciseModal extends StatelessWidget {
                       ),
                       const TextSpan(
                         text:
-                            ' tu seras redirigé vers ton compte où tu pourras modifier ta formule d’abonnement et débloquer cet exercice.',
+                            ' tu seras redirigé vers tes réglages où tu pourras modifier ta formule d’abonnement et débloquer cet exercice.',
                       ),
                     ],
                   ),
@@ -135,8 +129,15 @@ class UnlockExerciseModal extends StatelessWidget {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pop();
-                            _launchURL();
+                            final navigator = Navigator.of(context);
+                            navigator.pop();
+                            navigator.push(
+                              MaterialPageRoute(
+                                builder: (context) => UserSubscriptionPage(
+                                  supabase: Supabase.instance.client,
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF7069FA),

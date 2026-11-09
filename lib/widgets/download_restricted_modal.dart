@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../utils/dialog_utils.dart';
-import 'premium_subscription_modal.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../user_subscription_page.dart';
 
 class DownloadRestrictedModal extends StatelessWidget {
   const DownloadRestrictedModal({super.key});
@@ -122,10 +122,14 @@ class DownloadRestrictedModal extends StatelessWidget {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pop();
-                            showFadeDialog(
-                              context: context,
-                              builder: (context) => const PremiumSubscriptionModal(),
+                            final navigator = Navigator.of(context);
+                            navigator.pop();
+                            navigator.push(
+                              MaterialPageRoute(
+                                builder: (context) => UserSubscriptionPage(
+                                  supabase: Supabase.instance.client,
+                                ),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(

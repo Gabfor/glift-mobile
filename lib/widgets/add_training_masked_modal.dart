@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../user_subscription_page.dart';
 
 class AddTrainingMaskedModal extends StatefulWidget {
   const AddTrainingMaskedModal({super.key});
@@ -173,8 +175,15 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pop();
-                            _launchUnlockURL();
+                            final navigator = Navigator.of(context);
+                            navigator.pop();
+                            navigator.push(
+                              MaterialPageRoute(
+                                builder: (context) => UserSubscriptionPage(
+                                  supabase: Supabase.instance.client,
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF7069FA),
