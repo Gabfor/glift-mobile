@@ -391,7 +391,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
-              question: 'Veux-tu vraiment supprimer cet entraînement ?',
+              subtitle: 'La suppression d’un entraînement est définitive.',
               objectName: 'l’entraînement',
             ),
           );
@@ -1399,9 +1399,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => DeleteConfirmationModal(
-              question: isSuperset 
-                  ? 'Veux-tu vraiment supprimer ces exercices en superset ?'
-                  : 'Veux-tu vraiment supprimer cet exercice ?',
+              subtitle: isSuperset 
+                  ? 'La suppression de ces exercices en superset est définitive.'
+                  : 'La suppression d’un exercice est définitive.',
               objectName: isSuperset ? 'le superset' : 'l’exercice',
             ),
           );

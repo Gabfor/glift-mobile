@@ -3,14 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class DeleteConfirmationModal extends StatelessWidget {
-  final String question;
+  final String? question;
+  final String? subtitle;
   final String objectName;
 
   const DeleteConfirmationModal({
     super.key,
-    required this.question,
+    this.question,
+    this.subtitle,
     required this.objectName,
   });
+
+  String get effectiveSubtitle => subtitle ?? question ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +56,9 @@ class DeleteConfirmationModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 
-                // Question Text
+                // Subtitle / Question Text
                 Text(
-                  question,
+                  effectiveSubtitle,
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -72,7 +76,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF3A416F),
+                      color: const Color(0xFF5D6494),
                       height: 1.4,
                     ),
                     children: [
@@ -81,6 +85,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                         text: 'Confirmer',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3A416F),
                         ),
                       ),
                       TextSpan(text: '” $objectName sera définitivement supprimé. En cliquant sur “'),
@@ -88,6 +93,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                         text: 'Annuler',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3A416F),
                         ),
                       ),
                       const TextSpan(text: '” rien ne se passera.'),

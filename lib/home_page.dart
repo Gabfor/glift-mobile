@@ -354,7 +354,7 @@ class HomePageState extends State<HomePage> {
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
-              question: 'Veux-tu vraiment supprimer ce programme ?',
+              subtitle: 'La suppression d’un programme d’entraînements est définitive.',
               objectName: 'le programme',
             ),
           );
@@ -414,7 +414,7 @@ class HomePageState extends State<HomePage> {
           final confirm = await showFadeDialog<bool>(
             context: context,
             builder: (context) => const DeleteConfirmationModal(
-              question: 'Veux-tu vraiment supprimer cet entraînement ?',
+              subtitle: 'La suppression d’un entraînement est définitive.',
               objectName: 'l’entraînement',
             ),
           );
