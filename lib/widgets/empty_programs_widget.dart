@@ -70,12 +70,16 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                     height: 1.4,
                   ),
                 ),
-                if (widget.onManageTrainings != null) ...[
+                if (widget.onManageVisibility != null || widget.onManageTrainings != null) ...[
                   const SizedBox(height: 30),
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      widget.onManageTrainings!();
+                      if (widget.onManageVisibility != null) {
+                        widget.onManageVisibility!();
+                      } else {
+                        widget.onManageTrainings?.call();
+                      }
                     },
                     child: Container(
                       height: 48,
@@ -89,7 +93,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Gérer mes entrainements',
+                            'Régler la visibilité',
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,

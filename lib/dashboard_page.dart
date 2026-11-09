@@ -20,6 +20,7 @@ import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/empty_programs_widget.dart';
 import 'models/dashboard_preferences.dart';
+import 'visibility_programs_page.dart';
 
 class DashboardPage extends StatefulWidget {
 
@@ -404,6 +405,15 @@ class DashboardPageState extends State<DashboardPage> {
                   ? EmptyProgramsWidget(
                       onGoToStore: widget.onNavigateToStore!,
                       onManageTrainings: widget.onNavigateToHome,
+                      onManageVisibility: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => VisibilityProgramsPage(
+                              supabase: widget.supabase,
+                            ),
+                          ),
+                        ).then((_) => refreshData());
+                      },
                       isAllMasked: _programs.isEmpty &&
                           _repository.totalProgramsInAccount > 0,
                       isDashboard: true,
