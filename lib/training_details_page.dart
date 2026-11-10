@@ -113,6 +113,8 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   Future<void> _fetchDetails() async {
+    // If user is currently editing a cell with the keypad, don't overwrite their active input
+    if (_activeFocusId.value != null) return;
     try {
       // Sync settings to ensure UI reflects latest preferences
       await SettingsService.instance.syncFromSupabase();

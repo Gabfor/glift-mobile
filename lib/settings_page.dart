@@ -18,6 +18,7 @@ import 'default_timer_page.dart';
 import 'user_informations_page.dart';
 import 'user_subscription_page.dart';
 import 'visibility_programs_page.dart';
+import 'services/realtime_sync_service.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -123,6 +124,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() => _isLoggingOut = true);
 
     try {
+      RealtimeSyncService.instance.stop();
       await SettingsService.instance.clearUserData();
       await ProgramRepository(widget.supabase).clearLocalCache();
       await widget.supabase.auth.signOut();

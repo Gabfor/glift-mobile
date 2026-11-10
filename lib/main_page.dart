@@ -10,6 +10,8 @@ import 'settings_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'services/offline_sync_service.dart';
+import 'services/realtime_sync_service.dart';
+import 'services/settings_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -47,6 +49,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _triggerSync();
+    RealtimeSyncService.instance.start(widget.supabase);
     
     // Use Dashboard as default if an initial program ID is provided
     if (widget.initialIndex != null) {
@@ -113,6 +116,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    RealtimeSyncService.instance.stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -121,11 +125,22 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _triggerSync();
+      _triggerResumeSync();
     }
   }
 
   void _triggerSync() {
     OfflineSyncService.instance.syncPendingSessions(widget.supabase);
+  }
+
+  void _triggerResumeSync() async {
+    try {
+      await SettingsService.instance.syncFromSupabase();
+    } catch (_) {}
+    RealtimeSyncService.instance.ensureSubscribed(widget.supabase);
+    _homeKey.currentState?.refresh();
+    _dashboardKey.currentState?.refreshData();
+    SettingsService.instance.notifyDataChanged();
   }
 
   void _navigateToDashboard({String? programId, String? trainingId}) {
@@ -175,6 +190,15 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
       _currentIndex = index;
       _isBottomNavVisible = true;
     });
+
+    // Ensure the visited tab is refreshed with latest data
+    if (index == 0) {
+      _dashboardKey.currentState?.refreshData();
+    } else if (index == 1) {
+      _homeKey.currentState?.refresh();
+    } else if (index == 4) {
+      SettingsService.instance.syncFromSupabase();
+    }
   }
 
   void _handleNavigationVisibilityChanged(bool isVisible) {

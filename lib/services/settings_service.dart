@@ -281,8 +281,14 @@ class SettingsService {
   final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
   final ValueNotifier<String> subscriptionPlanNotifier = ValueNotifier('starter');
   final ValueNotifier<int> visibilityChangedNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<int> dataChangedNotifier = ValueNotifier<int>(0);
 
   void notifyVisibilityChanged() {
+    visibilityChangedNotifier.value++;
+  }
+
+  void notifyDataChanged() {
+    dataChangedNotifier.value++;
     visibilityChangedNotifier.value++;
   }
 
