@@ -656,33 +656,32 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
             continue;
           }
         }
-          final rowIndex = i;
-          reorderableItems.add(Padding(
-            key: ValueKey(row.id),
-            padding: const EdgeInsets.only(bottom: 20),
-            child: _ExerciseCard(
-              row: row,
-              onFocus: _handleFocus,
-              onUpdate: (series, reps, weights, efforts) =>
-                  _handleRowUpdate(rowIndex, series, reps, weights, efforts),
-              onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
-              onDelete: () => _handleDeleteRow(rowIndex),
-              onRestUpdate: (newDuration) =>
-                  _handleRestUpdate(rowIndex, newDuration),
-              onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
-              onMaterialUpdate: (material) =>
-                  _handleMaterialUpdate(rowIndex, material),
-              onDeleteSuperset: (_) async {}, 
-              showDecoration: true,
-              showTimer: _showRepos,
-              showEffort: _showEffort,
-              showMaterial: _showMaterial,
-              activeFocusId: _activeFocusId,
-              isLast: _rows!.length == 1,
-            ),
-          ));
-          i++;
-        }
+        final rowIndex = i;
+        reorderableItems.add(Padding(
+          key: ValueKey(row.id),
+          padding: const EdgeInsets.only(bottom: 20),
+          child: _ExerciseCard(
+            row: row,
+            onFocus: _handleFocus,
+            onUpdate: (series, reps, weights, efforts) =>
+                _handleRowUpdate(rowIndex, series, reps, weights, efforts),
+            onExerciseUpdate: (name, link) => _handleExerciseUpdate(rowIndex, name, link),
+            onDelete: () => _handleDeleteRow(rowIndex),
+            onRestUpdate: (newDuration) =>
+                _handleRestUpdate(rowIndex, newDuration),
+            onNoteUpdate: (note) => _handleNoteUpdate(rowIndex, note),
+            onMaterialUpdate: (material) =>
+                _handleMaterialUpdate(rowIndex, material),
+            onDeleteSuperset: (_) async {}, 
+            showDecoration: true,
+            showTimer: _showRepos,
+            showEffort: _showEffort,
+            showMaterial: _showMaterial,
+            activeFocusId: _activeFocusId,
+            isLast: _rows!.length == 1,
+          ),
+        ));
+        i++;
       }
     }
 
