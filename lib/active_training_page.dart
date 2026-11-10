@@ -138,7 +138,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
 
       if (mounted) {
         setState(() {
-          _rows = rows.where((row) => !row.isHidden).toList();
+          _rows = rows.where((row) => !row.isHidden && !row.locked).toList();
           _exerciseSettings = settings;
           // Set start time when data is loaded, time spent loading
           _isLoading = false;

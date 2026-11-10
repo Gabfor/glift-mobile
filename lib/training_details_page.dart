@@ -222,55 +222,71 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
   }
 
   Future<void> _openActiveTraining() async {
-    final allExercisesMasked = _rows != null &&
-        _rows!.isNotEmpty &&
-        _rows!.every((row) => row.isHidden);
+    final activeExercises = _rows?.where((row) => !row.isHidden && !row.locked).toList() ?? [];
 
-    if (allExercisesMasked) {
-      final goToSettings = await showFadeDialog<bool>(
-        context: context,
-        builder: (context) => const AllExercisesMaskedModal(),
-      );
+    if (activeExercises.isEmpty) {
+      final allExercisesLocked = _rows != null &&
+          _rows!.isNotEmpty &&
+          _rows!.every((row) => row.locked);
 
-      if (goToSettings == true && mounted) {
-        Program? targetProgram = widget.program;
-        if (targetProgram == null) {
-          final allPrograms = await _programRepository.getAllProgramsRaw();
-          targetProgram = allPrograms.firstWhere(
-            (p) => p.id == widget.training.programId,
-            orElse: () => Program(
-              id: widget.training.programId ?? '',
-              name: '',
-              trainings: [_currentTraining],
-              position: 0,
-              dashboard: true,
-              app: true,
-            ),
-          );
-        }
-
-        if (mounted) {
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => VisibilityTrainingDetailPage(
-                program: targetProgram!,
-                training: _currentTraining,
-                supabase: widget.supabase,
-              ),
-            ),
-          );
-          _fetchDetails();
-        }
+      if (allExercisesLocked) {
+        showFadeDialog(
+          context: context,
+          builder: (context) => const UnlockExerciseModal(),
+        );
+        return;
       }
+
+      final allPlayableMasked = _rows != null &&
+          _rows!.isNotEmpty &&
+          _rows!.where((row) => !row.locked).every((row) => row.isHidden);
+
+      if (allPlayableMasked) {
+        final goToSettings = await showFadeDialog<bool>(
+          context: context,
+          builder: (context) => const AllExercisesMaskedModal(),
+        );
+
+        if (goToSettings == true && mounted) {
+          Program? targetProgram = widget.program;
+          if (targetProgram == null) {
+            final allPrograms = await _programRepository.getAllProgramsRaw();
+            targetProgram = allPrograms.firstWhere(
+              (p) => p.id == widget.training.programId,
+              orElse: () => Program(
+                id: widget.training.programId ?? '',
+                name: '',
+                trainings: [_currentTraining],
+                position: 0,
+                dashboard: true,
+                app: true,
+              ),
+            );
+          }
+
+          if (mounted) {
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => VisibilityTrainingDetailPage(
+                  program: targetProgram!,
+                  training: _currentTraining,
+                  supabase: widget.supabase,
+                ),
+              ),
+            );
+            _fetchDetails();
+          }
+        }
+        return;
+      }
+
       return;
     }
 
-    final hasUnnamedExercises = _rows != null &&
-        _rows!.any((row) {
-          if (row.isHidden) return false;
-          final name = row.exercise.trim().replaceAll('’', "'");
-          return name.isEmpty || name.toLowerCase() == "nom de l'exercice";
-        });
+    final hasUnnamedExercises = activeExercises.any((row) {
+      final name = row.exercise.trim().replaceAll('’', "'");
+      return name.isEmpty || name.toLowerCase() == "nom de l'exercice";
+    });
 
     if (hasUnnamedExercises) {
       final shouldStart = await showFadeDialog<bool>(
