@@ -196,3 +196,4 @@ class RealtimeSyncService {
     _currentUserId = null;
   }
 }
+
