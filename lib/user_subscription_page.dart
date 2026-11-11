@@ -772,27 +772,30 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
   Widget _buildStarterCard({
     required Widget button,
   }) {
+    final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
+    final maxExercises = SettingsService.instance.getStarterMaxExercises();
+
     return _SubscriptionCardContainer(
       iconAsset: 'assets/icons/diamant_purple.svg',
       title: 'Abonnement Starter',
       price: '0,00 €',
       period: '/mois',
-      features: const [
+      features: [
         _SubscriptionFeature(
-          boldText: 'Un seul',
-          normalText: ' entraînement',
+          boldText: maxTrainings == 1 ? 'Un seul' : '$maxTrainings',
+          normalText: ' entraînement${maxTrainings > 1 ? "s" : ""}',
         ),
         _SubscriptionFeature(
           prefixText: 'Un maximum de ',
-          boldText: '10 exercices',
+          boldText: '$maxExercises exercices',
         ),
-        _SubscriptionFeature(
+        const _SubscriptionFeature(
           normalText: 'Un tableau de bord personnalisé',
         ),
-        _SubscriptionFeature(
+        const _SubscriptionFeature(
           boldText: 'Accès aux bons plans de la Glift Shop',
         ),
-        _SubscriptionFeature(
+        const _SubscriptionFeature(
           normalText: 'Accès aux programmes du Glift Store',
           isEnabled: false,
         ),

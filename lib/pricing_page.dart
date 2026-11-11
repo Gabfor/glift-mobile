@@ -128,6 +128,9 @@ class _PricingPageState extends State<PricingPage> {
     final greetingTitle =
         firstName.isNotEmpty ? 'Enchanté $firstName !' : 'Enchanté !';
 
+    final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
+    final maxExercises = SettingsService.instance.getStarterMaxExercises();
+
     return GliftPageLayout(
       title: greetingTitle,
       subtitle: 'Choisis ta formule d’abonnement',
@@ -199,26 +202,26 @@ class _PricingPageState extends State<PricingPage> {
             title: 'Abonnement Starter',
             price: '0,00 €',
             period: '/mois',
-            features: const [
+            features: [
               _FeatureItem(
-                boldText: 'Un seul',
-                regularText: ' entraînement',
+                boldText: maxTrainings == 1 ? 'Un seul' : '$maxTrainings',
+                regularText: ' entraînement${maxTrainings > 1 ? "s" : ""}',
                 isEnabled: true,
               ),
               _FeatureItem(
                 prefixText: 'Un maximum de ',
-                boldText: '10 exercices',
+                boldText: '$maxExercises exercices',
                 isEnabled: true,
               ),
-              _FeatureItem(
+              const _FeatureItem(
                 regularText: 'Un tableau de bord personnalisé',
                 isEnabled: true,
               ),
-              _FeatureItem(
+              const _FeatureItem(
                 boldText: 'Accès aux bons plans de la Glift Shop',
                 isEnabled: true,
               ),
-              _FeatureItem(
+              const _FeatureItem(
                 regularText: 'Accès aux programmes du Glift Store',
                 isEnabled: false,
               ),

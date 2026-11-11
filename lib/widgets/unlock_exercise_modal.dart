@@ -2,20 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/settings_service.dart';
 import '../user_subscription_page.dart';
 
 class UnlockExerciseModal extends StatelessWidget {
   final String title;
-  final String description;
+  final String? description;
 
   const UnlockExerciseModal({
     super.key,
     this.title = 'Exercice bloqué',
-    this.description = 'Cet exercice est bloqué car ta formule d’abonnement actuelle te limite à 10 exercices utilisables.',
+    this.description,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveDescription = description ??
+        'Cet exercice est bloqué car ta formule d’abonnement actuelle te limite à ${SettingsService.instance.getStarterMaxExercises()} exercices utilisables.';
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -56,7 +59,7 @@ class UnlockExerciseModal extends StatelessWidget {
 
                 // Warning Text 1
                 Text(
-                  description,
+                  effectiveDescription,
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

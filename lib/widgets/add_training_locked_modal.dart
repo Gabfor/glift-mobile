@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/settings_service.dart';
 import '../user_subscription_page.dart';
 
 class AddTrainingLockedModal extends StatelessWidget {
@@ -48,15 +49,21 @@ class AddTrainingLockedModal extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Warning Text
-                Text(
-                  'Ta formule d’abonnement actuelle te limite à 1 seul entraînement utilisable',
-                  style: GoogleFonts.quicksand(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
+                Builder(
+                  builder: (context) {
+                    final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
+                    final trainingText = maxTrainings == 1 ? "1 seul entraînement utilisable" : "$maxTrainings entraînements utilisables";
+                    return Text(
+                      'Ta formule d’abonnement actuelle te limite à $trainingText',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3A416F),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
 

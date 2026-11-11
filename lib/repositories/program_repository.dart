@@ -467,10 +467,11 @@ class ProgramRepository {
     final List<Map<String, dynamic>> updates = [];
     final List<TrainingRow> updatedRows = [];
 
-    // Strictly mirrors glift-web: rows 0..9 are unlocked, rows >= 10 are locked for starter plan.
+    // Strictly mirrors glift-web: rows 0..limit-1 are unlocked, rows >= limit are locked for starter plan.
+    final maxExercises = SettingsService.instance.getStarterMaxExercises();
     for (int i = 0; i < rows.length; i++) {
       final row = rows[i];
-      final shouldBeLocked = isPremium ? false : (i >= 10);
+      final shouldBeLocked = isPremium ? false : (i >= maxExercises);
 
       if (row.locked != shouldBeLocked) {
         updates.add({
@@ -1233,9 +1234,9 @@ class ProgramRepository {
     if (!isPremium) {
       final localPrograms = await getLocalPrograms();
       final totalTrainings = localPrograms.expand((p) => p.trainings).length;
-      final unlockedTrainings = localPrograms.expand((p) => p.trainings).where((t) => !t.locked).length;
-      if (totalTrainings > 0 || unlockedTrainings > 0) {
-        throw Exception('Abonnement Starter limité à 1 entraînement.');
+      final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
+      if (totalTrainings >= maxTrainings) {
+        throw Exception('Abonnement Starter limité à $maxTrainings entraînement${maxTrainings > 1 ? "s" : ""}.');
       }
     }
 

@@ -28,6 +28,8 @@ class SettingsService {
     _initialized = true;
     weightUnitNotifier.value = getWeightUnit();
     subscriptionPlanNotifier.value = getSubscriptionPlan();
+    starterMaxTrainingsNotifier.value = getStarterMaxTrainings();
+    starterMaxExercisesNotifier.value = getStarterMaxExercises();
   }
 
   Future<void> initSupabase(SupabaseClient client) async {
@@ -250,6 +252,8 @@ class SettingsService {
   static const String _kLogoUrl = 'logo_url';
   static const String _kLogoAlt = 'logo_alt';
   static const String _kTimerRingtones = 'timer_ringtones';
+  static const String _kStarterMaxTrainings = 'starter_max_trainings';
+  static const String _kStarterMaxExercises = 'starter_max_exercises';
   // Note: _kShowEffort, _kShowRepos, _kSubscriptionPlan are defined above
 
   Future<void> syncSiteSettings() async {
@@ -270,6 +274,12 @@ class SettingsService {
         } else if (key == 'timer_ringtones') {
             await _prefs.setString(_kTimerRingtones, value);
             _verifyCurrentSoundEffect();
+        } else if (key == 'starter_max_trainings') {
+            await _prefs.setString(_kStarterMaxTrainings, value);
+            starterMaxTrainingsNotifier.value = int.tryParse(value) ?? 1;
+        } else if (key == 'starter_max_exercises') {
+            await _prefs.setString(_kStarterMaxExercises, value);
+            starterMaxExercisesNotifier.value = int.tryParse(value) ?? 10;
         }
       }
     } catch (e) {
@@ -280,8 +290,22 @@ class SettingsService {
   // Notifiers
   final ValueNotifier<String> weightUnitNotifier = ValueNotifier('metric');
   final ValueNotifier<String> subscriptionPlanNotifier = ValueNotifier('starter');
+  final ValueNotifier<int> starterMaxTrainingsNotifier = ValueNotifier<int>(1);
+  final ValueNotifier<int> starterMaxExercisesNotifier = ValueNotifier<int>(10);
   final ValueNotifier<int> visibilityChangedNotifier = ValueNotifier<int>(0);
   final ValueNotifier<int> dataChangedNotifier = ValueNotifier<int>(0);
+
+  int getStarterMaxTrainings() {
+    if (!_initialized) return 1;
+    final val = _prefs.getString(_kStarterMaxTrainings);
+    return val != null ? (int.tryParse(val) ?? 1) : 1;
+  }
+
+  int getStarterMaxExercises() {
+    if (!_initialized) return 10;
+    final val = _prefs.getString(_kStarterMaxExercises);
+    return val != null ? (int.tryParse(val) ?? 10) : 10;
+  }
 
   void notifyVisibilityChanged() {
     visibilityChangedNotifier.value++;

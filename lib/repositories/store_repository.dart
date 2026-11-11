@@ -73,8 +73,9 @@ class StoreRepository {
             .from('trainings')
             .select('id')
             .eq('user_id', user.id);
-        if ((existingTrainings as List).isNotEmpty) {
-          throw Exception('Abonnement Starter limité à 1 entraînement.');
+        final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
+        if ((existingTrainings as List).length >= maxTrainings) {
+          throw Exception('Abonnement Starter limité à $maxTrainings entraînement${maxTrainings > 1 ? "s" : ""}.');
         }
       }
 

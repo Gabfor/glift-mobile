@@ -326,13 +326,14 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
     await HapticFeedback.lightImpact();
     if (!mounted) return;
     final isPremium = SettingsService.instance.isPremium();
+    final maxExercises = SettingsService.instance.getStarterMaxExercises();
 
-    if (!isPremium && _rows != null && _rows!.length >= 10) {
+    if (!isPremium && _rows != null && _rows!.length >= maxExercises) {
       showFadeDialog(
         context: context,
-        builder: (context) => const UnlockExerciseModal(
+        builder: (context) => UnlockExerciseModal(
           title: "Ajout d'exercice impossible",
-          description: "Ta formule d’abonnement actuelle te limite à 10 exercices utilisables.",
+          description: "Ta formule d’abonnement actuelle te limite à $maxExercises exercices utilisables.",
         ),
       );
       return;
