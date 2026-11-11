@@ -254,6 +254,8 @@ class SettingsService {
   static const String _kTimerRingtones = 'timer_ringtones';
   static const String _kStarterMaxTrainings = 'starter_max_trainings';
   static const String _kStarterMaxExercises = 'starter_max_exercises';
+  static const String _kPremiumMonthlyPrice = 'premium_monthly_price';
+  static const String _kPremiumYearlyPrice = 'premium_yearly_price';
   // Note: _kShowEffort, _kShowRepos, _kSubscriptionPlan are defined above
 
   Future<void> syncSiteSettings() async {
@@ -280,6 +282,10 @@ class SettingsService {
         } else if (key == 'starter_max_exercises') {
             await _prefs.setString(_kStarterMaxExercises, value);
             starterMaxExercisesNotifier.value = int.tryParse(value) ?? 10;
+        } else if (key == 'premium_monthly_price') {
+            await _prefs.setString(_kPremiumMonthlyPrice, value);
+        } else if (key == 'premium_yearly_price') {
+            await _prefs.setString(_kPremiumYearlyPrice, value);
         }
       }
     } catch (e) {
@@ -305,6 +311,16 @@ class SettingsService {
     if (!_initialized) return 10;
     final val = _prefs.getString(_kStarterMaxExercises);
     return val != null ? (int.tryParse(val) ?? 10) : 10;
+  }
+
+  String getPremiumMonthlyPrice() {
+    if (!_initialized) return '2,49';
+    return _prefs.getString(_kPremiumMonthlyPrice) ?? '2,49';
+  }
+
+  String getPremiumYearlyPrice() {
+    if (!_initialized) return '24,99';
+    return _prefs.getString(_kPremiumYearlyPrice) ?? '24,99';
   }
 
   void notifyVisibilityChanged() {

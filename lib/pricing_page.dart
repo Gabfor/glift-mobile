@@ -130,6 +130,7 @@ class _PricingPageState extends State<PricingPage> {
 
     final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
     final maxExercises = SettingsService.instance.getStarterMaxExercises();
+    final monthlyPrice = SettingsService.instance.getPremiumMonthlyPrice();
 
     return GliftPageLayout(
       title: greetingTitle,
@@ -143,7 +144,7 @@ class _PricingPageState extends State<PricingPage> {
           _PlanCard(
             iconAsset: 'assets/icons/diamant_gold.svg',
             title: 'Abonnement Premium',
-            price: '2,49 €',
+            price: '$monthlyPrice €',
             period: '/mois',
             features: const [
               _FeatureItem(
@@ -183,7 +184,7 @@ class _PricingPageState extends State<PricingPage> {
                 const _PulsingGreenDot(),
                 const SizedBox(width: 8),
                 Text(
-                  '30 jours pour tester, puis 2,49 € /mois',
+                  '30 jours pour tester, puis $monthlyPrice € /mois',
                   style: GoogleFonts.quicksand(
                     color: const Color(0xFF5D6494),
                     fontSize: 12,

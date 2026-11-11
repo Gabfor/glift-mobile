@@ -647,7 +647,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                       const _PulsingGreenDot(),
                                       const SizedBox(width: 8),
                                       Text(
-                                        '30 jours pour tester, puis 2,49 € /mois',
+                                        '30 jours pour tester, puis ${SettingsService.instance.getPremiumMonthlyPrice()} € /mois',
                                         style: GoogleFonts.quicksand(
                                           color: const Color(0xFF5D6494),
                                           fontSize: 12,
@@ -740,7 +740,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
     return _SubscriptionCardContainer(
       iconAsset: 'assets/icons/diamant_gold.svg',
       title: 'Abonnement Premium',
-      price: '2,49 €',
+      price: '${SettingsService.instance.getPremiumMonthlyPrice()} €',
       period: '/mois',
       features: const [
         _SubscriptionFeature(

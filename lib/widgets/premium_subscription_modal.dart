@@ -61,7 +61,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      '2,49 €',
+                      '${SettingsService.instance.getPremiumMonthlyPrice()} €',
                       style: GoogleFonts.quicksand(
                         fontSize: 34,
                         fontWeight: FontWeight.w800,
@@ -162,7 +162,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '30 jours pour tester, puis 2,49 € /mois',
+                        '30 jours pour tester, puis ${SettingsService.instance.getPremiumMonthlyPrice()} € /mois',
                         style: GoogleFonts.quicksand(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
