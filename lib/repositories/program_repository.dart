@@ -24,29 +24,42 @@ class ProgramRepository {
   /// If inconsistencies are found, it updates the database and the returned objects.
   Future<List<Program>> _ensureLockedConsistency(List<Program> programs) async {
     final bool isPremium = SettingsService.instance.isPremium();
+    final int maxTrainings = SettingsService.instance.getStarterMaxTrainings();
 
-
-    
-    String? targetUnlockedId;
+    final Set<String> unlockedIds = {};
 
     if (!isPremium && programs.isNotEmpty) {
-      // Active training for Starter account is strictly the 1st training of the 1st program containing trainings.
-      // Visibility (app / dashboard) must NEVER alter which training is active.
       final sortedPrograms = List<Program>.from(programs)
         ..sort((a, b) => a.position.compareTo(b.position));
 
-      Program? firstProgWithTrainings;
-      for (final p in sortedPrograms) {
-        if (p.trainings.isNotEmpty) {
-          firstProgWithTrainings = p;
-          break;
-        }
+      final allTrainings = <Training>[];
+      for (final prog in sortedPrograms) {
+        if (prog.trainings.isEmpty) continue;
+        final sortedTrainings = List<Training>.from(prog.trainings)
+          ..sort((a, b) => a.position.compareTo(b.position));
+        allTrainings.addAll(sortedTrainings);
       }
 
-      if (firstProgWithTrainings != null && firstProgWithTrainings.trainings.isNotEmpty) {
-        final sortedTrainings = List<Training>.from(firstProgWithTrainings.trainings)
-          ..sort((a, b) => a.position.compareTo(b.position));
-        targetUnlockedId = sortedTrainings.first.id;
+      final currentlyUnlocked = allTrainings.where((t) => !t.locked).toList();
+
+      if (currentlyUnlocked.length == maxTrainings) {
+        for (final t in currentlyUnlocked) {
+          unlockedIds.add(t.id);
+        }
+      } else if (currentlyUnlocked.length < maxTrainings) {
+        for (final t in currentlyUnlocked) {
+          unlockedIds.add(t.id);
+        }
+        final lockedTrainings = allTrainings.where((t) => t.locked).toList();
+        for (final t in lockedTrainings) {
+          if (unlockedIds.length < maxTrainings) {
+            unlockedIds.add(t.id);
+          }
+        }
+      } else {
+        for (int i = 0; i < maxTrainings; i++) {
+          unlockedIds.add(currentlyUnlocked[i].id);
+        }
       }
     }
 
@@ -58,13 +71,7 @@ class ProgramRepository {
         bool programChanged = false;
 
         for (final training in program.trainings) {
-            bool shouldBeLocked;
-            
-            if (isPremium) {
-                shouldBeLocked = false;
-            } else {
-                shouldBeLocked = targetUnlockedId != null ? (training.id != targetUnlockedId) : false;
-            }
+            final bool shouldBeLocked = isPremium ? false : !unlockedIds.contains(training.id);
 
             if (training.locked != shouldBeLocked) {
                 // debugPrint('Fixing locked status for ${training.name}: was ${training.locked}, becoming $shouldBeLocked');

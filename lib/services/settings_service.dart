@@ -45,6 +45,9 @@ class SettingsService {
   static const String _kHasUsedTrial = 'has_used_trial';
 
   Future<void> syncFromSupabase() async {
+    // 0. Always sync site settings (starter limits, pricing, logos)
+    await syncSiteSettings();
+
     final session = _supabase?.auth.currentSession;
     final user = _supabase?.auth.currentUser;
     if (session == null || user == null || session.isExpired) return;

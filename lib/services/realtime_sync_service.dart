@@ -145,6 +145,17 @@ class RealtimeSyncService {
         },
       );
 
+      // 8. Site settings changes (starter limits, pricing, logos)
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'settings',
+        callback: (payload) {
+          debugPrint('[RealtimeSyncService] settings change: ${payload.eventType}');
+          _onSiteSettingsChange();
+        },
+      );
+
       channel.subscribe((status, [error]) {
         debugPrint('[RealtimeSyncService] Channel status: $status (error: $error)');
       });
@@ -174,6 +185,20 @@ class RealtimeSyncService {
         debugPrint('[RealtimeSyncService] Error syncing settings: $e');
       }
       SettingsService.instance.notifyDataChanged();
+    });
+  }
+
+  void _onSiteSettingsChange() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 350), () async {
+      debugPrint('[RealtimeSyncService] Debounced sync triggered (site settings update).');
+      try {
+        await SettingsService.instance.syncSiteSettings();
+      } catch (e) {
+        debugPrint('[RealtimeSyncService] Error syncing site settings: $e');
+      }
+      SettingsService.instance.notifyDataChanged();
+      SettingsService.instance.notifyVisibilityChanged();
     });
   }
 
