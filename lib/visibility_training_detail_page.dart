@@ -188,7 +188,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
     const double gapBelowHeader = 10.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFFBFCFE),
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -318,7 +318,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    color: const Color(0xFFF9FAFB),
+                    color: const Color(0xFFFBFCFE),
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -373,8 +373,8 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  const Color(0xFF1E1742).withValues(alpha: 0.12),
-                                  const Color(0xFF1E1742).withValues(alpha: 0.04),
+                                  const Color(0xFF2E3142).withValues(alpha: 0.12),
+                                  const Color(0xFF2E3142).withValues(alpha: 0.04),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.0, 0.45, 1.0],

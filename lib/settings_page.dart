@@ -745,14 +745,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC2BFC6)),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: const Color(0xFFC2BFC6),
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),

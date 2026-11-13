@@ -2210,7 +2210,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     style: GoogleFonts.quicksand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
+                      color: isLocked ? const Color(0xFFC2BFC6) : const Color(0xFF7069FA),
                       decoration: isLocked ? null : TextDecoration.underline,
                       decorationColor: const Color(0xFF7069FA),
                     ),
@@ -2223,7 +2223,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F),
+                    color: isLocked ? const Color(0xFFC2BFC6) : const Color(0xFF3A416F),
                   ),
                 ),
         ),
@@ -2233,7 +2233,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             'assets/icons/locked.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn),
+            colorFilter: const ColorFilter.mode(Color(0xFFC2BFC6), BlendMode.srcIn),
           ),
         ] else ...[
           const SizedBox(width: 20),
@@ -2309,10 +2309,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               : _visualsForState(_EffortState.neutral);
 
           final isColored = visuals.backgroundColor != Colors.white;
-          final lockedColor = isColored ? const Color(0xFFF2F1F6) : const Color(0xFFF8F9FA);
+          final lockedColor = isColored ? const Color(0xFFFAFAFF) : const Color(0xFFF8F9FA);
 
           final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
-          final textColor = widget.row.locked ? const Color(0xFFD7D4DC) : visuals.textColor;
+          final textColor = widget.row.locked ? const Color(0xFFC2BFC6) : visuals.textColor;
           final borderColor = widget.row.locked ? const Color(0xFFECE9F1) : (
              (index == _activeRepsIndex ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1))
           );
@@ -2341,7 +2341,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           style: GoogleFonts.quicksand(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F),
+                            color: isLocked ? const Color(0xFFC2BFC6) : const Color(0xFF3A416F),
                           ),
                         ),
                       ),
@@ -2459,7 +2459,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                             width: 24,
                             height: 24,
                             colorFilter: isLocked 
-                                ? const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn) 
+                                ? const ColorFilter.mode(Color(0xFFC2BFC6), BlendMode.srcIn) 
                                 : null,
                           ),
                         )

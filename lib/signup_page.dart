@@ -676,29 +676,41 @@ class _CreateAccountButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isInteractive = isEnabled && !isLoading;
-    final color = isInteractive ? const Color(0xFF7069FA) : const Color(0xFFF2F1F6);
-    final textColor = isInteractive ? Colors.white : const Color(0xFFD7D4DC);
+    final textColor = isInteractive ? Colors.white : const Color(0xFFC2BFC6);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return SizedBox(
       width: double.infinity,
       height: 48,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(25),
-      ),
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: color,
-          foregroundColor: textColor,
-          disabledBackgroundColor: color,
-          disabledForegroundColor: textColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-          textStyle: GoogleFonts.quicksand(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
+        style: ButtonStyle(
+          elevation: const WidgetStatePropertyAll(0),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (!isInteractive) {
+              if (states.contains(WidgetState.hovered)) {
+                return const Color(0xFFECE9F1);
+              }
+              return const Color(0xFFF2F1F6);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return const Color(0xFF6660E4);
+            }
+            return const Color(0xFF7069FA);
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (!isInteractive) {
+              return const Color(0xFFC2BFC6);
+            }
+            return Colors.white;
+          }),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          ),
+          textStyle: WidgetStatePropertyAll(
+            GoogleFonts.quicksand(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
           ),
         ),
         child: isLoading
@@ -717,7 +729,7 @@ class _CreateAccountButton extends StatelessWidget {
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: const Color(0xFFC2BFC6),
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -728,13 +740,16 @@ class _CreateAccountButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (!isInteractive) ...[
-                    SvgPicture.asset(
-                      'assets/icons/locked.svg',
-                      width: 16,
-                      height: 16,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFFD7D4DC),
-                        BlendMode.srcIn,
+                    Transform.translate(
+                      offset: const Offset(0, -1.5),
+                      child: SvgPicture.asset(
+                        'assets/icons/locked.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFFC2BFC6),
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),

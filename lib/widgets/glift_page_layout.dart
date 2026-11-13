@@ -190,8 +190,8 @@ class _GliftPageLayoutState extends State<GliftPageLayout> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  const Color(0xFF1E1742).withValues(alpha: 0.12),
-                                  const Color(0xFF1E1742).withValues(alpha: 0.04),
+                                  const Color(0xFF2E3142).withValues(alpha: 0.12),
+                                  const Color(0xFF2E3142).withValues(alpha: 0.04),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.0, 0.45, 1.0],

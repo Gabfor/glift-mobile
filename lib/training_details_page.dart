@@ -1502,7 +1502,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: isGreyed || widget.row.exercise.isEmpty
-                        ? const Color(0xFFD7D4DC)
+                        ? const Color(0xFFC2BFC6)
                         : (hasLink ? const Color(0xFF7069FA) : const Color(0xFF3A416F)),
                     decoration: (hasLink && !isGreyed) ? TextDecoration.underline : null,
                     decorationColor: const Color(0xFF7069FA),
@@ -1516,7 +1516,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                 'assets/icons/locked.svg',
                 width: 20,
                 height: 20,
-                colorFilter: const ColorFilter.mode(Color(0xFFD7D4DC), BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(Color(0xFFC2BFC6), BlendMode.srcIn),
               ),
             ] else ...[
               const SizedBox(width: 20),
@@ -1601,10 +1601,10 @@ class _ExerciseCardState extends State<_ExerciseCard>
 
           // Override for locked or hidden
           final isColored = visuals.backgroundColor != Colors.white;
-          final lockedColor = isColored ? const Color(0xFFF2F1F6) : const Color(0xFFF8F9FA);
+          final lockedColor = isColored ? const Color(0xFFFAFAFF) : const Color(0xFFF8F9FA);
 
           final bgColor = isGreyed ? lockedColor : visuals.backgroundColor;
-          final textColor = isGreyed ? const Color(0xFFD7D4DC) : visuals.textColor;
+          final textColor = isGreyed ? const Color(0xFFC2BFC6) : visuals.textColor;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -1628,7 +1628,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFFD7D4DC),
-                          ).copyWith(color: isGreyed ? const Color(0xFFD7D4DC) : const Color(0xFF3A416F)),
+                          ).copyWith(color: isGreyed ? const Color(0xFFC2BFC6) : const Color(0xFF3A416F)),
                         ),
                       ),
                     ),

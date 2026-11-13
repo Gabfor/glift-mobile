@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class GliftTheme {
   const GliftTheme._();
 
-  static const Color background = Color(0xFFF9FAFB);
+  static const Color background = Color(0xFFFBFCFE);
   static const Color accent = Color(0xFF7069FA);
   static const Color title = Color(0xFF3A416F);
   static const Color body = Color(0xFF5D6494);
@@ -58,22 +58,40 @@ class GliftTheme {
     return baseTheme.copyWith(
       textTheme: textTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: accent,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFFF2F1F6),
-          disabledForegroundColor: const Color(0xFFD7D4DC),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              if (states.contains(WidgetState.hovered)) {
+                return const Color(0xFFECE9F1);
+              }
+              return const Color(0xFFF2F1F6);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return const Color(0xFF6660E4);
+            }
+            return accent;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return const Color(0xFFC2BFC6);
+            }
+            return Colors.white;
+          }),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
           ),
-          textStyle: GoogleFonts.quicksand(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+          textStyle: WidgetStatePropertyAll(
+            GoogleFonts.quicksand(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          overlayColor: Colors.transparent,
+          elevation: const WidgetStatePropertyAll(0),
+          shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
           splashFactory: NoSplash.splashFactory,
         ),
       ),

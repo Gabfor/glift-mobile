@@ -196,7 +196,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
     final seconds = (_durationInSeconds % 60).toString().padLeft(2, '0');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB), // Match options page bg
+      backgroundColor: const Color(0xFFFBFCFE), // Match options page bg
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _handleOutsideTap,

@@ -1049,12 +1049,12 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                 : const Color(0xFFF2F1F6)));
 
     final textColor = _isRestricted
-        ? const Color(0xFFD7D4DC) // Gray text for restricted
+        ? const Color(0xFFC2BFC6) // Gray text for restricted
         : (_isDownloading
-            ? const Color(0xFFD7D4DC)
+            ? const Color(0xFFC2BFC6)
             : (_isDownloadable
                 ? Colors.white
-                : const Color(0xFFD7D4DC)));
+                : const Color(0xFFC2BFC6)));
 
     return Container(
       decoration: BoxDecoration(
@@ -1226,21 +1226,27 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                                 const GliftLoader(
                                   size: 20,
                                   strokeWidth: 2,
-                                  color: Color(0xFFD7D4DC),
+                                  color: Color(0xFFC2BFC6),
                                   centered: false,
                                 ),
                                 const SizedBox(width: 8),
                               ] else ...[
-                                SvgPicture.asset(
-                                  // Restricted = locked
-                                  _isRestricted || !_isDownloadable
-                                      ? 'assets/icons/locked.svg'
-                                      : 'assets/icons/download.svg',
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(
-                                    textColor,
-                                    BlendMode.srcIn,
+                                Transform.translate(
+                                  offset: Offset(
+                                    0,
+                                    _isRestricted || !_isDownloadable ? -1.5 : 0,
+                                  ),
+                                  child: SvgPicture.asset(
+                                    // Restricted = locked
+                                    _isRestricted || !_isDownloadable
+                                        ? 'assets/icons/locked.svg'
+                                        : 'assets/icons/download.svg',
+                                    width: 20,
+                                    height: 20,
+                                    colorFilter: ColorFilter.mode(
+                                      textColor,
+                                      BlendMode.srcIn,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),

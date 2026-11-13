@@ -605,7 +605,7 @@ class _NoteModalState extends State<NoteModal> {
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: _hasChanged ? Colors.white : const Color(0xFFD7D4DC),
+                    color: _hasChanged ? Colors.white : const Color(0xFFC2BFC6),
                   ),
                 ),
               ),

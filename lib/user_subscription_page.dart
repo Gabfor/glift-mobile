@@ -539,7 +539,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
     final bool isEffectivelyPremium = _subscriptionPlan == 'premium';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFFBFCFE),
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -594,7 +594,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             button: const _ActionButton(
                               text: 'Annuler mon abonnement',
                               backgroundColor: Color(0xFFF2F1F6),
-                              textColor: Color(0xFFD7D4DC),
+                              textColor: Color(0xFFC2BFC6),
                               onPressed: null,
                             ),
                           ),
@@ -619,7 +619,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                 ? _ActionButton(
                                     text: 'Choisir cet abonnement',
                                     backgroundColor: const Color(0xFFF2F1F6),
-                                    textColor: const Color(0xFFD7D4DC),
+                                    textColor: const Color(0xFFC2BFC6),
                                     onPressed: _showCancellationInfoDialog,
                                   )
                                 : _ActionButton(
@@ -673,7 +673,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    color: const Color(0xFFF9FAFB),
+                    color: const Color(0xFFFBFCFE),
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -715,8 +715,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            const Color(0xFF1E1742).withValues(alpha: 0.12),
-                            const Color(0xFF1E1742).withValues(alpha: 0.04),
+                            const Color(0xFF2E3142).withValues(alpha: 0.12),
+                            const Color(0xFF2E3142).withValues(alpha: 0.04),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.45, 1.0],
@@ -1021,7 +1021,7 @@ class _ActionButton extends StatelessWidget {
     final effectiveBorder = (isLoading || borderColor == null)
         ? null
         : Border.all(color: borderColor!, width: 1.2);
-    final effectiveTextColor = isLoading ? const Color(0xFFD7D4DC) : textColor;
+    final effectiveTextColor = isLoading ? const Color(0xFFC2BFC6) : textColor;
 
     return Container(
       width: double.infinity,
@@ -1052,14 +1052,14 @@ class _ActionButton extends StatelessWidget {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC2BFC6)),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: const Color(0xFFC2BFC6),
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),

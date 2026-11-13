@@ -449,31 +449,43 @@ class _PremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isLoading ? const Color(0xFFF2F1F6) : const Color(0xFF7069FA);
-    final textColor = isLoading ? const Color(0xFFD7D4DC) : Colors.white;
+    final textColor = isLoading ? const Color(0xFFC2BFC6) : Colors.white;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return SizedBox(
       width: double.infinity,
       height: 48,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(25),
-      ),
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          disabledBackgroundColor: color,
-          foregroundColor: textColor,
-          disabledForegroundColor: textColor,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+        style: ButtonStyle(
+          elevation: const WidgetStatePropertyAll(0),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (isLoading) {
+              if (states.contains(WidgetState.hovered)) {
+                return const Color(0xFFECE9F1);
+              }
+              return const Color(0xFFF2F1F6);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return const Color(0xFF6660E4);
+            }
+            return const Color(0xFF7069FA);
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (isLoading) {
+              return const Color(0xFFC2BFC6);
+            }
+            return Colors.white;
+          }),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
           ),
-          textStyle: GoogleFonts.quicksand(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
+          textStyle: WidgetStatePropertyAll(
+            GoogleFonts.quicksand(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
           ),
         ),
         child: isLoading
@@ -539,14 +551,14 @@ class _StarterButton extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD7D4DC)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC2BFC6)),
               ),
             ),
             const SizedBox(width: 12),
             Text(
               'En cours...',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFFD7D4DC),
+                color: const Color(0xFFC2BFC6),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),

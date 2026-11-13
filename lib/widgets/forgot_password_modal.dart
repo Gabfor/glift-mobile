@@ -992,12 +992,12 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         const SizedBox(
-                                          width: 18,
-                                          height: 18,
+                                          width: 20,
+                                          height: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             valueColor: AlwaysStoppedAnimation<Color>(
-                                              Color(0xFFD7D4DC),
+                                              Color(0xFFC2BFC6),
                                             ),
                                           ),
                                         ),
@@ -1005,7 +1005,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                         Text(
                                           'En cours...',
                                           style: GoogleFonts.quicksand(
-                                            color: const Color(0xFFD7D4DC),
+                                            color: const Color(0xFFC2BFC6),
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -1021,7 +1021,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                                 (isOtpStep && _isOtpComplete) ||
                                                 (isNewPasswordStep && _isPasswordFormValid))
                                             ? Colors.white
-                                            : const Color(0xFFD7D4DC),
+                                            : const Color(0xFFC2BFC6),
                                       ),
                                     ),
                             ),

@@ -398,7 +398,7 @@ class _EditNameModalState extends State<EditNameModal> {
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: _controller.text.trim().isEmpty 
-                                ? const Color(0xFFD7D4DC) 
+                                ? const Color(0xFFC2BFC6) 
                                 : Colors.white,
                             ),
                           ),
