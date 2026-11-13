@@ -111,7 +111,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                             onSettingsTap?.call();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6C6EF5),
+                            backgroundColor: const Color(0xFF7069FA),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

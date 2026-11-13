@@ -1322,7 +1322,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   behavior: HitTestBehavior.opaque,
                                   onTapDown: (_) => _clearTooltip(),
                                   child: _TooltipWithArrow(
-                                    backgroundColor: const Color(0xFF2D2E32),
+                                    backgroundColor: const Color(0xFF2E3142),
                                     label: () {
                                       final int dataCount = _history.length;
                                       final int offset = (7 - dataCount) ~/ 2;

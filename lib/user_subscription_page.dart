@@ -253,7 +253,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
   void _showCancelConfirmationDialog() {
     showDialog(
       context: context,
-      barrierColor: const Color(0xFF1E2238).withValues(alpha: 0.5),
+      barrierColor: const Color(0x992E3142),
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -428,7 +428,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
   void _showCancellationInfoDialog() {
     showDialog(
       context: context,
-      barrierColor: const Color(0xFF1E2238).withValues(alpha: 0.5),
+      barrierColor: const Color(0x992E3142),
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -583,7 +583,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                   )
                                 : _ActionButton(
                                     text: 'Annuler mon abonnement',
-                                    backgroundColor: const Color(0xFFF15454),
+                                    backgroundColor: const Color(0xFFEF4F4E),
                                     textColor: Colors.white,
                                     isLoading: _isProcessing,
                                     onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
@@ -778,8 +778,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
     return _SubscriptionCardContainer(
       iconAsset: 'assets/icons/diamant_purple.svg',
       title: 'Abonnement Starter',
-      price: '0,00 €',
-      period: '/mois',
+      price: 'Gratuit',
+      period: '',
       features: [
         _SubscriptionFeature(
           boldText: maxTrainings == 1 ? 'Un seul' : '$maxTrainings',
@@ -882,14 +882,15 @@ class _SubscriptionCardContainer extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              Text(
-                ' $period',
-                style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              if (period.isNotEmpty)
+                Text(
+                  ' $period',
+                  style: GoogleFonts.quicksand(
+                    color: const Color(0xFF3A416F),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 20),

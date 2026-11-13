@@ -156,7 +156,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                         width: 6,
                         height: 6,
                         decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
+                          color: Color(0xFF00D591),
                           shape: BoxShape.circle,
                         ),
                       ),

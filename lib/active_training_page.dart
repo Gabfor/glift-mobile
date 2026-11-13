@@ -2309,7 +2309,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               : _visualsForState(_EffortState.neutral);
 
           final isColored = visuals.backgroundColor != Colors.white;
-          final lockedColor = isColored ? const Color(0xFFFAFAFF) : const Color(0xFFF8F9FA);
+          final lockedColor = const Color(0xFFF6F6FA);
 
           final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
           final textColor = widget.row.locked ? const Color(0xFFC2BFC6) : visuals.textColor;
@@ -2333,7 +2333,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                       child: Container(
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8F9FA),
+                          color: isLocked ? const Color(0xFFF6F6FA) : const Color(0xFFF2F1F6),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(

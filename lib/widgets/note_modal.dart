@@ -442,7 +442,7 @@ class _NoteModalState extends State<NoteModal> {
                               iconTheme: quill.QuillIconTheme(
                                 iconButtonSelectedData: const quill.IconButtonData(
                                   style: ButtonStyle(
-                                   backgroundColor: WidgetStatePropertyAll(Color(0xFFFAFAFF)),
+                                   backgroundColor: WidgetStatePropertyAll(Color(0xFFF6F6FA)),
                                    iconColor: WidgetStatePropertyAll(Color(0xFF3A416F)),
                                   ),
                                 ),

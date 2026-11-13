@@ -120,8 +120,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 _feedback!,
                 style: GoogleFonts.inter(
                   color: _feedback!.startsWith('Email envoyé')
-                      ? Colors.green
-                      : const Color(0xFFE74C3C),
+                      ? const Color(0xFF00D591)
+                      : const Color(0xFFEF4F4E),
                 ),
               ),
             ],

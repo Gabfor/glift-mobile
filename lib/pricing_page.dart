@@ -201,8 +201,8 @@ class _PricingPageState extends State<PricingPage> {
           _PlanCard(
             iconAsset: 'assets/icons/diamant_purple.svg',
             title: 'Abonnement Starter',
-            price: '0,00 €',
-            period: '/mois',
+            price: 'Gratuit',
+            period: '',
             features: [
               _FeatureItem(
                 boldText: maxTrainings == 1 ? 'Un seul' : '$maxTrainings',
@@ -318,14 +318,15 @@ class _PlanCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    Text(
-                      ' $period',
-                      style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    if (period.isNotEmpty)
+                      Text(
+                        ' $period',
+                        style: GoogleFonts.quicksand(
+                          color: const Color(0xFF5D6494),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 22),

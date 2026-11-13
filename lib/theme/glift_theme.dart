@@ -88,6 +88,12 @@ class GliftTheme {
               fontWeight: FontWeight.w700,
             ),
           ),
+          mouseCursor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return SystemMouseCursors.forbidden;
+            }
+            return SystemMouseCursors.click;
+          }),
           elevation: const WidgetStatePropertyAll(0),
           shadowColor: const WidgetStatePropertyAll(Colors.transparent),
           surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),

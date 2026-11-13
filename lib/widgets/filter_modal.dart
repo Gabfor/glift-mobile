@@ -87,7 +87,7 @@ class _FilterModalState extends State<FilterModal> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
       decoration: const BoxDecoration(
-        color: Color(0xFFF8F9FA),
+        color: Color(0xFFFBFCFE),
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(

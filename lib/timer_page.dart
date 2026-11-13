@@ -486,7 +486,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFFBFCFE),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _handleOutsideTap,

@@ -52,6 +52,12 @@ class ConnectButton extends StatelessWidget {
               fontSize: 16,
             ),
           ),
+          mouseCursor: WidgetStateProperty.resolveWith((states) {
+            if (!isInteractive) {
+              return SystemMouseCursors.forbidden;
+            }
+            return SystemMouseCursors.click;
+          }),
         ),
         child: isLoading
             ? Row(

@@ -131,7 +131,7 @@ class _UserInformationsPageState extends State<UserInformationsPage> {
         return Container(
           height: 280,
           decoration: const BoxDecoration(
-            color: Color(0xFFF2F2F7),
+            color: Color(0xFFFBFCFE),
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SafeArea(
