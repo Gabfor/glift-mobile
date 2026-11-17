@@ -31,6 +31,17 @@ class PricingPage extends StatefulWidget {
 class _PricingPageState extends State<PricingPage> {
   bool _isLoading = false;
   String? _loadingPlan;
+  bool _isYearly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final monthlyEnabled = SettingsService.instance.isPremiumMonthlyEnabled();
+    final yearlyEnabled = SettingsService.instance.isPremiumYearlyEnabled();
+    if (!monthlyEnabled && yearlyEnabled) {
+      _isYearly = true;
+    }
+  }
 
   Future<void> _selectPlan(String plan) async {
     if (_isLoading) return;
@@ -50,6 +61,7 @@ class _PricingPageState extends State<PricingPage> {
           final trialEnd = now.add(const Duration(days: 30));
           await widget.supabase.from('profiles').update({
             'subscription_plan': 'premium',
+            'subscription_interval': _isYearly ? 'yearly' : 'monthly',
             'premium_trial_started_at': now.toIso8601String(),
             'premium_trial_end_at': trialEnd.toIso8601String(),
             'trial': true,
@@ -59,6 +71,7 @@ class _PricingPageState extends State<PricingPage> {
             await widget.supabase.from('user_subscriptions').upsert({
               'user_id': user.id,
               'plan': 'premium',
+              'interval': _isYearly ? 'yearly' : 'monthly',
             });
           } catch (_) {}
         } else {
@@ -131,6 +144,19 @@ class _PricingPageState extends State<PricingPage> {
     final maxTrainings = SettingsService.instance.getStarterMaxTrainings();
     final maxExercises = SettingsService.instance.getStarterMaxExercises();
     final monthlyPrice = SettingsService.instance.getPremiumMonthlyPrice();
+    final yearlyPrice = SettingsService.instance.getPremiumYearlyPrice();
+    final showToggle = SettingsService.instance.isPremiumMonthlyEnabled() &&
+        SettingsService.instance.isPremiumYearlyEnabled();
+
+    double parsePrice(String p) => double.tryParse(p.replaceAll(',', '.')) ?? 0.0;
+    final mVal = parsePrice(monthlyPrice);
+    final yVal = parsePrice(yearlyPrice);
+    final discountPercent = (mVal > 0 && yVal > 0 && 12 * mVal > yVal)
+        ? (((12 * mVal - yVal) / (12 * mVal)) * 100).round()
+        : 0;
+
+    final currentPrice = _isYearly ? yearlyPrice : monthlyPrice;
+    final currentPeriod = _isYearly ? '/an' : '/mois';
 
     return GliftPageLayout(
       title: greetingTitle,
@@ -140,12 +166,24 @@ class _PricingPageState extends State<PricingPage> {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
       child: Column(
         children: [
+          if (showToggle) ...[
+            _IntervalToggle(
+              isYearly: _isYearly,
+              onChanged: (val) {
+                HapticFeedback.lightImpact();
+                setState(() => _isYearly = val);
+              },
+              discountPercent: discountPercent,
+            ),
+            const SizedBox(height: 20),
+          ],
+
           // ─── CARTE 1 : ABONNEMENT PREMIUM ──────────────────────────────
           _PlanCard(
             iconAsset: 'assets/icons/diamant_gold.svg',
             title: 'Abonnement Premium',
-            price: '$monthlyPrice €',
-            period: '/mois',
+            price: '$currentPrice €',
+            period: currentPeriod,
             features: const [
               _FeatureItem(
                 boldText: 'Un nombre illimité',
@@ -184,7 +222,7 @@ class _PricingPageState extends State<PricingPage> {
                 const _PulsingGreenDot(),
                 const SizedBox(width: 8),
                 Text(
-                  '30 jours pour tester, puis $monthlyPrice € /mois',
+                  '30 jours pour tester, puis $currentPrice € $currentPeriod',
                   style: GoogleFonts.quicksand(
                     color: const Color(0xFF5D6494),
                     fontSize: 12,
@@ -659,6 +697,81 @@ class _PulsingGreenDotState extends State<_PulsingGreenDot>
           ),
         ],
       ),
+    );
+  }
+}
+
+class _IntervalToggle extends StatelessWidget {
+  final bool isYearly;
+  final ValueChanged<bool> onChanged;
+  final int discountPercent;
+
+  const _IntervalToggle({
+    required this.isYearly,
+    required this.onChanged,
+    required this.discountPercent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () => onChanged(false),
+          behavior: HitTestBehavior.opaque,
+          child: Text(
+            'Mensuel',
+            style: GoogleFonts.quicksand(
+              color: !isYearly ? const Color(0xFF3A416F) : const Color(0xFF5D6494),
+              fontSize: 16,
+              fontWeight: !isYearly ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 44,
+          height: 26,
+          child: Switch.adaptive(
+            value: isYearly,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF7069FA),
+            activeTrackColor: const Color(0xFFA1A5FD),
+          ),
+        ),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: () => onChanged(true),
+          behavior: HitTestBehavior.opaque,
+          child: Text(
+            'Annuel',
+            style: GoogleFonts.quicksand(
+              color: isYearly ? const Color(0xFF3A416F) : const Color(0xFF5D6494),
+              fontSize: 16,
+              fontWeight: isYearly ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ),
+        if (discountPercent > 0) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFDCFAF1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Économise $discountPercent %',
+              style: GoogleFonts.quicksand(
+                color: const Color(0xFF00D591),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

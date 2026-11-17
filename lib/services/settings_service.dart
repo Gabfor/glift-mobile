@@ -259,6 +259,8 @@ class SettingsService {
   static const String _kStarterMaxExercises = 'starter_max_exercises';
   static const String _kPremiumMonthlyPrice = 'premium_monthly_price';
   static const String _kPremiumYearlyPrice = 'premium_yearly_price';
+  static const String _kPremiumMonthlyEnabled = 'premium_monthly_enabled';
+  static const String _kPremiumYearlyEnabled = 'premium_yearly_enabled';
   // Note: _kShowEffort, _kShowRepos, _kSubscriptionPlan are defined above
 
   Future<void> syncSiteSettings() async {
@@ -289,6 +291,10 @@ class SettingsService {
             await _prefs.setString(_kPremiumMonthlyPrice, value);
         } else if (key == 'premium_yearly_price') {
             await _prefs.setString(_kPremiumYearlyPrice, value);
+        } else if (key == 'premium_monthly_enabled') {
+            await _prefs.setString(_kPremiumMonthlyEnabled, value);
+        } else if (key == 'premium_yearly_enabled') {
+            await _prefs.setString(_kPremiumYearlyEnabled, value);
         }
       }
     } catch (e) {
@@ -324,6 +330,18 @@ class SettingsService {
   String getPremiumYearlyPrice() {
     if (!_initialized) return '24,99';
     return _prefs.getString(_kPremiumYearlyPrice) ?? '24,99';
+  }
+
+  bool isPremiumMonthlyEnabled() {
+    if (!_initialized) return true;
+    final val = _prefs.getString(_kPremiumMonthlyEnabled);
+    return val != 'NON';
+  }
+
+  bool isPremiumYearlyEnabled() {
+    if (!_initialized) return false;
+    final val = _prefs.getString(_kPremiumYearlyEnabled);
+    return val == 'OUI';
   }
 
   void notifyVisibilityChanged() {

@@ -11,6 +11,12 @@ class PremiumSubscriptionModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasUsedTrial = SettingsService.instance.getHasUsedTrial();
+    final bool isYearlyOnly = !SettingsService.instance.isPremiumMonthlyEnabled() &&
+        SettingsService.instance.isPremiumYearlyEnabled();
+    final price = isYearlyOnly
+        ? SettingsService.instance.getPremiumYearlyPrice()
+        : SettingsService.instance.getPremiumMonthlyPrice();
+    final period = isYearlyOnly ? '/an' : '/mois';
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -61,7 +67,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      '${SettingsService.instance.getPremiumMonthlyPrice()} €',
+                      '$price €',
                       style: GoogleFonts.quicksand(
                         fontSize: 34,
                         fontWeight: FontWeight.w800,
@@ -70,7 +76,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '/mois',
+                      period,
                       style: GoogleFonts.quicksand(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -162,7 +168,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '30 jours pour tester, puis ${SettingsService.instance.getPremiumMonthlyPrice()} € /mois',
+                        '30 jours pour tester, puis $price € $period',
                         style: GoogleFonts.quicksand(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
