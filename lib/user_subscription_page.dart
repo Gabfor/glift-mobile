@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -167,37 +164,21 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
       final now = DateTime.now();
       final endAt = _periodEndDate ?? now.add(const Duration(days: 30));
 
-      final Map<String, dynamic> updateData = {
-        'cancellation': true,
-      };
-      if (_periodEndDate == null) {
-        updateData['premium_end_at'] = endAt.toIso8601String();
-      }
-
-      await widget.supabase.from('profiles').update(updateData).eq('id', user.id);
-
-      // Synchronisation Stripe de l'annulation
+      // Synchronisation Stripe ou annulation côté serveur
       final session = widget.supabase.auth.currentSession;
       if (session != null) {
-        for (final baseUrl in AuthCodeService.candidateBaseUrls) {
-          final client = HttpClient();
-          client.connectionTimeout = const Duration(seconds: 4);
-          try {
-            final uri = Uri.parse('$baseUrl/api/user/update-subscription');
-            final request = await client.postUrl(uri);
-            request.headers.contentType = ContentType.json;
-            request.headers.set('Authorization', 'Bearer ${session.accessToken}');
-            request.write(jsonEncode({
-              'plan': 'starter',
-            }));
-            final response = await request.close();
-            if (response.statusCode >= 200 && response.statusCode < 300) {
-              break;
-            }
-          } catch (_) {
-          } finally {
-            client.close();
-          }
+        try {
+          await AuthCodeService.postAuthenticated(
+            path: '/api/user/update-subscription',
+            accessToken: session.accessToken,
+            body: {'plan': 'starter'},
+          );
+        } catch (_) {
+          await AuthCodeService.postAuthenticated(
+            path: '/api/user/select-plan',
+            accessToken: session.accessToken,
+            body: {'action': 'cancel'},
+          );
         }
       }
 
@@ -227,44 +208,16 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
 
     try {
       final wasTrial = !_hasUsedTrial;
-      if (targetPlan == 'premium') {
-        final now = DateTime.now();
-        final trialEnd = now.add(const Duration(days: 30));
-        
-        final Map<String, dynamic> updateData = {
-          'subscription_plan': 'premium',
-          'subscription_interval': _isYearly ? 'yearly' : 'monthly',
-          'cancellation': false,
-          'premium_end_at': null,
-        };
-
-        if (!_hasUsedTrial) {
-          updateData['premium_trial_started_at'] = now.toIso8601String();
-          updateData['premium_trial_end_at'] = trialEnd.toIso8601String();
-          updateData['trial'] = true;
-        }
-
-        await widget.supabase.from('profiles').update(updateData).eq('id', user.id);
-
-        try {
-          await widget.supabase.from('user_subscriptions').upsert({
-            'user_id': user.id,
-            'plan': 'premium',
+      final session = widget.supabase.auth.currentSession;
+      if (session != null) {
+        await AuthCodeService.postAuthenticated(
+          path: '/api/user/select-plan',
+          accessToken: session.accessToken,
+          body: {
+            'plan': targetPlan,
             'interval': _isYearly ? 'yearly' : 'monthly',
-          });
-        } catch (_) {}
-      } else {
-        await widget.supabase.from('profiles').update({
-          'subscription_plan': 'starter',
-          'cancellation': false,
-        }).eq('id', user.id);
-
-        try {
-          await widget.supabase.from('user_subscriptions').upsert({
-            'user_id': user.id,
-            'plan': 'starter',
-          });
-        } catch (_) {}
+          },
+        );
       }
 
       await SettingsService.instance.syncFromSupabase();
@@ -304,49 +257,27 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
       final wasDowngradeToMonthly = !_isInTrial && _currentSubIsYearly && !_isYearly;
       final newInterval = _isYearly ? 'yearly' : 'monthly';
 
-      if (wasDowngradeToMonthly) {
-        await widget.supabase.from('profiles').update({
-          'subscription_interval': 'yearly',
-          'pending_subscription_interval': 'monthly',
-        }).eq('id', user.id);
-      } else {
-        await widget.supabase.from('profiles').update({
-          'subscription_interval': newInterval,
-          'pending_subscription_interval': null,
-        }).eq('id', user.id);
-      }
-
-      try {
-        await widget.supabase.from('user_subscriptions').upsert({
-          'user_id': user.id,
-          'plan': 'premium',
-          'interval': wasDowngradeToMonthly ? 'yearly' : newInterval,
-        });
-      } catch (_) {}
-
-      // Synchronisation Stripe du changement de formule
+      // Synchronisation Stripe ou mise à jour d'intervalle côté serveur
       final session = widget.supabase.auth.currentSession;
       if (session != null) {
-        for (final baseUrl in AuthCodeService.candidateBaseUrls) {
-          final client = HttpClient();
-          client.connectionTimeout = const Duration(seconds: 4);
-          try {
-            final uri = Uri.parse('$baseUrl/api/user/update-subscription');
-            final request = await client.postUrl(uri);
-            request.headers.contentType = ContentType.json;
-            request.headers.set('Authorization', 'Bearer ${session.accessToken}');
-            request.write(jsonEncode({
+        try {
+          await AuthCodeService.postAuthenticated(
+            path: '/api/user/update-subscription',
+            accessToken: session.accessToken,
+            body: {
               'plan': 'premium',
               'interval': newInterval,
-            }));
-            final response = await request.close();
-            if (response.statusCode >= 200 && response.statusCode < 300) {
-              break;
-            }
-          } catch (_) {
-          } finally {
-            client.close();
-          }
+            },
+          );
+        } catch (_) {
+          await AuthCodeService.postAuthenticated(
+            path: '/api/user/select-plan',
+            accessToken: session.accessToken,
+            body: {
+              'action': 'update_interval',
+              'interval': newInterval,
+            },
+          );
         }
       }
 

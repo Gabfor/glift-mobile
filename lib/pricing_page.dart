@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
 import 'main_page.dart';
+import 'services/auth_code_service.dart';
 import 'services/settings_service.dart';
 import 'widgets/glift_page_layout.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
@@ -54,39 +55,17 @@ class _PricingPageState extends State<PricingPage> {
     });
 
     try {
-      final user = widget.supabase.auth.currentUser;
+      final session = widget.supabase.auth.currentSession;
 
-      if (user != null) {
-        if (plan == 'premium') {
-          final now = DateTime.now();
-          final trialEnd = now.add(const Duration(days: 30));
-          await widget.supabase.from('profiles').update({
-            'subscription_plan': 'premium',
-            'subscription_interval': _isYearly ? 'yearly' : 'monthly',
-            'premium_trial_started_at': now.toIso8601String(),
-            'premium_trial_end_at': trialEnd.toIso8601String(),
-            'trial': true,
-          }).eq('id', user.id);
-
-          try {
-            await widget.supabase.from('user_subscriptions').upsert({
-              'user_id': user.id,
-              'plan': 'premium',
-              'interval': _isYearly ? 'yearly' : 'monthly',
-            });
-          } catch (_) {}
-        } else {
-          await widget.supabase.from('profiles').update({
-            'subscription_plan': 'starter',
-          }).eq('id', user.id);
-
-          try {
-            await widget.supabase.from('user_subscriptions').upsert({
-              'user_id': user.id,
-              'plan': 'starter',
-            });
-          } catch (_) {}
-        }
+      if (session != null) {
+        await AuthCodeService.postAuthenticated(
+          path: '/api/user/select-plan',
+          accessToken: session.accessToken,
+          body: {
+            'plan': plan,
+            'interval': _isYearly ? 'yearly' : 'monthly',
+          },
+        );
 
         await SettingsService.instance.syncFromSupabase();
       }

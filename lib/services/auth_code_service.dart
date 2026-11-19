@@ -114,4 +114,51 @@ class AuthCodeService {
           'Code invalide ou expiré.',
     );
   }
+
+  /// Appelle une route API authentifiée de glift-web (ex: `/api/user/select-plan`).
+  static Future<Map<String, dynamic>> postAuthenticated({
+    required String path,
+    required String accessToken,
+    required Map<String, dynamic> body,
+  }) async {
+    Object? lastError;
+    for (final baseUrl in candidateBaseUrls) {
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 5);
+      try {
+        final uri = Uri.parse('$baseUrl$path');
+        final request = await client.postUrl(uri);
+        request.headers.contentType = ContentType.json;
+        request.headers.set('Authorization', 'Bearer $accessToken');
+        request.write(jsonEncode(body));
+        final response = await request.close();
+        final rawBody = await response.transform(utf8.decoder).join();
+
+        Map<String, dynamic> data = {};
+        try {
+          data = jsonDecode(rawBody) as Map<String, dynamic>;
+        } catch (_) {
+          continue;
+        }
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return data;
+        }
+        if (response.statusCode >= 400 && data.containsKey('error')) {
+          throw Exception(data['error']);
+        }
+      } catch (e) {
+        if (e is Exception && e.toString().startsWith('Exception: ')) {
+          rethrow;
+        }
+        lastError = e;
+      } finally {
+        client.close();
+      }
+    }
+    throw Exception(
+      lastError?.toString().replaceAll('Exception: ', '') ??
+          'Impossible de contacter le serveur.',
+    );
+  }
 }
