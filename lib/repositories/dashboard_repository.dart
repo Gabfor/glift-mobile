@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/program.dart';
 import '../models/training_row.dart';
 import '../models/dashboard_preferences.dart';

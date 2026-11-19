@@ -24,7 +24,7 @@ class NumericKeypad extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          color: GliftColors.brandPrimary.withOpacity(0.1), // Light violet tint
+          color: GliftColors.brandPrimary.withValues(alpha: 0.1), // Light violet tint
           padding: const EdgeInsets.only(bottom: 20, top: 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -92,7 +92,7 @@ class _KeypadButton extends StatelessWidget {
         margin: const EdgeInsets.all(4),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(

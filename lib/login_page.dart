@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'auth/biometric_auth_service.dart';
 import 'auth/auth_repository.dart';
@@ -784,6 +783,9 @@ class _PasswordField extends StatelessWidget {
                       obscureText
                           ? 'assets/icons/visible_defaut.svg'
                           : 'assets/icons/masque_defaut.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(obscureText
+                          ? 'assets/icons/visible_defaut.svg'
+                          : 'assets/icons/masque_defaut.svg'),
                       width: 25,
                       height: 25,
                     ),
@@ -858,6 +860,7 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
               alignment: Alignment.center,
               child: SvgPicture.asset(
                 widget.iconPath,
+                colorMapper: GliftColors.svgColorMapperFor(widget.iconPath),
                 width: widget.iconSize,
                 height: widget.iconSize,
               ),

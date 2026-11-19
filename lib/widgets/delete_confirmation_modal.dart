@@ -36,6 +36,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                 Center(
                   child: SvgPicture.asset(
                     'assets/icons/message_erreur.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     height: 35,
                     width: 39,
                     fit: BoxFit.contain,
@@ -168,6 +169,7 @@ class DeleteConfirmationModal extends StatelessWidget {
             child: IconButton(
               icon: SvgPicture.asset(
                 'assets/icons/close_modal.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 25,
                 height: 25,
               ),

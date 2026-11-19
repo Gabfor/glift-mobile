@@ -270,7 +270,7 @@ class OnboardingFlow extends StatefulWidget {
 class _OnboardingFlowState extends State<OnboardingFlow> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  bool _isConnecting = false;
+  final bool _isConnecting = false;
 
   static final List<OnboardingPageData> _pages = [
     const OnboardingPageData(

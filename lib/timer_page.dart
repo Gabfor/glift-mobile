@@ -501,6 +501,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                 onTap: () => Navigator.of(context).pop(),
                 child: SvgPicture.asset(
                   'assets/icons/close.svg',
+                  colorMapper: GliftColors.iconColorMapper,
                   width: 30,
                   height: 30,
                 ),
@@ -516,6 +517,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                   onTap: _enterInlineMode,
                   child: SvgPicture.asset(
                     'assets/icons/screen_small.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 30,
                     height: 30,
                   ),
@@ -593,6 +595,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                                 height: 50,
                                 child: SvgPicture.asset(
                                   'assets/icons/pause.svg',
+                                  colorMapper: GliftColors.iconColorMapper,
                                 ),
                               ),
                             ),
@@ -606,6 +609,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                                 height: 50,
                                 child: SvgPicture.asset(
                                   _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                                  colorMapper: GliftColors.svgColorMapperFor(_isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg'),
                                 ),
                               ),
                             ),

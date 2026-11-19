@@ -577,6 +577,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                   Center(
                     child: SvgPicture.asset(
                       iconAsset,
+                      colorMapper: GliftColors.svgColorMapperFor(iconAsset),
                       height: 35,
                       width: 35,
                       fit: BoxFit.contain,
@@ -810,6 +811,9 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                   _obscureNewPassword
                                       ? 'assets/icons/masque_defaut.svg'
                                       : 'assets/icons/visible_defaut.svg',
+                                  colorMapper: GliftColors.svgColorMapperFor(_obscureNewPassword
+                                      ? 'assets/icons/masque_defaut.svg'
+                                      : 'assets/icons/visible_defaut.svg'),
                                   width: 20,
                                   height: 20,
                                 ),
@@ -888,6 +892,9 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                       _obscureConfirmPassword
                                           ? 'assets/icons/masque_defaut.svg'
                                           : 'assets/icons/visible_defaut.svg',
+                                      colorMapper: GliftColors.svgColorMapperFor(_obscureConfirmPassword
+                                          ? 'assets/icons/masque_defaut.svg'
+                                          : 'assets/icons/visible_defaut.svg'),
                                       width: 20,
                                       height: 20,
                                     ),
@@ -1047,6 +1054,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                 padding: const EdgeInsets.all(6.0),
                 child: SvgPicture.asset(
                   'assets/icons/close_modal.svg',
+                  colorMapper: GliftColors.iconColorMapper,
                   width: 20,
                   height: 20,
                 ),
@@ -1089,6 +1097,7 @@ class _PasswordCriteriaItem extends StatelessWidget {
         ),
         SvgPicture.asset(
           iconPath,
+          colorMapper: GliftColors.svgColorMapperFor(iconPath),
           width: 16,
           height: 16,
         ),

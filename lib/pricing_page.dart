@@ -304,6 +304,7 @@ class _PlanCard extends StatelessWidget {
                 // Icone Diamant
                 SvgPicture.asset(
                   iconAsset,
+                  colorMapper: GliftColors.svgColorMapperFor(iconAsset),
                   width: 44,
                   height: 36,
                   fit: BoxFit.contain,
@@ -361,6 +362,9 @@ class _PlanCard extends StatelessWidget {
                             feature.isEnabled
                                 ? 'assets/icons/plan_check_green.svg'
                                 : 'assets/icons/plan_check_grey.svg',
+                            colorMapper: GliftColors.svgColorMapperFor(feature.isEnabled
+                                ? 'assets/icons/plan_check_green.svg'
+                                : 'assets/icons/plan_check_grey.svg'),
                             width: 18,
                             height: 18,
                           ),
@@ -716,7 +720,7 @@ class _IntervalToggle extends StatelessWidget {
           child: Switch.adaptive(
             value: isYearly,
             onChanged: onChanged,
-            activeColor: GliftColors.brandPrimary,
+            activeThumbColor: GliftColors.brandPrimary,
             activeTrackColor: GliftColors.focusRing,
           ),
         ),

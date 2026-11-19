@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class GliftLoader extends StatefulWidget {
   const GliftLoader({
@@ -44,6 +45,7 @@ class _GliftLoaderState extends State<GliftLoader>
       turns: _controller,
       child: SvgPicture.asset(
         'assets/icons/loader.svg',
+        colorMapper: GliftColors.iconColorMapper,
         width: widget.size,
         height: widget.size,
       ),

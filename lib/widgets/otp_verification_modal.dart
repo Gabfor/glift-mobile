@@ -259,6 +259,9 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                     _hasError
                         ? 'assets/icons/cadena_rouge.svg'
                         : 'assets/icons/cadena_violet.svg',
+                    colorMapper: GliftColors.svgColorMapperFor(_hasError
+                        ? 'assets/icons/cadena_rouge.svg'
+                        : 'assets/icons/cadena_violet.svg'),
                     height: 35,
                     width: 35,
                     fit: BoxFit.contain,
@@ -492,6 +495,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
             child: IconButton(
               icon: SvgPicture.asset(
                 'assets/icons/close_modal.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 25,
                 height: 25,
               ),

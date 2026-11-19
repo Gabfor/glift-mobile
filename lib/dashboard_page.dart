@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -602,7 +602,7 @@ class DashboardPageState extends State<DashboardPage> {
                         style: GoogleFonts.quicksand(
                           color: isSelected
                               ? Colors.white
-                              : Colors.white.withOpacity(0.5),
+                              : Colors.white.withValues(alpha: 0.5),
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -857,7 +857,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         });
       }
     } catch (e) {
-      print('Error loading history: $e');
+      debugPrint('Error loading history: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -1003,6 +1003,9 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                       widget.settings.curveType.startsWith('poids')
                           ? 'assets/icons/Poids.svg'
                           : 'assets/icons/Rép.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(widget.settings.curveType.startsWith('poids')
+                          ? 'assets/icons/Poids.svg'
+                          : 'assets/icons/Rép.svg'),
                       width: 20,
                       height: 20,
                     ),
@@ -1208,8 +1211,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-                                          GliftColors.brandPrimary.withOpacity(0.2),
-                                          GliftColors.brandPrimary.withOpacity(0.0),
+                                          GliftColors.brandPrimary.withValues(alpha: 0.2),
+                                          GliftColors.brandPrimary.withValues(alpha: 0.0),
                                         ],
                                       ),
                                     ),

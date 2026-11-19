@@ -162,6 +162,7 @@ class GliftModal extends StatelessWidget {
     } else if (iconAsset != null) {
       headerIcon = SvgPicture.asset(
         iconAsset!,
+        colorMapper: GliftColors.svgColorMapperFor(iconAsset!),
         height: iconHeight,
         width: iconWidth,
         fit: BoxFit.contain,
@@ -357,6 +358,7 @@ class GliftModal extends StatelessWidget {
                   padding: const EdgeInsets.all(6.0),
                   child: SvgPicture.asset(
                     'assets/icons/close_modal.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 20,
                     height: 20,
                   ),

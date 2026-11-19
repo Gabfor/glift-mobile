@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/program.dart';
 import '../models/training.dart';
@@ -308,7 +307,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
 
     final result = await Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => ActiveTrainingPage(
+        pageBuilder: (_, _, _) => ActiveTrainingPage(
           training: _currentTraining,
           supabase: widget.supabase,
           authRepository: widget.authRepository,
@@ -316,7 +315,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
-        transitionsBuilder: (_, __, ___, child) => child,
+        transitionsBuilder: (_, _, _, child) => child,
       ),
     );
 
@@ -516,6 +515,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
               child: Center(
                 child: SvgPicture.asset(
                   'assets/icons/timer_libre.svg',
+                  colorMapper: GliftColors.iconColorMapper,
                   width: 24,
                   height: 24,
                 ),
@@ -748,7 +748,7 @@ class _TrainingDetailsPageState extends State<TrainingDetailsPage> {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
-                    color: GliftColors.textBody.withOpacity(0.15),
+                    color: GliftColors.textBody.withValues(alpha: 0.15),
                     blurRadius: 21,
                     offset: const Offset(0, 5),
                   ),
@@ -1515,6 +1515,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
               const SizedBox(width: 8),
               SvgPicture.asset(
                 'assets/icons/locked.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 20,
                 height: 20,
                 colorFilter: ColorFilter.mode(GliftColors.greyMedium, BlendMode.srcIn),
@@ -1552,6 +1553,13 @@ class _ExerciseCardState extends State<_ExerciseCard>
                             : (hasRest
                                 ? 'assets/icons/timer_on.svg'
                                 : 'assets/icons/timer_off.svg'),
+                        colorMapper: GliftColors.svgColorMapperFor(widget.row.isHidden
+                            ? (hasRest
+                                ? 'assets/icons/timer_on_grey.svg'
+                                : 'assets/icons/timer_off_grey.svg')
+                            : (hasRest
+                                ? 'assets/icons/timer_on.svg'
+                                : 'assets/icons/timer_off.svg')),
                         width: 24,
                         height: 24,
                       ),
@@ -1569,6 +1577,13 @@ class _ExerciseCardState extends State<_ExerciseCard>
                             : (hasNote
                                 ? 'assets/icons/note_on.svg'
                                 : 'assets/icons/note_off.svg'),
+                        colorMapper: GliftColors.svgColorMapperFor(widget.row.isHidden
+                            ? (hasNote
+                                ? 'assets/icons/note_on_grey.svg'
+                                : 'assets/icons/note_off_grey.svg')
+                            : (hasNote
+                                ? 'assets/icons/note_on.svg'
+                                : 'assets/icons/note_off.svg')),
                         width: 24,
                         height: 24,
                       ),
@@ -1601,7 +1616,6 @@ class _ExerciseCardState extends State<_ExerciseCard>
               : _visualsForState(_EffortState.neutral);
 
           // Override for locked or hidden
-          final isColored = visuals.backgroundColor != Colors.white;
           final lockedColor = GliftColors.surfaceHighlight;
 
           final bgColor = isGreyed ? lockedColor : visuals.backgroundColor;
@@ -1736,6 +1750,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
                   (widget.row.series > 1 && !widget.row.locked)
                       ? (widget.row.isHidden ? 'assets/icons/supp_exo_grey.svg' : 'assets/icons/supp_exo_purple.svg')
                       : 'assets/icons/supp_exo_grey.svg',
+                  colorMapper: GliftColors.svgColorMapperFor((widget.row.series > 1 && !widget.row.locked)
+                      ? (widget.row.isHidden ? 'assets/icons/supp_exo_grey.svg' : 'assets/icons/supp_exo_purple.svg')
+                      : 'assets/icons/supp_exo_grey.svg'),
                   width: 24,
                   height: 24,
                 ),
@@ -1747,6 +1764,9 @@ class _ExerciseCardState extends State<_ExerciseCard>
                   (widget.row.series >= 6 || widget.row.locked)
                       ? 'assets/icons/add_exo_grey.svg'
                       : (widget.row.isHidden ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg'),
+                  colorMapper: GliftColors.svgColorMapperFor((widget.row.series >= 6 || widget.row.locked)
+                      ? 'assets/icons/add_exo_grey.svg'
+                      : (widget.row.isHidden ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg')),
                   width: 24,
                   height: 24,
                 ),
@@ -1890,6 +1910,7 @@ class _StartButton extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 SvgPicture.asset(
                                   'assets/icons/arrow.svg',
+                                  colorMapper: GliftColors.iconColorMapper,
                                   width: 26,
                                   height: 26,
                                 ),
@@ -1900,6 +1921,7 @@ class _StartButton extends StatelessWidget {
                       : Center(
                           child: SvgPicture.asset(
                             'assets/icons/arrow.svg',
+                            colorMapper: GliftColors.iconColorMapper,
                             key: const ValueKey('collapsed_arrow'),
                             width: 26,
                             height: 26,
@@ -1990,6 +2012,7 @@ class _SupersetGroupContainer extends StatelessWidget {
                   onTap: (series > 1 && !isLocked) ? onRemoveSet : null,
                   child: SvgPicture.asset(
                     (series > 1 && !isLocked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg',
+                    colorMapper: GliftColors.svgColorMapperFor((series > 1 && !isLocked) ? 'assets/icons/supp_exo_purple.svg' : 'assets/icons/supp_exo_grey.svg'),
                     width: 24,
                     height: 24,
                   ),
@@ -1999,6 +2022,7 @@ class _SupersetGroupContainer extends StatelessWidget {
                   onTap: (series >= 6 || isLocked) ? null : onAddSet,
                   child: SvgPicture.asset(
                     (series >= 6 || isLocked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg',
+                    colorMapper: GliftColors.svgColorMapperFor((series >= 6 || isLocked) ? 'assets/icons/add_exo_grey.svg' : 'assets/icons/add_exo_purple.svg'),
                     width: 24,
                     height: 24,
                   ),

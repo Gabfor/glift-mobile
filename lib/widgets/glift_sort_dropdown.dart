@@ -74,6 +74,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                     children: [
                       SvgPicture.asset(
                         'assets/icons/tri.svg',
+                        colorMapper: GliftColors.iconColorMapper,
                         width: 16,
                         height: 14,
                       ),
@@ -100,6 +101,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                   curve: Curves.easeInOut,
                   child: SvgPicture.asset(
                     'assets/icons/chevron.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 9,
                     height: 6,
                     colorFilter: ColorFilter.mode(

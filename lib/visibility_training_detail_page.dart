@@ -425,7 +425,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               value: value,
               onChanged: onChanged,
-              activeColor: GliftColors.focusRing,
+              activeThumbColor: GliftColors.focusRing,
             ),
           ),
         ],

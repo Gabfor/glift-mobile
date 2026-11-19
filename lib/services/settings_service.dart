@@ -359,9 +359,9 @@ class SettingsService {
     String? url = _prefs.getString(_kLogoUrl);
     if (url != null) {
       if (url.startsWith('https://')) {
-        url = 'https://' + url.substring(8).replaceAll('//', '/');
+        url = 'https://${url.substring(8).replaceAll('//', '/')}';
       } else if (url.startsWith('http://')) {
-        url = 'http://' + url.substring(7).replaceAll('//', '/');
+        url = 'http://${url.substring(7).replaceAll('//', '/')}';
       } else {
         url = url.replaceAll('//', '/');
       }
@@ -418,7 +418,7 @@ class SettingsService {
           'show_materiel': enabled,
         });
       } catch (e) {
-        print('Error saving show_materiel to Supabase: $e');
+        debugPrint('Error saving show_materiel to Supabase: $e');
       }
     }
   }
@@ -465,7 +465,7 @@ class SettingsService {
           'weight_unit': dbUnit,
         });
       } catch (e) {
-        print('Error saving weight unit to Supabase: $e');
+        debugPrint('Error saving weight unit to Supabase: $e');
       }
     }
   }
@@ -700,7 +700,7 @@ class SettingsService {
           'show_effort': show,
         });
       } catch (e) {
-        print('Error saving show_effort to Supabase: $e');
+        debugPrint('Error saving show_effort to Supabase: $e');
       }
     }
   }
@@ -724,7 +724,7 @@ class SettingsService {
           'show_repos': show,
         });
       } catch (e) {
-        print('Error saving show_repos to Supabase: $e');
+        debugPrint('Error saving show_repos to Supabase: $e');
       }
     }
   }
@@ -749,7 +749,7 @@ class SettingsService {
           'show_link': show, // Column name is show_link (singular)
         });
       } catch (e) {
-        print('Error saving show_link to Supabase: $e');
+        debugPrint('Error saving show_link to Supabase: $e');
       }
     }
   }
@@ -779,7 +779,7 @@ class SettingsService {
           'show_notes': show,
         });
       } catch (e) {
-        print('Error saving show_notes to Supabase: $e');
+        debugPrint('Error saving show_notes to Supabase: $e');
       }
     }
   }
@@ -804,7 +804,7 @@ class SettingsService {
           'show_suivi': show,
         });
       } catch (e) {
-        print('Error saving show_suivi to Supabase: $e');
+        debugPrint('Error saving show_suivi to Supabase: $e');
       }
     }
   }
@@ -829,7 +829,7 @@ class SettingsService {
           'show_superset': show,
         });
       } catch (e) {
-        print('Error saving show_superset to Supabase: $e');
+        debugPrint('Error saving show_superset to Supabase: $e');
       }
     }
   }
@@ -854,7 +854,7 @@ class SettingsService {
           'show_summary': show,
         });
       } catch (e) {
-        print('Error saving show_summary to Supabase: $e');
+        debugPrint('Error saving show_summary to Supabase: $e');
       }
     }
   }
@@ -879,7 +879,7 @@ class SettingsService {
           'show_goals': show,
         });
       } catch (e) {
-        print('Error saving show_goals to Supabase: $e');
+        debugPrint('Error saving show_goals to Supabase: $e');
       }
     }
   }
@@ -907,7 +907,7 @@ class SettingsService {
           'newsletter': enabled,
         });
       } catch (e) {
-        print('Error saving newsletter to Supabase: $e');
+        debugPrint('Error saving newsletter to Supabase: $e');
       }
     }
   }
@@ -929,7 +929,7 @@ class SettingsService {
           'survey': enabled,
         });
       } catch (e) {
-        print('Error saving survey to Supabase: $e');
+        debugPrint('Error saving survey to Supabase: $e');
       }
     }
   }
@@ -951,7 +951,7 @@ class SettingsService {
           'newsletter_shop': enabled,
         });
       } catch (e) {
-        print('Error saving newsletter_shop to Supabase: $e');
+        debugPrint('Error saving newsletter_shop to Supabase: $e');
       }
     }
   }
@@ -973,7 +973,7 @@ class SettingsService {
           'newsletter_store': enabled,
         });
       } catch (e) {
-        print('Error saving newsletter_store to Supabase: $e');
+        debugPrint('Error saving newsletter_store to Supabase: $e');
       }
     }
   }

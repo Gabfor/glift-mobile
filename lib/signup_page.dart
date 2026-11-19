@@ -751,6 +751,7 @@ class _CreateAccountButton extends StatelessWidget {
                       offset: const Offset(0, -1.5),
                       child: SvgPicture.asset(
                         'assets/icons/locked.svg',
+                        colorMapper: GliftColors.iconColorMapper,
                         width: 20,
                         height: 20,
                         colorFilter: ColorFilter.mode(
@@ -1023,6 +1024,9 @@ class _PasswordField extends StatelessWidget {
                       obscureText
                           ? 'assets/icons/visible_defaut.svg'
                           : 'assets/icons/masque_defaut.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(obscureText
+                          ? 'assets/icons/visible_defaut.svg'
+                          : 'assets/icons/masque_defaut.svg'),
                       width: 25,
                       height: 25,
                     ),
@@ -1120,6 +1124,7 @@ class _PasswordCriteriaItem extends StatelessWidget {
         ),
         SvgPicture.asset(
           iconPath,
+          colorMapper: GliftColors.svgColorMapperFor(iconPath),
           width: 16,
           height: 16,
         ),
@@ -1177,6 +1182,7 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
               alignment: Alignment.center,
               child: SvgPicture.asset(
                 widget.iconPath,
+                colorMapper: GliftColors.svgColorMapperFor(widget.iconPath),
                 width: widget.iconSize,
                 height: widget.iconSize,
               ),

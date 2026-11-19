@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
@@ -217,6 +217,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       _obscurePassword
                           ? 'assets/icons/masque_defaut.svg'
                           : 'assets/icons/visible_defaut.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(_obscurePassword
+                          ? 'assets/icons/masque_defaut.svg'
+                          : 'assets/icons/visible_defaut.svg'),
                       width: 20,
                       height: 20,
                     ),
@@ -309,6 +312,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       _obscureConfirmPassword
                           ? 'assets/icons/masque_defaut.svg'
                           : 'assets/icons/visible_defaut.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(_obscureConfirmPassword
+                          ? 'assets/icons/masque_defaut.svg'
+                          : 'assets/icons/visible_defaut.svg'),
                       width: 20,
                       height: 20,
                     ),
@@ -397,6 +403,7 @@ class _CriteriaItem extends StatelessWidget {
         ),
         SvgPicture.asset(
           valid ? 'assets/icons/check_green.svg' : 'assets/icons/check_grey.svg',
+          colorMapper: GliftColors.svgColorMapperFor(valid ? 'assets/icons/check_green.svg' : 'assets/icons/check_grey.svg'),
           width: 16,
           height: 16,
         ),

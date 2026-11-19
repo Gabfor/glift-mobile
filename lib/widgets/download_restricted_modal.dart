@@ -27,6 +27,7 @@ class DownloadRestrictedModal extends StatelessWidget {
                 Center(
                   child: SvgPicture.asset(
                     'assets/icons/message.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     height: 35,
                     width: 39,
                     fit: BoxFit.contain,
@@ -164,6 +165,7 @@ class DownloadRestrictedModal extends StatelessWidget {
             child: IconButton(
               icon: SvgPicture.asset(
                 'assets/icons/close_modal.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 25,
                 height: 25,
               ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
@@ -191,7 +191,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
               onTap: _dismiss,
               behavior: HitTestBehavior.opaque, // Ensure clicks are caught even if transparent parts exist
               child: Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -228,6 +228,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                            // Top Icon (Check)
                            SvgPicture.asset(
                              'assets/icons/check_green.svg',
+                             colorMapper: GliftColors.iconColorMapper,
                              width: 35,
                              height: 35,
                            ),
@@ -334,6 +335,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                               children: [
                                                  SvgPicture.asset(
                                                     'assets/icons/trophy_gold.svg',
+                                                    colorMapper: GliftColors.iconColorMapper,
                                                     height: 20,
                                                  ),
                                                  const SizedBox(width: 12),
@@ -434,6 +436,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                            alignment: Alignment.center,
                            child: SvgPicture.asset(
                               'assets/icons/close_modal.svg',
+                              colorMapper: GliftColors.iconColorMapper,
                               width: 24,
                               height: 24,
                             ),
@@ -462,6 +465,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
       children: [
         SvgPicture.asset(
           icon,
+          colorMapper: GliftColors.svgColorMapperFor(icon),
           width: 24,
           height: 24,
           // Removed colorFilter to use original SVG colors
@@ -491,6 +495,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                     const SizedBox(width: 4),
                     SvgPicture.asset(
                       comparisonIconPath,
+                      colorMapper: GliftColors.svgColorMapperFor(comparisonIconPath),
                       width: 12,
                       height: 12,
                     ),

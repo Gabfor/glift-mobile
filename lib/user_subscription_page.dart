@@ -325,6 +325,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                     // Purple Message Badge
                     SvgPicture.asset(
                       'assets/icons/message.svg',
+                      colorMapper: GliftColors.iconColorMapper,
                       width: 39,
                       height: 35,
                       fit: BoxFit.contain,
@@ -467,6 +468,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                 child: IconButton(
                   icon: SvgPicture.asset(
                     'assets/icons/close_modal.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 25,
                     height: 25,
                   ),
@@ -508,6 +510,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                     // Success Badge
                     SvgPicture.asset(
                       'assets/icons/message_succes.svg',
+                      colorMapper: GliftColors.iconColorMapper,
                       width: 39,
                       height: 35,
                       fit: BoxFit.contain,
@@ -582,6 +585,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                 child: IconButton(
                   icon: SvgPicture.asset(
                     'assets/icons/close_modal.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 25,
                     height: 25,
                   ),
@@ -621,6 +625,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                     // Red Exclamation Badge
                     SvgPicture.asset(
                       'assets/icons/message_erreur.svg',
+                      colorMapper: GliftColors.iconColorMapper,
                       width: 39,
                       height: 35,
                       fit: BoxFit.contain,
@@ -757,6 +762,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                 child: IconButton(
                   icon: SvgPicture.asset(
                     'assets/icons/close_modal.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 25,
                     height: 25,
                   ),
@@ -796,6 +802,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                     // Purple Exclamation Badge
                     SvgPicture.asset(
                       'assets/icons/message.svg',
+                      colorMapper: GliftColors.iconColorMapper,
                       width: 39,
                       height: 35,
                       fit: BoxFit.contain,
@@ -866,6 +873,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                 child: IconButton(
                   icon: SvgPicture.asset(
                     'assets/icons/close_modal.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     width: 25,
                     height: 25,
                   ),
@@ -1237,6 +1245,7 @@ class _SubscriptionCardContainer extends StatelessWidget {
           // Diamond Icon
           SvgPicture.asset(
             iconAsset,
+            colorMapper: GliftColors.svgColorMapperFor(iconAsset),
             width: 44,
             height: 36,
             fit: BoxFit.contain,
@@ -1305,6 +1314,7 @@ class _SubscriptionCardContainer extends StatelessWidget {
                   children: [
                     SvgPicture.asset(
                       checkIcon,
+                      colorMapper: GliftColors.svgColorMapperFor(checkIcon),
                       width: 18,
                       height: 18,
                     ),

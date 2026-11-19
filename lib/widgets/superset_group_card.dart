@@ -222,7 +222,7 @@ class _ActionButtonState extends State<ActionButton> {
             boxShadow: _isPressed
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -233,6 +233,7 @@ class _ActionButtonState extends State<ActionButton> {
             children: [
               SvgPicture.asset(
                 widget.icon,
+                colorMapper: GliftColors.svgColorMapperFor(widget.icon),
                 width: widget.iconWidth,
                 height: widget.iconHeight,
                 colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),

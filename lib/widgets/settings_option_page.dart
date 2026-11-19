@@ -280,6 +280,7 @@ class _SettingsOptionTile extends StatelessWidget {
                           )
                         : SvgPicture.asset(
                             iconPath!,
+                            colorMapper: GliftColors.svgColorMapperFor(iconPath!),
                             fit: BoxFit.contain,
                           ),
                   ),

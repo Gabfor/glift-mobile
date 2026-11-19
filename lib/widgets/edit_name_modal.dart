@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
@@ -103,6 +102,7 @@ class _EditNameModalState extends State<EditNameModal> {
                 Center(
                   child: SvgPicture.asset(
                     'assets/icons/edit_big.svg',
+                    colorMapper: GliftColors.iconColorMapper,
                     height: 35,
                     width: 35,
                     fit: BoxFit.contain,
@@ -166,7 +166,7 @@ class _EditNameModalState extends State<EditNameModal> {
                     boxShadow: _isFocused
                         ? [
                             BoxShadow(
-                              color: GliftColors.focusRing.withOpacity(0.5),
+                              color: GliftColors.focusRing.withValues(alpha: 0.5),
                               offset: Offset.zero,
                               blurRadius: 0,
                               spreadRadius: 0.5,
@@ -225,6 +225,7 @@ class _EditNameModalState extends State<EditNameModal> {
                               },
                               child: SvgPicture.asset(
                                 'assets/icons/cross_reset.svg',
+                                colorMapper: GliftColors.iconColorMapper,
                                 width: 23,
                                 height: 23,
                                 colorFilter: ColorFilter.mode(
@@ -263,7 +264,7 @@ class _EditNameModalState extends State<EditNameModal> {
                       boxShadow: _isLinkFocused
                           ? [
                               BoxShadow(
-                                color: GliftColors.focusRing.withOpacity(0.5),
+                                color: GliftColors.focusRing.withValues(alpha: 0.5),
                                 offset: Offset.zero,
                                 blurRadius: 0,
                                 spreadRadius: 0.5,
@@ -321,6 +322,7 @@ class _EditNameModalState extends State<EditNameModal> {
                                 },
                                 child: SvgPicture.asset(
                                   'assets/icons/cross_reset.svg',
+                                  colorMapper: GliftColors.iconColorMapper,
                                   width: 23,
                                   height: 23,
                                   colorFilter: ColorFilter.mode(
@@ -419,6 +421,7 @@ class _EditNameModalState extends State<EditNameModal> {
             child: IconButton(
               icon: SvgPicture.asset(
                 'assets/icons/close_modal.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 25,
                 height: 25,
               ),
@@ -436,6 +439,7 @@ class _EditNameModalState extends State<EditNameModal> {
               child: IconButton(
                 icon: SvgPicture.asset(
                   widget.isDeleteEnabled ? 'assets/icons/delete_purple.svg' : 'assets/icons/delete_bin_grey.svg',
+                  colorMapper: GliftColors.svgColorMapperFor(widget.isDeleteEnabled ? 'assets/icons/delete_purple.svg' : 'assets/icons/delete_bin_grey.svg'),
                   width: 25,
                   height: 25,
                 ),

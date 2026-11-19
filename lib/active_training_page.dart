@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'utils/dialog_utils.dart';
 import 'package:glift_mobile/models/training.dart';
@@ -1123,6 +1122,9 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                   _inlineTimerData != null
                       ? 'assets/icons/timer_on.svg'
                       : 'assets/icons/timer_libre.svg',
+                  colorMapper: GliftColors.svgColorMapperFor(_inlineTimerData != null
+                      ? 'assets/icons/timer_on.svg'
+                      : 'assets/icons/timer_libre.svg'),
                   width: 24,
                   height: 24,
                 ),
@@ -1808,6 +1810,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
                           child: Center(
                             child: SvgPicture.asset(
                               'assets/icons/screen_big.svg',
+                              colorMapper: GliftColors.iconColorMapper,
                               width: 30,
                               height: 30,
                             ),
@@ -1827,6 +1830,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
                           child: Center(
                             child: SvgPicture.asset(
                               'assets/icons/close.svg',
+                              colorMapper: GliftColors.iconColorMapper,
                               width: 30,
                               height: 30,
                             ),
@@ -1863,6 +1867,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
                               child: Center(
                                 child: SvgPicture.asset(
                                   'assets/icons/pause.svg',
+                                  colorMapper: GliftColors.iconColorMapper,
                                   width: 38,
                                   height: 38,
                                 ),
@@ -1879,6 +1884,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
                               child: Center(
                                 child: SvgPicture.asset(
                                   _isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg',
+                                  colorMapper: GliftColors.svgColorMapperFor(_isRunning ? 'assets/icons/stop.svg' : 'assets/icons/play.svg'),
                                   width: 38,
                                   height: 38,
                                 ),
@@ -2232,6 +2238,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
           const SizedBox(width: 20),
           SvgPicture.asset(
             'assets/icons/locked.svg',
+            colorMapper: GliftColors.iconColorMapper,
             width: 24,
             height: 24,
             colorFilter: ColorFilter.mode(GliftColors.greyMedium, BlendMode.srcIn),
@@ -2253,6 +2260,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     widget.row.isHidden
                         ? (hasRest ? 'assets/icons/timer_on_grey.svg' : 'assets/icons/timer_off_grey.svg')
                         : (hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg'),
+                    colorMapper: GliftColors.svgColorMapperFor(widget.row.isHidden
+                        ? (hasRest ? 'assets/icons/timer_on_grey.svg' : 'assets/icons/timer_off_grey.svg')
+                        : (hasRest ? 'assets/icons/timer_on.svg' : 'assets/icons/timer_off.svg')),
                     width: 24,
                     height: 24,
                   ),
@@ -2266,6 +2276,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     widget.row.isHidden
                         ? (hasNote ? 'assets/icons/note_on_grey.svg' : 'assets/icons/note_off_grey.svg')
                         : (hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg'),
+                    colorMapper: GliftColors.svgColorMapperFor(widget.row.isHidden
+                        ? (hasNote ? 'assets/icons/note_on_grey.svg' : 'assets/icons/note_off_grey.svg')
+                        : (hasNote ? 'assets/icons/note_on.svg' : 'assets/icons/note_off.svg')),
                     width: 24,
                     height: 24,
                   ),
@@ -2309,7 +2322,6 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
 
-          final isColored = visuals.backgroundColor != Colors.white;
           final lockedColor = GliftColors.surfaceHighlight;
 
           final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
@@ -2457,6 +2469,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                             isLocked
                               ? 'assets/icons/Suivi_gris.svg' // Or a locked version if exists? Using gray as fallback
                               : (isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg'),
+                            colorMapper: GliftColors.svgColorMapperFor(isLocked
+                              ? 'assets/icons/Suivi_gris.svg' // Or a locked version if exists? Using gray as fallback
+                              : (isCompleted ? 'assets/icons/Suivi_vert.svg' : 'assets/icons/Suivi_gris.svg')),
                             width: 24,
                             height: 24,
                             colorFilter: isLocked 
@@ -2686,6 +2701,7 @@ class _FinishButton extends StatelessWidget {
             children: [
               SvgPicture.asset(
                 'assets/icons/check_small.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 16,
                 height: 16,
                 colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'utils/dialog_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -692,6 +692,9 @@ class _ShopPageState extends State<ShopPage> {
                                             _hasActiveFilters
                                                 ? 'assets/icons/filtre_green.svg'
                                                 : 'assets/icons/filtre_red.svg',
+                                            colorMapper: GliftColors.svgColorMapperFor(_hasActiveFilters
+                                                ? 'assets/icons/filtre_green.svg'
+                                                : 'assets/icons/filtre_red.svg'),
                                             height: 16,
                                             width: 16,
                                           ),
@@ -733,6 +736,9 @@ class _ShopPageState extends State<ShopPage> {
                                           _favoritesOnly
                                               ? 'assets/icons/coeur_rouge.svg'
                                               : 'assets/icons/coeur_gris.svg',
+                                          colorMapper: GliftColors.svgColorMapperFor(_favoritesOnly
+                                              ? 'assets/icons/coeur_rouge.svg'
+                                              : 'assets/icons/coeur_gris.svg'),
                                           height: 24,
                                           width: 24,
                                           alignment: Alignment.center,
@@ -1051,6 +1057,7 @@ class _ShopOfferCard extends StatelessWidget {
                       children: [
                         SvgPicture.asset(
                           'assets/icons/deal.svg',
+                          colorMapper: GliftColors.iconColorMapper,
                           width: 20,
                           height: 20,
                           colorFilter: const ColorFilter.mode(
@@ -1104,9 +1111,15 @@ class _ShopOfferCard extends StatelessWidget {
   Widget _buildGenderTag(String gender) {
     String? asset;
     final g = gender.toLowerCase();
-    if (g == 'femme') asset = 'assets/icons/femme.svg';
-    else if (g == 'homme') asset = 'assets/icons/homme.svg';
-    else if (g == 'tous' || g == 'mixte' || g == 'unisexe') asset = 'assets/icons/mixte.svg';
+    if (g == 'femme') {
+      asset = 'assets/icons/femme.svg';
+    }
+    else if (g == 'homme') {
+      asset = 'assets/icons/homme.svg';
+    }
+    else if (g == 'tous' || g == 'mixte' || g == 'unisexe') {
+      asset = 'assets/icons/mixte.svg';
+    }
 
     if (asset != null) {
       return Container(
@@ -1120,6 +1133,7 @@ class _ShopOfferCard extends StatelessWidget {
           widthFactor: 1.0,
           child: SvgPicture.asset(
             asset,
+            colorMapper: GliftColors.svgColorMapperFor(asset),
             width: 14,
             height: 14,
           ),
@@ -1238,7 +1252,7 @@ class _ShopOfferCard extends StatelessWidget {
   }
 
   Widget _buildStatusIcon(String assetPath) {
-    return SvgPicture.asset(assetPath, width: 20, height: 20);
+    return SvgPicture.asset(assetPath, colorMapper: GliftColors.svgColorMapperFor(assetPath), width: 20, height: 20);
   }
 }
 
@@ -1293,6 +1307,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
         children: [
           SvgPicture.asset(
             'assets/icons/check_green.svg',
+            colorMapper: GliftColors.iconColorMapper,
             width: 20,
             height: 20,
           ),
@@ -1312,7 +1327,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
     if (_timeLeft == null || _timeLeft!.isNegative) {
       return Row(
         children: [
-          SvgPicture.asset('assets/icons/check_red.svg', width: 20, height: 20),
+          SvgPicture.asset('assets/icons/check_red.svg', colorMapper: GliftColors.iconColorMapper, width: 20, height: 20),
           const SizedBox(width: 8),
           Text(
             'Offre expirée',
@@ -1339,7 +1354,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
 
       return Row(
         children: [
-          SvgPicture.asset(iconAsset, width: 20, height: 20),
+          SvgPicture.asset(iconAsset, colorMapper: GliftColors.svgColorMapperFor(iconAsset), width: 20, height: 20),
           const SizedBox(width: 8),
           Text(
             'Expire dans :',
@@ -1369,7 +1384,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
 
     return Row(
       children: [
-        SvgPicture.asset('assets/icons/check_red.svg', width: 20, height: 20),
+        SvgPicture.asset('assets/icons/check_red.svg', colorMapper: GliftColors.iconColorMapper, width: 20, height: 20),
         const SizedBox(width: 8),
         Text(
           'Expire dans :',
@@ -1464,6 +1479,7 @@ class _HeartbeatIconState extends State<_HeartbeatIcon> with SingleTickerProvide
         scale: _scaleAnimation,
         child: SvgPicture.asset(
           widget.isFavorite ? 'assets/icons/coeur_rouge.svg' : 'assets/icons/coeur_gris.svg',
+          colorMapper: GliftColors.svgColorMapperFor(widget.isFavorite ? 'assets/icons/coeur_rouge.svg' : 'assets/icons/coeur_gris.svg'),
           width: 24,
           height: 24,
         ),

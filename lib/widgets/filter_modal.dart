@@ -105,6 +105,7 @@ class _FilterModalState extends State<FilterModal> {
                     onTap: () => Navigator.pop(context),
                     child: SvgPicture.asset(
                       'assets/icons/close_modal.svg',
+                      colorMapper: GliftColors.iconColorMapper,
                       width: 24,
                       height: 24,
                     ),
@@ -117,6 +118,9 @@ class _FilterModalState extends State<FilterModal> {
                       _hasActiveFilters
                           ? 'assets/icons/filtre_green.svg'
                           : 'assets/icons/filtre_red.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(_hasActiveFilters
+                          ? 'assets/icons/filtre_green.svg'
+                          : 'assets/icons/filtre_red.svg'),
                       width: 16,
                       height: 16,
                     ),
@@ -186,6 +190,9 @@ class _FilterModalState extends State<FilterModal> {
                                       isSelected
                                           ? 'assets/icons/checkbox_checked.svg'
                                           : 'assets/icons/checkbox.svg',
+                                      colorMapper: GliftColors.svgColorMapperFor(isSelected
+                                          ? 'assets/icons/checkbox_checked.svg'
+                                          : 'assets/icons/checkbox.svg'),
                                       width: 18,
                                       height: 18,
                                     ),

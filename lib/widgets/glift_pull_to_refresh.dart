@@ -4,6 +4,7 @@ import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class GliftPullToRefresh extends StatefulWidget {
   final Widget child;
@@ -118,6 +119,7 @@ class _GliftPullToRefreshState extends State<GliftPullToRefresh>
         turns: _rotationController,
         child: SvgPicture.asset(
           'assets/icons/loader.svg',
+          colorMapper: GliftColors.iconColorMapper,
           width: 32,
           height: 32,
         ),
@@ -132,6 +134,7 @@ class _GliftPullToRefreshState extends State<GliftPullToRefresh>
         angle: controller.value * 2 * pi,
         child: SvgPicture.asset(
           'assets/icons/loader.svg',
+          colorMapper: GliftColors.iconColorMapper,
           width: 32,
           height: 32,
         ),

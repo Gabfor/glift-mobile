@@ -190,6 +190,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
             child: IconButton(
               icon: SvgPicture.asset(
                 'assets/icons/close_modal.svg',
+                colorMapper: GliftColors.iconColorMapper,
                 width: 25,
                 height: 25,
               ),

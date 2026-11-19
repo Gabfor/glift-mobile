@@ -363,7 +363,7 @@ class _VisibilityProgramDetailPageState extends State<VisibilityProgramDetailPag
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               value: value,
               onChanged: onChanged,
-              activeColor: GliftColors.focusRing,
+              activeThumbColor: GliftColors.focusRing,
             ),
           ),
         ],

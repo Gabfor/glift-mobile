@@ -733,6 +733,7 @@ class _InfoTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(2),
                           child: SvgPicture.asset(
                             flagIconPath!,
+                            colorMapper: GliftColors.svgColorMapperFor(flagIconPath!),
                             fit: BoxFit.contain,
                           ),
                         ),

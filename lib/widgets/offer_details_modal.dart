@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/shop_offer.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
 
@@ -120,6 +120,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                     onTap: () => Navigator.pop(context),
                     child: SvgPicture.asset(
                       'assets/icons/close_modal.svg',
+                      colorMapper: GliftColors.iconColorMapper,
                       width: 24,
                       height: 24,
                     ),
@@ -239,6 +240,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                             right: 12,
                             child: SvgPicture.asset(
                               _copied ? 'assets/icons/check.svg' : 'assets/icons/copy.svg',
+                              colorMapper: GliftColors.svgColorMapperFor(_copied ? 'assets/icons/check.svg' : 'assets/icons/copy.svg'),
                               width: 20,
                               height: 20,
                               colorFilter: ColorFilter.mode(

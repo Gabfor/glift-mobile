@@ -245,7 +245,7 @@ class _NoteModalState extends State<NoteModal> {
                     boxShadow: (_isEditingMaterial || _materialFocusNode.hasFocus)
                         ? [
                             BoxShadow(
-                              color: GliftColors.focusRing.withOpacity(0.5),
+                              color: GliftColors.focusRing.withValues(alpha: 0.5),
                               offset: Offset.zero,
                               blurRadius: 0,
                               spreadRadius: 0.5,
@@ -336,6 +336,7 @@ class _NoteModalState extends State<NoteModal> {
                           },
                           child: SvgPicture.asset(
                             'assets/icons/cross_reset.svg',
+                            colorMapper: GliftColors.iconColorMapper,
                             width: 23,
                             height: 23,
                             colorFilter: ColorFilter.mode(
@@ -373,7 +374,7 @@ class _NoteModalState extends State<NoteModal> {
                     boxShadow: _isFocused
                         ? [
                             BoxShadow(
-                              color: GliftColors.focusRing.withOpacity(0.5),
+                              color: GliftColors.focusRing.withValues(alpha: 0.5),
                               offset: Offset.zero,
                               blurRadius: 0,
                               spreadRadius: 0.5,

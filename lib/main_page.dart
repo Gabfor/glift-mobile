@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home_page.dart';
 import 'dashboard_page.dart';
 import 'store_page.dart';
@@ -275,7 +275,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(iconPath, width: 24, height: 24),
+            SvgPicture.asset(iconPath, colorMapper: GliftColors.svgColorMapperFor(iconPath), width: 24, height: 24),
             const SizedBox(height: 4),
             Text(
               label,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
@@ -432,6 +432,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   )
                                 : SvgPicture.asset(
                                     _getSoundEffectIcon(_soundEffect)!,
+                                    colorMapper: GliftColors.svgColorMapperFor(_getSoundEffectIcon(_soundEffect)!),
                                     fit: BoxFit.contain,
                                   ),
                           ),
@@ -932,7 +933,7 @@ class _SettingsSwitchTile extends StatelessWidget {
                     onChanged(v);
                   }
                 },
-                activeColor: GliftColors.focusRing,
+                activeThumbColor: GliftColors.focusRing,
               ),
             ),
           ),

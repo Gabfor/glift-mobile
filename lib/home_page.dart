@@ -6,7 +6,7 @@ import 'utils/dialog_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
@@ -161,9 +161,7 @@ class HomePageState extends State<HomePage> {
           _programKeys
             ..clear()
             ..addAll(List.generate(filteredLocal.length, (_) => GlobalKey()));
-          if (_selectedProgramId == null) {
-            _selectedProgramId = filteredLocal.first.id;
-          }
+          _selectedProgramId ??= filteredLocal.first.id;
           // _isLoading = false; // Intentionally keeping loading state to prevent flash of deleted programs
         });
       }
@@ -547,7 +545,7 @@ class HomePageState extends State<HomePage> {
                               style: GoogleFonts.quicksand(
                                 color: isSelected
                                     ? Colors.white
-                                    : Colors.white.withOpacity(0.5),
+                                    : Colors.white.withValues(alpha: 0.5),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -589,11 +587,11 @@ class HomePageState extends State<HomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset('assets/icons/training_calendar.svg', width: 0, height: 0),
-                SvgPicture.asset('assets/icons/training_dumbell.svg', width: 0, height: 0),
-                SvgPicture.asset('assets/icons/training_clock.svg', width: 0, height: 0),
-                SvgPicture.asset('assets/icons/check_green.svg', width: 0, height: 0),
-                SvgPicture.asset('assets/icons/notgood.svg', width: 0, height: 0),
+                SvgPicture.asset('assets/icons/training_calendar.svg', colorMapper: GliftColors.iconColorMapper, width: 0, height: 0),
+                SvgPicture.asset('assets/icons/training_dumbell.svg', colorMapper: GliftColors.iconColorMapper, width: 0, height: 0),
+                SvgPicture.asset('assets/icons/training_clock.svg', colorMapper: GliftColors.iconColorMapper, width: 0, height: 0),
+                SvgPicture.asset('assets/icons/check_green.svg', colorMapper: GliftColors.iconColorMapper, width: 0, height: 0),
+                SvgPicture.asset('assets/icons/notgood.svg', colorMapper: GliftColors.iconColorMapper, width: 0, height: 0),
               ],
             ),
           ),
@@ -655,7 +653,7 @@ class HomePageState extends State<HomePage> {
           onRefresh: _handleRefresh,
           child: ListView.separated(
             physics: const AlwaysScrollableScrollPhysics(
-              parent: const _TopBouncingScrollPhysics(),
+              parent: _TopBouncingScrollPhysics(),
             ),
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
             itemCount: program.trainings.length + 2,
@@ -693,7 +691,7 @@ class HomePageState extends State<HomePage> {
 
                   final result = await Navigator.of(context).push(
                     PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => TrainingDetailsPage(
+                      pageBuilder: (_, _, _) => TrainingDetailsPage(
                         program: program,
                         training: training,
                         supabase: widget.supabase,
@@ -811,7 +809,7 @@ class HomePageState extends State<HomePage> {
 
       final result = await Navigator.of(context).push(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => TrainingDetailsPage(
+          pageBuilder: (_, _, _) => TrainingDetailsPage(
             program: program,
             training: newTraining,
             supabase: widget.supabase,
@@ -925,7 +923,7 @@ class _TrainingCard extends StatelessWidget {
           border: Border.all(color: GliftColors.borderSoft),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -994,6 +992,7 @@ class _TrainingCard extends StatelessWidget {
       children: [
         SvgPicture.asset(
           iconPath,
+          colorMapper: GliftColors.svgColorMapperFor(iconPath),
           width: 24,
           height: 24,
         ),
@@ -1033,6 +1032,7 @@ class _TrainingCard extends StatelessWidget {
     if (training.locked) {
       return SvgPicture.asset(
         'assets/icons/locked.svg',
+        colorMapper: GliftColors.iconColorMapper,
         width: 20,
         height: 20,
       );
@@ -1044,11 +1044,12 @@ class _TrainingCard extends StatelessWidget {
       case SyncStatus.synced:
         return SvgPicture.asset(
           'assets/icons/check_green.svg',
+          colorMapper: GliftColors.iconColorMapper,
           width: 20,
           height: 20,
         );
       case SyncStatus.notSynced:
-        return SvgPicture.asset('assets/icons/notgood.svg', width: 20, height: 20);
+        return SvgPicture.asset('assets/icons/notgood.svg', colorMapper: GliftColors.iconColorMapper, width: 20, height: 20);
     }
   }
 
@@ -1111,6 +1112,7 @@ class _RotatingLoaderState extends State<_RotatingLoader>
       turns: _controller,
       child: SvgPicture.asset(
         'assets/icons/loader.svg',
+        colorMapper: GliftColors.iconColorMapper,
         width: 20,
         height: 20,
       ),

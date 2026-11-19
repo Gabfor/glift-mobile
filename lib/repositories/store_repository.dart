@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import '../services/settings_service.dart';
 import 'dart:convert';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/store_program.dart';
 
 class StoreRepository {
@@ -186,12 +187,12 @@ class StoreRepository {
           'store_program_id': storeProgramId,
         });
       } catch (e) {
-        print('Erreur incrémentation downloads: $e');
+        debugPrint('Erreur incrémentation downloads: $e');
       }
 
       return newProgramId;
     } catch (e) {
-      print('Erreur downloadProgram: $e');
+      debugPrint('Erreur downloadProgram: $e');
       rethrow;
     }
   }
@@ -226,7 +227,7 @@ class StoreRepository {
       
       return count;
     } catch (e) {
-      print('Error getting exercise count: $e');
+      debugPrint('Error getting exercise count: $e');
       return 0;
     }
   }

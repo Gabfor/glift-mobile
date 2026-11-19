@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/program.dart';
 import '../models/training.dart';
@@ -551,7 +551,7 @@ class ProgramRepository {
     bool updateVideoUrl = false,
     bool? isHidden,
   }) async {
-    List<num?>? _prepareNumericValues(List<String>? values) {
+    List<num?>? prepareNumericValues(List<String>? values) {
       if (values == null) return null;
 
       return values
@@ -565,7 +565,7 @@ class ProgramRepository {
           .toList();
     }
 
-    List<String>? _prepareEfforts(List<String>? values) {
+    List<String>? prepareEfforts(List<String>? values) {
       if (values == null) return null;
 
       return values
@@ -578,9 +578,9 @@ class ProgramRepository {
 
     try {
       final updates = <String, dynamic>{};
-      final preparedRepetitions = _prepareNumericValues(repetitions);
-      final preparedWeights = _prepareNumericValues(weights);
-      final preparedEfforts = _prepareEfforts(efforts);
+      final preparedRepetitions = prepareNumericValues(repetitions);
+      final preparedWeights = prepareNumericValues(weights);
+      final preparedEfforts = prepareEfforts(efforts);
 
       if (series != null) updates['series'] = series;
       if (preparedRepetitions != null) updates['repetitions'] = preparedRepetitions;

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -162,4 +162,63 @@ class GliftColors {
   static Color get gold => _color('gold');
   /// Fond jaune (défaut #FFF7CB)
   static Color get warningSurface => _color('warningSurface');
+
+  static const Set<String> _iconTokenIds = {
+    'brandPrimaryHover',
+    'brandPrimary',
+    'focusRing',
+    'violetTint',
+    'violetSoft',
+    'violetSofter',
+    'violetSoftest',
+    'navyDeep',
+    'brandStrongHover',
+    'brandStrong',
+    'textBody',
+    'borderSoft',
+    'greyMedium',
+    'surfaceSubtle',
+    'surfaceMuted',
+    'greyBlue',
+  };
+
+  /// ColorMapper pour les icônes SVG (`violet`, `bleu`, `gris` uniquement).
+  static const ColorMapper iconColorMapper = _GliftIconColorMapper();
+
+  /// Retourne le [ColorMapper] uniquement pour les icônes SVG dans `assets/icons/`
+  /// (hors `flags/` et `sounds/`).
+  static ColorMapper? svgColorMapperFor(String assetName) {
+    if (!assetName.startsWith('assets/icons/') ||
+        assetName.startsWith('assets/icons/flags/') ||
+        assetName.startsWith('assets/icons/sounds/')) {
+      return null;
+    }
+    return iconColorMapper;
+  }
+
+  static Color _mapIconColor(Color color) {
+    final rgb = color.toARGB32() & 0x00FFFFFF;
+    final opaqueDefault = 0xFF000000 | rgb;
+    for (final id in _iconTokenIds) {
+      if (_defaults[id] == opaqueDefault) {
+        final override = _overrides[id];
+        if (override == null) return color;
+        return Color((color.toARGB32() & 0xFF000000) | (override & 0x00FFFFFF));
+      }
+    }
+    return color;
+  }
+}
+
+class _GliftIconColorMapper extends ColorMapper {
+  const _GliftIconColorMapper();
+
+  @override
+  Color substitute(
+    String? id,
+    String elementName,
+    String attributeName,
+    Color color,
+  ) =>
+      GliftColors._mapIconColor(color);
 }

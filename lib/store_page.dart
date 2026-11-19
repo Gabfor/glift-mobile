@@ -10,7 +10,7 @@ import 'widgets/download_restricted_modal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'repositories/store_repository.dart';
 import 'models/store_program.dart';
@@ -756,6 +756,9 @@ class _StorePageState extends State<StorePage> {
                                             _hasActiveFilters
                                                 ? 'assets/icons/filtre_green.svg'
                                                 : 'assets/icons/filtre_red.svg',
+                                            colorMapper: GliftColors.svgColorMapperFor(_hasActiveFilters
+                                                ? 'assets/icons/filtre_green.svg'
+                                                : 'assets/icons/filtre_red.svg'),
                                             height: 16,
                                             width: 16,
                                           ),
@@ -797,6 +800,9 @@ class _StorePageState extends State<StorePage> {
                                           _favoritesOnly
                                               ? 'assets/icons/coeur_red.svg'
                                               : 'assets/icons/coeur_grey.svg',
+                                          colorMapper: GliftColors.svgColorMapperFor(_favoritesOnly
+                                              ? 'assets/icons/coeur_red.svg'
+                                              : 'assets/icons/coeur_grey.svg'),
                                           height: 24,
                                           width: 24,
                                         ),
@@ -1113,6 +1119,9 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                       widget.isFavorite
                           ? 'assets/icons/coeur_red.svg'
                           : 'assets/icons/coeur_grey.svg',
+                      colorMapper: GliftColors.svgColorMapperFor(widget.isFavorite
+                          ? 'assets/icons/coeur_red.svg'
+                          : 'assets/icons/coeur_grey.svg'),
                       width: 24,
                       height: 24,
                     ),
@@ -1133,7 +1142,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: GliftColors.textBody.withOpacity(0.25),
+                            color: GliftColors.textBody.withValues(alpha: 0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
@@ -1242,6 +1251,10 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                                     _isRestricted || !_isDownloadable
                                         ? 'assets/icons/locked.svg'
                                         : 'assets/icons/download.svg',
+                                    colorMapper: GliftColors.svgColorMapperFor(// Restricted = locked
+                                    _isRestricted || !_isDownloadable
+                                        ? 'assets/icons/locked.svg'
+                                        : 'assets/icons/download.svg'),
                                     width: 20,
                                     height: 20,
                                     colorFilter: ColorFilter.mode(
@@ -1334,6 +1347,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
         widthFactor: 1.0,
         child: SvgPicture.asset(
           assetPath,
+          colorMapper: GliftColors.svgColorMapperFor(assetPath),
           width: 14,
           height: 14,
         ),
