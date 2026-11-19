@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class EmptyShopWidget extends StatelessWidget {
   final String title;
@@ -31,7 +32,7 @@ class EmptyShopWidget extends StatelessWidget {
               style: GoogleFonts.quicksand(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
                 height: 1.3,
               ),
             ),
@@ -42,7 +43,7 @@ class EmptyShopWidget extends StatelessWidget {
               style: GoogleFonts.quicksand(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF5D6494),
+                color: GliftColors.textBody,
                 height: 1.4,
               ),
             ),
@@ -56,7 +57,7 @@ class EmptyShopWidget extends StatelessWidget {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF7069FA),
+                  color: GliftColors.brandPrimary,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Row(

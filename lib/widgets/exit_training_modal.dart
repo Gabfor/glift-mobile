@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class ExitTrainingModal extends StatelessWidget {
   const ExitTrainingModal({super.key});
@@ -39,7 +40,7 @@ class ExitTrainingModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700, // Bold
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -52,7 +53,7 @@ class ExitTrainingModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700, // Bold
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -66,7 +67,7 @@ class ExitTrainingModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w600, // SemiBold base
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                       height: 1.4,
                     ),
                     children: [
@@ -100,7 +101,7 @@ class ExitTrainingModal extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(false),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            side: BorderSide(color: GliftColors.brandStrong),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -110,7 +111,7 @@ class ExitTrainingModal extends StatelessWidget {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -125,7 +126,7 @@ class ExitTrainingModal extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(true),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF4F4E),
+                            backgroundColor: GliftColors.accentDanger,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),

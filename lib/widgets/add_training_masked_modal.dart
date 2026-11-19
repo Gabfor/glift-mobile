@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../user_subscription_page.dart';
 import '../visibility_programs_page.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class AddTrainingMaskedModal extends StatefulWidget {
   const AddTrainingMaskedModal({super.key});
@@ -76,7 +77,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -89,7 +90,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -103,7 +104,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF5D6494),
+                      color: GliftColors.textBody,
                       height: 1.4,
                     ),
                     children: [
@@ -119,8 +120,8 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w600,
                           color: _isSettingsHovered
-                              ? const Color(0xFF6660E4)
-                              : const Color(0xFF7069FA),
+                              ? GliftColors.brandPrimaryHover
+                              : GliftColors.brandPrimary,
                         ),
                       ),
                       const TextSpan(
@@ -130,7 +131,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                         text: '“Débloquer”',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                         ),
                       ),
                       const TextSpan(
@@ -151,7 +152,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            side: BorderSide(color: GliftColors.brandStrong),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -161,7 +162,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -186,7 +187,7 @@ class _AddTrainingMaskedModalState extends State<AddTrainingMaskedModal> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7069FA),
+                            backgroundColor: GliftColors.brandPrimary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),

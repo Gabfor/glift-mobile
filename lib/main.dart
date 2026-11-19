@@ -16,6 +16,7 @@ import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/widgets/connect_button.dart';
 import 'package:glift_mobile/widgets/embedded_raster_image.dart';
 import 'package:glift_mobile/theme/glift_theme.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 import 'supabase_credentials.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -41,6 +42,7 @@ Future<void> main() async {
   
   await initializeDateFormatting('fr_FR', null);
   await SettingsService.instance.init();
+  await GliftColors.loadCache();
   await NotificationService.instance.initialize();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -54,6 +56,8 @@ Future<void> main() async {
     ),
   );
   final supabase = Supabase.instance.client;
+  // Couleurs éditées depuis l'admin web (cache local en cas d'échec / hors ligne)
+  await GliftColors.refresh(supabase);
   debugPrint('DEBUG: Startup services & Supabase client ready');
 
   if (supabase.auth.currentSession?.isExpired == true) {

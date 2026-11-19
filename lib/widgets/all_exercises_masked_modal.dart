@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class AllExercisesMaskedModal extends StatelessWidget {
   final VoidCallback? onSettingsTap;
@@ -43,7 +44,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -56,7 +57,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -69,7 +70,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5D6494),
+                    color: GliftColors.textBody,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -85,7 +86,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(false),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            side: BorderSide(color: GliftColors.brandStrong),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -95,7 +96,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -111,7 +112,7 @@ class AllExercisesMaskedModal extends StatelessWidget {
                             onSettingsTap?.call();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7069FA),
+                            backgroundColor: GliftColors.brandPrimary,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

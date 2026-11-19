@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:glift_mobile/services/settings_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class DefaultTimerPage extends StatefulWidget {
   const DefaultTimerPage({
@@ -196,7 +197,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
     final seconds = (_durationInSeconds % 60).toString().padLeft(2, '0');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFCFE), // Match options page bg
+      backgroundColor: GliftColors.surfacePrimary, // Match options page bg
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _handleOutsideTap,
@@ -233,7 +234,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
                           style: GoogleFonts.redHatText(
                             fontSize: 80,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             height: 1.0,
                           ),
                         ),
@@ -272,7 +273,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
                       Text(
                         'Réglages',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -281,7 +282,7 @@ class _DefaultTimerPageState extends State<DefaultTimerPage> {
                       Text(
                         'Valeur par défaut',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -311,8 +312,8 @@ class _SettingsBackButton extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(
-          color: Color(0xFF3A416F),
+        decoration: BoxDecoration(
+          color: GliftColors.brandStrong,
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -358,7 +359,7 @@ class _EditableTimeValue extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFFA1A5FD),
+                        color: GliftColors.focusRing,
                         width: 2,
                       ),
                     ),
@@ -376,7 +377,7 @@ class _EditableTimeValue extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 80,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.0,
                       ),
                       decoration: const InputDecoration(
@@ -402,7 +403,7 @@ class _EditableTimeValue extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 80,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.0,
                       ),
                     ),
@@ -415,7 +416,7 @@ class _EditableTimeValue extends StatelessWidget {
           textAlign: TextAlign.center,
           style: GoogleFonts.quicksand(
             fontSize: 16,
-            color: const Color(0xFFC2BFC6),
+            color: GliftColors.greyMedium,
             fontWeight: FontWeight.w600,
           ),
         ),

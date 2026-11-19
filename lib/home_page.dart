@@ -26,6 +26,7 @@ import 'widgets/delete_confirmation_modal.dart';
 import 'widgets/add_training_locked_modal.dart';
 import 'widgets/add_training_masked_modal.dart';
 import 'visibility_programs_page.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 enum SyncStatus { loading, synced, notSynced }
 
@@ -534,8 +535,8 @@ class HomePageState extends State<HomePage> {
                               width: 8,
                               height: 8,
                               margin: const EdgeInsets.only(right: 6),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF00D591),
+                              decoration: BoxDecoration(
+                                color: GliftColors.accentSuccess,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -748,7 +749,7 @@ class HomePageState extends State<HomePage> {
 
   Widget _buildAddTrainingCard(Program program) {
     final isAddRestricted = _isAddTrainingRestricted;
-    final themeColor = isAddRestricted ? const Color(0xFFD7D4DC) : const Color(0xFFA1A5FD);
+    final themeColor = isAddRestricted ? GliftColors.borderSoft : GliftColors.focusRing;
 
     return GestureDetector(
       onTap: () => _handleAddTraining(program),
@@ -921,7 +922,7 @@ class _TrainingCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFD7D4DC)),
+          border: Border.all(color: GliftColors.borderSoft),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.02),
@@ -943,7 +944,7 @@ class _TrainingCard extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                   ),
                 ),
@@ -1006,7 +1007,7 @@ class _TrainingCard extends StatelessWidget {
                 style: GoogleFonts.quicksand(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1016,7 +1017,7 @@ class _TrainingCard extends StatelessWidget {
                 style: GoogleFonts.quicksand(
                   fontSize: 8,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF5D6494),
+                  color: GliftColors.textBody,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

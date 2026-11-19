@@ -8,6 +8,7 @@ import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
 import '../pricing_page.dart';
 import '../services/auth_code_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class OtpVerificationModal extends StatefulWidget {
   final String email;
@@ -271,7 +272,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                   style: GoogleFonts.quicksand(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -287,7 +288,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -308,10 +309,10 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                             borderRadius: BorderRadius.circular(5),
                             border: Border.all(
                               color: _hasError
-                                  ? const Color(0xFFEF4F4E)
+                                  ? GliftColors.accentDanger
                                   : isFocused
-                                      ? const Color(0xFF7069FA)
-                                      : const Color(0xFFD7D4DC),
+                                      ? GliftColors.brandPrimary
+                                      : GliftColors.borderSoft,
                               width: 1.0,
                             ),
                           ),
@@ -336,7 +337,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                                   LengthLimitingTextInputFormatter(6),
                                 ],
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF5D6494),
+                                  color: GliftColors.textBody,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -344,7 +345,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                                   border: InputBorder.none,
                                   hintText: '0',
                                   hintStyle: GoogleFonts.quicksand(
-                                    color: const Color(0xFFD7D4DC),
+                                    color: GliftColors.borderSoft,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -369,12 +370,12 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                   child: GestureDetector(
                     onTap: _isResending || _isValidating ? null : _handleResend,
                     child: _isResending
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF7069FA),
+                              color: GliftColors.brandPrimary,
                             ),
                           )
                         : Text(
@@ -383,8 +384,8 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: _isResendHovered
-                                  ? const Color(0xFF6660E4)
-                                  : const Color(0xFF7069FA),
+                                  ? GliftColors.brandPrimaryHover
+                                  : GliftColors.brandPrimary,
                             ),
                           ),
                   ),
@@ -403,8 +404,8 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                               ? null
                               : () => Navigator.of(context).pop(false),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Color(0xFF3A416F),
+                            side: BorderSide(
+                              color: GliftColors.brandStrong,
                               width: 1.2,
                             ),
                             shape: RoundedRectangleBorder(
@@ -416,7 +417,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -433,8 +434,8 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                               ? _handleValidate
                               : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7069FA),
-                            disabledBackgroundColor: const Color(0xFFF2F1F6),
+                            backgroundColor: GliftColors.brandPrimary,
+                            disabledBackgroundColor: GliftColors.surfaceMuted,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -444,13 +445,13 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor: AlwaysStoppedAnimation<Color>(
-                                          Color(0xFFC2BFC6),
+                                          GliftColors.greyMedium,
                                         ),
                                       ),
                                     ),
@@ -458,7 +459,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                                     Text(
                                       'En cours...',
                                       style: GoogleFonts.quicksand(
-                                        color: const Color(0xFFC2BFC6),
+                                        color: GliftColors.greyMedium,
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -472,7 +473,7 @@ class _OtpVerificationModalState extends State<OtpVerificationModal> {
                                     fontWeight: FontWeight.w700,
                                     color: _isComplete
                                         ? Colors.white
-                                        : const Color(0xFFC2BFC6),
+                                        : GliftColors.greyMedium,
                                   ),
                                 ),
                         ),

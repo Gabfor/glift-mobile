@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/settings_service.dart';
 import '../user_subscription_page.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class UnlockExerciseModal extends StatelessWidget {
   final String title;
@@ -50,7 +51,7 @@ class UnlockExerciseModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -63,7 +64,7 @@ class UnlockExerciseModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -77,7 +78,7 @@ class UnlockExerciseModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                       height: 1.4,
                     ),
                     children: [
@@ -86,7 +87,7 @@ class UnlockExerciseModal extends StatelessWidget {
                         text: '“Débloquer”',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                         ),
                       ),
                       const TextSpan(
@@ -108,7 +109,7 @@ class UnlockExerciseModal extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            side: BorderSide(color: GliftColors.brandStrong),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -118,7 +119,7 @@ class UnlockExerciseModal extends StatelessWidget {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -143,7 +144,7 @@ class UnlockExerciseModal extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7069FA),
+                            backgroundColor: GliftColors.brandPrimary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),

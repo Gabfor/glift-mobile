@@ -6,6 +6,7 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 import '../services/settings_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class NoteModal extends StatefulWidget {
   final String? initialNote;
@@ -196,7 +197,7 @@ class _NoteModalState extends State<NoteModal> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -210,7 +211,7 @@ class _NoteModalState extends State<NoteModal> {
                 style: GoogleFonts.quicksand(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                 ),
               ),
               const SizedBox(height: 5),
@@ -237,14 +238,14 @@ class _NoteModalState extends State<NoteModal> {
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
                       color: (_isEditingMaterial || _materialFocusNode.hasFocus)
-                          ? const Color(0xFFA1A5FD)
-                          : const Color(0xFFD7D4DC),
+                          ? GliftColors.focusRing
+                          : GliftColors.borderSoft,
                       width: 1.0,
                     ),
                     boxShadow: (_isEditingMaterial || _materialFocusNode.hasFocus)
                         ? [
                             BoxShadow(
-                              color: const Color(0xFFA1A5FD).withOpacity(0.5),
+                              color: GliftColors.focusRing.withOpacity(0.5),
                               offset: Offset.zero,
                               blurRadius: 0,
                               spreadRadius: 0.5,
@@ -263,7 +264,7 @@ class _NoteModalState extends State<NoteModal> {
                                 style: GoogleFonts.quicksand(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF5D6494),
+                                  color: GliftColors.textBody,
                                   height: 1.3,
                                   letterSpacing: 0.0,
                                 ),
@@ -279,7 +280,7 @@ class _NoteModalState extends State<NoteModal> {
                                   contentPadding: EdgeInsets.zero,
                                   hintText: 'Ex: Haltères, Barre...',
                                   hintStyle: GoogleFonts.quicksand(
-                                    color: const Color(0xFFD7D4DC),
+                                    color: GliftColors.borderSoft,
                                     fontWeight: FontWeight.w600,
                                     height: 1.3,
                                     letterSpacing: 0.0,
@@ -308,8 +309,8 @@ class _NoteModalState extends State<NoteModal> {
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: _materialController.text.isNotEmpty
-                                      ? const Color(0xFF5D6494)
-                                      : const Color(0xFFD7D4DC),
+                                      ? GliftColors.textBody
+                                      : GliftColors.borderSoft,
                                   height: 1.3,
                                   letterSpacing: 0.0,
                                 ),
@@ -337,8 +338,8 @@ class _NoteModalState extends State<NoteModal> {
                             'assets/icons/cross_reset.svg',
                             width: 23,
                             height: 23,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFFD7D4DC),
+                            colorFilter: ColorFilter.mode(
+                              GliftColors.borderSoft,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -356,7 +357,7 @@ class _NoteModalState extends State<NoteModal> {
               style: GoogleFonts.quicksand(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
               ),
             ),
             const SizedBox(height: 5),
@@ -366,13 +367,13 @@ class _NoteModalState extends State<NoteModal> {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                      color: _isFocused ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
+                      color: _isFocused ? GliftColors.focusRing : GliftColors.borderSoft,
                       width: 1.0, 
                     ),
                     boxShadow: _isFocused
                         ? [
                             BoxShadow(
-                              color: const Color(0xFFA1A5FD).withOpacity(0.5),
+                              color: GliftColors.focusRing.withOpacity(0.5),
                               offset: Offset.zero,
                               blurRadius: 0,
                               spreadRadius: 0.5,
@@ -424,10 +425,10 @@ class _NoteModalState extends State<NoteModal> {
                           showSmallButton: false,
 
                           color: Colors.white,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border(
-                              bottom: BorderSide(color: Color(0xFFD7D4DC), width: 1),
+                              bottom: BorderSide(color: GliftColors.borderSoft, width: 1),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -440,15 +441,15 @@ class _NoteModalState extends State<NoteModal> {
                           buttonOptions: quill.QuillSimpleToolbarButtonOptions(
                             base: quill.QuillToolbarBaseButtonOptions(
                               iconTheme: quill.QuillIconTheme(
-                                iconButtonSelectedData: const quill.IconButtonData(
+                                iconButtonSelectedData: quill.IconButtonData(
                                   style: ButtonStyle(
-                                   backgroundColor: WidgetStatePropertyAll(Color(0xFFF6F6FA)),
-                                   iconColor: WidgetStatePropertyAll(Color(0xFF3A416F)),
+                                   backgroundColor: WidgetStatePropertyAll(GliftColors.surfaceHighlight),
+                                   iconColor: WidgetStatePropertyAll(GliftColors.brandStrong),
                                   ),
                                 ),
-                                iconButtonUnselectedData: const quill.IconButtonData(
+                                iconButtonUnselectedData: quill.IconButtonData(
                                   style: ButtonStyle(
-                                   iconColor: WidgetStatePropertyAll(Color(0xFF5D6494)),
+                                   iconColor: WidgetStatePropertyAll(GliftColors.textBody),
                                   ),
                                 ),
                               ),
@@ -486,7 +487,7 @@ class _NoteModalState extends State<NoteModal> {
                                       GoogleFonts.quicksand(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF5D6494),
+                                        color: GliftColors.textBody,
                                         height: 1.3,
                                       ),
                                       const quill.HorizontalSpacing(0, 0),
@@ -498,7 +499,7 @@ class _NoteModalState extends State<NoteModal> {
                                        GoogleFonts.quicksand(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFFD7D4DC),
+                                        color: GliftColors.borderSoft,
                                       ),
                                       const quill.HorizontalSpacing(0, 0),
                                       const quill.VerticalSpacing(0, 0),
@@ -509,7 +510,7 @@ class _NoteModalState extends State<NoteModal> {
                                       GoogleFonts.quicksand(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF5D6494),
+                                        color: GliftColors.textBody,
                                         height: 1.3,
                                       ),
                                       const quill.HorizontalSpacing(0, 0),
@@ -594,7 +595,7 @@ class _NoteModalState extends State<NoteModal> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _hasChanged ? const Color(0xFF7069FA) : const Color(0xFFF2F1F6),
+                  backgroundColor: _hasChanged ? GliftColors.brandPrimary : GliftColors.surfaceMuted,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
@@ -605,7 +606,7 @@ class _NoteModalState extends State<NoteModal> {
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: _hasChanged ? Colors.white : const Color(0xFFC2BFC6),
+                    color: _hasChanged ? Colors.white : GliftColors.greyMedium,
                   ),
                 ),
               ),

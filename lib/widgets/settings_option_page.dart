@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/glift_theme.dart';
 import '../services/settings_service.dart';
 import 'glift_pull_to_refresh.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class SettingsOptionItem {
   const SettingsOptionItem({
@@ -74,7 +75,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
     const double gapBelowHeader = 10.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFCFE),
+      backgroundColor: GliftColors.surfacePrimary,
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -102,16 +103,16 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFECE9F1)),
+                        border: Border.all(color: GliftColors.surfaceSubtle),
                       ),
                       child: Column(
                         children: [
                           for (int i = 0; i < widget.options.length; i++) ...[
                             if (i > 0)
-                              const Divider(
+                              Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Color(0xFFECE9F1),
+                                color: GliftColors.surfaceSubtle,
                                 indent: 15,
                                 endIndent: 15,
                               ),
@@ -143,7 +144,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    color: const Color(0xFFFBFCFE),
+                    color: GliftColors.surfacePrimary,
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -157,7 +158,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                               Text(
                                 widget.headerTitle,
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -168,7 +169,7 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                               Text(
                                 widget.headerSubtitle,
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -194,8 +195,8 @@ class _SettingsOptionPageState extends State<SettingsOptionPage> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  const Color(0xFF2E3142).withValues(alpha: 0.12),
-                                  const Color(0xFF2E3142).withValues(alpha: 0.04),
+                                  GliftColors.navyDeep.withValues(alpha: 0.12),
+                                  GliftColors.navyDeep.withValues(alpha: 0.04),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.0, 0.45, 1.0],
@@ -229,8 +230,8 @@ class _SettingsBackButton extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(
-          color: Color(0xFF3A416F),
+        decoration: BoxDecoration(
+          color: GliftColors.brandStrong,
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -300,9 +301,9 @@ class _SettingsOptionTile extends StatelessWidget {
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
-              const Icon(
+              Icon(
                 Icons.check,
-                color: Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
                 size: 22,
               ),
             ],

@@ -12,6 +12,7 @@ import 'auth/biometric_auth_service.dart';
 import 'services/offline_sync_service.dart';
 import 'services/realtime_sync_service.dart';
 import 'services/settings_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -228,10 +229,10 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
         child: _isBottomNavVisible
             ? Container(
                 key: const ValueKey('bottom-nav'),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(
-                    top: BorderSide(color: Color(0xFFECE9F1), width: 1),
+                    top: BorderSide(color: GliftColors.surfaceSubtle, width: 1),
                   ),
                 ),
                 child: SafeArea(
@@ -259,8 +260,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   Widget _buildNavItem(int index, String label, String iconName) {
     final isSelected = _currentIndex == index;
     final textColor = isSelected
-        ? const Color(0xFF7069FA)
-        : const Color(0xFFC2BFC6);
+        ? GliftColors.brandPrimary
+        : GliftColors.greyMedium;
     final iconPath = isSelected
         ? 'assets/icons/${iconName}_active.svg'
         : 'assets/icons/$iconName.svg';

@@ -9,6 +9,7 @@ import 'models/training_row.dart';
 import 'repositories/program_repository.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_pull_to_refresh.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class _ClampedBottomScrollPhysics extends ScrollPhysics {
   const _ClampedBottomScrollPhysics({super.parent});
@@ -188,7 +189,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
     const double gapBelowHeader = 10.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFCFE),
+      backgroundColor: GliftColors.surfacePrimary,
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -219,7 +220,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                         Text(
                           'RÉGLAGE DE LA VISIBILITÉ',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFFC2BFC6),
+                            color: GliftColors.greyMedium,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -229,7 +230,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFECE9F1)),
+                            border: Border.all(color: GliftColors.surfaceSubtle),
                           ),
                           child: Column(
                             children: [
@@ -254,7 +255,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                               ? 'EXERCICES A AFFICHER DANS L’ENTRAINEMENT'
                               : 'EXERCICE A AFFICHER DANS L’ENTRAINEMENT',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFFC2BFC6),
+                            color: GliftColors.greyMedium,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -264,7 +265,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFECE9F1)),
+                            border: Border.all(color: GliftColors.surfaceSubtle),
                           ),
                           child: _isLoadingRows
                               ? const Padding(
@@ -278,7 +279,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                                         child: Text(
                                           'Aucun exercice dans cet entraînement',
                                           style: GoogleFonts.quicksand(
-                                            color: const Color(0xFF5D6494),
+                                            color: GliftColors.textBody,
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -318,7 +319,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    color: const Color(0xFFFBFCFE),
+                    color: GliftColors.surfacePrimary,
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -334,7 +335,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                                     ? 'Programme sans nom'
                                     : widget.program.name.trim(),
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -347,7 +348,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                                     ? 'Entraînement sans nom'
                                     : widget.training.name.trim(),
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -373,8 +374,8 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  const Color(0xFF2E3142).withValues(alpha: 0.12),
-                                  const Color(0xFF2E3142).withValues(alpha: 0.04),
+                                  GliftColors.navyDeep.withValues(alpha: 0.12),
+                                  GliftColors.navyDeep.withValues(alpha: 0.04),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.0, 0.45, 1.0],
@@ -408,7 +409,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
             child: Text(
               title,
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -424,7 +425,7 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               value: value,
               onChanged: onChanged,
-              activeColor: const Color(0xFFA1A5FD),
+              activeColor: GliftColors.focusRing,
             ),
           ),
         ],
@@ -446,8 +447,8 @@ class _SettingsBackButton extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(
-          color: Color(0xFF3A416F),
+        decoration: BoxDecoration(
+          color: GliftColors.brandStrong,
           shape: BoxShape.circle,
         ),
         child: const Icon(

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class NumericKeypad extends StatelessWidget {
   const NumericKeypad({
@@ -23,7 +24,7 @@ class NumericKeypad extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          color: const Color(0xFF7069FA).withOpacity(0.1), // Light violet tint
+          color: GliftColors.brandPrimary.withOpacity(0.1), // Light violet tint
           padding: const EdgeInsets.only(bottom: 20, top: 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -35,7 +36,7 @@ class NumericKeypad extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: onClose,
-                  child: const Icon(Icons.keyboard_hide, color: Color(0xFF3A416F)),
+                  child: Icon(Icons.keyboard_hide, color: GliftColors.brandStrong),
                 ),
               ),
               _buildRow(['1', '2', '3']),
@@ -99,7 +100,7 @@ class _KeypadButton extends StatelessWidget {
           style: GoogleFonts.quicksand(
             fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF3A416F),
+            color: GliftColors.brandStrong,
           ),
         ),
       ),

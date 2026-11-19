@@ -22,6 +22,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'services/filter_service.dart';
 import 'theme/glift_theme.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class ShopPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -680,7 +681,7 @@ class _ShopPageState extends State<ShopPage> {
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                          color: GliftColors.borderSoft,
                                           width: 1.0,
                                         ),
                                       ),
@@ -698,7 +699,7 @@ class _ShopPageState extends State<ShopPage> {
                                           Text(
                                             'Filtres',
                                             style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
+                                              color: GliftColors.brandStrong,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -723,7 +724,7 @@ class _ShopPageState extends State<ShopPage> {
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                          color: GliftColors.borderSoft,
                                           width: 1.0,
                                         ),
                                       ),
@@ -877,10 +878,10 @@ class _ShopOfferCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFD7D4DC)),
+        border: Border.all(color: GliftColors.borderSoft),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5D6494).withValues(alpha: 0.06),
+            color: GliftColors.textBody.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -940,9 +941,7 @@ class _ShopOfferCard extends StatelessWidget {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF5D6494,
-                            ).withValues(alpha: 0.25),
+                            color: GliftColors.textBody.withValues(alpha: 0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
@@ -972,7 +971,7 @@ class _ShopOfferCard extends StatelessWidget {
                 Text(
                   offer.name.toUpperCase(),
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -982,7 +981,7 @@ class _ShopOfferCard extends StatelessWidget {
                   Text(
                     offer.cleanDescription!,
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFF5D6494),
+                      color: GliftColors.textBody,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       height: 1.57,
@@ -1007,7 +1006,7 @@ class _ShopOfferCard extends StatelessWidget {
                   iconAsset: 'assets/icons/check_green.svg',
                   label: 'Valide depuis le :',
                   value: _formatDate(offer.startDate),
-                  valueColor: const Color(0xFF3A416F),
+                  valueColor: GliftColors.brandStrong,
                 ),
                 const SizedBox(height: 8),
                 _ExpirationCountdown(endDateStr: offer.endDate),
@@ -1040,7 +1039,7 @@ class _ShopOfferCard extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7069FA),
+                      backgroundColor: GliftColors.brandPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -1085,7 +1084,7 @@ class _ShopOfferCard extends StatelessWidget {
       height: 25,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F5FE),
+        color: GliftColors.violetTint,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
@@ -1093,7 +1092,7 @@ class _ShopOfferCard extends StatelessWidget {
         child: Text(
           text,
           style: GoogleFonts.redHatText(
-            color: const Color(0xFFA1A5FD),
+            color: GliftColors.focusRing,
             fontSize: 10,
             fontWeight: FontWeight.w600,
           ),
@@ -1114,7 +1113,7 @@ class _ShopOfferCard extends StatelessWidget {
         height: 25,
         padding: const EdgeInsets.symmetric(horizontal: 5),
         decoration: BoxDecoration(
-          color: const Color(0xFFF4F5FE),
+          color: GliftColors.violetTint,
           borderRadius: BorderRadius.circular(5),
         ),
         child: Center(
@@ -1144,7 +1143,7 @@ class _ShopOfferCard extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF5D6494),
+            color: GliftColors.textBody,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -1171,7 +1170,7 @@ class _ShopOfferCard extends StatelessWidget {
           Text(
             'La livraison n’est pas offerte',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1190,7 +1189,7 @@ class _ShopOfferCard extends StatelessWidget {
           Text(
             'Livraison offerte',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1207,7 +1206,7 @@ class _ShopOfferCard extends StatelessWidget {
           Text(
             'Livraison offerte à partir de :',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1216,7 +1215,7 @@ class _ShopOfferCard extends StatelessWidget {
           Text(
             '${shippingValue.toStringAsFixed(shippingValue.truncateToDouble() == shippingValue ? 0 : 2)} €',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF3A416F),
+              color: GliftColors.brandStrong,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1301,7 +1300,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
           Text(
             'Aucune date d\'expiration',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1318,7 +1317,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
           Text(
             'Offre expirée',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1330,11 +1329,11 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
     final days = _timeLeft!.inDays;
 
     if (days >= 1) {
-      Color valueColor = const Color(0xFF3A416F);
+      Color valueColor = GliftColors.brandStrong;
       String iconAsset = 'assets/icons/check_green.svg';
 
       if (days <= 3) {
-        valueColor = const Color(0xFFF0C863); // Yellowish for warning
+        valueColor = GliftColors.gold; // Yellowish for warning
         iconAsset = 'assets/icons/check_yellow.svg';
       }
 
@@ -1345,7 +1344,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
           Text(
             'Expire dans :',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -1375,7 +1374,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
         Text(
           'Expire dans :',
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF5D6494),
+            color: GliftColors.textBody,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -1384,7 +1383,7 @@ class _ExpirationCountdownState extends State<_ExpirationCountdown> {
         Text(
           '${hours}h ${minutes.toString().padLeft(2, '0')}m ${seconds.toString().padLeft(2, '0')}s',
           style: GoogleFonts.quicksand(
-            color: const Color(0xFFEF4F4E),
+            color: GliftColors.accentDanger,
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),

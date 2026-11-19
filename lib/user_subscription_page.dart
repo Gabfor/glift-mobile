@@ -11,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/auth_code_service.dart';
 import 'services/settings_service.dart';
 import 'widgets/glift_loader.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class UserSubscriptionPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -375,7 +376,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
 
     showDialog(
       context: context,
-      barrierColor: const Color(0x992E3142),
+      barrierColor: GliftColors.navyDeep.withValues(alpha: 0.6),
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -406,7 +407,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -422,7 +423,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.4,
                       ),
                     ),
@@ -437,7 +438,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             text: 'Confirmer',
                             style: GoogleFonts.quicksand(
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                           TextSpan(
@@ -451,7 +452,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             text: 'Annuler',
                             style: GoogleFonts.quicksand(
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                           const TextSpan(text: '” tu conserves ta formule actuelle.'),
@@ -461,7 +462,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         height: 1.4,
                       ),
                     ),
@@ -477,8 +478,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                               onPressed: () => Navigator.of(dialogContext).pop(),
                               style: OutlinedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                side: const BorderSide(
-                                  color: Color(0xFF3A416F),
+                                side: BorderSide(
+                                  color: GliftColors.brandStrong,
                                   width: 1.2,
                                 ),
                                 shape: const StadiumBorder(),
@@ -488,7 +489,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                               child: Text(
                                 'Annuler',
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -506,7 +507,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                 _updateSubscriptionInterval();
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF7069FA),
+                                backgroundColor: GliftColors.brandPrimary,
                                 elevation: 0,
                                 shape: const StadiumBorder(),
                                 padding: EdgeInsets.zero,
@@ -558,7 +559,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
 
     showDialog(
       context: context,
-      barrierColor: const Color(0x992E3142),
+      barrierColor: GliftColors.navyDeep.withValues(alpha: 0.6),
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -591,7 +592,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -607,7 +608,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.4,
                       ),
                     ),
@@ -621,8 +622,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                         onPressed: () => Navigator.of(dialogContext).pop(),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            color: Color(0xFF3A416F),
+                          side: BorderSide(
+                            color: GliftColors.brandStrong,
                             width: 1.2,
                           ),
                           shape: const StadiumBorder(),
@@ -632,7 +633,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                         child: Text(
                           'Fermer',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -671,7 +672,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
   void _showCancelConfirmationDialog() {
     showDialog(
       context: context,
-      barrierColor: const Color(0x992E3142),
+      barrierColor: GliftColors.navyDeep.withValues(alpha: 0.6),
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -702,7 +703,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -716,7 +717,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.4,
                       ),
                     ),
@@ -731,7 +732,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             text: 'Confirmer',
                             style: GoogleFonts.quicksand(
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                           const TextSpan(
@@ -741,7 +742,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             text: 'Annuler',
                             style: GoogleFonts.quicksand(
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                           const TextSpan(text: '” on annule tout !'),
@@ -751,7 +752,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         height: 1.4,
                       ),
                     ),
@@ -767,8 +768,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                               onPressed: () => Navigator.of(dialogContext).pop(),
                               style: OutlinedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                side: const BorderSide(
-                                  color: Color(0xFF3A416F),
+                                side: BorderSide(
+                                  color: GliftColors.brandStrong,
                                   width: 1.2,
                                 ),
                                 shape: const StadiumBorder(),
@@ -778,7 +779,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                               child: Text(
                                 'Annuler',
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -796,7 +797,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                 _cancelPremium();
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFEF4F4E),
+                                backgroundColor: GliftColors.accentDanger,
                                 elevation: 0,
                                 shape: const StadiumBorder(),
                                 padding: EdgeInsets.zero,
@@ -846,7 +847,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
   void _showCancellationInfoDialog() {
     showDialog(
       context: context,
-      barrierColor: const Color(0x992E3142),
+      barrierColor: GliftColors.navyDeep.withValues(alpha: 0.6),
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -877,7 +878,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -891,7 +892,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.4,
                       ),
                     ),
@@ -905,8 +906,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                         onPressed: () => Navigator.of(dialogContext).pop(),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            color: Color(0xFF3A416F),
+                          side: BorderSide(
+                            color: GliftColors.brandStrong,
                             width: 1.2,
                           ),
                           shape: const StadiumBorder(),
@@ -916,7 +917,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                         child: Text(
                           'Fermer',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -967,7 +968,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
         : 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFCFE),
+      backgroundColor: GliftColors.surfacePrimary,
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -1005,7 +1006,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                         Text(
                           'ABONNEMENT ACTIF',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFFC2BFC6),
+                            color: GliftColors.greyMedium,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -1018,7 +1019,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             button: _isCancelled
                                 ? _ActionButton(
                                     text: 'Réactiver mon abonnement',
-                                    backgroundColor: const Color(0xFF7069FA),
+                                    backgroundColor: GliftColors.brandPrimary,
                                     textColor: Colors.white,
                                     isLoading: _isProcessing,
                                     onPressed: _isProcessing ? null : () => _changePlan('premium'),
@@ -1026,14 +1027,14 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                 : hasIntervalChanged
                                     ? _ActionButton(
                                         text: 'Mettre à jour la formule',
-                                        backgroundColor: const Color(0xFF7069FA),
+                                        backgroundColor: GliftColors.brandPrimary,
                                         textColor: Colors.white,
                                         isLoading: _isProcessing,
                                         onPressed: _isProcessing ? null : _showChangeIntervalConfirmationDialog,
                                       )
                                     : _ActionButton(
                                         text: 'Annuler mon abonnement',
-                                        backgroundColor: const Color(0xFFEF4F4E),
+                                        backgroundColor: GliftColors.accentDanger,
                                         textColor: Colors.white,
                                         isLoading: _isProcessing,
                                         onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
@@ -1041,10 +1042,10 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                           )
                         else
                           _buildStarterCard(
-                            button: const _ActionButton(
+                            button: _ActionButton(
                               text: 'Annuler mon abonnement',
-                              backgroundColor: Color(0xFFF2F1F6),
-                              textColor: Color(0xFFC2BFC6),
+                              backgroundColor: GliftColors.surfaceMuted,
+                              textColor: GliftColors.greyMedium,
                               onPressed: null,
                             ),
                           ),
@@ -1055,7 +1056,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                         Text(
                           'ABONNEMENT INACTIF',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFFC2BFC6),
+                            color: GliftColors.greyMedium,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -1068,15 +1069,15 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             button: _isCancelled
                                 ? _ActionButton(
                                     text: 'Choisir cet abonnement',
-                                    backgroundColor: const Color(0xFFF2F1F6),
-                                    textColor: const Color(0xFFC2BFC6),
+                                    backgroundColor: GliftColors.surfaceMuted,
+                                    textColor: GliftColors.greyMedium,
                                     onPressed: _showCancellationInfoDialog,
                                   )
                                 : _ActionButton(
                                     text: 'Choisir cet abonnement',
                                     backgroundColor: Colors.white,
-                                    textColor: const Color(0xFF3A416F),
-                                    borderColor: const Color(0xFF3A416F),
+                                    textColor: GliftColors.brandStrong,
+                                    borderColor: GliftColors.brandStrong,
                                     isLoading: _isProcessing,
                                     onPressed: _isProcessing ? null : _showCancelConfirmationDialog,
                                   ),
@@ -1085,7 +1086,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                           _buildPremiumCard(
                             button: _ActionButton(
                               text: 'Choisir cet abonnement',
-                              backgroundColor: const Color(0xFF7069FA),
+                              backgroundColor: GliftColors.brandPrimary,
                               textColor: Colors.white,
                               isLoading: _isProcessing,
                               onPressed: _isProcessing ? null : () => _changePlan('premium'),
@@ -1099,7 +1100,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                                       Text(
                                         '30 jours pour tester, puis ${_isYearly ? SettingsService.instance.getPremiumYearlyPrice() : SettingsService.instance.getPremiumMonthlyPrice()} € ${_isYearly ? "/an" : "/mois"}',
                                         style: GoogleFonts.quicksand(
-                                          color: const Color(0xFF5D6494),
+                                          color: GliftColors.textBody,
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -1123,7 +1124,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    color: const Color(0xFFFBFCFE),
+                    color: GliftColors.surfacePrimary,
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1136,7 +1137,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             Text(
                               'Réglages',
                               style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
+                                color: GliftColors.brandStrong,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1145,7 +1146,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                             Text(
                               'Mon abonnement',
                               style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
+                                color: GliftColors.brandStrong,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1165,8 +1166,8 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            const Color(0xFF2E3142).withValues(alpha: 0.12),
-                            const Color(0xFF2E3142).withValues(alpha: 0.04),
+                            GliftColors.navyDeep.withValues(alpha: 0.12),
+                            GliftColors.navyDeep.withValues(alpha: 0.04),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.45, 1.0],
@@ -1287,12 +1288,12 @@ class _SubscriptionCardContainer extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFD7D4DC),
+          color: GliftColors.borderSoft,
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5D6494).withValues(alpha: 0.05),
+            color: GliftColors.textBody.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1316,7 +1317,7 @@ class _SubscriptionCardContainer extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF3A416F),
+              color: GliftColors.brandStrong,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -1332,7 +1333,7 @@ class _SubscriptionCardContainer extends StatelessWidget {
               Text(
                 price,
                 style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1341,7 +1342,7 @@ class _SubscriptionCardContainer extends StatelessWidget {
                 Text(
                   ' $period',
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1357,11 +1358,11 @@ class _SubscriptionCardContainer extends StatelessWidget {
                   ? 'assets/icons/plan_check_green.svg'
                   : 'assets/icons/plan_check_grey.svg';
               final textColor = feature.isEnabled
-                  ? const Color(0xFF5D6494)
-                  : const Color(0xFFB1BACC);
+                  ? GliftColors.textBody
+                  : GliftColors.greyBlue;
               final boldColor = feature.isEnabled
-                  ? const Color(0xFF3A416F)
-                  : const Color(0xFFB1BACC);
+                  ? GliftColors.brandStrong
+                  : GliftColors.greyBlue;
               final decoration = feature.isEnabled
                   ? TextDecoration.none
                   : TextDecoration.lineThrough;
@@ -1473,11 +1474,11 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBgColor = isLoading ? const Color(0xFFF2F1F6) : backgroundColor;
+    final effectiveBgColor = isLoading ? GliftColors.surfaceMuted : backgroundColor;
     final effectiveBorder = (isLoading || borderColor == null)
         ? null
         : Border.all(color: borderColor!, width: 1.2);
-    final effectiveTextColor = isLoading ? const Color(0xFFC2BFC6) : textColor;
+    final effectiveTextColor = isLoading ? GliftColors.greyMedium : textColor;
 
     return Container(
       width: double.infinity,
@@ -1503,19 +1504,19 @@ class _ActionButton extends StatelessWidget {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(
+                  SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC2BFC6)),
+                      valueColor: AlwaysStoppedAnimation<Color>(GliftColors.greyMedium),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFC2BFC6),
+                      color: GliftColors.greyMedium,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1548,8 +1549,8 @@ class _SettingsBackButton extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(
-          color: Color(0xFF3A416F),
+        decoration: BoxDecoration(
+          color: GliftColors.brandStrong,
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -1608,7 +1609,7 @@ class _PulsingGreenDotState extends State<_PulsingGreenDot>
                   width: 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00D591).withValues(alpha: opacity),
+                    color: GliftColors.accentSuccess.withValues(alpha: opacity),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -1618,8 +1619,8 @@ class _PulsingGreenDotState extends State<_PulsingGreenDot>
           Container(
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(
-              color: Color(0xFF00D591),
+            decoration: BoxDecoration(
+              color: GliftColors.accentSuccess,
               shape: BoxShape.circle,
             ),
           ),
@@ -1651,7 +1652,7 @@ class _IntervalToggle extends StatelessWidget {
           child: Text(
             'Mensuel',
             style: GoogleFonts.quicksand(
-              color: !isYearly ? const Color(0xFF3A416F) : const Color(0xFF5D6494),
+              color: !isYearly ? GliftColors.brandStrong : GliftColors.textBody,
               fontSize: 16,
               fontWeight: !isYearly ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -1664,8 +1665,8 @@ class _IntervalToggle extends StatelessWidget {
           child: Switch.adaptive(
             value: isYearly,
             onChanged: onChanged,
-            activeThumbColor: const Color(0xFF7069FA),
-            activeTrackColor: const Color(0xFFA1A5FD),
+            activeThumbColor: GliftColors.brandPrimary,
+            activeTrackColor: GliftColors.focusRing,
           ),
         ),
         const SizedBox(width: 10),
@@ -1675,7 +1676,7 @@ class _IntervalToggle extends StatelessWidget {
           child: Text(
             'Annuel',
             style: GoogleFonts.quicksand(
-              color: isYearly ? const Color(0xFF3A416F) : const Color(0xFF5D6494),
+              color: isYearly ? GliftColors.brandStrong : GliftColors.textBody,
               fontSize: 16,
               fontWeight: isYearly ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -1686,13 +1687,13 @@ class _IntervalToggle extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFDCFAF1),
+              color: GliftColors.successSurface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               'Économise $discountPercent %',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF00D591),
+                color: GliftColors.accentSuccess,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),

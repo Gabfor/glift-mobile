@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class DeleteConfirmationModal extends StatelessWidget {
   final String? question;
@@ -49,7 +50,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -62,7 +63,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -76,7 +77,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF5D6494),
+                      color: GliftColors.textBody,
                       height: 1.4,
                     ),
                     children: [
@@ -85,7 +86,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                         text: 'Confirmer',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                         ),
                       ),
                       TextSpan(text: '” $objectName sera définitivement supprimé. En cliquant sur “'),
@@ -93,7 +94,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                         text: 'Annuler',
                         style: GoogleFonts.quicksand(
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                         ),
                       ),
                       const TextSpan(text: '” rien ne se passera.'),
@@ -112,7 +113,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(false),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            side: BorderSide(color: GliftColors.brandStrong),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -122,7 +123,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -137,7 +138,7 @@ class DeleteConfirmationModal extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(true),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF4F4E),
+                            backgroundColor: GliftColors.accentDanger,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),

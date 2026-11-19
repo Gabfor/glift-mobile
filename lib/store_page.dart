@@ -24,6 +24,7 @@ import 'widgets/empty_shop_widget.dart';
 import 'services/filter_service.dart';
 import 'services/settings_service.dart';
 import 'theme/glift_theme.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class StorePage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -744,7 +745,7 @@ class _StorePageState extends State<StorePage> {
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                          color: GliftColors.borderSoft,
                                           width: 1.0,
                                         ),
                                       ),
@@ -762,7 +763,7 @@ class _StorePageState extends State<StorePage> {
                                           Text(
                                             'Filtres',
                                             style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
+                                              color: GliftColors.brandStrong,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -787,7 +788,7 @@ class _StorePageState extends State<StorePage> {
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: const Color(0xFFD7D4DC),
+                                          color: GliftColors.borderSoft,
                                           width: 1.0,
                                         ),
                                       ),
@@ -1041,29 +1042,29 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
   Widget build(BuildContext context) {
     final program = widget.program;
     final buttonColor = _isRestricted
-        ? const Color(0xFFF2F1F6) // Gray background for restricted
+        ? GliftColors.surfaceMuted // Gray background for restricted
         : (_isDownloading
-            ? const Color(0xFFF2F1F6)
+            ? GliftColors.surfaceMuted
             : (_isDownloadable
-                ? const Color(0xFF7069FA)
-                : const Color(0xFFF2F1F6)));
+                ? GliftColors.brandPrimary
+                : GliftColors.surfaceMuted));
 
     final textColor = _isRestricted
-        ? const Color(0xFFC2BFC6) // Gray text for restricted
+        ? GliftColors.greyMedium // Gray text for restricted
         : (_isDownloading
-            ? const Color(0xFFC2BFC6)
+            ? GliftColors.greyMedium
             : (_isDownloadable
                 ? Colors.white
-                : const Color(0xFFC2BFC6)));
+                : GliftColors.greyMedium));
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFD7D4DC)),
+        border: Border.all(color: GliftColors.borderSoft),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5D6494).withValues(alpha: 0.06),
+            color: GliftColors.textBody.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -1132,7 +1133,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF5D6494).withOpacity(0.25),
+                            color: GliftColors.textBody.withOpacity(0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
@@ -1162,7 +1163,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                 Text(
                   program.title.toUpperCase(),
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1189,7 +1190,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                 Text(
                   program.description,
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF5D6494),
+                    color: GliftColors.textBody,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.57,
@@ -1223,10 +1224,10 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               if (_isDownloading) ...[
-                                const GliftLoader(
+                                GliftLoader(
                                   size: 20,
                                   strokeWidth: 2,
-                                  color: Color(0xFFC2BFC6),
+                                  color: GliftColors.greyMedium,
                                   centered: false,
                                 ),
                                 const SizedBox(width: 8),
@@ -1280,8 +1281,8 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
                           'En savoir plus',
                           style: GoogleFonts.quicksand(
                             color: hasLink
-                                ? const Color(0xFF5D6494)
-                                : const Color(0xFFD7D4DC),
+                                ? GliftColors.textBody
+                                : GliftColors.borderSoft,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1304,7 +1305,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
       height: 25,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F5FE),
+        color: GliftColors.violetTint,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
@@ -1312,7 +1313,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
         child: Text(
           text,
           style: GoogleFonts.redHatText(
-            color: const Color(0xFFA1A5FD),
+            color: GliftColors.focusRing,
             fontSize: 10,
             fontWeight: FontWeight.w600,
           ),
@@ -1326,7 +1327,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
       height: 25,
       padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F5FE),
+        color: GliftColors.violetTint,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(

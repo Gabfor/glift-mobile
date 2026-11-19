@@ -19,6 +19,7 @@ import 'user_informations_page.dart';
 import 'user_subscription_page.dart';
 import 'visibility_programs_page.dart';
 import 'services/realtime_sync_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class SettingsPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -248,7 +249,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       _weightUnit == 'imperial' ? 'Lb' : 'Kg',
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -256,7 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       maxLines: 1,
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () {
@@ -275,7 +276,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _SettingsTile(
                 title: 'Régler la visibilité',
-                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                trailing: Icon(Icons.chevron_right, color: GliftColors.textBody),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -441,7 +442,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       _getSoundEffectLabel(_soundEffect),
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -449,7 +450,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       maxLines: 1,
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () async {
@@ -479,7 +480,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       _displayType,
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -487,7 +488,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       maxLines: 1,
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () {
@@ -512,7 +513,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       '$_defaultRestTime secondes',
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -520,7 +521,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       maxLines: 1,
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () {
@@ -565,7 +566,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               _SettingsTile(
                 title: 'Mes informations',
-                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                trailing: Icon(Icons.chevron_right, color: GliftColors.textBody),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -584,7 +585,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       _subscriptionPlan == 'premium' ? 'Premium' : 'Starter',
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -592,7 +593,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       maxLines: 1,
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () {
@@ -665,7 +666,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       'Nous évaluer',
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -673,7 +674,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       maxLines: 1,
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () {},
@@ -686,25 +687,25 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       'Nous contacter',
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                    Icon(Icons.chevron_right, color: GliftColors.textBody),
                   ],
                 ),
                 onTap: () {},
               ),
               _SettingsTile(
                 title: 'Besoin d\'aide ?',
-                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                trailing: Icon(Icons.chevron_right, color: GliftColors.textBody),
                 onTap: () {},
               ),
               _SettingsTile(
                 title: 'Mentions légales',
-                trailing: const Icon(Icons.chevron_right, color: Color(0xFF5D6494)),
+                trailing: Icon(Icons.chevron_right, color: GliftColors.textBody),
                 onTap: () {
                   // TODO: Add navigation to legal mentions
                 },
@@ -728,9 +729,9 @@ class _SettingsPageState extends State<SettingsPage> {
         onPressed: _isLoggingOut ? null : _signOut,
         style: ElevatedButton.styleFrom(
           backgroundColor: _isLoggingOut 
-              ? const Color(0xFFF2F1F6) 
-              : const Color(0xFFEF4F4E),
-          disabledBackgroundColor: const Color(0xFFF2F1F6),
+              ? GliftColors.surfaceMuted 
+              : GliftColors.accentDanger,
+          disabledBackgroundColor: GliftColors.surfaceMuted,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
@@ -740,19 +741,19 @@ class _SettingsPageState extends State<SettingsPage> {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(
+                  SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC2BFC6)),
+                      valueColor: AlwaysStoppedAnimation<Color>(GliftColors.greyMedium),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFC2BFC6),
+                      color: GliftColors.greyMedium,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -811,7 +812,7 @@ class _SettingsSectionHeader extends StatelessWidget {
     return Text(
       title,
       style: GoogleFonts.quicksand(
-        color: const Color(0xFFC2BFC6),
+        color: GliftColors.greyMedium,
         fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
@@ -833,7 +834,7 @@ class _SettingsContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFD7D4DC)),
+        border: Border.all(color: GliftColors.borderSoft),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -867,7 +868,7 @@ class _SettingsTile extends StatelessWidget {
               child: Text(
                 title,
                 style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -908,7 +909,7 @@ class _SettingsSwitchTile extends StatelessWidget {
             child: Text(
               title,
               style: GoogleFonts.quicksand(
-                color: enabled ? const Color(0xFF3A416F) : const Color(0xFFD7D4DC),
+                color: enabled ? GliftColors.brandStrong : GliftColors.borderSoft,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -931,7 +932,7 @@ class _SettingsSwitchTile extends StatelessWidget {
                     onChanged(v);
                   }
                 },
-                activeColor: const Color(0xFFA1A5FD),
+                activeColor: GliftColors.focusRing,
               ),
             ),
           ),

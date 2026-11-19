@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/glift_theme.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class NoTopOverscrollPhysics extends ClampingScrollPhysics {
   const NoTopOverscrollPhysics({super.parent});
@@ -132,7 +133,7 @@ class _GliftPageLayoutState extends State<GliftPageLayout> {
 
       return Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: GliftTheme.background,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30),
@@ -190,8 +191,8 @@ class _GliftPageLayoutState extends State<GliftPageLayout> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  const Color(0xFF2E3142).withValues(alpha: 0.12),
-                                  const Color(0xFF2E3142).withValues(alpha: 0.04),
+                                  GliftColors.navyDeep.withValues(alpha: 0.12),
+                                  GliftColors.navyDeep.withValues(alpha: 0.04),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.0, 0.45, 1.0],

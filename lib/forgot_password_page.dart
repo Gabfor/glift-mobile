@@ -5,6 +5,7 @@ import 'package:supabase/supabase.dart';
 import 'auth/auth_repository.dart';
 import 'theme/glift_theme.dart';
 import 'widgets/glift_page_layout.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key, this.authRepository});
@@ -120,8 +121,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 _feedback!,
                 style: GoogleFonts.inter(
                   color: _feedback!.startsWith('Email envoyé')
-                      ? const Color(0xFF00D591)
-                      : const Color(0xFFEF4F4E),
+                      ? GliftColors.accentSuccess
+                      : GliftColors.accentDanger,
                 ),
               ),
             ],

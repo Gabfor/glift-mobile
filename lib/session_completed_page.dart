@@ -11,6 +11,7 @@ import 'package:glift_mobile/services/vibration_service.dart';
 import 'package:glift_mobile/models/achieved_goal.dart';
 import 'package:confetti/confetti.dart';
 import 'package:glift_mobile/services/settings_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class SessionCompletedPage extends StatefulWidget {
   const SessionCompletedPage({
@@ -239,7 +240,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                              style: GoogleFonts.quicksand(
                                fontSize: 18, 
                                fontWeight: FontWeight.w700, 
-                               color: const Color(0xFF3A416F),
+                               color: GliftColors.brandStrong,
                              ),
                            ),
                            const SizedBox(height: 8),
@@ -251,7 +252,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                              style: GoogleFonts.quicksand(
                                fontSize: 14,
                                fontWeight: FontWeight.w700,
-                               color: const Color(0xFF3A416F),
+                               color: GliftColors.brandStrong,
                                height: 1.4,
                              ),
                            ),
@@ -302,7 +303,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                   style: GoogleFonts.quicksand(
                                      fontSize: 14,
                                      fontWeight: FontWeight.w700,
-                                     color: const Color(0xFF3A416F),
+                                     color: GliftColors.brandStrong,
                                      height: 1.4,
                                   ),
                                   textAlign: TextAlign.center,
@@ -326,7 +327,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                            decoration: BoxDecoration(
                                               color: const Color(0xFFF6FDF7),
                                               borderRadius: BorderRadius.circular(10),
-                                              border: Border.all(color: const Color(0xFFECE9F1)),
+                                              border: Border.all(color: GliftColors.surfaceSubtle),
                                            ),
                                            child: Row(
                                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -346,7 +347,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                                              style: GoogleFonts.quicksand(
                                                                 fontSize: 14,
                                                                 fontWeight: FontWeight.bold,
-                                                                color: const Color(0xFF3A416F),
+                                                                color: GliftColors.brandStrong,
                                                              ),
                                                           ),
                                                           Text(
@@ -354,7 +355,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                                              style: GoogleFonts.quicksand(
                                                                 fontSize: 11,
                                                                 fontWeight: FontWeight.w600,
-                                                                color: const Color(0xFF5D6494),
+                                                                color: GliftColors.textBody,
                                                              ),
                                                              maxLines: 1,
                                                              overflow: TextOverflow.ellipsis,
@@ -381,8 +382,8 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                                        decoration: BoxDecoration(
                                          shape: BoxShape.circle,
                                          color: _currentGoalIndex == index 
-                                            ? const Color(0xFFA1A5FD) 
-                                            : const Color(0xFFD7D4DC),
+                                            ? GliftColors.focusRing 
+                                            : GliftColors.borderSoft,
                                        ),
                                      ),
                                    ),
@@ -400,7 +401,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                              child: ElevatedButton(
                                onPressed: _goToDashboard,
                                style: ElevatedButton.styleFrom(
-                                 backgroundColor: const Color(0xFF7069FA),
+                                 backgroundColor: GliftColors.brandPrimary,
                                  elevation: 0,
                                  shape: RoundedRectangleBorder(
                                    borderRadius: BorderRadius.circular(25),
@@ -480,7 +481,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700, // Bold
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.2,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -502,7 +503,7 @@ class _SessionCompletedPageState extends State<SessionCompletedPage> {
                 style: GoogleFonts.quicksand(
                   fontSize: 10, // Small label
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF5D6494), // Greyish text
+                  color: GliftColors.textBody, // Greyish text
                 ),
               ),
             ],

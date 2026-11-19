@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class GliftTheme {
   const GliftTheme._();
 
-  static const Color background = Color(0xFFFBFCFE);
-  static const Color accent = Color(0xFF7069FA);
-  static const Color title = Color(0xFF3A416F);
-  static const Color body = Color(0xFF5D6494);
-  static const Color pageIndicatorActive = Color(0xFFA1A5FD);
-  static const Color pageIndicatorInactive = Color(0xFFECE9F1);
-  static const Color barrierColor = Color(0x992E3142); // 60% opacity of #2E3142
+  static Color get background => GliftColors.surfacePrimary;
+  static Color get accent => GliftColors.brandPrimary;
+  static Color get title => GliftColors.brandStrong;
+  static Color get body => GliftColors.textBody;
+  static Color get pageIndicatorActive => GliftColors.focusRing;
+  static Color get pageIndicatorInactive => GliftColors.surfaceSubtle;
+  static Color get barrierColor => GliftColors.navyDeep.withValues(alpha: 0.6); // 60% opacity of #2E3142
 
   static ThemeData buildTheme() {
     final quicksandFontFamily = GoogleFonts.quicksand().fontFamily;
@@ -62,18 +63,18 @@ class GliftTheme {
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
               if (states.contains(WidgetState.hovered)) {
-                return const Color(0xFFECE9F1);
+                return GliftColors.surfaceSubtle;
               }
-              return const Color(0xFFF2F1F6);
+              return GliftColors.surfaceMuted;
             }
             if (states.contains(WidgetState.hovered)) {
-              return const Color(0xFF6660E4);
+              return GliftColors.brandPrimaryHover;
             }
             return accent;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
-              return const Color(0xFFC2BFC6);
+              return GliftColors.greyMedium;
             }
             return Colors.white;
           }),

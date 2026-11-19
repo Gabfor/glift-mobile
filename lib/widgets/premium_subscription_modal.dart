@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/settings_service.dart';
 import '../user_subscription_page.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class PremiumSubscriptionModal extends StatelessWidget {
   const PremiumSubscriptionModal({super.key});
@@ -54,7 +55,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -71,7 +72,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 34,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -80,7 +81,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                   ],
@@ -136,7 +137,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7069FA),
+                      backgroundColor: GliftColors.brandPrimary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -161,8 +162,8 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00D591),
+                        decoration: BoxDecoration(
+                          color: GliftColors.accentSuccess,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -172,7 +173,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                         style: GoogleFonts.quicksand(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF5D6494),
+                          color: GliftColors.textBody,
                         ),
                       ),
                     ],
@@ -232,7 +233,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
               text: TextSpan(
                 style: GoogleFonts.quicksand(
                   fontSize: 14,
-                  color: const Color(0xFF5D6494),
+                  color: GliftColors.textBody,
                   fontWeight: FontWeight.w600,
                   height: 1.4,
                 ),
@@ -243,7 +244,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                       ),
                     ),
                   if (normalText.isNotEmpty)
@@ -252,7 +253,7 @@ class PremiumSubscriptionModal extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                       ),
                     ),
                 ],

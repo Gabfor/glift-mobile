@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class SupersetGroupCard extends StatefulWidget {
   final List<Widget> children;
@@ -90,7 +91,7 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
       ),
       child: CustomPaint(
         foregroundPainter: DashedBorderPainter(
-          color: widget.isLocked ? const Color(0xFFD7D4DC) : const Color(0xFF7069FA),
+          color: widget.isLocked ? GliftColors.borderSoft : GliftColors.brandPrimary,
         ),
         child: Column(
           children: [
@@ -106,10 +107,10 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     iconWidth: 12,
                     iconHeight: 12,
                     color: effectiveIsCompleted
-                        ? const Color(0xFFECE9F1)
-                        : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
+                        ? GliftColors.surfaceSubtle
+                        : (effectiveIsIgnored ? Colors.white : GliftColors.greyMedium),
                     backgroundColor:
-                        effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                        effectiveIsIgnored ? GliftColors.greyMedium : Colors.white,
                     isDisabled: effectiveIsCompleted,
                     onTap: (effectiveIsCompleted || _isIgnoring)
                         ? null
@@ -123,8 +124,8 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     iconWidth: 12,
                     iconHeight: 12,
                     color: (widget.isLast || effectiveIsCompleted)
-                        ? const Color(0xFFECE9F1)
-                        : const Color(0xFFC2BFC6),
+                        ? GliftColors.surfaceSubtle
+                        : GliftColors.greyMedium,
                     isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring,
                     onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring)
                         ? null
@@ -138,10 +139,10 @@ class _SupersetGroupCardState extends State<SupersetGroupCard> {
                     iconWidth: 12,
                     iconHeight: 12,
                     color: effectiveIsIgnored
-                        ? const Color(0xFFECE9F1)
-                        : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
+                        ? GliftColors.surfaceSubtle
+                        : (effectiveIsCompleted ? Colors.white : GliftColors.accentSuccess),
                     backgroundColor:
-                        effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
+                        effectiveIsCompleted ? GliftColors.accentSuccess : Colors.white,
                     isPrimary: true,
                     isDisabled: effectiveIsIgnored,
                     onTap: _handleComplete,
@@ -189,7 +190,7 @@ class _ActionButtonState extends State<ActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = widget.isDisabled ? const Color(0xFFECE9F1) : widget.color;
+    final baseColor = widget.isDisabled ? GliftColors.surfaceSubtle : widget.color;
     final backgroundColor = widget.isDisabled ? Colors.white : widget.backgroundColor;
     final contentColor =
         widget.isPrimary && !widget.isDisabled && backgroundColor != Colors.white
@@ -215,7 +216,7 @@ class _ActionButtonState extends State<ActionButton> {
               color: widget.isPrimary && backgroundColor == Colors.white
                   ? baseColor
                   : (!widget.isPrimary && backgroundColor == Colors.white
-                      ? const Color(0xFFECE9F1)
+                      ? GliftColors.surfaceSubtle
                       : Colors.transparent),
             ),
             boxShadow: _isPressed

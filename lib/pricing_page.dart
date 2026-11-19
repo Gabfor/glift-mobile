@@ -9,6 +9,7 @@ import 'auth/biometric_auth_service.dart';
 import 'main_page.dart';
 import 'services/settings_service.dart';
 import 'widgets/glift_page_layout.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class PricingPage extends StatefulWidget {
   final String userName;
@@ -224,7 +225,7 @@ class _PricingPageState extends State<PricingPage> {
                 Text(
                   '30 jours pour tester, puis $currentPrice € $currentPeriod',
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF5D6494),
+                    color: GliftColors.textBody,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -303,12 +304,12 @@ class _PlanCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFECE9F1),
+          color: GliftColors.surfaceSubtle,
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5D6494).withValues(alpha: 0.05),
+            color: GliftColors.textBody.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -335,7 +336,7 @@ class _PlanCard extends StatelessWidget {
                   title,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -351,7 +352,7 @@ class _PlanCard extends StatelessWidget {
                     Text(
                       price,
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
                       ),
@@ -360,7 +361,7 @@ class _PlanCard extends StatelessWidget {
                       Text(
                         ' $period',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
+                          color: GliftColors.textBody,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -395,12 +396,12 @@ class _PlanCard extends StatelessWidget {
                                       style: GoogleFonts.quicksand(
                                         fontWeight: FontWeight.w600,
                                         color: feature.isEnabled
-                                            ? const Color(0xFF5D6494)
-                                            : const Color(0xFFB1BACC),
+                                            ? GliftColors.textBody
+                                            : GliftColors.greyBlue,
                                         decoration: feature.isEnabled
                                             ? TextDecoration.none
                                             : TextDecoration.lineThrough,
-                                        decorationColor: const Color(0xFFB1BACC),
+                                        decorationColor: GliftColors.greyBlue,
                                       ),
                                     ),
                                   if (feature.boldText.isNotEmpty)
@@ -409,12 +410,12 @@ class _PlanCard extends StatelessWidget {
                                       style: GoogleFonts.quicksand(
                                         fontWeight: FontWeight.w700,
                                         color: feature.isEnabled
-                                            ? const Color(0xFF3A416F)
-                                            : const Color(0xFFB1BACC),
+                                            ? GliftColors.brandStrong
+                                            : GliftColors.greyBlue,
                                         decoration: feature.isEnabled
                                             ? TextDecoration.none
                                             : TextDecoration.lineThrough,
-                                        decorationColor: const Color(0xFFB1BACC),
+                                        decorationColor: GliftColors.greyBlue,
                                       ),
                                     ),
                                   if (feature.regularText.isNotEmpty)
@@ -423,12 +424,12 @@ class _PlanCard extends StatelessWidget {
                                       style: GoogleFonts.quicksand(
                                         fontWeight: FontWeight.w600,
                                         color: feature.isEnabled
-                                            ? const Color(0xFF5D6494)
-                                            : const Color(0xFFB1BACC),
+                                            ? GliftColors.textBody
+                                            : GliftColors.greyBlue,
                                         decoration: feature.isEnabled
                                             ? TextDecoration.none
                                             : TextDecoration.lineThrough,
-                                        decorationColor: const Color(0xFFB1BACC),
+                                        decorationColor: GliftColors.greyBlue,
                                       ),
                                     ),
                                 ],
@@ -488,7 +489,7 @@ class _PremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isLoading ? const Color(0xFFC2BFC6) : Colors.white;
+    final textColor = isLoading ? GliftColors.greyMedium : Colors.white;
 
     return SizedBox(
       width: double.infinity,
@@ -500,18 +501,18 @@ class _PremiumButton extends StatelessWidget {
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (isLoading) {
               if (states.contains(WidgetState.hovered)) {
-                return const Color(0xFFECE9F1);
+                return GliftColors.surfaceSubtle;
               }
-              return const Color(0xFFF2F1F6);
+              return GliftColors.surfaceMuted;
             }
             if (states.contains(WidgetState.hovered)) {
-              return const Color(0xFF6660E4);
+              return GliftColors.brandPrimaryHover;
             }
-            return const Color(0xFF7069FA);
+            return GliftColors.brandPrimary;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (isLoading) {
-              return const Color(0xFFC2BFC6);
+              return GliftColors.greyMedium;
             }
             return Colors.white;
           }),
@@ -579,25 +580,25 @@ class _StarterButton extends StatelessWidget {
         width: double.infinity,
         height: 48,
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F1F6),
+          color: GliftColors.surfaceMuted,
           borderRadius: BorderRadius.circular(25),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC2BFC6)),
+                valueColor: AlwaysStoppedAnimation<Color>(GliftColors.greyMedium),
               ),
             ),
             const SizedBox(width: 12),
             Text(
               'En cours...',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFFC2BFC6),
+                color: GliftColors.greyMedium,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -613,8 +614,8 @@ class _StarterButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(
-            color: Color(0xFF5D6494),
+          side: BorderSide(
+            color: GliftColors.textBody,
             width: 1.2,
           ),
           shape: RoundedRectangleBorder(
@@ -624,7 +625,7 @@ class _StarterButton extends StatelessWidget {
         child: Text(
           'Choisir cet abonnement',
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF3A416F),
+            color: GliftColors.brandStrong,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -680,7 +681,7 @@ class _PulsingGreenDotState extends State<_PulsingGreenDot>
                   width: 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00D591).withValues(alpha: opacity),
+                    color: GliftColors.accentSuccess.withValues(alpha: opacity),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -690,8 +691,8 @@ class _PulsingGreenDotState extends State<_PulsingGreenDot>
           Container(
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(
-              color: Color(0xFF00D591),
+            decoration: BoxDecoration(
+              color: GliftColors.accentSuccess,
               shape: BoxShape.circle,
             ),
           ),
@@ -723,7 +724,7 @@ class _IntervalToggle extends StatelessWidget {
           child: Text(
             'Mensuel',
             style: GoogleFonts.quicksand(
-              color: !isYearly ? const Color(0xFF3A416F) : const Color(0xFF5D6494),
+              color: !isYearly ? GliftColors.brandStrong : GliftColors.textBody,
               fontSize: 16,
               fontWeight: !isYearly ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -736,8 +737,8 @@ class _IntervalToggle extends StatelessWidget {
           child: Switch.adaptive(
             value: isYearly,
             onChanged: onChanged,
-            activeColor: const Color(0xFF7069FA),
-            activeTrackColor: const Color(0xFFA1A5FD),
+            activeColor: GliftColors.brandPrimary,
+            activeTrackColor: GliftColors.focusRing,
           ),
         ),
         const SizedBox(width: 10),
@@ -747,7 +748,7 @@ class _IntervalToggle extends StatelessWidget {
           child: Text(
             'Annuel',
             style: GoogleFonts.quicksand(
-              color: isYearly ? const Color(0xFF3A416F) : const Color(0xFF5D6494),
+              color: isYearly ? GliftColors.brandStrong : GliftColors.textBody,
               fontSize: 16,
               fontWeight: isYearly ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -758,13 +759,13 @@ class _IntervalToggle extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFDCFAF1),
+              color: GliftColors.successSurface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               'Économise $discountPercent %',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF00D591),
+                color: GliftColors.accentSuccess,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),

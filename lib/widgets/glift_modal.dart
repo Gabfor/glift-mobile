@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 /// Composant générique unifié pour toutes les modales d'alerte, de confirmation et d'information de Glift.
 class GliftModal extends StatelessWidget {
@@ -129,7 +130,7 @@ class GliftModal extends StatelessWidget {
     Widget? content,
     String confirmText = 'Confirmer',
     String cancelText = 'Annuler',
-    Color confirmColor = const Color(0xFFEF4F4E),
+    Color? confirmColor,
     VoidCallback? onConfirm,
     VoidCallback? onCancel,
   }) {
@@ -144,7 +145,7 @@ class GliftModal extends StatelessWidget {
       secondaryButtonText: cancelText,
       onSecondaryPressed: onCancel,
       primaryButtonText: confirmText,
-      primaryButtonColor: confirmColor,
+      primaryButtonColor: confirmColor ?? GliftColors.accentDanger,
       primaryTextColor: Colors.white,
       isPrimaryOutlined: false,
       onPrimaryPressed: onConfirm,
@@ -191,7 +192,7 @@ class GliftModal extends StatelessWidget {
                   style: GoogleFonts.quicksand(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -203,7 +204,7 @@ class GliftModal extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                       height: 1.4,
                     ),
                     textAlign: TextAlign.center,
@@ -229,7 +230,7 @@ class GliftModal extends StatelessWidget {
                             onPressed: onSecondaryPressed ?? () => Navigator.of(context).pop(false),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                color: secondaryButtonColor ?? const Color(0xFF3A416F),
+                                color: secondaryButtonColor ?? GliftColors.brandStrong,
                                 width: 1.2,
                               ),
                               shape: RoundedRectangleBorder(
@@ -241,7 +242,7 @@ class GliftModal extends StatelessWidget {
                               style: GoogleFonts.quicksand(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: secondaryTextColor ?? const Color(0xFF3A416F),
+                                color: secondaryTextColor ?? GliftColors.brandStrong,
                               ),
                             ),
                           ),
@@ -258,7 +259,7 @@ class GliftModal extends StatelessWidget {
                                   onPressed: onPrimaryPressed ?? () => Navigator.of(context).pop(true),
                                   style: OutlinedButton.styleFrom(
                                     side: BorderSide(
-                                      color: primaryButtonColor ?? const Color(0xFF3A416F),
+                                      color: primaryButtonColor ?? GliftColors.brandStrong,
                                       width: 1.2,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -270,14 +271,14 @@ class GliftModal extends StatelessWidget {
                                     style: GoogleFonts.quicksand(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: primaryTextColor ?? const Color(0xFF3A416F),
+                                      color: primaryTextColor ?? GliftColors.brandStrong,
                                     ),
                                   ),
                                 )
                               : ElevatedButton(
                                   onPressed: onPrimaryPressed ?? () => Navigator.of(context).pop(true),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: primaryButtonColor ?? const Color(0xFF7069FA),
+                                    backgroundColor: primaryButtonColor ?? GliftColors.brandPrimary,
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),
@@ -305,7 +306,7 @@ class GliftModal extends StatelessWidget {
                             onPressed: onPrimaryPressed ?? () => Navigator.of(context).pop(true),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                color: primaryButtonColor ?? const Color(0xFF3A416F),
+                                color: primaryButtonColor ?? GliftColors.brandStrong,
                                 width: 1.2,
                               ),
                               shape: RoundedRectangleBorder(
@@ -317,14 +318,14 @@ class GliftModal extends StatelessWidget {
                               style: GoogleFonts.quicksand(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: primaryTextColor ?? const Color(0xFF3A416F),
+                                color: primaryTextColor ?? GliftColors.brandStrong,
                               ),
                             ),
                           )
                         : ElevatedButton(
                             onPressed: onPrimaryPressed ?? () => Navigator.of(context).pop(true),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryButtonColor ?? const Color(0xFF7069FA),
+                              backgroundColor: primaryButtonColor ?? GliftColors.brandPrimary,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(25),

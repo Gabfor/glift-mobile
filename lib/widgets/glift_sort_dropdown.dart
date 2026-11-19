@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class GliftSortDropdown extends StatefulWidget {
   final List<Map<String, String>> options;
@@ -61,8 +62,8 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
               borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: _isMenuOpen
-                    ? const Color(0xFFA1A5FD)
-                    : const Color(0xFFD7D4DC),
+                    ? GliftColors.focusRing
+                    : GliftColors.borderSoft,
                 width: 1.0,
               ),
             ),
@@ -81,7 +82,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                         child: Text(
                           selectedOption['label'] ?? '',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -101,8 +102,8 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                     'assets/icons/chevron.svg',
                     width: 9,
                     height: 6,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF3A416F),
+                    colorFilter: ColorFilter.mode(
+                      GliftColors.brandStrong,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -160,7 +161,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                      color: const Color(0xFFD7D4DC),
+                      color: GliftColors.borderSoft,
                       width: 1.0,
                     ),
                   ),
@@ -186,7 +187,7 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFFFAFAFF)
+                                ? GliftColors.surfaceAlt
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(5),
                           ),
@@ -194,8 +195,8 @@ class _GliftSortDropdownState extends State<GliftSortDropdown> {
                             option['label']!,
                             style: GoogleFonts.quicksand(
                               color: isSelected
-                                  ? const Color(0xFF7069FA)
-                                  : const Color(0xFF3A416F),
+                                  ? GliftColors.brandPrimary
+                                  : GliftColors.brandStrong,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),

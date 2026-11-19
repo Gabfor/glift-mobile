@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase/supabase.dart';
 import '../models/shop_offer.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class OfferDetailsModal extends StatefulWidget {
   final ShopOffer offer;
@@ -137,7 +138,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF5D6494).withValues(alpha: 0.25),
+                          color: GliftColors.textBody.withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -158,7 +159,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                   widget.offer.name.toUpperCase(),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -170,7 +171,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                     widget.offer.cleanDescription!,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFF5D6494),
+                      color: GliftColors.textBody,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -187,7 +188,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       Text(
                         "Comment en profiter ?",
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -198,7 +199,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                             ? "Pour en profiter immédiatement, copie le code de réduction ci-dessous et colle le dans ton panier."
                             : "Aucun code n'est nécessaire pour profiter de cette offre. Clique sur le bouton ci-dessous pour être automatiquement redirigé vers le site partenaire.",
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF5D6494),
+                          color: GliftColors.textBody,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -220,7 +221,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                       height: 48,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: const Color(0xFFD7D4DC)),
+                        border: Border.all(color: GliftColors.borderSoft),
                       ),
                       child: Stack(
                         alignment: Alignment.center,
@@ -229,7 +230,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                           Text(
                             widget.offer.code!,
                             style: GoogleFonts.quicksand(
-                              color: const Color(0xFF5D6494),
+                              color: GliftColors.textBody,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -242,8 +243,8 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                               height: 20,
                               colorFilter: ColorFilter.mode(
                                 _copied
-                                    ? const Color(0xFF00D591)
-                                    : const Color(0xFFA1A5FD),
+                                    ? GliftColors.accentSuccess
+                                    : GliftColors.focusRing,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -277,7 +278,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                         Text(
                           "Conditions de l'offre",
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -286,7 +287,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                         Text(
                           parsedCondition,
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF5D6494),
+                            color: GliftColors.textBody,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -303,7 +304,7 @@ class _OfferDetailsModalState extends State<OfferDetailsModal> {
                   child: ElevatedButton(
                     onPressed: _launchURL,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7069FA),
+                      backgroundColor: GliftColors.brandPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),

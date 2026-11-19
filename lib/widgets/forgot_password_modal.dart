@@ -10,6 +10,7 @@ import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
 import '../supabase_credentials.dart';
 import 'glift_modal.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 enum _ForgotPasswordStep { email, otp, newPassword, success }
 
@@ -156,18 +157,18 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
 
   Color _emailBorderColor() {
     if (_emailErrorMessage != null) {
-      return const Color(0xFFEF4F4E);
+      return GliftColors.accentDanger;
     }
     if (_isEmailFocused) {
-      return const Color(0xFF7069FA);
+      return GliftColors.brandPrimary;
     }
     if (_isEmailTouched && _emailController.text.isNotEmpty && !_isEmailFormatValid) {
-      return const Color(0xFFEF4F4E);
+      return GliftColors.accentDanger;
     }
     if (_isEmailTouched && _isEmailValid) {
-      return const Color(0xFF00D591);
+      return GliftColors.accentSuccess;
     }
-    return const Color(0xFFD7D4DC);
+    return GliftColors.borderSoft;
   }
 
   Color _emailMessageColor() {
@@ -176,12 +177,12 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
             !_isEmailFocused &&
             !_isEmailFormatValid &&
             _emailController.text.isNotEmpty)) {
-      return const Color(0xFFEF4F4E);
+      return GliftColors.accentDanger;
     }
     if (_isEmailTouched && !_isEmailFocused && _isEmailValid) {
-      return const Color(0xFF00D591);
+      return GliftColors.accentSuccess;
     }
-    return const Color(0xFF5D6494);
+    return GliftColors.textBody;
   }
 
   String get _emailDisplayMessage {
@@ -589,7 +590,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -601,7 +602,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                       height: 1.4,
                     ),
                     textAlign: TextAlign.center,
@@ -617,7 +618,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                         Text(
                           'Email',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -641,7 +642,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                               keyboardType: TextInputType.emailAddress,
                               autocorrect: false,
                               style: GoogleFonts.quicksand(
-                                color: const Color(0xFF5D6494),
+                                color: GliftColors.textBody,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -649,7 +650,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                 border: InputBorder.none,
                                 hintText: 'john.doe@email.com',
                                 hintStyle: GoogleFonts.quicksand(
-                                  color: const Color(0xFFD7D4DC),
+                                  color: GliftColors.borderSoft,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -695,10 +696,10 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(
                                   color: _hasOtpError
-                                      ? const Color(0xFFEF4F4E)
+                                      ? GliftColors.accentDanger
                                       : isFocused
-                                          ? const Color(0xFF7069FA)
-                                          : const Color(0xFFD7D4DC),
+                                          ? GliftColors.brandPrimary
+                                          : GliftColors.borderSoft,
                                   width: 1.0,
                                 ),
                               ),
@@ -723,7 +724,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                       LengthLimitingTextInputFormatter(6),
                                     ],
                                     style: GoogleFonts.quicksand(
-                                      color: const Color(0xFF5D6494),
+                                      color: GliftColors.textBody,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -731,7 +732,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                       border: InputBorder.none,
                                       hintText: '0',
                                       hintStyle: GoogleFonts.quicksand(
-                                        color: const Color(0xFFD7D4DC),
+                                        color: GliftColors.borderSoft,
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -756,7 +757,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                         Text(
                           'Nouveau mot de passe',
                           style: GoogleFonts.quicksand(
-                            color: const Color(0xFF3A416F),
+                            color: GliftColors.brandStrong,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -769,12 +770,12 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                             borderRadius: BorderRadius.circular(5),
                             border: Border.all(
                               color: _isNewPasswordFocused
-                                  ? const Color(0xFF7069FA)
+                                  ? GliftColors.brandPrimary
                                   : (_isNewPasswordTouched &&
                                           !_isNewPasswordValid &&
                                           _newPasswordController.text.isNotEmpty)
-                                      ? const Color(0xFFEF4F4E)
-                                      : const Color(0xFFD7D4DC),
+                                      ? GliftColors.accentDanger
+                                      : GliftColors.borderSoft,
                               width: 1.0,
                             ),
                           ),
@@ -787,7 +788,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                   obscureText: _obscureNewPassword,
                                   scrollPadding: const EdgeInsets.only(bottom: 220),
                                   style: GoogleFonts.quicksand(
-                                    color: const Color(0xFF5D6494),
+                                    color: GliftColors.textBody,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -795,7 +796,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                     border: InputBorder.none,
                                     hintText: '••••••••',
                                     hintStyle: GoogleFonts.quicksand(
-                                      color: const Color(0xFFD7D4DC),
+                                      color: GliftColors.borderSoft,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -834,7 +835,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                             Text(
                               'Répéter le nouveau mot de passe',
                               style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
+                                color: GliftColors.brandStrong,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -847,12 +848,12 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(
                                   color: _isConfirmPasswordFocused
-                                      ? const Color(0xFF7069FA)
+                                      ? GliftColors.brandPrimary
                                       : (_isConfirmPasswordTouched &&
                                               !_doPasswordsMatch &&
                                               _confirmPasswordController.text.isNotEmpty)
-                                          ? const Color(0xFFEF4F4E)
-                                          : const Color(0xFFD7D4DC),
+                                          ? GliftColors.accentDanger
+                                          : GliftColors.borderSoft,
                                   width: 1.0,
                                 ),
                               ),
@@ -865,7 +866,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                       obscureText: _obscureConfirmPassword,
                                       scrollPadding: const EdgeInsets.only(bottom: 220),
                                       style: GoogleFonts.quicksand(
-                                        color: const Color(0xFF5D6494),
+                                        color: GliftColors.textBody,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -873,7 +874,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                         border: InputBorder.none,
                                         hintText: '••••••••',
                                         hintStyle: GoogleFonts.quicksand(
-                                          color: const Color(0xFFD7D4DC),
+                                          color: GliftColors.borderSoft,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -919,7 +920,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                       child: ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7069FA),
+                          backgroundColor: GliftColors.brandPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
@@ -946,8 +947,8 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                   ? null
                                   : () => Navigator.of(context).pop(false),
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: Color(0xFF3A416F),
+                                side: BorderSide(
+                                  color: GliftColors.brandStrong,
                                   width: 1.2,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -959,7 +960,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                 style: GoogleFonts.quicksand(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                 ),
                               ),
                             ),
@@ -980,8 +981,8 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                           ? _handleSaveNewPassword
                                           : null),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF7069FA),
-                                disabledBackgroundColor: const Color(0xFFF2F1F6),
+                                backgroundColor: GliftColors.brandPrimary,
+                                disabledBackgroundColor: GliftColors.surfaceMuted,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(25),
@@ -991,13 +992,13 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                   ? Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        const SizedBox(
+                                        SizedBox(
                                           width: 20,
                                           height: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             valueColor: AlwaysStoppedAnimation<Color>(
-                                              Color(0xFFC2BFC6),
+                                              GliftColors.greyMedium,
                                             ),
                                           ),
                                         ),
@@ -1005,7 +1006,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                         Text(
                                           'En cours...',
                                           style: GoogleFonts.quicksand(
-                                            color: const Color(0xFFC2BFC6),
+                                            color: GliftColors.greyMedium,
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -1021,7 +1022,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
                                                 (isOtpStep && _isOtpComplete) ||
                                                 (isNewPasswordStep && _isPasswordFormValid))
                                             ? Colors.white
-                                            : const Color(0xFFC2BFC6),
+                                            : GliftColors.greyMedium,
                                       ),
                                     ),
                             ),
@@ -1073,7 +1074,7 @@ class _PasswordCriteriaItem extends StatelessWidget {
         ? 'assets/icons/check-success.svg'
         : 'assets/icons/check-neutral.svg';
     final textColor =
-        valid ? const Color(0xFF00D591) : const Color(0xFFD7D4DC);
+        valid ? GliftColors.accentSuccess : GliftColors.borderSoft;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

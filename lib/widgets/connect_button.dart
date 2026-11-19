@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class ConnectButton extends StatelessWidget {
   final bool isEnabled;
@@ -16,7 +17,7 @@ class ConnectButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isInteractive = isEnabled && !isLoading;
-    final textColor = isInteractive ? Colors.white : const Color(0xFFC2BFC6);
+    final textColor = isInteractive ? Colors.white : GliftColors.greyMedium;
 
     return SizedBox(
       width: double.infinity,
@@ -28,18 +29,18 @@ class ConnectButton extends StatelessWidget {
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (!isInteractive) {
               if (states.contains(WidgetState.hovered)) {
-                return const Color(0xFFECE9F1);
+                return GliftColors.surfaceSubtle;
               }
-              return const Color(0xFFF2F1F6);
+              return GliftColors.surfaceMuted;
             }
             if (states.contains(WidgetState.hovered)) {
-              return const Color(0xFF6660E4);
+              return GliftColors.brandPrimaryHover;
             }
-            return const Color(0xFF7069FA);
+            return GliftColors.brandPrimary;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (!isInteractive) {
-              return const Color(0xFFC2BFC6);
+              return GliftColors.greyMedium;
             }
             return Colors.white;
           }),
@@ -75,7 +76,7 @@ class ConnectButton extends StatelessWidget {
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFC2BFC6),
+                      color: GliftColors.greyMedium,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),

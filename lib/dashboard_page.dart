@@ -21,6 +21,7 @@ import 'widgets/glift_pull_to_refresh.dart';
 import 'widgets/empty_programs_widget.dart';
 import 'models/dashboard_preferences.dart';
 import 'visibility_programs_page.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class DashboardPage extends StatefulWidget {
 
@@ -422,7 +423,7 @@ class DashboardPageState extends State<DashboardPage> {
                       child: Text(
                         'Aucun programme disponible',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                           fontSize: 16,
                         ),
                       ),
@@ -475,7 +476,7 @@ class DashboardPageState extends State<DashboardPage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
+                                color: GliftColors.brandStrong,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -496,7 +497,7 @@ class DashboardPageState extends State<DashboardPage> {
                       child: Text(
                         'Aucun exercice trouvé',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF3A416F),
+                          color: GliftColors.brandStrong,
                           fontSize: 16,
                         ),
                       ),
@@ -525,7 +526,7 @@ class DashboardPageState extends State<DashboardPage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.quicksand(
-                                color: const Color(0xFF3A416F),
+                                color: GliftColors.brandStrong,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -639,13 +640,13 @@ class DashboardPageState extends State<DashboardPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFD7D4DC)),
+          border: Border.all(color: GliftColors.borderSoft),
         ),
         child: Icon(
           icon,
           color: onTap != null
-              ? const Color(0xFF3A416F)
-              : const Color(0xFFD7D4DC),
+              ? GliftColors.brandStrong
+              : GliftColors.borderSoft,
           size: 20,
         ),
       ),
@@ -936,7 +937,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
         double reservedWidth = 65; // Default fallback
         if (_history.isNotEmpty) {
            final textStyle = GoogleFonts.quicksand(
-              color: const Color(0xFF3A416F),
+              color: GliftColors.brandStrong,
               fontSize: 12,
               fontWeight: FontWeight.w700,
            );
@@ -967,7 +968,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD7D4DC)),
+        border: Border.all(color: GliftColors.borderSoft),
       ),
       child: Stack(
         children: [
@@ -982,7 +983,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1053,8 +1054,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           drawVerticalLine: false,
                                           horizontalInterval: interval,
                                           getDrawingHorizontalLine: (value) {
-                                            return const FlLine(
-                                              color: Color(0xFFECE9F1),
+                                            return FlLine(
+                                              color: GliftColors.surfaceSubtle,
                                               strokeWidth: 1,
                                             );
                                           },
@@ -1096,9 +1097,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                               Text(
                                                 DateFormat('dd').format(date),
                                                 style: GoogleFonts.quicksand(
-                                                  color: const Color(
-                                                    0xFF3A416F,
-                                                  ),
+                                                  color: GliftColors.brandStrong,
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w700,
                                                 ),
@@ -1109,9 +1108,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                                   'fr_FR',
                                                 ).format(date),
                                                 style: GoogleFonts.quicksand(
-                                                  color: const Color(
-                                                    0xFFC2BFC6,
-                                                  ),
+                                                  color: GliftColors.greyMedium,
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -1136,7 +1133,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           child: Text(
                                             '$displayValue $unitLabel',
                                             style: GoogleFonts.quicksand(
-                                              color: const Color(0xFF3A416F),
+                                              color: GliftColors.brandStrong,
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -1149,13 +1146,13 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                 ),
                                 borderData: FlBorderData(
                                   show: true,
-                                  border: const Border(
+                                  border: Border(
                                     top: BorderSide(
-                                      color: Color(0xFFECE9F1),
+                                      color: GliftColors.surfaceSubtle,
                                       width: 1,
                                     ),
                                     bottom: BorderSide(
-                                      color: Color(0xFFECE9F1),
+                                      color: GliftColors.surfaceSubtle,
                                       width: 1,
                                     ),
                                     left: BorderSide.none,
@@ -1190,7 +1187,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                     curveSmoothness: 0.35,
                                     preventCurveOverShooting:
                                         true, // Prevent curve from dipping below lines
-                                    color: const Color(0xFFA1A5FD),
+                                    color: GliftColors.focusRing,
                                     barWidth: 2,
                                     isStrokeCapRound: true,
                                     dotData: FlDotData(
@@ -1199,7 +1196,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                           (spot, percent, barData, index) {
                                             return FlDotCirclePainter(
                                               radius: 4,
-                                              color: const Color(0xFF7069FA),
+                                              color: GliftColors.brandPrimary,
                                               strokeWidth: 2,
                                               strokeColor: Colors.white,
                                             );
@@ -1211,12 +1208,8 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-                                          const Color(
-                                            0xFF7069FA,
-                                          ).withOpacity(0.2),
-                                          const Color(
-                                            0xFF7069FA,
-                                          ).withOpacity(0.0),
+                                          GliftColors.brandPrimary.withOpacity(0.2),
+                                          GliftColors.brandPrimary.withOpacity(0.0),
                                         ],
                                       ),
                                     ),
@@ -1245,9 +1238,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                                   ) {
                                                     return FlDotCirclePainter(
                                                       radius: 6,
-                                                      color: const Color(
-                                                        0xFF7069FA,
-                                                      ),
+                                                      color: GliftColors.brandPrimary,
                                                       strokeWidth: 2,
                                                       strokeColor: Colors.white,
                                                     );
@@ -1322,7 +1313,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                                   behavior: HitTestBehavior.opaque,
                                   onTapDown: (_) => _clearTooltip(),
                                   child: _TooltipWithArrow(
-                                    backgroundColor: const Color(0xFF2E3142),
+                                    backgroundColor: GliftColors.navyDeep,
                                     label: () {
                                       final int dataCount = _history.length;
                                       final int offset = (7 - dataCount) ~/ 2;
@@ -1350,7 +1341,7 @@ class _ExerciseChartCardState extends State<_ExerciseChartCard> {
                 child: Text(
                   'Aucune donnée disponible',
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFFC2BFC6),
+                    color: GliftColors.greyMedium,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

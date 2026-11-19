@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class FilterSection {
   final String title;
@@ -86,8 +87,8 @@ class _FilterModalState extends State<FilterModal> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: Color(0xFFFBFCFE),
+      decoration: BoxDecoration(
+        color: GliftColors.surfacePrimary,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
@@ -123,7 +124,7 @@ class _FilterModalState extends State<FilterModal> {
                     Text(
                       'Filtres',
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -156,7 +157,7 @@ class _FilterModalState extends State<FilterModal> {
                               Text(
                                 section.title,
                                 style: GoogleFonts.quicksand(
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -192,7 +193,7 @@ class _FilterModalState extends State<FilterModal> {
                                     Text(
                                       option,
                                       style: GoogleFonts.quicksand(
-                                        color: const Color(0xFF3A416F),
+                                        color: GliftColors.brandStrong,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -206,10 +207,10 @@ class _FilterModalState extends State<FilterModal> {
                       ),
                     ),
                     if (index != widget.sections.length - 1)
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(top: 14, bottom: 20),
                         child: Divider(
-                          color: Color(0xFFECE9F1),
+                          color: GliftColors.surfaceSubtle,
                           thickness: 1,
                           height: 1,
                         ),
@@ -236,7 +237,7 @@ class _FilterModalState extends State<FilterModal> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7069FA),
+                  backgroundColor: GliftColors.brandPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -288,7 +289,7 @@ class _SectionToggleButton extends StatelessWidget {
       child: Text(
         label,
         style: GoogleFonts.quicksand(
-          color: const Color(0xFF7069FA),
+          color: GliftColors.brandPrimary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),

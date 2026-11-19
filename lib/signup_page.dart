@@ -17,6 +17,7 @@ import 'supabase_credentials.dart';
 import 'widgets/auth_error_modal.dart';
 import 'widgets/glift_page_layout.dart';
 import 'widgets/otp_verification_modal.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class SignupPage extends StatefulWidget {
   final AuthRepository? authRepository;
@@ -499,7 +500,7 @@ class _SignupPageState extends State<SignupPage> {
               child: Text(
                 'Inscription',
                 style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -569,7 +570,7 @@ class _SignupPageState extends State<SignupPage> {
                 child: Text.rich(
                   TextSpan(
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFF5D6494),
+                      color: GliftColors.textBody,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       height: 1.4,
@@ -579,7 +580,7 @@ class _SignupPageState extends State<SignupPage> {
                       TextSpan(
                         text: 'Politique de confidentialité',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF7069FA),
+                          color: GliftColors.brandPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -589,7 +590,7 @@ class _SignupPageState extends State<SignupPage> {
                       TextSpan(
                         text: 'CGU',
                         style: GoogleFonts.quicksand(
-                          color: const Color(0xFF7069FA),
+                          color: GliftColors.brandPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -611,9 +612,9 @@ class _SignupPageState extends State<SignupPage> {
             const SizedBox(height: 24),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Divider(
-                    color: Color(0xFFECE9F1),
+                    color: GliftColors.surfaceSubtle,
                     thickness: 1,
                   ),
                 ),
@@ -622,15 +623,15 @@ class _SignupPageState extends State<SignupPage> {
                   child: Text(
                     'ou continue avec',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: GliftColors.borderSoft,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                const Expanded(
+                Expanded(
                   child: Divider(
-                    color: Color(0xFFECE9F1),
+                    color: GliftColors.surfaceSubtle,
                     thickness: 1,
                   ),
                 ),
@@ -676,7 +677,7 @@ class _CreateAccountButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isInteractive = isEnabled && !isLoading;
-    final textColor = isInteractive ? Colors.white : const Color(0xFFC2BFC6);
+    final textColor = isInteractive ? Colors.white : GliftColors.greyMedium;
 
     return SizedBox(
       width: double.infinity,
@@ -688,18 +689,18 @@ class _CreateAccountButton extends StatelessWidget {
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (!isInteractive) {
               if (states.contains(WidgetState.hovered)) {
-                return const Color(0xFFECE9F1);
+                return GliftColors.surfaceSubtle;
               }
-              return const Color(0xFFF2F1F6);
+              return GliftColors.surfaceMuted;
             }
             if (states.contains(WidgetState.hovered)) {
-              return const Color(0xFF6660E4);
+              return GliftColors.brandPrimaryHover;
             }
-            return const Color(0xFF7069FA);
+            return GliftColors.brandPrimary;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (!isInteractive) {
-              return const Color(0xFFC2BFC6);
+              return GliftColors.greyMedium;
             }
             return Colors.white;
           }),
@@ -735,7 +736,7 @@ class _CreateAccountButton extends StatelessWidget {
                   Text(
                     'En cours...',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFC2BFC6),
+                      color: GliftColors.greyMedium,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -752,8 +753,8 @@ class _CreateAccountButton extends StatelessWidget {
                         'assets/icons/locked.svg',
                         width: 20,
                         height: 20,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFFC2BFC6),
+                        colorFilter: ColorFilter.mode(
+                          GliftColors.greyMedium,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -783,7 +784,7 @@ class _LoginPrompt extends StatelessWidget {
           Text(
             'Déjà inscrit ? ',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -793,7 +794,7 @@ class _LoginPrompt extends StatelessWidget {
             child: Text(
               'Se connecter',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF7069FA),
+                color: GliftColors.brandPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -831,16 +832,16 @@ class _InputField extends StatelessWidget {
   });
 
   Color _borderColor() {
-    if (isError) return const Color(0xFFEF4F4E);
-    if (isSuccess) return const Color(0xFF00D591);
-    if (isFocused) return const Color(0xFF7069FA);
-    return const Color(0xFFD7D4DC);
+    if (isError) return GliftColors.accentDanger;
+    if (isSuccess) return GliftColors.accentSuccess;
+    if (isFocused) return GliftColors.brandPrimary;
+    return GliftColors.borderSoft;
   }
 
   Color _messageColor() {
-    if (isError) return const Color(0xFFEF4F4E);
-    if (isSuccess) return const Color(0xFF00D591);
-    return const Color(0xFF5D6494);
+    if (isError) return GliftColors.accentDanger;
+    if (isSuccess) return GliftColors.accentSuccess;
+    return GliftColors.textBody;
   }
 
   @override
@@ -851,7 +852,7 @@ class _InputField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF3A416F),
+            color: GliftColors.brandStrong,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -874,7 +875,7 @@ class _InputField extends StatelessWidget {
               focusNode: focusNode,
               textCapitalization: textCapitalization,
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF5D6494),
+                color: GliftColors.textBody,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -882,7 +883,7 @@ class _InputField extends StatelessWidget {
                 border: InputBorder.none,
                 hintText: hintText,
                 hintStyle: GoogleFonts.quicksand(
-                  color: const Color(0xFFD7D4DC),
+                  color: GliftColors.borderSoft,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -944,16 +945,16 @@ class _PasswordField extends StatelessWidget {
   });
 
   Color _borderColor() {
-    if (isError) return const Color(0xFFEF4F4E);
-    if (isSuccess) return const Color(0xFF00D591);
-    if (isFocused) return const Color(0xFF7069FA);
-    return const Color(0xFFD7D4DC);
+    if (isError) return GliftColors.accentDanger;
+    if (isSuccess) return GliftColors.accentSuccess;
+    if (isFocused) return GliftColors.brandPrimary;
+    return GliftColors.borderSoft;
   }
 
   Color _messageColor() {
-    if (isError) return const Color(0xFFEF4F4E);
-    if (isSuccess) return const Color(0xFF00D591);
-    return const Color(0xFF5D6494);
+    if (isError) return GliftColors.accentDanger;
+    if (isSuccess) return GliftColors.accentSuccess;
+    return GliftColors.textBody;
   }
 
   @override
@@ -964,7 +965,7 @@ class _PasswordField extends StatelessWidget {
         Text(
           'Mot de passe',
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF3A416F),
+            color: GliftColors.brandStrong,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -990,7 +991,7 @@ class _PasswordField extends StatelessWidget {
                   obscureText: obscureText,
                   obscuringCharacter: '●',
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF5D6494),
+                    color: GliftColors.textBody,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -998,7 +999,7 @@ class _PasswordField extends StatelessWidget {
                     border: InputBorder.none,
                     hintText: '••••••••',
                     hintStyle: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: GliftColors.borderSoft,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1104,7 +1105,7 @@ class _PasswordCriteriaItem extends StatelessWidget {
         ? 'assets/icons/check-success.svg'
         : 'assets/icons/check-neutral.svg';
     final textColor =
-        valid ? const Color(0xFF00D591) : const Color(0xFFD7D4DC);
+        valid ? GliftColors.accentSuccess : GliftColors.borderSoft;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1168,8 +1169,8 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: _isHovered
-                      ? const Color(0xFFC2BFC6)
-                      : const Color(0xFFD7D4DC),
+                      ? GliftColors.greyMedium
+                      : GliftColors.borderSoft,
                   width: 1.0,
                 ),
               ),
@@ -1184,7 +1185,7 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
             Text(
               widget.label,
               style: GoogleFonts.quicksand(
-                color: const Color(0xFFD7D4DC),
+                color: GliftColors.borderSoft,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),

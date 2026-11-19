@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class AnimatedCheckmark extends StatefulWidget {
   final VoidCallback onAnimationComplete;
@@ -67,7 +68,7 @@ class _CheckmarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00D591)
+      ..color = GliftColors.accentSuccess
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round

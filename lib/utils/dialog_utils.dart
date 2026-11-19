@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 Future<T?> showFadeDialog<T>({
   required BuildContext context,
@@ -14,7 +15,7 @@ Future<T?> showFadeDialog<T>({
     },
     barrierDismissible: barrierDismissible,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    barrierColor: barrierColor ?? const Color(0x992E3142),
+    barrierColor: barrierColor ?? GliftColors.navyDeep.withValues(alpha: 0.6),
     transitionDuration: transitionDuration,
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return FadeTransition(

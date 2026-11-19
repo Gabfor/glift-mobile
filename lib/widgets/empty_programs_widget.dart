@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class EmptyProgramsWidget extends StatefulWidget {
   const EmptyProgramsWidget({
@@ -55,7 +56,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                   style: GoogleFonts.quicksand(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF3A416F),
+                    color: GliftColors.brandStrong,
                     height: 1.3,
                   ),
                 ),
@@ -66,7 +67,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5D6494),
+                    color: GliftColors.textBody,
                     height: 1.4,
                   ),
                 ),
@@ -85,7 +86,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                       height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF7069FA),
+                        color: GliftColors.brandPrimary,
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Row(
@@ -124,7 +125,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                 style: GoogleFonts.quicksand(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   height: 1.3,
                 ),
               ),
@@ -135,7 +136,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                 style: GoogleFonts.quicksand(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF5D6494),
+                  color: GliftColors.textBody,
                   height: 1.4,
                 ),
               ),
@@ -150,7 +151,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF7069FA),
+                      color: GliftColors.brandPrimary,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Row(
@@ -189,7 +190,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
               style: GoogleFonts.quicksand(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
                 height: 1.3,
               ),
             ),
@@ -199,7 +200,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                 style: GoogleFonts.quicksand(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF5D6494),
+                  color: GliftColors.textBody,
                   height: 1.4,
                 ),
                 children: [
@@ -209,7 +210,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                     style: GoogleFonts.quicksand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF7069FA),
+                      color: GliftColors.brandPrimary,
                     ),
                     recognizer: _storeRecognizer,
                   ),
@@ -229,7 +230,7 @@ class _EmptyProgramsWidgetState extends State<EmptyProgramsWidget> {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF7069FA),
+                  color: GliftColors.brandPrimary,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Row(

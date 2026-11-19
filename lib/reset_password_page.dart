@@ -9,6 +9,7 @@ import 'auth/biometric_auth_service.dart';
 import 'login_page.dart';
 import 'widgets/glift_modal.dart';
 import 'widgets/glift_page_layout.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   final SupabaseClient supabase;
@@ -154,7 +155,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               child: Text(
                 'Choisis un nouveau mot de passe',
                 style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -166,7 +167,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             Text(
               'Nouveau mot de passe',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -179,10 +180,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
                   color: _passwordFocused
-                      ? const Color(0xFF7069FA)
+                      ? GliftColors.brandPrimary
                       : (_passwordTouched && !_isPasswordValid && _passwordController.text.isNotEmpty)
-                          ? const Color(0xFFEF4F4E)
-                          : const Color(0xFFD7D4DC),
+                          ? GliftColors.accentDanger
+                          : GliftColors.borderSoft,
                   width: 1.0,
                 ),
               ),
@@ -194,7 +195,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       focusNode: _passwordFocusNode,
                       obscureText: _obscurePassword,
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -202,7 +203,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         border: InputBorder.none,
                         hintText: '••••••••',
                         hintStyle: GoogleFonts.quicksand(
-                          color: const Color(0xFFD7D4DC),
+                          color: GliftColors.borderSoft,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -258,7 +259,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             Text(
               'Confirmer le mot de passe',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF3A416F),
+                color: GliftColors.brandStrong,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -271,10 +272,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
                   color: _confirmPasswordFocused
-                      ? const Color(0xFF7069FA)
+                      ? GliftColors.brandPrimary
                       : (_confirmPasswordTouched && !_doPasswordsMatch && _confirmPasswordController.text.isNotEmpty)
-                          ? const Color(0xFFEF4F4E)
-                          : const Color(0xFFD7D4DC),
+                          ? GliftColors.accentDanger
+                          : GliftColors.borderSoft,
                   width: 1.0,
                 ),
               ),
@@ -286,7 +287,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       focusNode: _confirmPasswordFocusNode,
                       obscureText: _obscureConfirmPassword,
                       style: GoogleFonts.quicksand(
-                        color: const Color(0xFF5D6494),
+                        color: GliftColors.textBody,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -294,7 +295,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         border: InputBorder.none,
                         hintText: '••••••••',
                         hintStyle: GoogleFonts.quicksand(
-                          color: const Color(0xFFD7D4DC),
+                          color: GliftColors.borderSoft,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -326,8 +327,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               child: ElevatedButton(
                 onPressed: _isFormValid && !_isLoading ? _submit : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7069FA),
-                  disabledBackgroundColor: const Color(0xFFF2F1F6),
+                  backgroundColor: GliftColors.brandPrimary,
+                  disabledBackgroundColor: GliftColors.surfaceMuted,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
@@ -337,13 +338,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFC2BFC6),
+                                GliftColors.greyMedium,
                               ),
                             ),
                           ),
@@ -351,7 +352,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           Text(
                             'En cours...',
                             style: GoogleFonts.quicksand(
-                              color: const Color(0xFFC2BFC6),
+                              color: GliftColors.greyMedium,
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
@@ -363,7 +364,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         style: GoogleFonts.quicksand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: _isFormValid ? Colors.white : const Color(0xFFC2BFC6),
+                          color: _isFormValid ? Colors.white : GliftColors.greyMedium,
                         ),
                       ),
               ),
@@ -391,7 +392,7 @@ class _CriteriaItem extends StatelessWidget {
           style: GoogleFonts.quicksand(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: valid ? const Color(0xFF00D591) : const Color(0xFFD7D4DC),
+            color: valid ? GliftColors.accentSuccess : GliftColors.borderSoft,
           ),
         ),
         SvgPicture.asset(

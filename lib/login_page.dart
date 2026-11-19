@@ -16,6 +16,7 @@ import 'signup_page.dart';
 import 'widgets/auth_error_modal.dart';
 import 'widgets/connect_button.dart';
 import 'widgets/glift_page_layout.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({
     super.key,
@@ -379,7 +380,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Text(
                 'Connexion',
                 style: GoogleFonts.quicksand(
-                  color: const Color(0xFF3A416F),
+                  color: GliftColors.brandStrong,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -439,7 +440,7 @@ class _LoginPageState extends State<LoginPage> {
                   'Mot de passe oublié ?',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF7069FA),
+                    color: GliftColors.brandPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -449,9 +450,9 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 30),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Divider(
-                    color: Color(0xFFECE9F1),
+                    color: GliftColors.surfaceSubtle,
                     thickness: 1,
                   ),
                 ),
@@ -460,15 +461,15 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text(
                     'ou continue avec',
                     style: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: GliftColors.borderSoft,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                const Expanded(
+                Expanded(
                   child: Divider(
-                    color: Color(0xFFECE9F1),
+                    color: GliftColors.surfaceSubtle,
                     thickness: 1,
                   ),
                 ),
@@ -515,7 +516,7 @@ class _SignupPrompt extends StatelessWidget {
           Text(
             'Pas encore inscrit ? ',
             style: GoogleFonts.quicksand(
-              color: const Color(0xFF5D6494),
+              color: GliftColors.textBody,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -525,7 +526,7 @@ class _SignupPrompt extends StatelessWidget {
             child: Text(
               'Créer un compte',
               style: GoogleFonts.quicksand(
-                color: const Color(0xFF7069FA),
+                color: GliftColors.brandPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -568,14 +569,14 @@ class _InputFieldState extends State<_InputField> {
   bool _isHovered = false;
 
   Color _borderColor() {
-    if (widget.isError) return const Color(0xFFEF4F4E);
-    if (widget.isFocused) return const Color(0xFFA1A5FD);
-    return _isHovered ? const Color(0xFFC2BFC6) : const Color(0xFFD7D4DC);
+    if (widget.isError) return GliftColors.accentDanger;
+    if (widget.isFocused) return GliftColors.focusRing;
+    return _isHovered ? GliftColors.greyMedium : GliftColors.borderSoft;
   }
 
   Color _messageColor() {
-    if (widget.isError) return const Color(0xFFEF4F4E);
-    return const Color(0xFF5D6494);
+    if (widget.isError) return GliftColors.accentDanger;
+    return GliftColors.textBody;
   }
 
   @override
@@ -586,7 +587,7 @@ class _InputFieldState extends State<_InputField> {
         Text(
           widget.label,
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF3A416F),
+            color: GliftColors.brandStrong,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -623,7 +624,7 @@ class _InputFieldState extends State<_InputField> {
                 focusNode: widget.focusNode,
                 keyboardType: TextInputType.emailAddress,
                 style: GoogleFonts.quicksand(
-                  color: const Color(0xFF5D6494),
+                  color: GliftColors.textBody,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -631,7 +632,7 @@ class _InputFieldState extends State<_InputField> {
                   border: InputBorder.none,
                   hintText: widget.hintText,
                   hintStyle: GoogleFonts.quicksand(
-                    color: const Color(0xFFD7D4DC),
+                    color: GliftColors.borderSoft,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -694,14 +695,14 @@ class _PasswordField extends StatelessWidget {
   });
 
   Color _borderColor() {
-    if (isError) return const Color(0xFFEF4F4E);
-    if (isFocused) return const Color(0xFFA1A5FD);
-    return const Color(0xFFD7D4DC);
+    if (isError) return GliftColors.accentDanger;
+    if (isFocused) return GliftColors.focusRing;
+    return GliftColors.borderSoft;
   }
 
   Color _messageColor() {
-    if (isError) return const Color(0xFFEF4F4E);
-    return const Color(0xFF5D6494);
+    if (isError) return GliftColors.accentDanger;
+    return GliftColors.textBody;
   }
 
   @override
@@ -712,7 +713,7 @@ class _PasswordField extends StatelessWidget {
         Text(
           'Mot de passe',
           style: GoogleFonts.quicksand(
-            color: const Color(0xFF3A416F),
+            color: GliftColors.brandStrong,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -749,7 +750,7 @@ class _PasswordField extends StatelessWidget {
                   obscureText: obscureText,
                   obscuringCharacter: '●',
                   style: GoogleFonts.quicksand(
-                    color: const Color(0xFF5D6494),
+                    color: GliftColors.textBody,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -757,7 +758,7 @@ class _PasswordField extends StatelessWidget {
                     border: InputBorder.none,
                     hintText: '••••••••',
                     hintStyle: GoogleFonts.quicksand(
-                      color: const Color(0xFFD7D4DC),
+                      color: GliftColors.borderSoft,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -849,8 +850,8 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: _isHovered
-                      ? const Color(0xFFC2BFC6)
-                      : const Color(0xFFD7D4DC),
+                      ? GliftColors.greyMedium
+                      : GliftColors.borderSoft,
                   width: 1.0,
                 ),
               ),
@@ -865,7 +866,7 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
             Text(
               widget.label,
               style: GoogleFonts.quicksand(
-                color: const Color(0xFFD7D4DC),
+                color: GliftColors.borderSoft,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),

@@ -7,6 +7,7 @@ import 'package:glift_mobile/services/notification_service.dart';
 import 'package:glift_mobile/services/vibration_service.dart';
 import 'package:glift_mobile/services/settings_service.dart';
 import 'package:glift_mobile/widgets/animated_checkmark.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class InlineTimerData {
   InlineTimerData({
@@ -486,7 +487,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFCFE),
+      backgroundColor: GliftColors.surfacePrimary,
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _handleOutsideTap,
@@ -559,7 +560,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                                 style: GoogleFonts.redHatText(
                                   fontSize: 80,
                                   fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF3A416F),
+                                  color: GliftColors.brandStrong,
                                   height: 1.0,
                                 ),
                               ),
@@ -635,8 +636,8 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                       height: 50,
                       decoration: BoxDecoration(
                         color: _isModified
-                            ? const Color(0xFF7069FA)
-                            : const Color(0xFFECE9F1),
+                            ? GliftColors.brandPrimary
+                            : GliftColors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(25),
                       ),
                       alignment: Alignment.center,
@@ -656,7 +657,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                                 fontWeight: FontWeight.w700,
                                 color: _isModified
                                     ? Colors.white
-                                    : const Color(0xFFC2BFC6),
+                                    : GliftColors.greyMedium,
                               ),
                             ),
                     ),
@@ -703,7 +704,7 @@ class _EditableTimeValue extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFFA1A5FD),
+                        color: GliftColors.focusRing,
                         width: 2,
                       ),
                     ),
@@ -721,7 +722,7 @@ class _EditableTimeValue extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 80,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.0,
                       ),
                       decoration: const InputDecoration(
@@ -747,7 +748,7 @@ class _EditableTimeValue extends StatelessWidget {
                       style: GoogleFonts.quicksand(
                         fontSize: 80,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3A416F),
+                        color: GliftColors.brandStrong,
                         height: 1.0,
                       ),
                     ),
@@ -760,7 +761,7 @@ class _EditableTimeValue extends StatelessWidget {
           textAlign: TextAlign.center,
           style: GoogleFonts.quicksand(
             fontSize: 16,
-            color: const Color(0xFFC2BFC6),
+            color: GliftColors.greyMedium,
             fontWeight: FontWeight.w600,
           ),
         ),

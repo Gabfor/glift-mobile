@@ -29,6 +29,7 @@ import '../auth/auth_repository.dart';
 import '../auth/biometric_auth_service.dart';
 import '../main_page.dart';
 import 'services/offline_sync_service.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class ActiveTrainingPage extends StatefulWidget {
   const ActiveTrainingPage({
@@ -1069,7 +1070,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.chevron_left, color: Color(0xFF7069FA)),
+              child: Icon(Icons.chevron_left, color: GliftColors.brandPrimary),
             ),
           ),
           const SizedBox(width: 16),
@@ -1151,7 +1152,7 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                 if (_isFinishing)
                   Positioned.fill(
                     child: Container(
-                      color: const Color(0x992E3142),
+                      color: GliftColors.navyDeep.withValues(alpha: 0.6),
                       child: const Center(
                         child: GliftLoader(),
                       ),
@@ -1180,8 +1181,8 @@ class _ActiveTrainingPageState extends State<ActiveTrainingPage>
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        const Color(0x8C2E3142),
-                        const Color(0x002E3142),
+                        GliftColors.navyDeep.withValues(alpha: 0.549),
+                        GliftColors.navyDeep.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -1439,7 +1440,7 @@ class _CompletedExercisesSeparator extends StatelessWidget {
         Expanded(
           child: Container(
             height: 1,
-            color: const Color(0xFFD7D4DC),
+            color: GliftColors.borderSoft,
           ),
         ),
         const SizedBox(width: 10),
@@ -1447,7 +1448,7 @@ class _CompletedExercisesSeparator extends StatelessWidget {
           'Exercices terminés',
           style: GoogleFonts.quicksand(
             fontSize: 14,
-            color: const Color(0xFFC2BFC6),
+            color: GliftColors.greyMedium,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -1455,7 +1456,7 @@ class _CompletedExercisesSeparator extends StatelessWidget {
         Expanded(
           child: Container(
             height: 1,
-            color: const Color(0xFFD7D4DC),
+            color: GliftColors.borderSoft,
           ),
         ),
       ],
@@ -1741,7 +1742,7 @@ class _InlineRestTimerState extends State<_InlineRestTimer> with WidgetsBindingO
   }
 
   TextStyle get _timerTextStyle => GoogleFonts.quicksand(
-        color: const Color(0xFF3A416F),
+        color: GliftColors.brandStrong,
         fontSize: 60,
         fontWeight: FontWeight.w600,
         height: 1.0,
@@ -2210,9 +2211,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                     style: GoogleFonts.quicksand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: isLocked ? const Color(0xFFC2BFC6) : const Color(0xFF7069FA),
+                      color: isLocked ? GliftColors.greyMedium : GliftColors.brandPrimary,
                       decoration: isLocked ? null : TextDecoration.underline,
-                      decorationColor: const Color(0xFF7069FA),
+                      decorationColor: GliftColors.brandPrimary,
                     ),
                   ),
                 )
@@ -2223,7 +2224,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: isLocked ? const Color(0xFFC2BFC6) : const Color(0xFF3A416F),
+                    color: isLocked ? GliftColors.greyMedium : GliftColors.brandStrong,
                   ),
                 ),
         ),
@@ -2233,7 +2234,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             'assets/icons/locked.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(Color(0xFFC2BFC6), BlendMode.srcIn),
+            colorFilter: ColorFilter.mode(GliftColors.greyMedium, BlendMode.srcIn),
           ),
         ] else ...[
           const SizedBox(width: 20),
@@ -2309,12 +2310,12 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               : _visualsForState(_EffortState.neutral);
 
           final isColored = visuals.backgroundColor != Colors.white;
-          final lockedColor = const Color(0xFFF6F6FA);
+          final lockedColor = GliftColors.surfaceHighlight;
 
           final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
-          final textColor = widget.row.locked ? const Color(0xFFC2BFC6) : visuals.textColor;
-          final borderColor = widget.row.locked ? const Color(0xFFECE9F1) : (
-             (index == _activeRepsIndex ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1))
+          final textColor = widget.row.locked ? GliftColors.greyMedium : visuals.textColor;
+          final borderColor = widget.row.locked ? GliftColors.surfaceSubtle : (
+             (index == _activeRepsIndex ? GliftColors.focusRing : GliftColors.surfaceSubtle)
           );
           final borderWidth = (!widget.row.locked && _activeRepsIndex == index) ? 2.0 : 1.0;
           final isCompleted = _completedSets[index];
@@ -2333,7 +2334,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                       child: Container(
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isLocked ? const Color(0xFFF6F6FA) : const Color(0xFFF2F1F6),
+                          color: isLocked ? GliftColors.surfaceHighlight : GliftColors.surfaceMuted,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -2341,7 +2342,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           style: GoogleFonts.quicksand(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: isLocked ? const Color(0xFFC2BFC6) : const Color(0xFF3A416F),
+                            color: isLocked ? GliftColors.greyMedium : GliftColors.brandStrong,
                           ),
                         ),
                       ),
@@ -2391,8 +2392,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                         color: bgColor,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: widget.row.locked ? const Color(0xFFECE9F1) : (
-                            _activeWeightIndex == index ? const Color(0xFFA1A5FD) : const Color(0xFFECE9F1)
+                          color: widget.row.locked ? GliftColors.surfaceSubtle : (
+                            _activeWeightIndex == index ? GliftColors.focusRing : GliftColors.surfaceSubtle
                           ),
                           width: (!widget.row.locked && _activeWeightIndex == index) ? 2 : 1,
                         ),
@@ -2423,7 +2424,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                           color: widget.row.locked ? lockedColor : Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: const Color(0xFFECE9F1),
+                            color: GliftColors.surfaceSubtle,
                             width: 1,
                           ),
                         ),
@@ -2459,7 +2460,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                             width: 24,
                             height: 24,
                             colorFilter: isLocked 
-                                ? const ColorFilter.mode(Color(0xFFC2BFC6), BlendMode.srcIn) 
+                                ? ColorFilter.mode(GliftColors.greyMedium, BlendMode.srcIn) 
                                 : null,
                           ),
                         )
@@ -2496,10 +2497,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 iconWidth: 12,
                 iconHeight: 12,
                 color: effectiveIsCompleted || isLocked
-                    ? const Color(0xFFECE9F1)
-                    : (effectiveIsIgnored ? Colors.white : const Color(0xFFC2BFC6)),
+                    ? GliftColors.surfaceSubtle
+                    : (effectiveIsIgnored ? Colors.white : GliftColors.greyMedium),
                 backgroundColor:
-                    effectiveIsIgnored ? const Color(0xFFC2BFC6) : Colors.white,
+                    effectiveIsIgnored ? GliftColors.greyMedium : Colors.white,
                 isDisabled: effectiveIsCompleted || isLocked,
                 onTap: (effectiveIsCompleted || _isIgnoring || isLocked)
                     ? null
@@ -2513,8 +2514,8 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                 iconWidth: 12,
                 iconHeight: 12,
                 color: (widget.isLast || effectiveIsCompleted || isLocked)
-                    ? const Color(0xFFECE9F1)
-                    : const Color(0xFFC2BFC6),
+                    ? GliftColors.surfaceSubtle
+                    : GliftColors.greyMedium,
                 isDisabled: widget.isLast || effectiveIsCompleted || _isIgnoring || isLocked,
                 onTap: (widget.isLast || effectiveIsCompleted || _isIgnoring || isLocked)
                     ? null
@@ -2528,10 +2529,10 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
                   iconWidth: 12,
                   iconHeight: 12,
                   color: effectiveIsIgnored || isLocked
-                      ? const Color(0xFFECE9F1)
-                      : (effectiveIsCompleted ? Colors.white : const Color(0xFF00D591)),
+                      ? GliftColors.surfaceSubtle
+                      : (effectiveIsCompleted ? Colors.white : GliftColors.accentSuccess),
                   backgroundColor:
-                      effectiveIsCompleted ? const Color(0xFF00D591) : Colors.white,
+                      effectiveIsCompleted ? GliftColors.accentSuccess : Colors.white,
                   isPrimary: true,
                   isDisabled: effectiveIsIgnored || isLocked,
                   onTap: isLocked ? null : _handleComplete,
@@ -2553,7 +2554,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: const Color(0xFFD7D4DC), width: 1),
+              border: Border.all(color: GliftColors.borderSoft, width: 1),
             ),
             child: content,
           ),
@@ -2596,9 +2597,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
   _EffortVisuals _visualsForState(_EffortState state) {
     switch (state) {
       case _EffortState.neutral:
-        return const _EffortVisuals(
+        return _EffortVisuals(
           backgroundColor: Colors.white,
-          textColor: Color(0xFF3A416F),
+          textColor: GliftColors.brandStrong,
           iconPath: 'assets/icons/smiley_jaune.png',
         );
       case _EffortState.positive:
@@ -2608,9 +2609,9 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
           iconPath: 'assets/icons/smiley_vert.png',
         );
       case _EffortState.negative:
-        return const _EffortVisuals(
-          backgroundColor: Color(0xFFFFF1F1),
-          textColor: Color(0xFFEF4F4E),
+        return _EffortVisuals(
+          backgroundColor: GliftColors.dangerSurface,
+          textColor: GliftColors.accentDanger,
           iconPath: 'assets/icons/smiley_rouge.png',
         );
     }
@@ -2665,11 +2666,11 @@ class _FinishButton extends StatelessWidget {
       width: 200,
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFF00D591),
+        color: GliftColors.accentSuccess,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x3F00D591),
+            color: GliftColors.accentSuccess.withValues(alpha: 0.2471),
             blurRadius: 10,
             offset: Offset(0, 5),
           ),
@@ -2735,7 +2736,7 @@ class _GridHeader extends StatelessWidget {
         textAlign: TextAlign.center,
         style: GoogleFonts.redHatText(
           fontSize: 14,
-          color: const Color(0xFFC2BFC6),
+          color: GliftColors.greyMedium,
           fontWeight: FontWeight.w500,
         ),
       ),

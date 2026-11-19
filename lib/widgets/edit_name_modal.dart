@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:glift_mobile/theme/glift_colors.dart';
 
 class EditNameModal extends StatefulWidget {
   final String title;
@@ -116,7 +117,7 @@ class _EditNameModalState extends State<EditNameModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -130,7 +131,7 @@ class _EditNameModalState extends State<EditNameModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                       height: 1.4,
                     ),
                     textAlign: TextAlign.center,
@@ -145,7 +146,7 @@ class _EditNameModalState extends State<EditNameModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -158,14 +159,14 @@ class _EditNameModalState extends State<EditNameModal> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: _isFocused ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
+                      color: _isFocused ? GliftColors.focusRing : GliftColors.borderSoft,
                       width: 1.0,
                     ),
                     borderRadius: BorderRadius.circular(5),
                     boxShadow: _isFocused
                         ? [
                             BoxShadow(
-                              color: const Color(0xFFA1A5FD).withOpacity(0.5),
+                              color: GliftColors.focusRing.withOpacity(0.5),
                               offset: Offset.zero,
                               blurRadius: 0,
                               spreadRadius: 0.5,
@@ -194,7 +195,7 @@ class _EditNameModalState extends State<EditNameModal> {
                           style: GoogleFonts.quicksand(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF5D6494),
+                            color: GliftColors.textBody,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
@@ -204,7 +205,7 @@ class _EditNameModalState extends State<EditNameModal> {
                             ),
                             hintText: widget.fieldLabel,
                             hintStyle: GoogleFonts.quicksand(
-                              color: const Color(0xFFD7D4DC),
+                              color: GliftColors.borderSoft,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -226,8 +227,8 @@ class _EditNameModalState extends State<EditNameModal> {
                                 'assets/icons/cross_reset.svg',
                                 width: 23,
                                 height: 23,
-                                colorFilter: const ColorFilter.mode(
-                                  Color(0xFFD7D4DC),
+                                colorFilter: ColorFilter.mode(
+                                  GliftColors.borderSoft,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -245,7 +246,7 @@ class _EditNameModalState extends State<EditNameModal> {
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3A416F),
+                      color: GliftColors.brandStrong,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -255,14 +256,14 @@ class _EditNameModalState extends State<EditNameModal> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(
-                        color: _isLinkFocused ? const Color(0xFFA1A5FD) : const Color(0xFFD7D4DC),
+                        color: _isLinkFocused ? GliftColors.focusRing : GliftColors.borderSoft,
                         width: 1.0,
                       ),
                       borderRadius: BorderRadius.circular(5),
                       boxShadow: _isLinkFocused
                           ? [
                               BoxShadow(
-                                color: const Color(0xFFA1A5FD).withOpacity(0.5),
+                                color: GliftColors.focusRing.withOpacity(0.5),
                                 offset: Offset.zero,
                                 blurRadius: 0,
                                 spreadRadius: 0.5,
@@ -290,7 +291,7 @@ class _EditNameModalState extends State<EditNameModal> {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF5D6494),
+                              color: GliftColors.textBody,
                             ),
                             decoration: InputDecoration(
                               border: InputBorder.none,
@@ -300,7 +301,7 @@ class _EditNameModalState extends State<EditNameModal> {
                               ),
                               hintText: 'Insère ton lien ici',
                               hintStyle: GoogleFonts.quicksand(
-                                color: const Color(0xFFD7D4DC),
+                                color: GliftColors.borderSoft,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -322,8 +323,8 @@ class _EditNameModalState extends State<EditNameModal> {
                                   'assets/icons/cross_reset.svg',
                                   width: 23,
                                   height: 23,
-                                  colorFilter: const ColorFilter.mode(
-                                    Color(0xFFD7D4DC),
+                                  colorFilter: ColorFilter.mode(
+                                    GliftColors.borderSoft,
                                     BlendMode.srcIn,
                                   ),
                                 ),
@@ -347,7 +348,7 @@ class _EditNameModalState extends State<EditNameModal> {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF3A416F)),
+                            side: BorderSide(color: GliftColors.brandStrong),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -357,7 +358,7 @@ class _EditNameModalState extends State<EditNameModal> {
                             style: GoogleFonts.quicksand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A416F),
+                              color: GliftColors.brandStrong,
                             ),
                           ),
                         ),
@@ -385,8 +386,8 @@ class _EditNameModalState extends State<EditNameModal> {
                                 }
                               },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7069FA),
-                            disabledBackgroundColor: const Color(0xFFF2F1F6),
+                            backgroundColor: GliftColors.brandPrimary,
+                            disabledBackgroundColor: GliftColors.surfaceMuted,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -398,7 +399,7 @@ class _EditNameModalState extends State<EditNameModal> {
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: _controller.text.trim().isEmpty 
-                                ? const Color(0xFFC2BFC6) 
+                                ? GliftColors.greyMedium 
                                 : Colors.white,
                             ),
                           ),
