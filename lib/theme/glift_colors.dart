@@ -37,7 +37,6 @@ class GliftColors {
   'surfacePrimary': 0xFFFBFCFE,
   'surfaceHighlight': 0xFFF6F6FA,
   'surfaceAlt': 0xFFFAFAFF,
-  'surfaceLavender': 0xFFF7F7FF,
   'accentSuccess': 0xFF00D591,
   'successSurface': 0xFFDCFAF1,
   'accentDanger': 0xFFEF4F4E,
@@ -144,8 +143,6 @@ class GliftColors {
   static Color get surfaceHighlight => _color('surfaceHighlight');
   /// Fond alternatif (défaut #FAFAFF)
   static Color get surfaceAlt => _color('surfaceAlt');
-  /// Fond lavande (défaut #F7F7FF)
-  static Color get surfaceLavender => _color('surfaceLavender');
   /// Vert (défaut #00D591)
   static Color get accentSuccess => _color('accentSuccess');
   /// Fond vert (défaut #DCFAF1)

@@ -2322,7 +2322,7 @@ class _ActiveExerciseCardState extends State<_ActiveExerciseCard> with Automatic
               ? _visualsForState(_effortStates[index])
               : _visualsForState(_EffortState.neutral);
 
-          final lockedColor = GliftColors.surfaceHighlight;
+          final lockedColor = GliftColors.surfaceMuted;
 
           final bgColor = widget.row.locked ? lockedColor : visuals.backgroundColor;
           final textColor = widget.row.locked ? GliftColors.greyMedium : visuals.textColor;

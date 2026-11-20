@@ -1616,7 +1616,7 @@ class _ExerciseCardState extends State<_ExerciseCard>
               : _visualsForState(_EffortState.neutral);
 
           // Override for locked or hidden
-          final lockedColor = GliftColors.surfaceHighlight;
+          final lockedColor = GliftColors.surfaceMuted;
 
           final bgColor = isGreyed ? lockedColor : visuals.backgroundColor;
           final textColor = isGreyed ? GliftColors.greyMedium : visuals.textColor;
