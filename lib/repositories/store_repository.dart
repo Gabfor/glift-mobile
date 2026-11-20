@@ -140,8 +140,8 @@ class StoreRepository {
           'program_id': newProgramId,
           'position': training['position'],
           'columns_settings': defaultColumnsSettings,
-          'app': true,
-          'dashboard': true,
+          'app': training['app'] ?? true,
+          'dashboard': training['dashboard'] ?? true,
         }).select('id').single();
 
         trainingMapping[training['id'].toString()] = insertedTraining['id'].toString();
@@ -175,6 +175,7 @@ class StoreRepository {
             'link': row['link'],
             'note': row['note'],
             'position': row['position'],
+            'is_hidden': row['is_hidden'] ?? false,
           };
         }).toList();
 

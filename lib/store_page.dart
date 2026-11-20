@@ -967,11 +967,20 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
 
     HapticFeedback.lightImpact();
 
+    var navigated = false;
     try {
       final success = await widget.repository.downloadProgram(widget.program.id);
       if (mounted) {
         if (success != null) {
+          navigated = true;
           widget.onNavigateToHome?.call(success);
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() {
+                _isDownloading = false;
+              });
+            }
+          });
         } else {
           throw Exception('Download returned null');
         }
@@ -990,7 +999,7 @@ class _StoreProgramCardState extends State<_StoreProgramCard> {
         );
       }
     } finally {
-      if (mounted) {
+      if (mounted && !navigated) {
         setState(() {
           _isDownloading = false;
         });
