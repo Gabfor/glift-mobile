@@ -49,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
   bool _hasNavigated = false;
+  bool _isOAuthPending = false;
   StreamSubscription<AuthState>? _authSubscription;
 
   void _navigateToMainPage() {
@@ -134,6 +135,10 @@ class _LoginPageState extends State<LoginPage> {
       final Session? session = data.session;
 
       if (event == AuthChangeEvent.signedIn && session != null) {
+        if (SettingsService.instance.getBiometricLocked() && !_isOAuthPending) {
+          return;
+        }
+        _isOAuthPending = false;
         await SettingsService.instance.saveBiometricLocked(false);
         if (widget.biometricAuthService != null &&
             SettingsService.instance.getBiometricEnabled()) {
@@ -380,6 +385,7 @@ class _LoginPageState extends State<LoginPage> {
     HapticFeedback.lightImpact();
     setState(() {
       _isLoading = true;
+      _isOAuthPending = true;
     });
 
     try {
@@ -391,6 +397,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
+      _isOAuthPending = false;
       if (!mounted) return;
       AuthErrorModal.show(
         context,
