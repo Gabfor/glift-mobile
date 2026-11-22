@@ -180,15 +180,17 @@ class _SettingsPageState extends State<SettingsPage> {
       RealtimeSyncService.instance.stop();
       await SettingsService.instance.clearUserData();
       await ProgramRepository(widget.supabase).clearLocalCache();
+      final currentSession = widget.supabase.auth.currentSession;
       final keepBiometrics = SettingsService.instance.getBiometricEnabled() &&
-          await widget.biometricAuthService.hasStoredCredentials();
+          (await widget.biometricAuthService.hasStoredCredentials() ||
+              currentSession != null);
       if (keepBiometrics) {
-        final currentSession = widget.supabase.auth.currentSession;
         if (currentSession != null) {
           await widget.biometricAuthService.persistSession(currentSession);
         }
-        await widget.supabase.auth.signOut(scope: SignOutScope.local);
+        await SettingsService.instance.saveBiometricLocked(true);
       } else {
+        await SettingsService.instance.saveBiometricLocked(false);
         await widget.supabase.auth.signOut();
         await widget.biometricAuthService.clearStoredCredentials();
       }

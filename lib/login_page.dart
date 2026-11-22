@@ -134,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
       final Session? session = data.session;
 
       if (event == AuthChangeEvent.signedIn && session != null) {
+        await SettingsService.instance.saveBiometricLocked(false);
         if (widget.biometricAuthService != null &&
             SettingsService.instance.getBiometricEnabled()) {
           await widget.biometricAuthService!.persistSession(session);
@@ -265,6 +266,7 @@ class _LoginPageState extends State<LoginPage> {
           password: _passwordController.text,
         );
         TextInput.finishAutofillContext();
+        await SettingsService.instance.saveBiometricLocked(false);
         if (widget.biometricAuthService != null &&
             SettingsService.instance.getBiometricEnabled()) {
           await widget.biometricAuthService!.persistSession(session);
@@ -331,6 +333,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await service.signInWithBiometrics();
+      await SettingsService.instance.saveBiometricLocked(false);
       try {
         await SettingsService.instance.syncFromSupabase();
       } catch (_) {}

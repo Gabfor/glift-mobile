@@ -189,7 +189,8 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
     if (!mounted || !_showSplash) return;
 
     final session = widget.supabase.auth.currentSession;
-    if (session != null && !session.isExpired) {
+    final isBiometricLocked = SettingsService.instance.getBiometricLocked();
+    if (session != null && !session.isExpired && !isBiometricLocked) {
       if (!mounted) return;
       setState(() {
         _showSplash = false;
@@ -200,7 +201,8 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
 
     final shouldGoToLogin = SettingsService.instance.getBiometricEnabled() &&
         await widget.biometricAuthService.isBiometricAvailable() &&
-        await widget.biometricAuthService.hasStoredCredentials();
+        (await widget.biometricAuthService.hasStoredCredentials() ||
+            session != null);
 
     if (!mounted) return;
     setState(() {

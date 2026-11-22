@@ -193,6 +193,125 @@ class _StorePageState extends State<StorePage> {
     filterService.storeFilters = _selectedFiltersMap;
   }
 
+  int _calculateProgramRelevance(
+    StoreProgram program,
+    Map<String, dynamic>? profile, {
+    required bool isFavorite,
+  }) {
+    int score = 0;
+
+    // 0. Favorite Rule (+10 points)
+    if (isFavorite) {
+      score += 10;
+    }
+
+    if (profile == null) return score;
+
+    // 1. Plan Accessibility Rule for Starter Users (+15 points)
+    final userPlan =
+        profile['subscription_plan']?.toString().trim().toLowerCase();
+    if (userPlan == 'starter' &&
+        program.plan.trim().toLowerCase() == 'starter') {
+      score += 15;
+    }
+
+    // 2. Gender Rule
+    final userGender = profile['gender']?.toString().trim().toLowerCase();
+    if (userGender != null && userGender.isNotEmpty) {
+      final pg = program.gender.trim().toLowerCase();
+      if (userGender == 'homme') {
+        if (pg == 'homme' || pg == 'tous') {
+          score += 5;
+        } else if (pg == 'femme') {
+          score -= 5;
+        }
+      } else if (userGender == 'femme') {
+        if (pg == 'femme' || pg == 'tous') {
+          score += 5;
+        } else if (pg == 'homme') {
+          score -= 5;
+        }
+      }
+    }
+
+    // 3. Experience Rule (Years of practice -> Level)
+    final userYOP = profile['experience']?.toString().trim();
+    if (userYOP != null && userYOP.isNotEmpty) {
+      final pl = program.level.trim().toLowerCase();
+      final isAllLevels = pl == 'tous niveaux';
+      if (userYOP == '0') {
+        if (pl == 'débutant') {
+          score += 5;
+        } else if (isAllLevels) {
+          score += 3;
+        }
+      } else if (['1', '2', '3'].contains(userYOP)) {
+        if (pl == 'intermédiaire') {
+          score += 5;
+        } else if (isAllLevels) {
+          score += 3;
+        }
+      } else if (['4', '5+'].contains(userYOP)) {
+        if (pl == 'confirmé') {
+          score += 5;
+        } else if (isAllLevels) {
+          score += 3;
+        }
+      }
+    }
+
+    // 4. Goal Rule
+    final userGoal = profile['main_goal']?.toString().trim();
+    if (userGoal != null &&
+        userGoal.isNotEmpty &&
+        userGoal == program.goal.trim()) {
+      score += 5;
+    }
+
+    // 5. Location Rule
+    final userLocation =
+        profile['training_place']?.toString().trim().toLowerCase();
+    if (userLocation != null && userLocation.isNotEmpty) {
+      final pl = (program.location ?? '').trim().toLowerCase();
+      final isWildcard =
+          pl == 'les deux' || pl == 'tous' || pl == 'partout';
+      if (userLocation == 'salle') {
+        if (pl == 'salle' || isWildcard) {
+          score += 5;
+        } else if (pl == 'domicile') {
+          score -= 5;
+        }
+      } else if (userLocation == 'domicile') {
+        if (pl == 'domicile' || isWildcard) {
+          score += 5;
+        } else if (pl == 'salle') {
+          score -= 5;
+        }
+      } else if (userLocation == 'les deux') {
+        score += 5;
+      }
+    }
+
+    // 6. Duration Rule (Sessions per week)
+    final userSessions = profile['weekly_sessions']?.toString().trim();
+    final pSessions = program.sessions.trim();
+    if (userSessions != null &&
+        userSessions.isNotEmpty &&
+        pSessions.isNotEmpty) {
+      if (userSessions == pSessions) {
+        score += 5;
+      } else {
+        final uVal = int.tryParse(userSessions);
+        final pVal = int.tryParse(pSessions);
+        if (uVal != null && pVal != null && (uVal - pVal).abs() == 1) {
+          score += 2;
+        }
+      }
+    }
+
+    return score;
+  }
+
   Future<void> _loadPrograms() async {
     try {
       await _loadFavorites();
@@ -200,130 +319,62 @@ class _StorePageState extends State<StorePage> {
         sortBy: _selectedSort == 'relevance' ? 'newest' : _selectedSort,
       );
 
-      if (_selectedSort == 'relevance' && widget.supabase.auth.currentUser != null) {
+      if (_selectedSort == 'relevance') {
         try {
-          final userId = widget.supabase.auth.currentUser!.id;
-          final profileCheck = await widget.supabase
-              .from('profiles')
-              .select('gender, experience, main_goal, training_place, weekly_sessions')
-              .eq('id', userId)
-              .maybeSingle();
-
-          if (profileCheck != null) {
-            final p = Map<String, dynamic>.from(profileCheck);
-            final String? userGender = p['gender']?.toString().trim().toLowerCase();
-            final String? userYOP = p['experience']?.toString().trim();
-            final String? userGoal = p['main_goal']?.toString().trim();
-            final String? userLocation = p['training_place']?.toString().trim();
-            final String? userSessions = p['weekly_sessions']?.toString().trim();
-
-            programs.sort((a, b) {
-              // 0. Gender Separation Rule : opposite gender is strictly relegated to the end
-              if (userGender != null) {
-                final ug = userGender.trim().toLowerCase();
-                final pgA = a.gender.trim().toLowerCase();
-                final pgB = b.gender.trim().toLowerCase();
-                final isOppositeA = (ug == 'homme' && pgA == 'femme') || (ug == 'femme' && pgA == 'homme');
-                final isOppositeB = (ug == 'homme' && pgB == 'femme') || (ug == 'femme' && pgB == 'homme');
-                if (isOppositeA != isOppositeB) {
-                  return isOppositeA ? 1 : -1;
-                }
-              }
-
-              int scoreA = 0;
-              int scoreB = 0;
-
-              // 1. Favorite Rule (+10 points)
-              if (_favoriteProgramIdsForSorting.contains(a.id)) {
-                scoreA += 10;
-              }
-              if (_favoriteProgramIdsForSorting.contains(b.id)) {
-                scoreB += 10;
-              }
-
-              // 1. Gender Rule
-              int getGenderScore(String programGender) {
-                final pg = programGender.trim().toLowerCase();
-                if (userGender == 'homme') {
-                  if (pg == 'homme' || pg == 'tous') return 5;
-                  if (pg == 'femme') return -5;
-                } else if (userGender == 'femme') {
-                  if (pg == 'femme' || pg == 'tous') return 5;
-                  if (pg == 'homme') return -5;
-                }
-                return 0;
-              }
-              if (userGender != null) {
-                scoreA += getGenderScore(a.gender);
-                scoreB += getGenderScore(b.gender);
-              }
-
-              // 2. Experience Rule
-              int getLevelScore(String programLevel) {
-                final pl = programLevel.trim().toLowerCase();
-                final isAllLevels = pl == 'tous niveaux';
-                if (userYOP == '0') {
-                  if (pl == 'débutant') return 5;
-                  if (isAllLevels) return 3;
-                } else if (['1', '2', '3'].contains(userYOP)) {
-                  if (pl == 'intermédiaire') return 5;
-                  if (isAllLevels) return 3;
-                } else if (['4', '5+'].contains(userYOP)) {
-                  if (pl == 'confirmé') return 5;
-                  if (isAllLevels) return 3;
-                }
-                return 0;
-              }
-              if (userYOP != null) {
-                scoreA += getLevelScore(a.level);
-                scoreB += getLevelScore(b.level);
-              }
-
-              // 3. Goal Rule
-              if (userGoal != null) {
-                final String pGoalA = a.goal.trim();
-                final String pGoalB = b.goal.trim();
-                if (userGoal == pGoalA) scoreA += 5;
-                if (userGoal == pGoalB) scoreB += 5;
-              }
-
-              // 4. Location Rule
-              if (userLocation != null) {
-                if (a.location != null && a.location!.trim() == userLocation) scoreA += 3;
-                if (b.location != null && b.location!.trim() == userLocation) scoreB += 3;
-              }
-
-              // 5. Sessions Rule
-              if (userSessions != null) {
-                 final uSessions = userSessions; // Already trimmed above
-                 final pSessionsA = a.sessions.toString().trim();
-                 if (pSessionsA.isNotEmpty && (pSessionsA == uSessions || uSessions.startsWith(pSessionsA))) {
-                   scoreA += 2;
-                 }
-
-                 final pSessionsB = b.sessions.toString().trim();
-                 if (pSessionsB.isNotEmpty && (pSessionsB == uSessions || uSessions.startsWith(pSessionsB))) {
-                   scoreB += 2;
-                 }
-              }
-              
-              // Debug print for top items or specific conflicts could be useful, 
-              // but for now let's just see if it runs.
-              // debugPrint('Program ${a.title}: $scoreA | Program ${b.title}: $scoreB');
-
-              if (scoreA != scoreB) {
-                return scoreB - scoreA;
-              }
-              
-              // Tie-breaker 1: Downloads
-              if (a.downloads != b.downloads) {
-                return b.downloads - a.downloads;
-              }
-
-              // Tie-breaker 2: Alphabetical
-              return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-            });
+          Map<String, dynamic>? profile;
+          final currentUser = widget.supabase.auth.currentUser;
+          if (currentUser != null) {
+            final profileCheck = await widget.supabase
+                .from('profiles')
+                .select(
+                    'subscription_plan, gender, experience, main_goal, training_place, weekly_sessions')
+                .eq('id', currentUser.id)
+                .maybeSingle();
+            if (profileCheck != null) {
+              profile = Map<String, dynamic>.from(profileCheck);
+            }
           }
+
+          final String? userGender =
+              profile?['gender']?.toString().trim().toLowerCase();
+
+          programs.sort((a, b) {
+            // 0. Gender Separation Rule: opposite gender is strictly relegated to the end
+            if (userGender != null && userGender.isNotEmpty) {
+              final pgA = a.gender.trim().toLowerCase();
+              final pgB = b.gender.trim().toLowerCase();
+              final isOppositeA = (userGender == 'homme' && pgA == 'femme') ||
+                  (userGender == 'femme' && pgA == 'homme');
+              final isOppositeB = (userGender == 'homme' && pgB == 'femme') ||
+                  (userGender == 'femme' && pgB == 'homme');
+              if (isOppositeA != isOppositeB) {
+                return isOppositeA ? 1 : -1;
+              }
+            }
+
+            final scoreA = _calculateProgramRelevance(
+              a,
+              profile,
+              isFavorite: _favoriteProgramIdsForSorting.contains(a.id),
+            );
+            final scoreB = _calculateProgramRelevance(
+              b,
+              profile,
+              isFavorite: _favoriteProgramIdsForSorting.contains(b.id),
+            );
+
+            if (scoreA != scoreB) {
+              return scoreB - scoreA;
+            }
+
+            // Tie-breaker 1: Downloads
+            if (a.downloads != b.downloads) {
+              return b.downloads - a.downloads;
+            }
+
+            // Tie-breaker 2: Alphabetical
+            return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          });
         } catch (err) {
           debugPrint('Error caught during relevance sort: $err');
           // Proceed without sorting (fallback to 'newest' order from fetch)

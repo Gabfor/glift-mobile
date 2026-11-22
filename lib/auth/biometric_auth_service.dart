@@ -129,6 +129,14 @@ class BiometricAuthService {
         );
       }
 
+      final current = _supabase.auth.currentSession;
+      if (current != null && !current.isExpired) {
+        return AuthResponse(
+          session: current,
+          user: _supabase.auth.currentUser,
+        );
+      }
+
       final response = await _supabase.auth.setSession(refreshToken);
 
       final newRefreshToken = response.session?.refreshToken;
