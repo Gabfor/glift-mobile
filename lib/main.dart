@@ -167,9 +167,8 @@ class SplashToOnboarding extends StatefulWidget {
 
 class _SplashToOnboardingState extends State<SplashToOnboarding> {
   bool _showSplash = true;
-  bool _isAttemptingBiometricLogin = false;
-  bool _biometricAuthenticated = false;
-  bool _biometricFallbackToLogin = false;
+  bool _isLoggedIn = false;
+  bool _goToLogin = false;
   Timer? _fallbackTimer;
 
   @override
@@ -189,42 +188,25 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
     _fallbackTimer?.cancel();
     if (!mounted || !_showSplash) return;
 
-    final shouldTryBiometrics = SettingsService.instance.getBiometricEnabled() &&
-        await widget.biometricAuthService.isBiometricAvailable() &&
-        await widget.biometricAuthService.hasStoredCredentials();
-
-    if (!mounted) return;
-
-    if (!shouldTryBiometrics) {
+    final session = widget.supabase.auth.currentSession;
+    if (session != null && !session.isExpired) {
+      if (!mounted) return;
       setState(() {
         _showSplash = false;
+        _isLoggedIn = true;
       });
       return;
     }
 
+    final shouldGoToLogin = SettingsService.instance.getBiometricEnabled() &&
+        await widget.biometricAuthService.isBiometricAvailable() &&
+        await widget.biometricAuthService.hasStoredCredentials();
+
+    if (!mounted) return;
     setState(() {
       _showSplash = false;
-      _isAttemptingBiometricLogin = true;
+      _goToLogin = shouldGoToLogin;
     });
-
-    try {
-      await widget.biometricAuthService.signInWithBiometrics();
-      try {
-        await SettingsService.instance.syncFromSupabase();
-      } catch (_) {}
-      if (!mounted) return;
-      setState(() {
-        _isAttemptingBiometricLogin = false;
-        _biometricAuthenticated = true;
-      });
-    } catch (e) {
-      debugPrint('Biometric auto-login failed: $e');
-      if (!mounted) return;
-      setState(() {
-        _isAttemptingBiometricLogin = false;
-        _biometricFallbackToLogin = true;
-      });
-    }
   }
 
   @override
@@ -235,11 +217,11 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
 
   @override
   Widget build(BuildContext context) {
-    if (_showSplash || _isAttemptingBiometricLogin) {
+    if (_showSplash) {
       return SplashScreen(onAnimationCompleted: _onAnimationCompleted);
     }
 
-    if (_biometricAuthenticated) {
+    if (_isLoggedIn) {
       return MainPage(
         supabase: widget.supabase,
         authRepository: widget.authRepository,
@@ -248,12 +230,11 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
       );
     }
 
-    if (_biometricFallbackToLogin) {
+    if (_goToLogin) {
       return LoginPage(
         authRepository: widget.authRepository,
         supabase: widget.supabase,
         biometricAuthService: widget.biometricAuthService,
-        skipAutoBiometric: true,
       );
     }
 

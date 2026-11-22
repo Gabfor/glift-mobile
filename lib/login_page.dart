@@ -264,6 +264,7 @@ class _LoginPageState extends State<LoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+        TextInput.finishAutofillContext();
         if (widget.biometricAuthService != null &&
             SettingsService.instance.getBiometricEnabled()) {
           await widget.biometricAuthService!.persistSession(session);
@@ -446,8 +447,9 @@ class _LoginPageState extends State<LoginPage> {
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
       footerPadding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
       footer: _SignupPrompt(onTap: _openSignup),
-      child: Form(
-        key: _formKey,
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -570,6 +572,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ],
+        ),
         ),
       ),
     );
@@ -698,6 +701,11 @@ class _InputFieldState extends State<_InputField> {
                 controller: widget.controller,
                 focusNode: widget.focusNode,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [
+                  AutofillHints.email,
+                  AutofillHints.username,
+                ],
                 style: GoogleFonts.quicksand(
                   color: GliftColors.textBody,
                   fontSize: 16,
@@ -824,6 +832,8 @@ class _PasswordField extends StatelessWidget {
                   focusNode: focusNode,
                   obscureText: obscureText,
                   obscuringCharacter: '●',
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.password],
                   style: GoogleFonts.quicksand(
                     color: GliftColors.textBody,
                     fontSize: 16,
