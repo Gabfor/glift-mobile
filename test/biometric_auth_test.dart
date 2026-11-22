@@ -100,6 +100,29 @@ void main() {
     expect(biometricService.signInCalls, 1);
   });
 
+  testWidgets('Does not trigger biometric sign-in when skipAutoBiometric is true',
+      (tester) async {
+    final biometricService = _FakeBiometricAuthService(
+      supabase: supabase,
+      available: true,
+      hasCredentials: true,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginPage(
+          authRepository: _FakeAuthRepository(),
+          supabase: supabase,
+          biometricAuthService: biometricService,
+          skipAutoBiometric: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(biometricService.signInCalls, 0);
+  });
+
   testWidgets('Does not trigger biometric sign-in when no stored credentials',
       (tester) async {
     final biometricService = _FakeBiometricAuthService(

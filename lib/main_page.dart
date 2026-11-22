@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,6 +47,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   final Set<int> _loadedTabs = {};
   final Map<int, Widget> _pageCache = {};
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
@@ -52,6 +55,15 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _triggerSync();
     RealtimeSyncService.instance.start(widget.supabase);
+    _authSubscription = widget.supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session == null) return;
+      if ((data.event == AuthChangeEvent.tokenRefreshed ||
+              data.event == AuthChangeEvent.signedIn) &&
+          SettingsService.instance.getBiometricEnabled()) {
+        widget.biometricAuthService.persistSession(session);
+      }
+    });
     
     // Use Dashboard as default if an initial program ID is provided
     if (widget.initialIndex != null) {
@@ -126,6 +138,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     RealtimeSyncService.instance.stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();

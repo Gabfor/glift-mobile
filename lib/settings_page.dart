@@ -163,6 +163,10 @@ class _SettingsPageState extends State<SettingsPage> {
       final keepBiometrics = SettingsService.instance.getBiometricEnabled() &&
           await widget.biometricAuthService.hasStoredCredentials();
       if (keepBiometrics) {
+        final currentSession = widget.supabase.auth.currentSession;
+        if (currentSession != null) {
+          await widget.biometricAuthService.persistSession(currentSession);
+        }
         await widget.supabase.auth.signOut(scope: SignOutScope.local);
       } else {
         await widget.supabase.auth.signOut();
@@ -176,6 +180,7 @@ class _SettingsPageState extends State<SettingsPage> {
               supabase: widget.supabase,
               authRepository: widget.authRepository,
               biometricAuthService: widget.biometricAuthService,
+              skipAutoBiometric: true,
             ),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,

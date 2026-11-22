@@ -22,11 +22,13 @@ class LoginPage extends StatefulWidget {
     this.authRepository,
     this.supabase,
     this.biometricAuthService,
+    this.skipAutoBiometric = false,
   });
 
   final AuthRepository? authRepository;
   final SupabaseClient? supabase;
   final BiometricAuthService? biometricAuthService;
+  final bool skipAutoBiometric;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -105,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _setupAuthListener();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (mounted && !widget.skipAutoBiometric) {
         _attemptAutoBiometricLogin();
       }
     });
