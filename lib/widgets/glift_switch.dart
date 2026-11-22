@@ -36,8 +36,8 @@ class GliftSwitch extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
-            width: 44,
-            height: 26,
+            width: 50,
+            height: 30,
             padding: const EdgeInsets.symmetric(horizontal: 1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(34),
@@ -58,8 +58,8 @@ class GliftSwitch extends StatelessWidget {
                   ? Alignment.centerRight
                   : Alignment.centerLeft,
               child: Container(
-                width: 22,
-                height: 22,
+                width: 26,
+                height: 26,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
