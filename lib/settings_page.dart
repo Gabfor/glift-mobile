@@ -69,6 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _biometricAvailable = false;
   bool _biometricEnabled = true;
   String _biometricLabel = 'Biométrie';
+  String _biometricIconAsset = 'assets/icons/biometrie_empreinte.svg';
 
   @override
   void initState() {
@@ -84,12 +85,31 @@ class _SettingsPageState extends State<SettingsPage> {
     final label = available
         ? await widget.biometricAuthService.getBiometricLabel()
         : 'Biométrie';
+    final iconAsset = available
+        ? await widget.biometricAuthService.getBiometricIconAsset()
+        : 'assets/icons/biometrie_empreinte.svg';
     if (!mounted) return;
     setState(() {
       _biometricAvailable = available;
       _biometricLabel = label;
+      _biometricIconAsset = iconAsset;
       _biometricEnabled = SettingsService.instance.getBiometricEnabled();
     });
+  }
+
+  String _biometricSettingsTitle() {
+    switch (_biometricLabel) {
+      case 'Face ID':
+        return 'Connexion Face ID';
+      case 'Touch ID':
+        return 'Connexion Touch ID';
+      case 'Reconnaissance faciale':
+        return 'Reconnaissance faciale';
+      case 'Empreinte digitale':
+        return 'Empreinte digitale';
+      default:
+        return 'Connexion biométrique';
+    }
   }
 
   Future<void> _toggleBiometric(bool value) async {
@@ -663,9 +683,9 @@ class _SettingsPageState extends State<SettingsPage> {
             _SettingsContainer(
               children: [
                 _SettingsSwitchTile(
-                  title: _biometricLabel == 'Biométrie'
-                      ? 'Connexion biométrique'
-                      : 'Connexion avec $_biometricLabel',
+                  title: _biometricSettingsTitle(),
+                  leadingIconAsset: _biometricIconAsset,
+                  leadingIconColor: const Color(0xFF3A416F),
                   value: _biometricEnabled,
                   onChanged: _toggleBiometric,
                 ),
@@ -952,12 +972,16 @@ class _SettingsSwitchTile extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   final bool enabled;
+  final String? leadingIconAsset;
+  final Color? leadingIconColor;
 
   const _SettingsSwitchTile({
     required this.title,
     required this.value,
     required this.onChanged,
     this.enabled = true,
+    this.leadingIconAsset,
+    this.leadingIconColor,
   });
 
   @override
@@ -967,6 +991,17 @@ class _SettingsSwitchTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
         children: [
+          if (leadingIconAsset != null) ...[
+            SvgPicture.asset(
+              leadingIconAsset!,
+              width: 20,
+              height: 20,
+              colorFilter: leadingIconColor != null
+                  ? ColorFilter.mode(leadingIconColor!, BlendMode.srcIn)
+                  : null,
+            ),
+            const SizedBox(width: 10),
+          ],
           Expanded(
             child: Text(
               title,

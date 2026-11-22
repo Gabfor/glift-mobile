@@ -169,6 +169,7 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
   bool _showSplash = true;
   bool _isAttemptingBiometricLogin = false;
   bool _biometricAuthenticated = false;
+  bool _biometricFallbackToLogin = false;
   Timer? _fallbackTimer;
 
   @override
@@ -216,10 +217,12 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
         _isAttemptingBiometricLogin = false;
         _biometricAuthenticated = true;
       });
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Biometric auto-login failed: $e');
       if (!mounted) return;
       setState(() {
         _isAttemptingBiometricLogin = false;
+        _biometricFallbackToLogin = true;
       });
     }
   }
@@ -242,6 +245,15 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
         authRepository: widget.authRepository,
         biometricAuthService: widget.biometricAuthService,
         initialIndex: 1,
+      );
+    }
+
+    if (_biometricFallbackToLogin) {
+      return LoginPage(
+        authRepository: widget.authRepository,
+        supabase: widget.supabase,
+        biometricAuthService: widget.biometricAuthService,
+        skipAutoBiometric: true,
       );
     }
 
