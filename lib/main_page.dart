@@ -217,8 +217,6 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     // Ensure the visited tab is refreshed with latest data
     if (index == 0) {
       _dashboardKey.currentState?.refreshData();
-    } else if (index == 1) {
-      _homeKey.currentState?.refresh();
     } else if (index == 4) {
       SettingsService.instance.syncFromSupabase();
     }

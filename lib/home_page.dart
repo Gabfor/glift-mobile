@@ -151,22 +151,23 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchPrograms() async {
-    // 1. Load local cache first
-    try {
-      final localPrograms = await _programRepository.getLocalPrograms();
-      final filteredLocal = _programRepository.filterVisiblePrograms(localPrograms);
-      if (mounted && filteredLocal.isNotEmpty) {
-        setState(() {
-          _programs = filteredLocal;
-          _programKeys
-            ..clear()
-            ..addAll(List.generate(filteredLocal.length, (_) => GlobalKey()));
-          _selectedProgramId ??= filteredLocal.first.id;
-          // _isLoading = false; // Intentionally keeping loading state to prevent flash of deleted programs
-        });
+    // 1. Load local cache first only on initial cold load
+    if (_programs == null) {
+      try {
+        final localPrograms = await _programRepository.getLocalPrograms();
+        final filteredLocal = _programRepository.filterVisiblePrograms(localPrograms);
+        if (mounted && filteredLocal.isNotEmpty) {
+          setState(() {
+            _programs = filteredLocal;
+            _programKeys
+              ..clear()
+              ..addAll(List.generate(filteredLocal.length, (_) => GlobalKey()));
+            _selectedProgramId ??= filteredLocal.first.id;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error loading local programs: $e');
       }
-    } catch (e) {
-      debugPrint('Error loading local programs: $e');
     }
 
     // 2. Fetch remote data (Background Sync)
@@ -197,6 +198,7 @@ class HomePageState extends State<HomePage> {
           }
             
           // If we had no selection or selection is invalid, select first
+          final previousSelectedId = _selectedProgramId;
           if (_selectedProgramId == null ||
               !programs.any((p) => p.id == _selectedProgramId)) {
             if (programs.isNotEmpty) _selectedProgramId = programs.first.id;
@@ -222,7 +224,7 @@ class HomePageState extends State<HomePage> {
                 });
               }
             });
-          } else {
+          } else if (previousSelectedId != _selectedProgramId) {
             _ensureSelectedProgramVisible();
           }
         });
