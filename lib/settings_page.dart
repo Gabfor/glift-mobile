@@ -65,6 +65,9 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _newsletterShop = false;
   bool _newsletterStore = false;
   String _subscriptionPlan = 'basic';
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = true;
+  String _biometricLabel = 'Biométrie';
 
   @override
   void initState() {
@@ -72,6 +75,33 @@ class _SettingsPageState extends State<SettingsPage> {
     _pageController = PageController();
     _applySettingsFromService();
     _loadSettings();
+    _loadBiometricStatus();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    final available = await widget.biometricAuthService.isBiometricAvailable();
+    final label = available
+        ? await widget.biometricAuthService.getBiometricLabel()
+        : 'Biométrie';
+    if (!mounted) return;
+    setState(() {
+      _biometricAvailable = available;
+      _biometricLabel = label;
+      _biometricEnabled = SettingsService.instance.getBiometricEnabled();
+    });
+  }
+
+  Future<void> _toggleBiometric(bool value) async {
+    setState(() => _biometricEnabled = value);
+    await SettingsService.instance.saveBiometricEnabled(value);
+    if (value) {
+      final session = widget.supabase.auth.currentSession;
+      if (session != null) {
+        await widget.biometricAuthService.persistSession(session);
+      }
+    } else {
+      await widget.biometricAuthService.clearStoredCredentials();
+    }
   }
 
   @override
@@ -128,7 +158,14 @@ class _SettingsPageState extends State<SettingsPage> {
       RealtimeSyncService.instance.stop();
       await SettingsService.instance.clearUserData();
       await ProgramRepository(widget.supabase).clearLocalCache();
-      await widget.supabase.auth.signOut();
+      final keepBiometrics = SettingsService.instance.getBiometricEnabled() &&
+          await widget.biometricAuthService.hasStoredCredentials();
+      if (keepBiometrics) {
+        await widget.supabase.auth.signOut(scope: SignOutScope.local);
+      } else {
+        await widget.supabase.auth.signOut();
+        await widget.biometricAuthService.clearStoredCredentials();
+      }
       if (mounted) {
         // Navigate to login page with instant transition and clear the navigation stack
         Navigator.of(context).pushAndRemoveUntil(
@@ -612,6 +649,23 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 20),
+
+          if (_biometricAvailable) ...[
+            const _SettingsSectionHeader(title: 'SÉCURITÉ'),
+            const SizedBox(height: 10),
+            _SettingsContainer(
+              children: [
+                _SettingsSwitchTile(
+                  title: _biometricLabel == 'Biométrie'
+                      ? 'Connexion biométrique'
+                      : 'Connexion avec $_biometricLabel',
+                  value: _biometricEnabled,
+                  onChanged: _toggleBiometric,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // Communications Section
           const _SettingsSectionHeader(title: 'COMMUNICATIONS'),

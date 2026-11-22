@@ -660,6 +660,19 @@ class SettingsService {
     return _prefs.getBool(_kVibrationEnabled) ?? true;
   }
 
+  // Biometric Auth Enabled
+  static const String _kBiometricEnabled = 'biometric_enabled';
+
+  Future<void> saveBiometricEnabled(bool enabled) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kBiometricEnabled, enabled);
+  }
+
+  bool getBiometricEnabled() {
+    if (!_initialized) return true;
+    return _prefs.getBool(_kBiometricEnabled) ?? true;
+  }
+
   // Default Rest Time
   static const String _kDefaultRestTime = 'default_rest_time';
 

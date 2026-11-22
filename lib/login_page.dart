@@ -47,6 +47,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
   bool _hasNavigated = false;
+  bool _canUseBiometricLogin = false;
+  String _biometricLabel = 'Biométrie';
   StreamSubscription<AuthState>? _authSubscription;
 
   void _navigateToMainPage() {
@@ -104,6 +106,7 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _setupAuthListener();
+    _checkBiometricAvailability();
     _emailFocusNode.addListener(() {
       setState(() {
         _emailFocused = _emailFocusNode.hasFocus;
@@ -127,7 +130,8 @@ class _LoginPageState extends State<LoginPage> {
       final Session? session = data.session;
 
       if (event == AuthChangeEvent.signedIn && session != null) {
-        if (widget.biometricAuthService != null) {
+        if (widget.biometricAuthService != null &&
+            SettingsService.instance.getBiometricEnabled()) {
           await widget.biometricAuthService!.persistSession(session);
         }
 
@@ -256,7 +260,8 @@ class _LoginPageState extends State<LoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-        if (widget.biometricAuthService != null) {
+        if (widget.biometricAuthService != null &&
+            SettingsService.instance.getBiometricEnabled()) {
           await widget.biometricAuthService!.persistSession(session);
         }
         try {
@@ -292,6 +297,78 @@ class _LoginPageState extends State<LoginPage> {
         description: msg.isNotEmpty
             ? msg
             : 'Une erreur inattendue est survenue. Vérifie ta connexion et réessaie.',
+      );
+    }
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final service = widget.biometricAuthService;
+    if (service == null) return;
+    if (!SettingsService.instance.getBiometricEnabled()) return;
+
+    final available = await service.isBiometricAvailable();
+    if (!available) return;
+    final hasCredentials = await service.hasStoredCredentials();
+    if (!hasCredentials) return;
+    final label = await service.getBiometricLabel();
+
+    if (!mounted) return;
+    setState(() {
+      _canUseBiometricLogin = true;
+      _biometricLabel = label;
+    });
+  }
+
+  Future<void> _signInWithBiometrics() async {
+    final service = widget.biometricAuthService;
+    if (service == null || _isLoading) return;
+
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await service.signInWithBiometrics();
+      try {
+        await SettingsService.instance.syncFromSupabase();
+      } catch (_) {}
+      if (!mounted || _hasNavigated) return;
+      _navigateToMainPage();
+    } on BiometricAuthException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      if (!e.isCancelled) {
+        AuthErrorModal.show(
+          context,
+          title: 'Connexion biométrique impossible',
+          description: e.message,
+        );
+      }
+    } on AuthException catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _canUseBiometricLogin = false;
+      });
+      AuthErrorModal.show(
+        context,
+        title: 'Session expirée',
+        description:
+            'Ta session biométrique a expiré. Connecte-toi avec ton e-mail et ton mot de passe pour la réactiver.',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      AuthErrorModal.show(
+        context,
+        title: 'Erreur',
+        description:
+            'Impossible de finaliser la connexion biométrique. Réessaie ou utilise ton mot de passe.',
       );
     }
   }
@@ -426,6 +503,20 @@ class _LoginPageState extends State<LoginPage> {
               isLoading: _isLoading,
               onPressed: _submit,
             ),
+            if (_canUseBiometricLogin) ...[
+              const SizedBox(height: 12),
+              _BiometricLoginButton(
+                key: const Key('biometricLoginButton'),
+                label: _biometricLabel == 'Biométrie'
+                    ? 'Se connecter avec la biométrie'
+                    : 'Se connecter avec $_biometricLabel',
+                icon: _biometricLabel == 'Face ID'
+                    ? Icons.face_rounded
+                    : Icons.fingerprint_rounded,
+                isLoading: _isLoading,
+                onPressed: _signInWithBiometrics,
+              ),
+            ],
             const SizedBox(height: 14),
             Center(
               child: TextButton(
@@ -875,6 +966,52 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BiometricLoginButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  const _BiometricLoginButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: GliftColors.brandPrimary,
+          side: BorderSide(
+            color: GliftColors.brandPrimary,
+            width: 1.5,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+        ),
+        icon: Icon(icon, size: 22, color: GliftColors.brandPrimary),
+        label: Text(
+          label,
+          style: GoogleFonts.quicksand(
+            color: GliftColors.brandPrimary,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

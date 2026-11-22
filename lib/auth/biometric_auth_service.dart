@@ -1,12 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class BiometricAuthException implements Exception {
-  const BiometricAuthException(this.message);
+  const BiometricAuthException(this.message, {this.isCancelled = false});
 
   final String message;
+  final bool isCancelled;
 }
 
 class BiometricAuthService {
@@ -35,9 +37,34 @@ class BiometricAuthService {
     }
   }
 
+  Future<List<BiometricType>> getAvailableBiometrics() async {
+    try {
+      return await _localAuth.getAvailableBiometrics();
+    } on PlatformException {
+      return const [];
+    }
+  }
+
+  Future<String> getBiometricLabel() async {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final biometrics = await getAvailableBiometrics();
+      if (biometrics.contains(BiometricType.face)) {
+        return 'Face ID';
+      }
+      if (biometrics.contains(BiometricType.fingerprint)) {
+        return 'Touch ID';
+      }
+    }
+    return 'Biométrie';
+  }
+
   Future<bool> hasStoredCredentials() async {
     final storedToken = await _secureStorage.read(key: _refreshTokenKey);
     return storedToken != null && storedToken.isNotEmpty;
+  }
+
+  Future<void> clearStoredCredentials() async {
+    await _secureStorage.delete(key: _refreshTokenKey);
   }
 
   Future<void> persistSession(Session session) async {
@@ -61,8 +88,12 @@ class BiometricAuthService {
     }
 
     try {
+      final reason = defaultTargetPlatform == TargetPlatform.iOS
+          ? 'Déverrouille Glift avec Face ID ou Touch ID'
+          : 'Déverrouille Glift avec la biométrie';
+
       final didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Déverrouille Glift avec Face ID ou Touch ID',
+        localizedReason: reason,
         options: const AuthenticationOptions(
           biometricOnly: true,
           stickyAuth: true,
@@ -72,6 +103,7 @@ class BiometricAuthService {
       if (!didAuthenticate) {
         throw const BiometricAuthException(
           'Authentification biométrique annulée.',
+          isCancelled: true,
         );
       }
 
