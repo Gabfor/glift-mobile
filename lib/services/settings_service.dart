@@ -662,6 +662,7 @@ class SettingsService {
 
   // Biometric Auth Enabled
   static const String _kBiometricEnabled = 'biometric_enabled';
+  static const String _kBiometricPromptShown = 'biometric_prompt_shown';
 
   Future<void> saveBiometricEnabled(bool enabled) async {
     await _initIfNeeded();
@@ -671,6 +672,16 @@ class SettingsService {
   bool getBiometricEnabled() {
     if (!_initialized) return false;
     return _prefs.getBool(_kBiometricEnabled) ?? false;
+  }
+
+  Future<void> saveBiometricPromptShown(bool shown) async {
+    await _initIfNeeded();
+    await _prefs.setBool(_kBiometricPromptShown, shown);
+  }
+
+  bool getBiometricPromptShown() {
+    if (!_initialized) return false;
+    return _prefs.getBool(_kBiometricPromptShown) ?? false;
   }
 
   // Default Rest Time

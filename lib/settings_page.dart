@@ -95,6 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _toggleBiometric(bool value) async {
     setState(() => _biometricEnabled = value);
     await SettingsService.instance.saveBiometricEnabled(value);
+    await SettingsService.instance.saveBiometricPromptShown(true);
     if (value) {
       final session = widget.supabase.auth.currentSession;
       if (session != null) {

@@ -12,6 +12,7 @@ import 'auth/biometric_auth_service.dart';
 import 'services/offline_sync_service.dart';
 import 'services/realtime_sync_service.dart';
 import 'services/settings_service.dart';
+import 'widgets/biometric_opt_in_modal.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
 
 class MainPage extends StatefulWidget {
@@ -59,6 +60,14 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
       _currentIndex = 0;
     }
     _loadedTabs.add(_currentIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      BiometricOptInModal.showIfNeeded(
+        context: context,
+        biometricAuthService: widget.biometricAuthService,
+        supabase: widget.supabase,
+      );
+    });
   }
 
   Widget _buildPage(int index) {

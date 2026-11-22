@@ -7,6 +7,7 @@ import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
 import 'package:glift_mobile/login_page.dart';
 import 'package:glift_mobile/services/settings_service.dart';
+import 'package:glift_mobile/widgets/biometric_opt_in_modal.dart';
 
 class _FakeAuthRepository implements AuthRepository {
   @override
@@ -142,9 +143,10 @@ void main() {
     expect(find.byKey(const Key('biometricLoginButton')), findsNothing);
   });
 
-  testWidgets('Opt-in switch shows pre-prompt modal and updates setting',
+  testWidgets('Post-login opt-in modal shows once and enables biometrics',
       (tester) async {
     await SettingsService.instance.saveBiometricEnabled(false);
+    await SettingsService.instance.saveBiometricPromptShown(false);
 
     final biometricService = _FakeBiometricAuthService(
       supabase: supabase,
@@ -155,17 +157,24 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: LoginPage(
-          authRepository: _FakeAuthRepository(),
-          supabase: supabase,
-          biometricAuthService: biometricService,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () {
+                BiometricOptInModal.showIfNeeded(
+                  context: context,
+                  biometricAuthService: biometricService,
+                  supabase: supabase,
+                );
+              },
+              child: const Text('Trigger'),
+            ),
+          ),
         ),
       ),
     );
-    await tester.pumpAndSettle();
 
-    expect(find.text('Activer la biométrie'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('biometricOptInSwitch')));
+    await tester.tap(find.text('Trigger'));
     await tester.pumpAndSettle();
 
     expect(find.text('Connexion par Face ID'), findsOneWidget);
@@ -176,5 +185,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(SettingsService.instance.getBiometricEnabled(), isTrue);
+    expect(SettingsService.instance.getBiometricPromptShown(), isTrue);
+
+    // Calling again should not open the modal a second time.
+    await tester.tap(find.text('Trigger'));
+    await tester.pumpAndSettle();
+    expect(find.text('Connexion par Face ID'), findsNothing);
   });
 }

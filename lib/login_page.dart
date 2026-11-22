@@ -14,9 +14,7 @@ import 'pricing_page.dart';
 import 'signup_page.dart';
 import 'widgets/auth_error_modal.dart';
 import 'widgets/connect_button.dart';
-import 'widgets/glift_modal.dart';
 import 'widgets/glift_page_layout.dart';
-import 'widgets/glift_switch.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -49,8 +47,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
   bool _hasNavigated = false;
-  bool _isBiometricHardwareAvailable = false;
-  bool _biometricToggleEnabled = false;
   bool _canUseBiometricLogin = false;
   String _biometricLabel = 'Biométrie';
   StreamSubscription<AuthState>? _authSubscription;
@@ -308,81 +304,20 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _checkBiometricAvailability() async {
     final service = widget.biometricAuthService;
     if (service == null) return;
+    if (!SettingsService.instance.getBiometricEnabled()) return;
 
     final available = await service.isBiometricAvailable();
     if (!available) return;
 
-    final label = await service.getBiometricLabel();
-    final isEnabled = SettingsService.instance.getBiometricEnabled();
     final hasCredentials = await service.hasStoredCredentials();
+    if (!hasCredentials) return;
 
+    final label = await service.getBiometricLabel();
     if (!mounted) return;
     setState(() {
-      _isBiometricHardwareAvailable = true;
+      _canUseBiometricLogin = true;
       _biometricLabel = label;
-      _biometricToggleEnabled = isEnabled;
-      _canUseBiometricLogin = isEnabled && hasCredentials;
     });
-  }
-
-  Future<void> _onBiometricToggleChanged(bool nextValue) async {
-    final service = widget.biometricAuthService;
-    if (service == null) return;
-
-    if (!nextValue) {
-      setState(() {
-        _biometricToggleEnabled = false;
-        _canUseBiometricLogin = false;
-      });
-      await SettingsService.instance.saveBiometricEnabled(false);
-      await service.clearStoredCredentials();
-      return;
-    }
-
-    final isFaceId = _biometricLabel == 'Face ID';
-    final isTouchId = _biometricLabel == 'Touch ID';
-    final labelText = isFaceId
-        ? 'le Face ID'
-        : (isTouchId ? 'le Touch ID' : 'la biométrie');
-    final titleLabel = isFaceId || isTouchId ? _biometricLabel : 'biométrie';
-
-    final confirmed = await GliftModal.show<bool>(
-      context: context,
-      customIcon: Icon(
-        isFaceId ? Icons.face_rounded : Icons.fingerprint_rounded,
-        size: 40,
-        color: GliftColors.brandPrimary,
-      ),
-      title: 'Connexion par $titleLabel',
-      description:
-          'Active $labelText pour te connecter encore plus facilement et en toute sécurité.\n\nGlift ne pourra en aucun cas accéder à tes données biométriques. Elles restent uniquement stockées sur ton téléphone. À tout moment, la fonctionnalité peut être désactivée dans tes Réglages.',
-      primaryButtonText:
-          isFaceId || isTouchId ? 'Activer $_biometricLabel' : 'Activer la biométrie',
-      isPrimaryOutlined: false,
-      primaryButtonColor: GliftColors.brandPrimary,
-      primaryTextColor: Colors.white,
-      secondaryButtonText: 'Plus tard',
-      showCloseButton: false,
-    );
-
-    if (!mounted) return;
-
-    if (confirmed == true) {
-      await SettingsService.instance.saveBiometricEnabled(true);
-      final hasCredentials = await service.hasStoredCredentials();
-      if (!mounted) return;
-      setState(() {
-        _biometricToggleEnabled = true;
-        _canUseBiometricLogin = hasCredentials;
-      });
-    } else {
-      await SettingsService.instance.saveBiometricEnabled(false);
-      if (!mounted) return;
-      setState(() {
-        _biometricToggleEnabled = false;
-        _canUseBiometricLogin = false;
-      });
-    }
   }
 
   Future<void> _signInWithBiometrics() async {
@@ -562,30 +497,7 @@ class _LoginPageState extends State<LoginPage> {
               textFieldKey: const Key('passwordInput'),
               toggleKey: const Key('passwordToggle'),
             ),
-            if (_isBiometricHardwareAvailable) ...[
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    'Activer la biométrie',
-                    style: GoogleFonts.quicksand(
-                      color: GliftColors.brandStrong,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GliftSwitch(
-                    key: const Key('biometricOptInSwitch'),
-                    value: _biometricToggleEnabled,
-                    onChanged: _onBiometricToggleChanged,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ] else
-              const SizedBox(height: 24),
+            const SizedBox(height: 24),
             ConnectButton(
               key: const Key('loginButton'),
               isEnabled: _isFormValid,
