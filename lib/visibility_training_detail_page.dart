@@ -10,6 +10,7 @@ import 'repositories/program_repository.dart';
 import 'widgets/glift_loader.dart';
 import 'widgets/glift_pull_to_refresh.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
+import 'widgets/glift_switch.dart';
 
 class _ClampedBottomScrollPhysics extends ScrollPhysics {
   const _ClampedBottomScrollPhysics({super.parent});
@@ -418,15 +419,9 @@ class _VisibilityTrainingDetailPageState extends State<VisibilityTrainingDetailP
             ),
           ),
           const SizedBox(width: 15),
-          SizedBox(
-            width: 44,
-            height: 26,
-            child: Switch.adaptive(
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              value: value,
-              onChanged: onChanged,
-              activeThumbColor: GliftColors.focusRing,
-            ),
+          GliftSwitch(
+            value: value,
+            onChanged: onChanged,
           ),
         ],
       ),

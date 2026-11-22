@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 
 import 'package:glift_mobile/login_page.dart';
+import 'package:glift_mobile/main_page.dart';
 import 'package:glift_mobile/signup_page.dart';
 import 'package:glift_mobile/auth/auth_repository.dart';
 import 'package:glift_mobile/auth/biometric_auth_service.dart';
@@ -166,6 +167,8 @@ class SplashToOnboarding extends StatefulWidget {
 
 class _SplashToOnboardingState extends State<SplashToOnboarding> {
   bool _showSplash = true;
+  bool _isAttemptingBiometricLogin = false;
+  bool _biometricAuthenticated = false;
   Timer? _fallbackTimer;
 
   @override
@@ -181,11 +184,42 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
     Future<void>.delayed(const Duration(milliseconds: 500), _hideSplash);
   }
 
-  void _hideSplash() {
+  Future<void> _hideSplash() async {
     _fallbackTimer?.cancel();
-    if (mounted && _showSplash) {
+    if (!mounted || !_showSplash) return;
+
+    final shouldTryBiometrics = SettingsService.instance.getBiometricEnabled() &&
+        await widget.biometricAuthService.isBiometricAvailable() &&
+        await widget.biometricAuthService.hasStoredCredentials();
+
+    if (!mounted) return;
+
+    if (!shouldTryBiometrics) {
       setState(() {
         _showSplash = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _showSplash = false;
+      _isAttemptingBiometricLogin = true;
+    });
+
+    try {
+      await widget.biometricAuthService.signInWithBiometrics();
+      try {
+        await SettingsService.instance.syncFromSupabase();
+      } catch (_) {}
+      if (!mounted) return;
+      setState(() {
+        _isAttemptingBiometricLogin = false;
+        _biometricAuthenticated = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isAttemptingBiometricLogin = false;
       });
     }
   }
@@ -198,8 +232,17 @@ class _SplashToOnboardingState extends State<SplashToOnboarding> {
 
   @override
   Widget build(BuildContext context) {
-    if (_showSplash) {
+    if (_showSplash || _isAttemptingBiometricLogin) {
       return SplashScreen(onAnimationCompleted: _onAnimationCompleted);
+    }
+
+    if (_biometricAuthenticated) {
+      return MainPage(
+        supabase: widget.supabase,
+        authRepository: widget.authRepository,
+        biometricAuthService: widget.biometricAuthService,
+        initialIndex: 1,
+      );
     }
 
     return OnboardingFlow(

@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'widgets/glift_page_layout.dart';
 import 'widgets/glift_pull_to_refresh.dart';
+import 'widgets/glift_switch.dart';
 import 'login_page.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric_auth_service.dart';
@@ -973,23 +974,10 @@ class _SettingsSwitchTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 15),
-          SizedBox(
-            width: 44,
-            height: 26,
-            child: IgnorePointer(
-              ignoring: !enabled,
-              child: Switch.adaptive(
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                value: enabled ? value : false,
-                onChanged: (v) {
-                  if (enabled) {
-                    HapticFeedback.lightImpact();
-                    onChanged(v);
-                  }
-                },
-                activeThumbColor: GliftColors.focusRing,
-              ),
-            ),
+          GliftSwitch(
+            value: value,
+            enabled: enabled,
+            onChanged: onChanged,
           ),
         ],
       ),

@@ -141,4 +141,40 @@ void main() {
 
     expect(find.byKey(const Key('biometricLoginButton')), findsNothing);
   });
+
+  testWidgets('Opt-in switch shows pre-prompt modal and updates setting',
+      (tester) async {
+    await SettingsService.instance.saveBiometricEnabled(false);
+
+    final biometricService = _FakeBiometricAuthService(
+      supabase: supabase,
+      available: true,
+      hasCredentials: false,
+      label: 'Face ID',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginPage(
+          authRepository: _FakeAuthRepository(),
+          supabase: supabase,
+          biometricAuthService: biometricService,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Activer la biométrie'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('biometricOptInSwitch')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Connexion par Face ID'), findsOneWidget);
+    expect(find.text('Activer Face ID'), findsOneWidget);
+    expect(find.text('Plus tard'), findsOneWidget);
+
+    await tester.tap(find.text('Activer Face ID'));
+    await tester.pumpAndSettle();
+
+    expect(SettingsService.instance.getBiometricEnabled(), isTrue);
+  });
 }

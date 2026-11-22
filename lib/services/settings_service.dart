@@ -669,8 +669,8 @@ class SettingsService {
   }
 
   bool getBiometricEnabled() {
-    if (!_initialized) return true;
-    return _prefs.getBool(_kBiometricEnabled) ?? true;
+    if (!_initialized) return false;
+    return _prefs.getBool(_kBiometricEnabled) ?? false;
   }
 
   // Default Rest Time
