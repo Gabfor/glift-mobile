@@ -47,8 +47,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordFocused = false;
   bool _hasSubmitted = false;
   bool _hasNavigated = false;
-  bool _canUseBiometricLogin = false;
-  String _biometricLabel = 'Biométrie';
   StreamSubscription<AuthState>? _authSubscription;
 
   void _navigateToMainPage() {
@@ -106,7 +104,11 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _setupAuthListener();
-    _checkBiometricAvailability();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _attemptAutoBiometricLogin();
+      }
+    });
     _emailFocusNode.addListener(() {
       setState(() {
         _emailFocused = _emailFocusNode.hasFocus;
@@ -301,23 +303,18 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _checkBiometricAvailability() async {
+  Future<void> _attemptAutoBiometricLogin() async {
     final service = widget.biometricAuthService;
-    if (service == null) return;
+    if (service == null || _isLoading || _hasNavigated) return;
     if (!SettingsService.instance.getBiometricEnabled()) return;
 
     final available = await service.isBiometricAvailable();
-    if (!available) return;
+    if (!available || !mounted) return;
 
     final hasCredentials = await service.hasStoredCredentials();
-    if (!hasCredentials) return;
+    if (!hasCredentials || !mounted) return;
 
-    final label = await service.getBiometricLabel();
-    if (!mounted) return;
-    setState(() {
-      _canUseBiometricLogin = true;
-      _biometricLabel = label;
-    });
+    await _signInWithBiometrics();
   }
 
   Future<void> _signInWithBiometrics() async {
@@ -352,7 +349,6 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _canUseBiometricLogin = false;
       });
       AuthErrorModal.show(
         context,
@@ -504,20 +500,6 @@ class _LoginPageState extends State<LoginPage> {
               isLoading: _isLoading,
               onPressed: _submit,
             ),
-            if (_canUseBiometricLogin) ...[
-              const SizedBox(height: 12),
-              _BiometricLoginButton(
-                key: const Key('biometricLoginButton'),
-                label: _biometricLabel == 'Biométrie'
-                    ? 'Se connecter avec la biométrie'
-                    : 'Se connecter avec $_biometricLabel',
-                icon: _biometricLabel == 'Face ID'
-                    ? Icons.face_rounded
-                    : Icons.fingerprint_rounded,
-                isLoading: _isLoading,
-                onPressed: _signInWithBiometrics,
-              ),
-            ],
             const SizedBox(height: 14),
             Center(
               child: TextButton(
@@ -967,52 +949,6 @@ class _SocialLoginButtonState extends State<_SocialLoginButton> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BiometricLoginButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isLoading;
-  final VoidCallback onPressed;
-
-  const _BiometricLoginButton({
-    super.key,
-    required this.label,
-    required this.icon,
-    required this.isLoading,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: GliftColors.brandPrimary,
-          side: BorderSide(
-            color: GliftColors.brandPrimary,
-            width: 1.5,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-        ),
-        icon: Icon(icon, size: 22, color: GliftColors.brandPrimary),
-        label: Text(
-          label,
-          style: GoogleFonts.quicksand(
-            color: GliftColors.brandPrimary,
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-          ),
         ),
       ),
     );

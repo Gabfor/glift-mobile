@@ -45,6 +45,12 @@ class _FakeBiometricAuthService extends BiometricAuthService {
   Future<String> getBiometricLabel() async => label;
 
   @override
+  Future<String> getBiometricIconAsset() async => label == 'Face ID' ||
+          label == 'Reconnaissance faciale'
+      ? 'assets/icons/biometrie_face.svg'
+      : 'assets/icons/biometrie_empreinte.svg';
+
+  @override
   Future<void> clearStoredCredentials() async {
     hasCredentials = false;
   }
@@ -68,7 +74,8 @@ void main() {
     await SettingsService.instance.saveBiometricEnabled(true);
   });
 
-  testWidgets('Shows biometric login button when available and credentials exist',
+  testWidgets(
+      'Automatically triggers biometric sign-in without showing a button when enabled and credentials exist',
       (tester) async {
     final biometricService = _FakeBiometricAuthService(
       supabase: supabase,
@@ -88,16 +95,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('biometricLoginButton')), findsOneWidget);
-    expect(find.text('Se connecter avec Face ID'), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('biometricLoginButton')));
-    await tester.pumpAndSettle();
-
+    expect(find.byKey(const Key('biometricLoginButton')), findsNothing);
+    expect(find.text('Se connecter avec Face ID'), findsNothing);
     expect(biometricService.signInCalls, 1);
   });
 
-  testWidgets('Hides biometric login button when no stored credentials',
+  testWidgets('Does not trigger biometric sign-in when no stored credentials',
       (tester) async {
     final biometricService = _FakeBiometricAuthService(
       supabase: supabase,
@@ -116,10 +119,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('biometricLoginButton')), findsNothing);
+    expect(biometricService.signInCalls, 0);
   });
 
-  testWidgets('Hides biometric login button when disabled in settings',
+  testWidgets('Does not trigger biometric sign-in when disabled in settings',
       (tester) async {
     await SettingsService.instance.saveBiometricEnabled(false);
 
@@ -140,7 +143,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('biometricLoginButton')), findsNothing);
+    expect(biometricService.signInCalls, 0);
   });
 
   testWidgets('Post-login opt-in modal shows once and enables biometrics',
@@ -178,10 +181,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Connexion par Face ID'), findsOneWidget);
-    expect(find.text('Activer Face ID'), findsOneWidget);
+    expect(find.text('Activer'), findsOneWidget);
     expect(find.text('Plus tard'), findsOneWidget);
 
-    await tester.tap(find.text('Activer Face ID'));
+    await tester.tap(find.text('Activer'));
     await tester.pumpAndSettle();
 
     expect(SettingsService.instance.getBiometricEnabled(), isTrue);

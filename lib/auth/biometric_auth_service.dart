@@ -46,16 +46,38 @@ class BiometricAuthService {
   }
 
   Future<String> getBiometricLabel() async {
+    final biometrics = await getAvailableBiometrics();
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      final biometrics = await getAvailableBiometrics();
       if (biometrics.contains(BiometricType.face)) {
         return 'Face ID';
       }
       if (biometrics.contains(BiometricType.fingerprint)) {
         return 'Touch ID';
       }
+      return 'Biométrie';
+    }
+    final hasFace = biometrics.contains(BiometricType.face);
+    final hasFingerprint = biometrics.contains(BiometricType.fingerprint);
+    if (hasFace && !hasFingerprint) {
+      return 'Reconnaissance faciale';
+    }
+    if (hasFingerprint && !hasFace) {
+      return 'Empreinte digitale';
     }
     return 'Biométrie';
+  }
+
+  Future<String> getBiometricIconAsset() async {
+    final biometrics = await getAvailableBiometrics();
+    final hasFace = biometrics.contains(BiometricType.face);
+    final hasFingerprint = biometrics.contains(BiometricType.fingerprint);
+    if (hasFace && !hasFingerprint) {
+      return 'assets/icons/biometrie_face.svg';
+    }
+    if (defaultTargetPlatform == TargetPlatform.iOS && hasFace) {
+      return 'assets/icons/biometrie_face.svg';
+    }
+    return 'assets/icons/biometrie_empreinte.svg';
   }
 
   Future<bool> hasStoredCredentials() async {
