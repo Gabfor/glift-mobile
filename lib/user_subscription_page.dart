@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/auth_code_service.dart';
 import 'services/settings_service.dart';
 import 'widgets/glift_loader.dart';
+import 'widgets/glift_switch.dart';
 import 'package:glift_mobile/theme/glift_colors.dart';
 
 class UserSubscriptionPage extends StatefulWidget {
@@ -1600,15 +1601,9 @@ class _IntervalToggle extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        SizedBox(
-          width: 44,
-          height: 26,
-          child: Switch.adaptive(
-            value: isYearly,
-            onChanged: onChanged,
-            activeThumbColor: GliftColors.brandPrimary,
-            activeTrackColor: GliftColors.focusRing,
-          ),
+        GliftSwitch(
+          value: isYearly,
+          onChanged: onChanged,
         ),
         const SizedBox(width: 10),
         GestureDetector(
