@@ -920,7 +920,7 @@ class _UserSubscriptionPageState extends State<UserSubscriptionPage> {
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(
                       20,
-                      88,
+                      108,
                       20,
                       MediaQuery.of(context).padding.bottom + 40,
                     ),

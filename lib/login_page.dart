@@ -50,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _hasSubmitted = false;
   bool _hasNavigated = false;
   bool _isOAuthPending = false;
+  bool _isBiometricInProgress = false;
   StreamSubscription<AuthState>? _authSubscription;
 
   void _navigateToMainPage() {
@@ -315,7 +316,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _attemptAutoBiometricLogin() async {
     final service = widget.biometricAuthService;
-    if (service == null || _isLoading || _hasNavigated) return;
+    if (service == null || _isLoading || _isBiometricInProgress || _hasNavigated) {
+      return;
+    }
     if (!SettingsService.instance.getBiometricEnabled()) return;
 
     final available = await service.isBiometricAvailable();
@@ -329,12 +332,10 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _signInWithBiometrics() async {
     final service = widget.biometricAuthService;
-    if (service == null || _isLoading) return;
+    if (service == null || _isLoading || _isBiometricInProgress) return;
 
     HapticFeedback.lightImpact();
-    setState(() {
-      _isLoading = true;
-    });
+    _isBiometricInProgress = true;
 
     try {
       await service.signInWithBiometrics();
@@ -342,13 +343,12 @@ class _LoginPageState extends State<LoginPage> {
       try {
         await SettingsService.instance.syncFromSupabase();
       } catch (_) {}
+      _isBiometricInProgress = false;
       if (!mounted || _hasNavigated) return;
       _navigateToMainPage();
     } on BiometricAuthException catch (e) {
+      _isBiometricInProgress = false;
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
       if (!e.isCancelled) {
         AuthErrorModal.show(
           context,
@@ -357,10 +357,8 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } on AuthException catch (_) {
+      _isBiometricInProgress = false;
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
       AuthErrorModal.show(
         context,
         title: 'Session expirée',
@@ -368,10 +366,8 @@ class _LoginPageState extends State<LoginPage> {
             'Ta session biométrique a expiré. Connecte-toi avec ton e-mail et ton mot de passe pour la réactiver.',
       );
     } catch (_) {
+      _isBiometricInProgress = false;
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
       AuthErrorModal.show(
         context,
         title: 'Erreur',
